@@ -19,7 +19,9 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 ## Paths
 
 - Grass wears where feet go: trodden first, then bare earth.
-- A path forms in a few days of walking the same line; unused it grows back in a week or two.
+- It takes days, not just steps: walk a tile ten times or more a day, three days in a row, and
+  it is trodden; eight days in a row, and it is a path. A day you skip takes a day off.
+- Unused, a path is trodden again after about a week and grass after about ten days.
 - Animals and villagers wear paths too.
 - A path is only a look: you walk, till and build on it as on grass.
 

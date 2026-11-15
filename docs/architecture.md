@@ -109,8 +109,9 @@ Warft and an Ewer here and there.
   objects (Knicks, walls, fences, dykes) are one object per tile whose type `connects`;
   `World.connections` says which neighbours a tile joins, and the
   view draws the picture of that connection mask. The wear of desire paths is World's too
-  (`wear_tile`, `wear_stage`, `regrow_paths`; numbers in `data/paths.cfg`, `PathRules`):
-  `GameState.walk` and `Livestock` wear each tile entered, and a tile that turns trodden or
+  (`wear_tile`, `wear_stage`, `end_wear_day`; numbers in `data/paths.cfg`, `PathRules`;
+  design/world/desire-paths.md): `GameState.walk` and `Livestock` count a step on each tile
+  entered, the midnight upkeep turns busy days into days of wear, and a tile that turns trodden or
   a path emits `tile_changed`, so the view redraws the cells around it as for a tilling. The
   view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. Tilled soil that
   nobody tends grows over (`World.fallow`, `FallowSoil`; numbers in `data/crops.cfg`): no night

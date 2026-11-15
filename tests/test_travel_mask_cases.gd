@@ -117,7 +117,7 @@ func test_tilled_soil_does_not_wear_and_grass_does() -> void:
 
 func test_a_worn_path_stays_grass_for_the_mask_and_the_wear_is_the_world_s() -> void:
 	var tile := empty_row(COAST, Tile.Terrain.GRASS)
-	world.wear_tile(tile, 1000.0)
+	world.set_wear_days(tile, PathRules.default_rules().path_after_days())
 	assert_eq(world.wear_stage(tile), PathRules.Stage.PATH)
 	assert_true(masks.wait_for_mask(COAST).wears(Chunk.local_pos(tile)))
 	assert_parity(COAST)

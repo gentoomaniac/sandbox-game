@@ -32,7 +32,7 @@ func before_each() -> void:
 
 
 func _wear_of(tile: Vector2i) -> float:
-	for entry: Array in _world.to_dict()["wear"]:
+	for entry: Array in _world.to_dict()["wear_today"]:
 		if Vector2i(entry[0], entry[1]) == tile:
 			return entry[2]
 	return 0.0
@@ -65,12 +65,12 @@ func test_each_tile_a_villager_steps_onto_takes_its_step() -> void:
 func test_a_villager_walking_in_place_wears_nothing() -> void:
 	var npc := _walk_right(NOON, 0.1)
 	assert_eq(npc.tile(), _start)
-	assert_eq(_world.to_dict()["wear"], [])
+	assert_eq(_world.to_dict()["wear_today"], [])
 
 
 func test_villagers_resting_at_night_wear_nothing() -> void:
 	_walk_right(MIDNIGHT)
-	assert_eq(_world.to_dict()["wear"], [])
+	assert_eq(_world.to_dict()["wear_today"], [])
 
 
 func test_a_second_walk_over_the_same_tiles_adds_another_step() -> void:
@@ -84,8 +84,9 @@ func test_a_second_walk_over_the_same_tiles_adds_another_step() -> void:
 	assert_eq(_wear_of(tile), 2.0 * _step_of_wear)
 
 
-func test_the_wear_of_villagers_grows_back_like_any_other() -> void:
+func test_the_steps_of_a_day_are_forgotten_when_it_is_counted() -> void:
 	var npc := _walk_right(NOON)
 	var tile := npc.tile() - Vector2i.RIGHT
-	_world.regrow_paths()
-	assert_eq(_wear_of(tile), 0.0, "half a step is less than a night takes off")
+	_world.end_wear_day()
+	assert_eq(_wear_of(tile), 0.0, "a few steps do not make a busy day")
+	assert_eq(_world.to_dict()["wear"], [])

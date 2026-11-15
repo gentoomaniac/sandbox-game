@@ -80,6 +80,7 @@ func _change_everything() -> void:
 	_world.ground_items.move(_pile, _pile.position + Vector2(1, 1))
 	_world.ground_items.add(GroundItem.new(ItemTypes.LOGS, 1, Vector2(_free_tile(10))))
 	_world.wear_tile(_free_tile(4), 3.0)
+	_world.set_wear_days(_free_tile(4), 3)
 	_world.recover_clay_spots()
 	_world.spend_clay_spot(_free_tile(11))
 	_villager.add_chat_line(1, 401, false, "and more")

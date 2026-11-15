@@ -49,13 +49,12 @@ func test_with_it_the_player_stays_on_loaded_ground() -> void:
 
 func test_a_noclip_walk_wears_no_path_where_a_plain_walk_does() -> void:
 	var tile := _tile + Vector2i(2, -1)
-	var stage := _world.wear_stage(tile)
 	_state.cheats.is_noclip = true
 	_walk_to_and_fro_over(tile)
-	assert_eq(_world.wear_stage(tile), stage, "no path with noclip")
+	assert_false(_world.wear_steps().has(tile), "no steps with noclip")
 	_state.cheats.is_noclip = false
 	_walk_to_and_fro_over(tile)
-	assert_ne(_world.wear_stage(tile), stage, "a path without")
+	assert_true(_world.wear_steps().has(tile), "steps without")
 
 
 ## Steps onto the tile from two tiles to its left, 20 times (a walk wears the tile it ends on).

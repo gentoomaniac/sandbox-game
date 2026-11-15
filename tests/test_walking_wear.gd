@@ -6,7 +6,7 @@ const ONE_TILE_SECONDS := 1.0 / PlayerState.SPEED
 
 
 func _wear_of(tile: Vector2i) -> float:
-	for entry: Array in _world.to_dict()["wear"]:
+	for entry: Array in _world.to_dict()["wear_today"]:
 		if Vector2i(entry[0], entry[1]) == tile:
 			return entry[2]
 	return 0.0
@@ -25,7 +25,7 @@ func test_walking_about_within_a_tile_wears_nothing() -> void:
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
 	for direction in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
 		_state.walk(direction, ONE_TILE_SECONDS / 4)
-	assert_eq(_world.to_dict()["wear"], [])
+	assert_eq(_world.to_dict()["wear_today"], [])
 
 
 func test_walking_inside_a_house_wears_no_ground() -> void:
@@ -39,12 +39,14 @@ func test_walking_inside_a_house_wears_no_ground() -> void:
 	for direction in [Vector2.UP, Vector2.LEFT, Vector2.RIGHT, Vector2.DOWN]:
 		_state.walk(direction, ONE_TILE_SECONDS * 2)
 	assert_true(_state.is_inside())
-	assert_eq(_world.to_dict()["wear"], [])
+	assert_eq(_world.to_dict()["wear_today"], [])
 
 
-func test_a_night_lets_the_grass_grow_back() -> void:
+func test_steps_become_wear_when_the_day_is_counted() -> void:
 	var rules := PathRules.default_rules()
-	for _i in rules.trodden_from():
+	for _i in rules.busy_steps():
 		_world.wear_tile(_tile)
+	assert_eq(_world.wear_stage(_tile), PathRules.Stage.UNWORN, "not in the middle of the day")
 	_sleep_days(1)
-	assert_eq(_wear_of(_tile), rules.trodden_from() - rules.regrowth_per_night())
+	assert_eq(_world.to_dict()["wear"], [[_tile.x, _tile.y, 1]])
+	assert_eq(_world.to_dict()["wear_today"], [], "a new day starts with no steps")

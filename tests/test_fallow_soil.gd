@@ -72,8 +72,7 @@ func test_untended_soil_is_grass_again_after_its_days() -> void:
 func test_a_tilled_path_grows_back_to_unworn_grass() -> void:
 	_hold(ItemTypes.NONE)
 	var path := _tile + Vector2i.RIGHT
-	for _step in PathRules.default_rules().path_from():
-		_world.wear_tile(path)
+	_world.set_wear_days(path, PathRules.default_rules().path_after_days())
 	_world.set_terrain(path, Tile.Terrain.SOIL)
 	_pass_nights(_fallow.grass_days)
 	assert_eq(_world.tile_at(path).terrain, Tile.Terrain.GRASS)

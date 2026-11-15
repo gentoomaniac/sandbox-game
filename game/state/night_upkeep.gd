@@ -34,7 +34,7 @@ func advance(_minutes: int, clock: GameClock) -> void:
 func pass_night() -> void:
 	var occupied_tiles: Array = _occupied_tiles.call()
 	_world.recover_clay_spots()
-	_world.regrow_paths()
+	_world.end_wear_day()
 	var yesterday := _world.clock.day - 1
 	_world.fallow.count_night(yesterday)
 	for object in _world.edited_objects():

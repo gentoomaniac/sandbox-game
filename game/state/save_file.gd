@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 42
-## The oldest version we still upgrade. Nine steps back, for the next version (#61) makes its
-## step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 43
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_40(game)
 	if version <= 41:
 		_upgrade_from_version_41(game)
+	if version <= 42:
+		_upgrade_from_version_42(game)
 
 
 ## Version 33 had no deed log (task 125): nothing was seen yet, and no villager has a story.
@@ -298,6 +299,26 @@ static func _upgrade_from_version_40(game: Dictionary) -> void:
 static func _upgrade_from_version_41(game: Dictionary) -> void:
 	for animal: Dictionary in game["livestock"]:
 		animal["stamina"] = 1.0
+
+
+## Version 42 counted the wear of desire paths in steps (#61): a tile with 8 steps was trodden and
+## one with 24 a path. They are counted in days of wear now, and a tile keeps the look it had: 3
+## days make a tile trodden and 8 a path; the steps of less worn tiles are forgotten, and no
+## tile has taken steps today.
+static func _upgrade_from_version_42(game: Dictionary) -> void:
+	# Written out, not read from data/paths.cfg, so a later change leaves old saves alone.
+	var trodden_from_steps := 8.0
+	var path_from_steps := 24.0
+	var trodden_days := 3
+	var path_days := 8
+	var days: Array = []
+	for entry: Array in game["world"]["wear"]:
+		if entry[2] >= path_from_steps:
+			days.append([entry[0], entry[1], path_days])
+		elif entry[2] >= trodden_from_steps:
+			days.append([entry[0], entry[1], trodden_days])
+	game["world"]["wear"] = days
+	game["world"]["wear_today"] = []
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:

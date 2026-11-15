@@ -6,3 +6,4 @@ The generated land, its coast, the year and the weather, and the wild animals.
 - [coast.md](coast.md): The North Sea coast: sea dyke, salt marsh, tidal mud, Warften, Ewer.
 - [seasons-and-weather.md](seasons-and-weather.md): Calendar, seasons, vegetation through the year, weather, day length, floods.
 - [wildlife.md](wildlife.md): Ambient wildlife: birds, deer, frogs and the rest, and how they come and go.
+- [desire-paths.md](desire-paths.md): Grass wears to paths over days of walking and grows back.

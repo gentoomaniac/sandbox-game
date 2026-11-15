@@ -69,7 +69,7 @@ func test_snow_lies_thinner_under_a_tree_and_in_the_lee_of_a_house() -> void:
 
 func test_a_thaw_clears_a_path_before_open_ground() -> void:
 	var path := Vector2i(10, 20)
-	_world.wear_tile(path, PathRules.default_rules().most())
+	_world.set_wear_days(path, PathRules.default_rules().path_after_days())
 	assert_eq(_world.wear_stage(path), PathRules.Stage.PATH)
 	_cover.set_weather(0.0, 1.0, 0.0, 0.0)
 	assert_lt(_cover.snow_at(path), _cover.snow_at(OPEN), "a path catches less")
@@ -110,7 +110,7 @@ func test_a_chunk_pass_gives_the_channels_of_every_tile_and_of_its_margin() -> v
 	_world.place_building(BuildingTypes.KATE, Vector2i(14, 14))
 	_world.set_terrain(Vector2i(5, 25), Tile.Terrain.WATER)
 	_world.set_terrain(Vector2i(6, 25), Tile.Terrain.SOIL)
-	_world.wear_tile(Vector2i(10, 20), PathRules.default_rules().most())
+	_world.set_wear_days(Vector2i(10, 20), PathRules.default_rules().path_after_days())
 	var margins: Array[int] = [0, _cover.reach()]
 	for coords in [Vector2i.ZERO, Vector2i(1, 0)]:
 		for margin in margins:

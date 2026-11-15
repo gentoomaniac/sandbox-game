@@ -2,14 +2,14 @@ class_name DebugPath
 extends RefCounted
 ## For screenshots (`--path=<x>,<y>`, `--path-days=<walked>,<left>`): a winding route walked
 ## from that tile eastwards, CROSSINGS_PER_DAY times a day for the days walked, each crossing
-## straying a tile to the side here and there, with a night of regrowth after every day; then
+## straying a tile to the side here and there, with the day counted after each; then
 ## the nights it is left to grow back. Loads the chunks around the route itself.
 
 const LENGTH := 28
 ## How far the route bends north and south, and over how many tiles it winds.
 const BEND := 3.0
 const WINDING := 9.0
-const CROSSINGS_PER_DAY := 8
+const CROSSINGS_PER_DAY := 12
 const CHUNK_REACH := 1
 
 
@@ -31,9 +31,9 @@ static func create(world: World, start: Vector2i, days_walked: int, days_left: i
 				elif stray == 1:
 					tile += Vector2i.DOWN
 				world.wear_tile(tile)
-		world.regrow_paths()
+		world.end_wear_day()
 	for _night in days_left:
-		world.regrow_paths()
+		world.end_wear_day()
 
 
 ## The tiles of the route in the order they are walked: side by side, as feet go, never only

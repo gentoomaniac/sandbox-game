@@ -259,7 +259,7 @@ func test_a_sleeping_rabbit_does_not_run() -> void:
 func test_cows_wear_the_grass_they_walk_onto() -> void:
 	_livestock.spawn(LivestockRules.COW, 3, _pen_middle(), _world)
 	_run(60.0)
-	var worn: Array = _world.to_dict()["wear"]
+	var worn: Array = _world.to_dict()["wear_today"]
 	assert_false(worn.is_empty(), "tracks in the pen")
 	for entry: Array in worn:
 		var tile := Vector2i(entry[0], entry[1])

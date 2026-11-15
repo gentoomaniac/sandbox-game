@@ -24,7 +24,7 @@ flowchart LR
     W -- edits_snapshot --> MS[TravelMasks<br/>LRUs, worker jobs]
     G[WorldGenerator<br/>on a worker] --> MS
     MS -- made masks --> V[TravelView<br/>one per search]
-    W -- building_tiles, wear_steps --> SN[TravelSnapshot]
+    W -- building_tiles, wear_days --> SN[TravelSnapshot]
     SN --> V
     V -- is_known / is_free / cost_of --> PS[PathSearch<br/>A*, on a worker]
     NT[NpcTravel] -- queue search + provide --> PF[Pathfinder<br/>dispatcher]
@@ -92,9 +92,9 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
 ### `TravelSnapshot`
 
 `World.building_tiles()` (every tile a building covers, the door included: all closed to
-villagers) and `World.wear_steps()` (the steps of wear of the worn tiles), copied. `NpcTravel` keeps
+villagers) and `World.wear_days()` (the days of wear of the worn tiles), copied. `NpcTravel` keeps
 one and makes it again when `World.change_count` has moved or it is older than `snapshot_seconds`
-(the wear grows with every step and a search does not mind it a little late).
+(the wear changes at midnight and a search does not mind it a little late).
 
 ### `TravelView`: what a search reads
 

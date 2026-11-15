@@ -109,7 +109,7 @@ func test_costs_and_answers_are_those_of_the_loaded_chunk_whatever_is_on_it() ->
 	var tall_grass := empty_row(COAST, Tile.Terrain.GRASS, 4)
 	world.add_object(WorldObject.new(WorldObjectTypes.TALL_GRASS, tall_grass))
 	world.add_object(WorldObject.new(WorldObjectTypes.PEN_GATE, tall_grass + Vector2i.RIGHT))
-	world.wear_tile(tall_grass + Vector2i(2, 0), 1000.0)
+	world.set_wear_days(tall_grass + Vector2i(2, 0), PathRules.default_rules().path_after_days())
 	world.set_terrain(tall_grass + Vector2i(3, 0), Tile.Terrain.SOIL)
 	var view := _view()
 	masks.wait_for_mask(COAST)
