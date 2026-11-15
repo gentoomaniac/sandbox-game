@@ -52,9 +52,12 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 ## Wehlsbüll
 
 A new game has the village Wehlsbüll in the world: about 80 by 60 tiles on the coast, west of the
-camp, a walk of a minute or two from it (more on some seeds; there is no track yet, the way is
-open land and creeks with fords). Type `village` in the [console](console.md) to learn how far and
-in which direction it lies and where its town square is, and `tp` takes you there.
+camp, a walk of a minute or two from it (more on some seeds). A trodden track runs from the camp to
+the village's main lane, over the open land and across the creeks at their fords. It is only a hint
+at the start: like any path worn in the grass it is gone in about ten days unless you walk it
+often (see "Paths" above); a plank walk or a stone path you lay stays. Type `village` in the
+[console](console.md) to learn how far and in which direction it lies and where its town square is,
+and `tp` takes you there.
 
 - Three farms stand on their own Warften behind the sea dyke (Warft: a raised dwelling mound),
   each with a hall house, a barn, a wattle fence and a gate, and four fields beside them, each
@@ -71,6 +74,8 @@ in which direction it lies and where its town square is, and `tp` takes you ther
 - The village is not yours: its houses cannot be taken down, and building on its land costs you
   goodwill (see [building-and-crafting.md](building-and-crafting.md)).
 - An old save from before the village has none: its world stays as it is.
+
+![The track from the camp, a trodden path through the grass, on the first morning](../docs/screenshots/wehlsbuell-track.png)
 
 ![The church and its yard, with the cottages by the dyke](../docs/screenshots/wehlsbuell-church.png)
 

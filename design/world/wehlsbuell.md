@@ -521,26 +521,35 @@ The user can stop after step 5 and have the village standing, empty.
   with the village and its villagers (457, 420 and 569 ms; the site's search, the build and the eight
   spawns); the save is 203 to 236 KB with it against 3 KB bare (220, 203 and 236 KB; the edits, 19 buildings
   and 8 villagers with their sheets, memories and stories).
+  **The bench after step 6 and 7 changed** (the cobbles, the track; the same seeds and the same machine,
+  before and after): a new game takes 534, 466 and 627 ms before and 601, 526 and 804 ms after (second run
+  599, 521 and 773), 60 to 175 ms more: the lanes' and the square's 393 to 396 cobbles are object edits
+  laid and the track loads the chunks along its way (8 to 21 of them) to wear them. The save is 272, 249
+  and 293 KB against 220, 203 and 236 KB: 52 to 57 KB more, the cobbles' edits (the worn tiles list, 351
+  to 360 tiles, is gone, and the track's 229 to 584 wear entries are small).
 
 ## 15. Screenshots
 
 Both arts, taken with `make screenshot` (the classic 16 px art with `ARGS=--classic-art`, seed 1, at the
-widest view, `--day=45` and a time of day), saved to `docs/screenshots/` as `wehlsbuell-<what>.png` and
+widest view `ZOOM=0.5`, `--day=45` and a time of day), saved to `docs/screenshots/` as `wehlsbuell-<what>.png` and
 `wehlsbuell-<what>-classic.png`: `church` (the church, the churchyard and the cottages by the dyke), `square`
 (the town square by the Krug, in the morning), `boysen` (the Boysen yard on its Warft with a field's ditch
 above it), `landing` (Ketels' hut, jetty, boat and net frame) and `build` (build mode at the land's east edge,
-with the edge and the hint). Checked by eye in both arts: the Warft, the wall, the fence, the Knick, the
-jetty. No new art was drawn and the classic art misses nothing the pictures show. Not taken: the village
-from above (the camera's widest view shows about 35 by 22 tiles of its 79 by 63) and the worn track (step 7).
+with the edge and the hint), all retaken after the lanes and the square were cobbled, and `track` (the
+track from the camp where it crosses a creek at its ford: a new game without `--day`, as the track is
+gone by day 45; seed 1 at tile -93,-24). Checked by eye in both arts: the Warft, the wall, the fence, the
+Knick, the jetty, the cobbles and their edges. No new art was drawn and the classic art misses nothing the
+pictures show. Not taken: the village from above (the camera's widest view shows about 35 by 22 tiles of
+its 79 by 63).
 
 ## 16. Handbook and design pages
 
-Done but for the worn track (step 7): the handbook pages and generation.md, travel.md, villagers.md,
-reputation.md and gossip.md are written. coast.md and desire-paths.md are left as they are.
+Done: the handbook pages and generation.md, travel.md, villagers.md, reputation.md, gossip.md and
+desire-paths.md (the track and the cobbled lanes) are written. coast.md is left as it is.
 
 - **Handbook:** [villagers.md](../../handbook/villagers.md) (they live in Wehlsbüll from the start; homes
   and workplaces; the village's land and the hammer), [world-and-seasons.md](../../handbook/world-and-seasons.md)
-  (the village, its fields, the Koog Warften, the worn track, where to find it),
+  (the village, its fields, the Koog Warften, the cobbled lanes, the worn track, where to find it),
   [building-and-crafting.md](../../handbook/building-and-crafting.md) (the land's edge and the refused
   take-down), [console.md](../../handbook/console.md) (`village`), [saving.md](../../handbook/saving.md)
   (old saves have no village).
