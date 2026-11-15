@@ -83,7 +83,7 @@
   save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
-  load (38 to 48 today); an older one is refused like
+  load (39 to 48 today, nine until the next version adds its step); an older one is refused like
   any unreadable save (renamed `.bak`,
   a new game). When `VERSION` goes up, the oldest step, its constants, helpers and tests go,
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.

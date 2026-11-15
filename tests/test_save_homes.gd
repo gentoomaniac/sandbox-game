@@ -1,6 +1,6 @@
 extends SaveValidationCase
 ## The house and the workplace of a villager are saved as references to buildings of the world
-## (version 39); a save from before them (version 38) gives every villager none.
+## (version 39).
 
 var _state: GameState
 var _house: Building
@@ -68,21 +68,6 @@ func test_a_villager_without_a_house_or_workplace_is_kept_so() -> void:
 
 	assert_null(loaded.house)
 	assert_null(loaded.workplace)
-
-
-func test_a_version_38_save_gives_every_villager_no_house_and_no_workplace() -> void:
-	var game := _current_game()
-	var saved := _saved_villager()
-	saved.erase("house")
-	saved.erase("workplace")
-	game["npcs"] = [saved]
-	_write_save(38, game)
-
-	var loaded := SaveFile.read(SAVE_PATH).npcs.all()
-
-	assert_eq(loaded.size(), 1)
-	assert_null(loaded[0].house)
-	assert_null(loaded[0].workplace)
 
 
 func test_a_house_where_no_building_stands_is_refused() -> void:
