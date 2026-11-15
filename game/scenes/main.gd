@@ -320,6 +320,7 @@ func _connect_state_and_views() -> void:
 	_build_mode.building_menu_requested.connect(_house_menu.open)
 	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
+	_storage_screen.taken_from.connect(_state.report_taken_from_chest)
 	_fire_screen.cook_requested.connect(_crafting_screen.open_station)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)

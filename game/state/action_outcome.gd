@@ -45,6 +45,9 @@ const UNSADDLE := &"unsaddle"
 const CRAFT := &"craft"
 const START_CRAFT := &"start_craft"
 const TAKE_OUT := &"take_out"
+## Items taken out of a chest when its screen was closed: `object` is the chest and `items` what
+## came out of it.
+const TAKE_FROM_CHEST := &"take_from_chest"
 const EAT := &"eat"
 const DROP := &"drop"
 const PICK_UP := &"pick_up"

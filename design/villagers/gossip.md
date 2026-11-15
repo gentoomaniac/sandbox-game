@@ -48,8 +48,8 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
 - **First kinds:** felled a tree, built a building, took down a building, placed a fence or
   wall, tilled, sowed, harvested, dug clay, mowed, and **helped** (not an action: handing in a quest
   tells it, see [quests.md](quests.md)). The list, its words and the fixed opinion changes are in
-  `data/gossip.cfg`. Theft and damage come with [relationships](relationships.md), as new deed kinds;
-  its **gave_gift** is built.
+  `data/gossip.cfg`. The kinds of [relationships](relationships.md) are built too: **gave_gift**, and
+  the harms **stole**, **damaged** and **rude**.
 - **Helped:** `helped` (fixed change +1) for a quest whose reward has one step of opinion and
   `helped_much` (+2) for two, the most a deed is worth (`GossipRules.MAX_CHANGE`). It is
   seen by the giver and by the villagers outdoors within the usual witness radius of where the player
@@ -59,6 +59,12 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   [relationships.md](relationships.md)) is written down by `DeedLog.record_gift`, seen by the receiver
   (indoors or out) and by the villagers outdoors within reach, so the others hear of it as gossip.
   It whispers into `helped`.
+- **Harm:** `stole` (change -2), `damaged` (-1) and `rude` (-1) are written by `Harm` (see
+  [relationships.md](relationships.md)) for things that are a villager's: the log, the stories and the
+  gossip are as for any deed (`DeedLog.record_harm`, in the place of the owner's house), and each
+  villager who saw it also loses friendship at once by their own points (`[harm]` of
+  `data/friendship.cfg`), which the story's change does not replace. Unseen harm is not written down
+  and costs nothing. They whisper into `damaged`, `took_down` and `damaged`.
 - **The place** in words: the house of the villager whose home is nearest within 20 tiles ("by
   Antje's house"), else "out on the marsh" (a word per biome in the data file). A deed on the
   village's own land (the record `World.village`, [../world/wehlsbuell.md](../world/wehlsbuell.md))

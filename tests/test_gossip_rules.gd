@@ -71,7 +71,7 @@ func test_a_night_radius_above_the_day_radius_is_a_problem() -> void:
 
 func test_a_village_land_change_for_no_kind_or_beyond_two_is_a_problem() -> void:
 	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
-	values["village_land"]["stole"] = -1
+	values["village_land"]["nothing_such"] = -1
 	values["village_land"]["built"] = -3
 	assert_eq(GossipRules.new(values).problems().size(), 2)
 

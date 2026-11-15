@@ -70,6 +70,9 @@ func problems() -> Array[String]:
 		["rating", "warm_daily_cap_points"],
 		["rating", "rude_daily_cap_points"],
 		["rating", "requests_per_day"],
+		["harm", "stole_points"],
+		["harm", "damaged_points"],
+		["harm", "rude_points"],
 	]:
 		if not _values.get(section_and_key[0], {}).get(section_and_key[1]) is int:
 			bad.append("[%s] %s must be a whole number" % section_and_key)
@@ -163,6 +166,22 @@ func rating_daily_cap(rating: StringName) -> int:
 ## How many ratings of the player's words a villager is asked for in a day at most.
 func rating_requests_per_day() -> int:
 	return _values["rating"]["requests_per_day"]
+
+
+## What the villagers who see a harm of this kind (a GossipRules `STOLE`, `DAMAGED` or `RUDE`) lose
+## of their opinion of the player, in points (a negative number).
+func harm_points(kind: StringName) -> int:
+	return _values["harm"]["%s_points" % kind]
+
+
+## How far from a thing on the village's land the house of its owner may be, in tiles.
+func owner_reach_tiles() -> float:
+	return float(_values["harm"]["owner_reach_tiles"])
+
+
+## How close the player's feet come to a villager that they push through them, in tiles.
+func push_tiles() -> float:
+	return float(_values["harm"]["push_tiles"])
 
 
 func _entry(level: int) -> Array:

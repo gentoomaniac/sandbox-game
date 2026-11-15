@@ -79,6 +79,8 @@ var shops: Shops
 var quests: Quests
 ## What the player did within sight of villagers.
 var deeds: DeedLog
+## What the player takes, breaks and pushes that is a villager's (see Harm).
+var harm: Harm
 ## What the villagers make of the stories they know (StoryJudging asks the language model).
 var judge: StoryJudge
 var energy_rules := EnergyRules.default_rules()
@@ -117,7 +119,9 @@ func _init(game_clock := GameClock.new()) -> void:
 	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, _the_world)
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
+	harm = Harm.new(npcs, homes, clock, deeds, _the_world)
 	action_done.connect(deeds.record)
+	action_done.connect(harm.record)
 	npcs.villager_spawned.connect(homes.settle)
 
 
@@ -364,6 +368,7 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
 	if not is_inside():
 		explored.see(player.tile())
+		harm.check_pushing(player.position)
 	_moving_seconds = _moving_seconds + delta if direction != Vector2.ZERO else 0.0
 	# A noclip walk (through trees, rocks and walls) leaves no path.
 	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
@@ -537,6 +542,11 @@ func eat_held() -> bool:
 	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
 	report(ActionOutcome.EAT, player.tile(), &"", {food: 1})
 	return true
+
+
+## The player closed a chest's screen having taken `items` out of it.
+func report_taken_from_chest(chest: WorldObject, items: Dictionary) -> void:
+	report(ActionOutcome.TAKE_FROM_CHEST, chest.pos, chest.type, items)
 
 
 ## Tells that an action of the player worked: what it did on the player's map at `tile`, to the

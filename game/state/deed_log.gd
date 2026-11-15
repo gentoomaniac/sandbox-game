@@ -92,7 +92,7 @@ func record(outcome: ActionOutcome) -> void:
 	if kind == &"" or not outcome.map is World:
 		return
 	var spot := Vector2(outcome.tile) + Vector2(0.5, 0.5)
-	var witnesses := _witnesses_at(spot)
+	var witnesses := witnesses_at(spot)
 	if witnesses.is_empty():
 		return
 	var house_owner := _nearest_home(spot)
@@ -112,10 +112,16 @@ func record_gift(receiver: Npc, spot: Vector2) -> void:
 	_record_with(receiver, GossipRules.GAVE_GIFT, spot)
 
 
+## Writes down a harm of `kind` (see Harm) to `owner`'s things or to `owner`, seen by `witnesses`.
+## The place is the owner's house, whose family weigh it high.
+func record_harm(kind: StringName, owner: Npc, witnesses: Array[Npc]) -> void:
+	_write_down(kind, rules.house_place(owner.name.get_slice(" ", 0)), witnesses, owner)
+
+
 ## Writes down a deed of `kind` done to `neighbour` at `spot`: seen by them whether or not they are
 ## outdoors, and by whoever else is. The place is their house, whose family weigh it high.
 func _record_with(neighbour: Npc, kind: StringName, spot: Vector2) -> void:
-	var witnesses := _witnesses_at(spot)
+	var witnesses := witnesses_at(spot)
 	if not witnesses.has(neighbour):
 		witnesses.append(neighbour)
 	var place := rules.house_place(neighbour.name.get_slice(" ", 0))
@@ -123,7 +129,7 @@ func _record_with(neighbour: Npc, kind: StringName, spot: Vector2) -> void:
 
 
 ## The villagers outdoors within sight of `spot`.
-func _witnesses_at(spot: Vector2) -> Array[Npc]:
+func witnesses_at(spot: Vector2) -> Array[Npc]:
 	var is_night := _npcs.is_rest_time(_clock.day, _clock.minute_of_day)
 	var radius := rules.radius(is_night)
 	var witnesses: Array[Npc] = []

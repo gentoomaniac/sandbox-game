@@ -12,6 +12,9 @@ extends Modal
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
 ## on E; Escape is the Modal's).
 
+## The screen was closed and the player took `items` (item id to count) out of the chest.
+signal taken_from(chest: WorldObject, items: Dictionary)
+
 ## The player let go of a picked backpack or hotbar stack outside the screen (see GameState
 ## `drop_from_inventory`).
 signal drop_requested(slot: int)
@@ -31,6 +34,9 @@ const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 var _hotbar: HotbarHud
 var _inventory: Inventory
 var _chest: ItemSlots
+## The chest's object and what it held when the screen opened, to tell what was taken.
+var _chest_object: WorldObject
+var _held_when_opened := {}
 ## The slot views of each side, by slot.
 var _views := {INVENTORY: {}, CHEST: {}}
 ## What the chest's grid of slots is swapped in and out of: the part that grows.
@@ -68,6 +74,8 @@ func open_chest(chest: WorldObject, player: PlayerState) -> void:
 	close()
 	_inventory = player.inventory
 	_chest = chest.storage
+	_chest_object = chest
+	_held_when_opened = _held_in(_chest)
 	open()
 
 
@@ -89,11 +97,28 @@ func _on_open() -> void:
 func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
+	var taken := {}
+	var held_now := _held_in(_chest)
+	for item: StringName in _held_when_opened:
+		var count: int = _held_when_opened[item] - held_now.get(item, 0)
+		if count > 0:
+			taken[item] = count
+	if not taken.is_empty():
+		taken_from.emit(_chest_object, taken)
 	_trash_can.keep()
 	# The hotbar may have been freed first, when the whole scene goes.
 	if is_instance_valid(_hotbar):
 		_hotbar.release(self)
 		_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
+
+
+## What the slots hold, item id to count.
+static func _held_in(slots: ItemSlots) -> Dictionary:
+	var held := {}
+	for stack in slots.slots:
+		if not stack.is_empty():
+			held[stack["item"]] = held.get(stack["item"], 0) + stack["count"]
+	return held
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is

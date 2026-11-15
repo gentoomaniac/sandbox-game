@@ -47,6 +47,18 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   To count that daily total the villager has one more saved field, `rating_moved_today`, part of save
   version 53 from step 4 (the plan's table had none). See
   [dialogue.md](dialogue.md), "Rating the player's words".
+- Step 8: harm. `Harm` (`GameState.harm`) listens to the finished actions and to the player's feet.
+  **Stealing** (`stole`, -50): a harvest, a nest's eggs (`COLLECT`) or what is taken out of a chest
+  (`ActionOutcome.TAKE_FROM_CHEST`, told by `StorageScreen` when it is closed). **Damage**
+  (`damaged`, -20): cutting down or taking down a line across the land (a Knick, a fence, a wall).
+  **Rudeness** (`rude`, -20): standing within `push_tiles` (0.4) of a villager outdoors, who
+  otherwise keeps 0.8 from the player, once a day for each. The witnesses (`DeedLog.witnesses_at`,
+  by night the smaller radius; indoors those inside that house) lose the points at once, within the
+  cap of the actions, and the deed is told as gossip; nobody seeing it, nothing happens, the owner
+  included. `Harm.owner_of(map, tile)`: a thing on **the village's land** is the villager's whose
+  house is nearest within `owner_reach_tiles` (12; the first of a household), one inside a house
+  the first of its residents'; a thing anywhere else, the player's own, is nobody's. Left out: the
+  animals themselves (there is nothing in the game to take from one but eggs).
 
 ## The user's words
 

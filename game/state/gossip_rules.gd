@@ -22,6 +22,10 @@ const HELPED := &"helped"
 const HELPED_MUCH := &"helped_much"
 ## Giving a villager an item (see Gifts).
 const GAVE_GIFT := &"gave_gift"
+## Harm done to a villager's things or to them (see Harm).
+const STOLE := &"stole"
+const DAMAGED := &"damaged"
+const RUDE := &"rude"
 ## The kinds of deed, each a section of the file.
 const KINDS: Array[StringName] = [
 	FELLED,
@@ -36,6 +40,9 @@ const KINDS: Array[StringName] = [
 	HELPED,
 	HELPED_MUCH,
 	GAVE_GIFT,
+	STOLE,
+	DAMAGED,
+	RUDE,
 ]
 ## How a villager came to know a story.
 const SEEN := &"seen"

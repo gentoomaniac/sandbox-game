@@ -65,13 +65,13 @@ func test_a_story_without_an_origin_or_a_minute_learned_is_refused() -> void:
 func test_a_deed_of_an_unknown_kind_or_without_a_place_is_refused() -> void:
 	var state := _state_with_a_deed_seen_by_antje()
 	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
-	game["deeds"][0]["kind"] = "stole"
+	game["deeds"][0]["kind"] = "pilfered"
 	game["npcs"][0]["stories"][0].erase("place")
 	game["npcs"][0]["stories"][0]["weight"] = "huge"
 
 	var problems: Array = _refusal_of(game).problems
 
-	assert_true(problems.has("deeds 0: unknown deed stole"), str(problems))
+	assert_true(problems.has("deeds 0: unknown deed pilfered"), str(problems))
 	assert_true(problems.has("npcs 0 stories 0: no place"), str(problems))
 	assert_true(problems.has("npcs 0 stories 0: unknown weight huge"), str(problems))
 
