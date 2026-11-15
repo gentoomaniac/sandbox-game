@@ -40,12 +40,12 @@ func before_each() -> void:
 	_capture.clear_buffer()
 
 
-## A looped bar of silence with a click of `level` on every beat.
-func _clicks(level: float) -> AudioStreamWAV:
+## A looped bar of silence with a click of `level` on every beat, or `offset_frames` after it.
+func _clicks(level: float, offset_frames := 0) -> AudioStreamWAV:
 	var data := PackedByteArray()
 	data.resize(_beat_frames * BEATS * 2)
 	for beat in BEATS:
-		data.encode_s16(beat * _beat_frames * 2, roundi(level * 32767))
+		data.encode_s16((beat * _beat_frames + offset_frames) * 2, roundi(level * 32767))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = _mix_rate
@@ -116,6 +116,42 @@ func test_a_crossfade_at_the_end_of_a_loop_begins_on_its_start() -> void:
 	var phases := _click_phases(mixed)
 	_assert_on_the_beats(phases)
 	assert_between(_crossfade.lateness, 0.0, BEAT_SECONDS, "it began after the wrap")
+
+
+func test_a_blend_starts_at_once_in_step_with_what_plays() -> void:
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	await wait_seconds(0.5)
+	# Early in a beat: a crossfade would wait for the next, at least 0.2 s away; a blend begins
+	# at once.
+	var playing := _crossfade._players[_crossfade._current]
+	await wait_until(
+		func() -> bool: return fposmod(playing.get_playback_position(), BEAT_SECONDS) < 0.2, 5.0
+	)
+	var asked_at := Time.get_ticks_msec()
+	# Its clicks half a beat after the old ones, so the two never fall on the same frame.
+	_crossfade.blend(_clicks(-CLICK, _beat_frames / 2), FADE_SECONDS)
+	await wait_until(func() -> bool: return _crossfade._is_fading, 5.0)
+	assert_lt(Time.get_ticks_msec() - asked_at, 100, "it began at once")
+	var mixed := await _record(func() -> bool: return not _crossfade.is_crossfading(), 2)
+	var phases := _click_phases(mixed)
+	assert_ne(phases.x, -1, "the old clicks were mixed")
+	_assert_on_the_beats(Vector2i(phases.x, phases.y - _beat_frames / 2))
+
+
+func test_a_blend_swaps_the_stream_of_a_crossfade_on_its_way() -> void:
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	var other := _clicks(-CLICK)
+	var other_mix := _clicks(-CLICK / 2)
+	_crossfade.crossfade(other, BEAT_SECONDS, FADE_SECONDS)
+	_crossfade.blend(other_mix, FADE_SECONDS)
+	assert_eq(_crossfade._next, other_mix)
+	assert_false(_crossfade._is_in_step, "still on the beat")
+	await wait_until(func() -> bool: return _crossfade._is_fading, 5.0)
+	var last_mix := _clicks(CLICK / 2)
+	_crossfade.blend(last_mix, FADE_SECONDS)
+	assert_eq(_crossfade._queued, [last_mix, BEAT_SECONDS, FADE_SECONDS, true], "after the fade")
+	await wait_until(func() -> bool: return not _crossfade.is_crossfading(), 10.0)
+	assert_eq(_crossfade._players[_crossfade._current].stream, last_mix)
 
 
 ## The gain of each player (0 while it doesn't play), frame by frame until no crossfade runs, at

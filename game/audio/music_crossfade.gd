@@ -16,6 +16,12 @@ extends Node
 ## asked for while a fade runs waits until the fade is over (the newest only), so the gains never
 ## jump. `fade_out` fades whatever plays down to silence and stops it.
 ##
+## `blend` crossfades to another mix of the same music (task 171: the quieter one indoors), in step:
+## at once, not on a beat, the new stream starting where the old one is, so the two play the same
+## notes together and the fade only moves from one mix to the other. A blend asked for while a
+## crossfade waits or is queued swaps that crossfade's stream instead (the music it heads for is
+## the one now to be blended).
+##
 ## A player's position runs READ_AHEAD_FRAMES ahead of what it has mixed (Godot's resampling reads
 ## its stream ahead in blocks), so that much is taken off. With that the beat grids line up within
 ## a frame or two when the streams have the mix rate (tests/test_music_crossfade.gd); at another
@@ -42,6 +48,8 @@ var _next: AudioStreamWAV
 var _next_beat_seconds := 0.0
 var _fade_seconds := 0.0
 var _switch_seconds := 0.0
+## Whether the crossfade asked for is a blend: in step, at once.
+var _is_in_step := false
 ## How far the playing player was mixed when last looked at: a loop wraps past its end.
 var _last_position := 0.0
 var _is_fading := false
@@ -49,7 +57,8 @@ var _is_fading := false
 var _fade_played := 0.0
 ## When the audio server mixed last as the fade looked (see `_last_mix_time`), in seconds.
 var _last_mix_seconds := 0.0
-## A crossfade asked for during a fade: [stream, beat seconds, fade seconds], or empty.
+## A crossfade asked for during a fade: [stream, beat seconds, fade seconds, whether a blend], or
+## empty.
 var _queued := []
 var _fade_out: Tween
 
@@ -71,6 +80,7 @@ func play(stream: AudioStreamWAV, beat_seconds: float) -> void:
 	_next = null
 	_queued = []
 	_is_fading = false
+	_is_in_step = false
 	_beat_seconds = beat_seconds
 	_players[_current].volume_db = 0.0
 	_players[_current].stream = stream
@@ -100,8 +110,9 @@ func fade_out(seconds: float) -> void:
 ## `fade_seconds`; during a fade, from the next beat after it.
 func crossfade(stream: AudioStreamWAV, beat_seconds: float, fade_seconds: float) -> void:
 	if _is_fading:
-		_queued = [stream, beat_seconds, fade_seconds]
+		_queued = [stream, beat_seconds, fade_seconds, false]
 		return
+	_is_in_step = false
 	var player := _players[_current]
 	var position := _mixed_position(player)
 	_next = stream
@@ -113,6 +124,22 @@ func crossfade(stream: AudioStreamWAV, beat_seconds: float, fade_seconds: float)
 	# A loop's last beat ends on its start.
 	_switch_seconds = fmod(_switch_seconds, player.stream.get_length())
 	_last_position = position
+
+
+## Crossfades to `stream`, another mix of what plays (of the same length and beat), in step, over
+## `fade_seconds`: see above. Something must play.
+func blend(stream: AudioStreamWAV, fade_seconds: float) -> void:
+	if _next != null:
+		_next = stream
+	elif not _queued.is_empty():
+		_queued[0] = stream
+	elif _is_fading:
+		_queued = [stream, _beat_seconds, fade_seconds, true]
+	else:
+		_next = stream
+		_next_beat_seconds = _beat_seconds
+		_fade_seconds = fade_seconds
+		_is_in_step = true
 
 
 ## Whether a crossfade waits for its beat or fades.
@@ -137,13 +164,14 @@ func _start_on_the_beat() -> void:
 		# Wrapped from the loop's end onto its start: past the beat if it lay in between.
 		is_past = _last_position < _switch_seconds or position >= _switch_seconds
 	_last_position = position
-	if not is_past:
+	if not is_past and not _is_in_step:
 		AudioServer.unlock()
 		return
-	lateness = fposmod(position - _switch_seconds, old.stream.get_length())
+	lateness = 0.0 if _is_in_step else fposmod(position - _switch_seconds, old.stream.get_length())
+	var start := _on_a_frame(fposmod(position, _next.get_length()) if _is_in_step else lateness)
 	new.stream = _next
 	new.volume_db = linear_to_db(0.0)
-	new.play(lateness)
+	new.play(start)
 	_last_mix_seconds = _last_mix_time()
 	AudioServer.unlock()
 	_current = 1 - _current
@@ -151,7 +179,8 @@ func _start_on_the_beat() -> void:
 	_next = null
 	_is_fading = true
 	_fade_played = 0.0
-	_last_position = lateness
+	_last_position = start
+	_is_in_step = false
 
 
 func _fade() -> void:
@@ -178,7 +207,10 @@ func _fade() -> void:
 	if not _queued.is_empty():
 		var queued := _queued
 		_queued = []
-		crossfade(queued[0], queued[1], queued[2])
+		if queued[3]:
+			blend(queued[0], queued[2])
+		else:
+			crossfade(queued[0], queued[1], queued[2])
 
 
 ## How far a looping stream of `length` seconds played between two looks, from `last_position` to
@@ -199,6 +231,14 @@ static func played_seconds(
 ## keep pace with real time, so the time between two of them is the time they mixed.
 static func _last_mix_time() -> float:
 	return Time.get_ticks_usec() / 1e6 - AudioServer.get_time_since_last_mix()
+
+
+## `seconds` of a stream at the mix rate moved onto the frame nearest it (a hair past it, so that a
+## seek cutting to whole frames finds that frame): a stream started between two frames plays its
+## samples spread over both by the resampling, so a click would sound on two frames.
+func _on_a_frame(seconds: float) -> float:
+	var rate := float((_next as AudioStreamWAV).mix_rate)
+	return (roundf(seconds * rate) + 0.001) / rate
 
 
 ## How far `player` has been mixed, in seconds of its stream (a loop's wrap included).

@@ -239,6 +239,12 @@ off, the new beats fell 127 to 128 frames early. Measured:
   scheduling is within a frame and a block, and what is late is the start of a fade that lasts
   seconds; the beats of the two pieces don't coincide in any case (the pieces' tempos differ), and
   what is heard is the new piece's fade in, not its first beat.
+- **Blends** (task 171, `MusicCrossfade.blend`, GUT): another mix of the same music (the quieter
+  one indoors) fades in at once, in step: the new stream starts where the old one has been mixed,
+  so both play the same notes and the fade only moves from one mix to the other. Its clicks fall
+  on the old stream's grid within a frame. A start between two frames played a click spread over
+  both by Godot's resampling (a one-in-five failure of the test), so a start is put on a whole frame
+  (the beat crossfade's too).
 - **Quit**: `make bench-music` quits cleanly with streams played by the crossfade (exit status 0,
   all four runs).
 
