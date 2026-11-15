@@ -3,7 +3,7 @@ extends WildlifeCase
 ## data/wildlife.cfg; these tests hold them to the bounds the player should not see exceeded.
 ## The rates over a whole game day, near a village and wet meadows, come from tools/bench/storks.gd.
 
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 const NOON := 12 * 60
 const KINDS: Array[StringName] = [WildlifeRules.STORK, WildlifeRules.ROOF_STORK]
 ## A tick of the spawner is a second, which is this many game minutes (see GameClock).

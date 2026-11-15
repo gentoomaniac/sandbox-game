@@ -3,9 +3,9 @@ extends WildlifeCase
 ## storks that fly off and come back, the young leave one by one, and the random roof storks keep
 ## off the roofs with a nest.
 
-const LATE_SPRING := 30
-const WINTER := 105
-const SUMMER_DAY_WITH_YOUNG_ON_THE_RIM := 56
+const LATE_SPRING := 34
+const WINTER := 123
+const SUMMER_DAY_WITH_YOUNG_ON_THE_RIM := 65
 
 var _house: Building
 

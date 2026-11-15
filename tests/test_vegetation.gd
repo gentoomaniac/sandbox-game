@@ -29,13 +29,13 @@ func test_a_curve_hits_its_anchors_and_eases_between_them() -> void:
 
 func test_a_curve_wraps_around_the_new_year() -> void:
 	var vegetation := Vegetation.from_curves({&"tuft": [Vector2(15, 0.2), Vector2(45, 1.0)]})
-	# Halfway from the last anchor (day 45) to the first of the next year (day 135).
-	assert_almost_eq(vegetation.density(&"tuft", 90), 0.6, 0.0001)
-	assert_almost_eq(vegetation.density(&"tuft", 1), vegetation.density(&"tuft", 121), 0.0001)
-	assert_almost_eq(vegetation.density(&"tuft", 135), 0.2, 0.0001)
-	assert_almost_eq(vegetation.density(&"tuft", 120), vegetation.density(&"tuft", 240), 0.0001)
+	# Halfway from the last anchor (day 45) to the first of the next year (day 155).
+	assert_almost_eq(vegetation.density(&"tuft", 100), 0.6, 0.0001)
+	assert_almost_eq(vegetation.density(&"tuft", 1), vegetation.density(&"tuft", 141), 0.0001)
+	assert_almost_eq(vegetation.density(&"tuft", 155), 0.2, 0.0001)
+	assert_almost_eq(vegetation.density(&"tuft", 140), vegetation.density(&"tuft", 280), 0.0001)
 	# No jump at the turn of the year.
-	assert_lt(absf(vegetation.density(&"tuft", 120) - vegetation.density(&"tuft", 121)), 0.05)
+	assert_lt(absf(vegetation.density(&"tuft", 140) - vegetation.density(&"tuft", 141)), 0.05)
 
 
 func test_every_curve_of_the_data_file_stays_between_0_and_1() -> void:
@@ -46,23 +46,30 @@ func test_every_curve_of_the_data_file_stays_between_0_and_1() -> void:
 				assert_between(density, 0.0, 1.0, "%s on day %d" % [kind, day])
 
 
+func test_every_curve_of_the_data_file_lies_within_the_year() -> void:
+	for section: Dictionary in Vegetation.KIND_SALTS.values():
+		for kind: StringName in section:
+			for anchor: Vector2 in _vegetation._curves[kind]:
+				assert_between(anchor.x, 1.0, DAYS_PER_YEAR, "%s anchor %s" % [kind, anchor])
+
+
 func test_the_data_file_follows_the_seasons() -> void:
-	var summer := 45
-	var winter := 105
+	var summer := 53
+	var winter := 123
 	assert_lt(_vegetation.density(&"tuft", 1), _vegetation.density(&"tuft", summer))
 	assert_eq(_vegetation.density(&"tuft", summer), 1.0)
-	assert_lt(_vegetation.density(&"tuft", 80), _vegetation.density(&"tuft", summer))
+	assert_lt(_vegetation.density(&"tuft", 93), _vegetation.density(&"tuft", summer))
 	assert_gt(_vegetation.density(&"tuft", winter), 0.0, "a few stalks in winter")
 	assert_lt(_vegetation.density(&"tuft", winter), 0.1)
 	assert_gt(_vegetation.density(&"small_plant", summer), 0.9)
 	assert_lt(_vegetation.density(&"small_plant", winter), 0.05)
-	assert_gt(_vegetation.density(&"leaves", 85), 0.8)
+	assert_gt(_vegetation.density(&"leaves", 99), 0.8)
 	assert_eq(_vegetation.density(&"leaves", summer), 0.0)
 	assert_eq(_vegetation.density(&"fern_bush", winter), 0.0)
 	assert_eq(_vegetation.density(&"fern_bush", 2), 0.0)
 	assert_eq(_vegetation.density(&"fern_bush", summer), 1.0)
 	assert_eq(_vegetation.density(&"berry_bush", 20), 0.0)
-	assert_eq(_vegetation.density(&"berry_bush", 50), 1.0)
+	assert_eq(_vegetation.density(&"berry_bush", summer), 1.0)
 	assert_eq(_vegetation.density(&"berry_bush", winter), 0.0)
 
 
@@ -78,13 +85,13 @@ func test_meadow_flowers_bloom_from_spring_to_early_autumn_and_never_in_winter()
 		for species in TerrainTileset.FLOWER_SPECIES:
 			total += _vegetation.density(species, day)
 		return total
-	assert_lt(blooming.call(6), blooming.call(25), "early spring has few")
-	assert_gt(blooming.call(45), 4.0, "midsummer is full")
-	assert_lt(blooming.call(75), blooming.call(55), "fading in autumn")
-	for day in range(91, DAYS_PER_YEAR + 1):
+	assert_lt(blooming.call(7), blooming.call(29), "early spring has few")
+	assert_gt(blooming.call(53), 4.0, "midsummer is full")
+	assert_lt(blooming.call(88), blooming.call(64), "fading in autumn")
+	for day in range(106, DAYS_PER_YEAR + 1):
 		assert_eq(blooming.call(day), 0.0, "none on winter day %d" % day)
-	assert_eq(_vegetation.density(&"heather", 20), 0.0, "heather is late")
-	assert_eq(_vegetation.density(&"dandelion", 50), 0.0, "dandelions are early")
+	assert_eq(_vegetation.density(&"heather", 23), 0.0, "heather is late")
+	assert_eq(_vegetation.density(&"dandelion", 58), 0.0, "dandelions are early")
 
 
 # --- Thresholds ---
@@ -149,8 +156,8 @@ func test_a_spot_that_shows_stays_while_the_density_rises() -> void:
 	for x in 100:
 		var pos := Vector2i(x, 5)
 		var was_present := false
-		# The tuft density rises from day 105 (0.03) to day 45 of the next year (1.0).
-		for day in range(105, 45 + DAYS_PER_YEAR + 1):
+		# The tuft density rises from day 123 (0.03) to day 53 of the next year (1.0).
+		for day in range(123, 53 + DAYS_PER_YEAR + 1):
 			var is_present := _vegetation.is_present(&"tuft", SEED, pos, day)
 			assert_true(is_present or not was_present, "%s dropped out on day %d" % [pos, day])
 			was_present = is_present

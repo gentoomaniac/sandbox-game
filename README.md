@@ -23,7 +23,7 @@ new one at 32 px per tile, and the classic 16 px one (F7 switches).
 
 ## Features
 
-- Four seasons of 30 days, with trees, flowers, snow and frost: [the world](handbook/world-and-seasons.md).
+- Four seasons of 35 days, with trees, flowers, snow and frost: [the world](handbook/world-and-seasons.md).
 - A simulated weather with rain, snow, fog, storms and lightning, a Nordic day and a dark night:
   [the world](handbook/world-and-seasons.md).
 - Marsh, dykes, Knicks, and a tidal coast with a Warft: [the world](handbook/world-and-seasons.md).

@@ -5,7 +5,7 @@ extends ResourceCase
 
 const KINDS := HitEffect.Kind
 const LOOKS := SeasonBlend.Look
-const AUTUMN := 75
+const AUTUMN := 88
 const CANOPY := Vector2(100.0, 100.0)
 const EAST_GALE := Vector2(14.0, 0.0)
 

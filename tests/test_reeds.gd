@@ -2,8 +2,8 @@ extends ResourceCase
 ## The reeds on the banks: where they stand, the scythe cutting them, and their regrowth by the
 ## weather of the days after.
 
-const WINTER := 105
-const AUTUMN := 85
+const WINTER := 123
+const AUTUMN := 99
 ## The area, in tiles around the origin, that is searched for reeds.
 const SEARCH_RADIUS := 160
 

@@ -3,8 +3,8 @@ extends GutTest
 ## is none left near it. The meadow is placed by hand on the decorations of a world view.
 
 const SEED := 3
-const SUMMER := 45
-const WINTER := 105
+const SUMMER := 53
+const WINTER := 123
 
 var _wildlife: WildlifeView
 

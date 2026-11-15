@@ -6,7 +6,7 @@ extends GutTest
 const SEED := 7
 ## Tiles around the camp that are searched for a spot with grass in front of the player.
 const SEARCH := 6
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 
 var _state: GameState
 var _world: World

@@ -1,10 +1,10 @@
 extends GutTest
 ## When fireflies come: the season, the hours after sunset and the weather (see WildlifeRules).
 
-const SUMMER := 45
-const SPRING := 15
-const AUTUMN := 75
-const WINTER := 105
+const SUMMER := 53
+const SPRING := 18
+const AUTUMN := 88
+const WINTER := 123
 const NOON := 12 * 60
 
 var _rules := WildlifeRules.default_rules()

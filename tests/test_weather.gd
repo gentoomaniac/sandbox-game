@@ -5,8 +5,8 @@ extends GutTest
 const SEED := 3
 const ORIGIN := Vector2i.ZERO
 ## Days of the year in the middle of summer and of winter.
-const MIDSUMMER := 45
-const MIDWINTER := 105
+const MIDSUMMER := 53
+const MIDWINTER := 123
 
 var _sun := Sun.new()
 var _weather := Weather.new(SEED, _sun)
@@ -67,7 +67,7 @@ func test_the_values_change_little_from_minute_to_minute() -> void:
 
 
 func test_the_weather_is_continuous_over_the_start_of_a_day_and_of_a_season() -> void:
-	for day in [2, 30, 120]:
+	for day in [2, 35, 140]:
 		var before := _weather.at(ORIGIN, day, GameClock.MINUTES_PER_DAY - 1)
 		var after := _weather.at(ORIGIN, day + 1, 0)
 		assert_lt(absf(before.temperature - after.temperature), 0.3, "day %d" % day)
@@ -105,7 +105,7 @@ func test_snow_falls_in_winter_and_never_in_midsummer() -> void:
 
 
 func test_there_is_no_rain_below_freezing() -> void:
-	for sample in _samples(1, 120, 120):
+	for sample in _samples(1, GameClock.DAYS_PER_YEAR, 120):
 		if sample.temperature <= 0.0:
 			assert_eq(sample.rain, 0.0)
 
@@ -163,7 +163,7 @@ func test_the_temperature_follows_the_sun_through_the_day() -> void:
 	for year in 6:
 		for day in range(MIDSUMMER - 10, MIDSUMMER + 10):
 			for hour in 24:
-				var sample := _weather.at(ORIGIN, day + year * 120, hour * 60)
+				var sample := _weather.at(ORIGIN, day + year * GameClock.DAYS_PER_YEAR, hour * 60)
 				by_hour[hour] += sample.temperature
 	assert_between(by_hour.find(by_hour.min()), 1, 5, "the coldest hour of a midsummer day")
 	assert_between(by_hour.find(by_hour.max()), 13, 18, "the warmest hour of a midsummer day")
@@ -183,7 +183,7 @@ func test_overcast_skies_let_less_sun_through() -> void:
 
 func test_conditions_follow_the_thresholds_of_the_data_file() -> void:
 	var rules := WeatherRules.default_rules()
-	for sample in _samples(1, 120, 90, 2):
+	for sample in _samples(1, GameClock.DAYS_PER_YEAR, 90, 2):
 		if sample.humidity < rules.value("precipitation", "humidity_from"):
 			assert_eq(sample.rain + sample.snow, 0.0)
 		if sample.temperature >= rules.value("precipitation", "rain_from_temperature"):

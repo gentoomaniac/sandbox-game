@@ -2,7 +2,7 @@ extends WildlifeCase
 ## A kind with a `return_gap_minutes` (the storks) stays away for that long after one has left, on
 ## the ticks and on a skip of time, so a stork that flies off is not replaced at once.
 
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 const KIND := WildlifeRules.ROOF_STORK
 const TRIES := 3000
 const ROOM := 1000

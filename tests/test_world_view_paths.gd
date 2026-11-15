@@ -4,10 +4,10 @@ extends GutTest
 
 const SEED := 1
 const CHUNK := Vector2i(-1, -1)
-const SUMMER := 45
+const SUMMER := 53
 ## Deep in autumn, when every tile has its autumn look.
-const AUTUMN := 75
-const WINTER := 105
+const AUTUMN := 88
+const WINTER := 123
 ## The tiles of a 2x2 block, from its top-left one.
 const BLOCK: Array[Vector2i] = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]
 

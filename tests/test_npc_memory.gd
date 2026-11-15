@@ -102,10 +102,10 @@ func test_without_a_model_the_memory_is_the_start_of_what_the_player_said() -> v
 
 
 func test_a_memory_is_dated() -> void:
-	_state.clock.day = 12
+	_state.clock.day = 17
 	assert_eq(
 		NpcPrompt.dated_memory("The neighbour asked after the dyke.", _state.clock, _rules),
-		"On the 12th day of Spring, year 1 (mid spring): The neighbour asked after the dyke."
+		"On the 17th day of Spring, year 1 (mid spring): The neighbour asked after the dyke."
 	)
 
 

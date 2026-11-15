@@ -3,7 +3,7 @@ extends GutTest
 ## through dusk, night and dawn.
 
 ## A day of spring with about 12 hours of daylight, so dusk and dawn are not squeezed.
-const SPRING_DAY := 15
+const SPRING_DAY := 18
 
 
 func test_night_is_dark_blue_but_not_black_and_noon_is_neutral() -> void:
@@ -65,7 +65,7 @@ func test_dusk_darkens_step_by_step_into_the_night() -> void:
 func test_dawn_lightens_step_by_step_out_of_the_night() -> void:
 	var sunrise := Sun.new().sunrise(SPRING_DAY)
 	var night := LightingRules.default_rules().tint_colour("night").get_luminance()
-	var hours_after_sunrise := [-2.0, -1.5, -0.75, 0.0, 1.0, 2.5]
+	var hours_after_sunrise := [-2.0, -1.55, -0.75, 0.0, 1.0, 2.5]
 	var luminances: Array[float] = []
 	for hours: float in hours_after_sunrise:
 		luminances.append(_luminance_at(sunrise + hours * GameClock.MINUTES_PER_HOUR))

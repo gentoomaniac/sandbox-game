@@ -13,7 +13,7 @@ func after_each() -> void:
 func test_the_data_file_holds_every_required_key() -> void:
 	var rules := WeatherRules.from_file(WeatherRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), "missing: %s" % [rules.problems()])
-	assert_eq(rules.value("sun", "longest_day"), 45.0)
+	assert_eq(rules.value("sun", "longest_day"), 53.0)
 	assert_eq(rules.season_value(GameClock.Season.WINTER, "temperature_mean"), -5.0)
 
 

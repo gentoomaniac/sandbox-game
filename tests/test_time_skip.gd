@@ -10,7 +10,7 @@ const STEP_MINUTES := 5
 ## The most a skip of 30 days may take here, on a field of a thousand crops: a generous bound that
 ## only catches stepping through every minute, not a measure (the time is printed).
 const MOST_SECONDS_FOR_30_DAYS := 10.0
-const DAY := 45
+const DAY := 65
 
 var _stepped: GameState
 

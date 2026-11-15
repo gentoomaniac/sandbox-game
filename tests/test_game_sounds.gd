@@ -3,7 +3,7 @@ extends ResourceCase
 ## opening and closing. The audio service is real; what it plays is recorded.
 
 ## Deep in winter, when snow can lie.
-const WINTER := 105
+const WINTER := 123
 
 var _audio: AudioService
 var _sounds: GameSounds

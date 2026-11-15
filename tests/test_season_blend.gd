@@ -6,7 +6,7 @@ const SEED := 3
 const TILES := 4000
 const L := SeasonBlend.Look
 ## The first day of each season, and the look its boundary changes to.
-const SEASON_STARTS := [[1, L.SPRING], [31, L.SUMMER], [61, L.AUTUMN], [91, L.BARE]]
+const SEASON_STARTS := [[1, L.SPRING], [36, L.SUMMER], [71, L.AUTUMN], [106, L.BARE]]
 
 var _blend := SeasonBlend.new(SEED)
 
@@ -42,12 +42,12 @@ func test_the_thresholds_are_stable_and_spread_evenly() -> void:
 
 
 func test_the_looks_follow_the_year() -> void:
-	assert_eq(_share(L.SUMMER, 45), 1.0)
-	assert_eq(_share(L.BARE, 110), 1.0, "winter is bare")
-	assert_eq(_share(L.SPRING, 20), 1.0, "spring has leafed out")
-	assert_eq(_share(L.SPRING, 20, true), 1.0)
-	assert_eq(_share(L.BARE, 120), 1.0, "winter ends bare")
-	assert_eq(_share(L.BARE, 120, true), 1.0)
+	assert_eq(_share(L.SUMMER, 53), 1.0)
+	assert_eq(_share(L.BARE, 125), 1.0, "winter is bare")
+	assert_eq(_share(L.SPRING, 24), 1.0, "spring has leafed out")
+	assert_eq(_share(L.SPRING, 24, true), 1.0)
+	assert_eq(_share(L.BARE, 140), 1.0, "winter ends bare")
+	assert_eq(_share(L.BARE, 140, true), 1.0)
 
 
 func test_each_change_spreads_over_the_first_three_days_of_its_season() -> void:
@@ -70,7 +70,7 @@ func test_each_change_spreads_over_the_first_three_days_of_its_season() -> void:
 
 
 func test_trees_leaf_out_step_by_step_over_the_first_days_of_spring() -> void:
-	assert_eq(_share(L.BARE, 120, true), 1.0, "bare before spring")
+	assert_eq(_share(L.BARE, 140, true), 1.0, "bare before spring")
 	assert_eq(_share(L.SPRING, 4, true), 1.0, "in full leaf on the fourth day")
 	for look_on_day in [[L.BUDS, 1], [L.BUDS, 2], [L.YOUNG_LEAVES, 2], [L.YOUNG_LEAVES, 3]]:
 		var look: SeasonBlend.Look = look_on_day[0]
@@ -79,7 +79,7 @@ func test_trees_leaf_out_step_by_step_over_the_first_days_of_spring() -> void:
 	for i in 300:
 		var threshold := _threshold_of(i)
 		var step := 0
-		for day in [120, 1, 2, 3, 4]:
+		for day in [140, 1, 2, 3, 4]:
 			var look := _blend.conditions(day).foliage_season_look(threshold)
 			var now := SeasonBlend.LEAF_OUT.find(look)
 			assert_between(now - step, 0, 1, "one step a day at most, tree %d day %d" % [i, day])
@@ -96,7 +96,7 @@ func test_a_tree_in_leaf_does_not_go_back_to_summer_while_autumn_comes() -> void
 	for i in 300:
 		var threshold := _threshold_of(i)
 		var was_autumn := false
-		for day in range(58, 68):
+		for day in range(68, 78):
 			var look := _blend.conditions(day).foliage_season_look(threshold)
 			assert_false(was_autumn and look != L.AUTUMN, "no going back")
 			was_autumn = look == L.AUTUMN
@@ -109,11 +109,11 @@ func test_the_data_file_is_complete() -> void:
 
 
 func test_the_ground_colour_holds_between_windows_and_mixes_in_them() -> void:
-	var summer := _blend.ground_mix(45)
+	var summer := _blend.ground_mix(53)
 	assert_eq([summer.to, summer.share], [L.SUMMER, 1.0])
-	var winter := _blend.ground_mix(110)
+	var winter := _blend.ground_mix(125)
 	assert_eq([winter.to, winter.share], [L.BARE, 1.0])
-	var into_autumn := _blend.ground_mix(66)
+	var into_autumn := _blend.ground_mix(76)
 	assert_eq([into_autumn.from, into_autumn.to], [L.SUMMER, L.AUTUMN])
 	assert_between(into_autumn.share, 0.01, 0.99)
 	var into_spring := _blend.ground_mix(5)
@@ -132,16 +132,16 @@ func test_the_ground_colour_changes_a_little_every_day_without_a_jump() -> void:
 
 
 func test_the_ground_colour_is_one_for_the_whole_year_cycle() -> void:
-	var first := _blend.ground_mix(31)
-	var next_year := _blend.ground_mix(31 + GameClock.DAYS_PER_YEAR)
+	var first := _blend.ground_mix(36)
+	var next_year := _blend.ground_mix(36 + GameClock.DAYS_PER_YEAR)
 	assert_eq([first.from, first.to, first.share], [next_year.from, next_year.to, next_year.share])
 
 
 func test_leaves_build_up_in_autumn_and_thin_out_in_winter() -> void:
-	assert_eq(_blend.litter(45), 0.0, "none in summer")
-	assert_between(_blend.litter(75), 0.1, 0.9)
-	assert_gt(_blend.litter(85), _blend.litter(75))
-	assert_eq(_blend.litter(96), 1.0)
-	assert_lt(_blend.litter(110), 1.0)
-	assert_eq(_blend.litter(119), 0.0, "swept away by spring")
+	assert_eq(_blend.litter(53), 0.0, "none in summer")
+	assert_between(_blend.litter(88), 0.1, 0.9)
+	assert_gt(_blend.litter(99), _blend.litter(88))
+	assert_eq(_blend.litter(112), 1.0)
+	assert_lt(_blend.litter(125), 1.0)
+	assert_eq(_blend.litter(139), 0.0, "swept away by spring")
 	assert_eq(_blend.litter(1), 0.0)

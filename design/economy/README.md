@@ -111,7 +111,7 @@ ratios agree with the village sheet.
 - **Seasons change prices.** A multiplier by season on each kind of good (first values):
   grain 0.8 in autumn after the harvest and 1.2 in spring; butter and eggs 1.2 in winter, 0.9
   in summer; fresh vegetables 0.8 in their season and 1.3 out of it; fish a little dearer in
-  winter; salt, nails and cloth stay flat. A season is 30 days
+  winter; salt, nails and cloth stay flat. A season is 35 days
   ([seasons-and-weather.md](../world/seasons-and-weather.md)).
 - **The weather of last year** can move grain: a wet harvest makes it dear, as the village
   news already says. Later, and only if the first is liked: the crops' bad days over the

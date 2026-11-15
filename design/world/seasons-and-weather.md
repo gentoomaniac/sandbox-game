@@ -25,7 +25,7 @@
     As built (task 51): each change starts the day before its season, so on the first day about
     a sixth has changed, half on the second, five in six on the third, and all is done on the
     fourth. Leaf fall is the change to the bare
-    look at the start of winter (day 91). Each tree or bush leafs out over most of those
+    look at the start of winter (day 106). Each tree or bush leafs out over most of those
     days and shows each step for about a day; conifers, ferns and grass have no steps.
   - **Pines look like pines** (decided 2026-11-06): a Scots pine with a tall bare reddish
     trunk and a few flat dark blue-green needle clumps high up, so they don't read as
@@ -164,7 +164,14 @@
   Plant growth can later depend on these values.
 - **Calendar** (decided 2026-11-05): four seasons of 30 days (Spring, Summer, Autumn,
   Winter), so a year has 120 days. The game starts on the 1st day of Spring, Year 1. The
-  HUD shows "10th day of Spring Year 2 · 06:00".
+  HUD shows "10th day of Spring Year 2 · 06:00". Changed 2026-11-15 (#85): seasons of 35
+  days, so a year has 140 days and each season is five weeks. A week has 7 days, day 1 is a
+  Monday, so weeks line up with the seasons and the years; the HUD shows "Wednesday, 10th day
+  of Spring Year 2 · 06:00" (`GameClock.weekday`, `day_of_year`). Every number of the data
+  files that counts days of the year (the plants' curves, the season blend and litter windows,
+  the thaw, the longest day, the stork's year) moved up by a sixth to keep its place in
+  its season; what counts days of its own (the crops' growth, the width of a blend window, the
+  days of wear, the frost ramp) stays.
 - **The world looks like its season** (decided 2026-11-05, changed 2026-11-12 by task 185): the
   current art is summer. Spring is a lighter, fresher green; autumn is North Sea autumn (task 52):
   oaks brown, ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56),

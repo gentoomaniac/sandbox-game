@@ -7,11 +7,11 @@ var _rules := NpcTalkRules.default_rules()
 var _antje := Npc.create_villager("antje", Vector2.ZERO, VillagerRules.default_rules())
 
 
-## 08:15 on the 12th day of Spring, year 1: light rain, 9 °C and a fresh wind from the west, by
+## 08:15 on the 17th day of Spring, year 1: light rain, 9 °C and a fresh wind from the west, by
 ## a kate.
 func _moment() -> NpcMoment:
 	var moment := NpcMoment.new()
-	moment.clock.day = 12
+	moment.clock.day = 17
 	moment.clock.set_time(8, 15)
 	moment.sunrise = 6 * 60
 	moment.solar_noon = 12 * 60 + 30
@@ -115,7 +115,7 @@ func test_the_prompt_has_the_shape_of_the_example() -> void:
 	assert_eq(
 		lines[2],
 		(
-			"It is the 12th day of Spring, year 1 (mid spring), 08:15 in the morning."
+			"It is the 17th day of Spring, year 1 (mid spring), 08:15 in the morning."
 			+ " The weather: light rain, 9 °C, a fresh west wind. Antje is outside the kate."
 		)
 	)
@@ -194,7 +194,7 @@ func test_the_season_is_early_mid_or_late() -> void:
 		NpcPrompt.moment_words(moment, _rules)["date"],
 		"the 1st day of Spring, year 1 (early spring)"
 	)
-	moment.clock.day = 30 + 30 + 30 + 28 + 120
+	moment.clock.day = 3 * GameClock.DAYS_PER_SEASON + 28 + GameClock.DAYS_PER_YEAR
 	assert_eq(
 		NpcPrompt.moment_words(moment, _rules)["date"],
 		"the 28th day of Winter, year 2 (late winter)"

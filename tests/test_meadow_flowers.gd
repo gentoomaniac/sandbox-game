@@ -3,11 +3,11 @@ extends GutTest
 ## finds them only where they bloom. Places tiles by hand, with the layer given.
 
 const SEED := 3
-const EARLY_SPRING := 6
-const LATE_SPRING := 25
-const SUMMER := 45
-const AUTUMN := 80
-const WINTER := 105
+const EARLY_SPRING := 7
+const LATE_SPRING := 29
+const SUMMER := 53
+const AUTUMN := 93
+const WINTER := 123
 const GRASS := TerrainTileset.Layer.GRASS
 
 var _tileset := TerrainTileset.new()

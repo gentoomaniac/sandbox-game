@@ -4,11 +4,11 @@ extends GutTest
 const SEED := 1
 const NOON := 12 * 60
 const MIDNIGHT := 0
-const SPRING := 15
-const LATE_SPRING := 30
-const SUMMER := 45
-const AUTUMN := 75
-const WINTER := 105
+const SPRING := 18
+const LATE_SPRING := 35
+const SUMMER := 53
+const AUTUMN := 88
+const WINTER := 123
 const NESTS_TO_TRY := 60
 
 var _rules := StorkNestRules.default_rules()
@@ -74,16 +74,16 @@ func test_a_nest_sits_on_the_middle_third_of_the_ridge() -> void:
 
 func test_a_nest_is_empty_in_winter_and_autumn() -> void:
 	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
-		for day in [61, AUTUMN, 90, WINTER, 120]:
+		for day in [71, AUTUMN, 105, WINTER, 140]:
 			assert_eq(_stage(house, day), StorkNests.Stage.EMPTY, "day %d" % day)
 		assert_eq(_stage(house, 1), StorkNests.Stage.EMPTY, "before the pair")
 
 
 func test_the_pair_is_there_in_spring_and_the_young_hatch_in_late_spring() -> void:
 	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
-		assert_eq(_stage(house, 9), StorkNests.Stage.PAIR, "arrived in early spring")
-		assert_eq(_stage(house, 16), StorkNests.Stage.PAIR, "not before the young hatch")
-		assert_eq(_stage(house, 27), StorkNests.Stage.YOUNG, "hatched in late spring")
+		assert_eq(_stage(house, 10), StorkNests.Stage.PAIR, "arrived in early spring")
+		assert_eq(_stage(house, 19), StorkNests.Stage.PAIR, "not before the young hatch")
+		assert_eq(_stage(house, 31), StorkNests.Stage.YOUNG, "hatched in late spring")
 		var young := _nests.occupants(house, LATE_SPRING, NOON)
 		assert_between(young.young, _rules.value("min_young"), _rules.value("max_young"))
 
@@ -91,7 +91,7 @@ func test_the_pair_is_there_in_spring_and_the_young_hatch_in_late_spring() -> vo
 func test_the_young_grow_through_the_summer() -> void:
 	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
 		var early := _nests.occupants(house, LATE_SPRING, NOON).growth
-		var later := _nests.occupants(house, 40, NOON).growth
+		var later := _nests.occupants(house, 47, NOON).growth
 		assert_gte(early, 0.0)
 		assert_gt(later, early)
 		assert_lte(later, 1.0)
@@ -123,15 +123,27 @@ func test_the_year_of_a_nest_runs_in_order_and_the_young_leave_one_by_one() -> v
 
 func test_the_last_young_goes_with_the_pair_by_the_end_of_summer() -> void:
 	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
-		var last := _nests.occupants(house, 60, NOON + 6 * 60)
+		var last := _nests.occupants(house, 70, NOON + 6 * 60)
 		assert_eq(last.stage, StorkNests.Stage.EMPTY)
+
+
+func test_the_pair_comes_in_early_spring_and_the_last_young_leaves_by_the_end_of_summer() -> void:
+	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
+		for year in 2:
+			var offset := year * GameClock.DAYS_PER_YEAR
+			var days: Array[int] = []
+			for day in range(1, GameClock.DAYS_PER_YEAR + 1):
+				if _stage(house, day + offset) != StorkNests.Stage.EMPTY:
+					days.append(day)
+			assert_between(days[0], 4, 10, "the pair arrives in early spring")
+			assert_lte(days[-1], 2 * GameClock.DAYS_PER_SEASON - 1, "the nest is empty by autumn")
 
 
 func test_the_nests_are_not_in_step() -> void:
 	var arrivals := {}
 	var departures := {}
 	for house in _houses_with_a_nest(_nests, NESTS_TO_TRY):
-		for day in range(1, 61):
+		for day in range(1, 71):
 			if _stage(house, day) != StorkNests.Stage.EMPTY and not arrivals.has(house):
 				arrivals[house] = day
 			if arrivals.has(house) and _stage(house, day) == StorkNests.Stage.EMPTY:
@@ -171,7 +183,7 @@ func test_the_parents_go_to_the_meadows_by_day() -> void:
 	var home := 0
 	for house in _houses_with_a_nest(_nests, 20):
 		for minute in range(8 * 60, 18 * 60, 60):
-			var parents_home := _nests.occupants(house, 38, minute).parents_home
+			var parents_home := _nests.occupants(house, 45, minute).parents_home
 			home += parents_home
 			away += 2 - parents_home
 	assert_gt(away, 0, "some are away")

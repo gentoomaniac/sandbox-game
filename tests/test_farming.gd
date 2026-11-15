@@ -5,7 +5,7 @@ const SEED := 7
 ## Tiles around the camp: grass most likely, checked by `_grass_tile`.
 const SEARCH := 6
 ## A day in the middle of spring, when the weather suits the cool-weather crops.
-const MID_SPRING := 15
+const MID_SPRING := 18
 
 var _state: GameState
 var _world: World

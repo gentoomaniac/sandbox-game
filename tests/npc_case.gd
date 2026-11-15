@@ -8,7 +8,7 @@ const SEED := 7
 ## a few stones in it. Wider than the anchor's reach, so that only the anchor keeps them in.
 const YARD_RADIUS := 9
 const STEP_SECONDS := 0.05
-const DAY := 45
+const DAY := 60
 const NOON := 12 * 60
 const MIDNIGHT := 0
 

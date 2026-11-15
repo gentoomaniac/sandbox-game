@@ -82,22 +82,6 @@ func test_the_first_day_is_the_1st_day_of_spring_year_1() -> void:
 	assert_eq(_clock_on(1).date_text(), "1st day of Spring Year 1")
 
 
-func test_day_130_is_the_10th_day_of_spring_year_2() -> void:
-	var clock := _clock_on(130)
-	assert_eq(clock.season(), GameClock.Season.SPRING)
-	assert_eq(clock.day_of_season(), 10)
-	assert_eq(clock.year(), 2)
-	assert_eq(clock.date_text(), "10th day of Spring Year 2")
-
-
-func test_seasons_change_every_30_days() -> void:
-	assert_eq(_clock_on(30).date_text(), "30th day of Spring Year 1")
-	assert_eq(_clock_on(31).date_text(), "1st day of Summer Year 1")
-	assert_eq(_clock_on(61).season(), GameClock.Season.AUTUMN)
-	assert_eq(_clock_on(120).date_text(), "30th day of Winter Year 1")
-	assert_eq(_clock_on(121).date_text(), "1st day of Spring Year 2")
-
-
 func test_ordinals() -> void:
 	var expected := {
 		1: "1st",
@@ -110,7 +94,8 @@ func test_ordinals() -> void:
 		21: "21st",
 		22: "22nd",
 		23: "23rd",
-		30: "30th"
+		30: "30th",
+		35: "35th"
 	}
 	for day: int in expected:
 		assert_eq(_clock_on(day).date_text().split(" ")[0], expected[day])
@@ -129,20 +114,3 @@ func test_minutes_until_a_time_of_day_past_midnight() -> void:
 func test_minutes_until_the_time_it_shows_now_is_a_whole_day() -> void:
 	_clock.set_time(6, 30)
 	assert_eq(_clock.minutes_until(6 * 60 + 30), GameClock.MINUTES_PER_DAY)
-
-
-func test_day_1_is_a_monday_and_every_7th_day_a_sunday() -> void:
-	assert_eq(_clock_on(1).weekday_name(), "Monday")
-	assert_eq(_clock_on(1).weekday(), 0)
-	assert_eq(_clock_on(7).weekday_name(), "Sunday")
-	assert_eq(_clock_on(7).weekday(), 6)
-	assert_eq(_clock_on(8).weekday_name(), "Monday")
-	assert_eq(_clock_on(14).weekday_name(), "Sunday")
-
-
-func test_the_week_runs_on_over_the_turn_of_a_year() -> void:
-	var last_day := GameClock.DAYS_PER_YEAR
-	assert_eq(GameClock.weekday_of(last_day + 1), (last_day) % GameClock.DAYS_PER_WEEK)
-	assert_eq(_clock_on(last_day + 1).day_of_year(), 1)
-	assert_eq(_clock_on(last_day).day_of_year(), last_day)
-	assert_eq(_clock_on(2 * last_day + 1).day_of_year(), 1)

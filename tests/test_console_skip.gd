@@ -38,5 +38,5 @@ func test_skip_rejects_bad_amounts() -> void:
 	var before := [clock.day, clock.minute_of_day]
 	for line in ["skip", "skip 2", "skip h", "skip 0h", "skip -1d", "skip 2x", "skip 1h 2h"]:
 		assert_string_starts_with(_console.run(line)[0], "Usage", line)
-	assert_string_starts_with(_console.run("skip 121d")[0], "At most a year")
+	assert_string_starts_with(_console.run("skip 141d")[0], "At most a year")
 	assert_eq([clock.day, clock.minute_of_day], before)

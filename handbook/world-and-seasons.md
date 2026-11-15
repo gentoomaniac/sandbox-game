@@ -4,7 +4,7 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 
 ## Seasons
 
-- A year has four seasons of 30 days each.
+- A year has four seasons of 35 days each (five weeks), so 140 days.
 - A week has 7 days, Monday to Sunday, and the first day of the game is a Monday. The date in the
   top left corner names the weekday: "Monday, 1st day of Spring Year 1 · 06:00".
 - Trees, bushes, ground and buildings change with the season: spring green, full summer, autumn

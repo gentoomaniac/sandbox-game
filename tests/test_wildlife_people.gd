@@ -2,7 +2,7 @@ extends WildlifeCase
 ## Wild animals never stand on a building tile, the door included, whether they stand, spawn,
 ## settle or move. Near a building or a villager they keep their distance, the mice excepted.
 
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 const TILE := float(TerrainTileset.TILE_SIZE)
 ## Kinds that fly or stand on roofs by design: they are not on the ground of a building tile.
 const OFF_THE_GROUND: Array[StringName] = [

@@ -8,7 +8,7 @@ const SEED := 7
 ## a few stones in it.
 const PEN_RADIUS := 3
 const STEP_SECONDS := 0.05
-const DAY := 45
+const DAY := 60
 const NOON := 12 * 60
 const MIDNIGHT := 0
 ## A test-only object type (see `_types_with_stile`).

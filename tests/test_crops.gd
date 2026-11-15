@@ -3,8 +3,8 @@ extends CropCase
 ## days, death, healing and regrowth, on days made up for the test (and a few of the real weather).
 
 const SEED := 7
-const MID_SPRING := 15
-const MIDSUMMER := 40
+const MID_SPRING := 18
+const MIDSUMMER := 47
 ## The cool-weather and the warm-weather crops (see data/crops.cfg): each grows best in the
 ## season of its list.
 const COOL_CROPS: Array[StringName] = [

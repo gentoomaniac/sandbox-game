@@ -4,9 +4,9 @@ extends GutTest
 
 const SEED := 1
 const RIGHT := Vector2i(-1, -1)
-const SUMMER := 45
-const AUTUMN := 75
-const WINTER := 105
+const SUMMER := 53
+const AUTUMN := 88
+const WINTER := 123
 const L := SeasonBlend.Look
 
 var _view: WorldView
@@ -67,7 +67,7 @@ func test_the_ground_mixes_from_one_season_into_the_next_by_the_day() -> void:
 	var terrain := _view._ground_look.terrain
 	_view.show_ground_cover(SUMMER, 0.0, 0.0, 0.0)
 	assert_eq(terrain.get_shader_parameter("mix_share"), 1.0)
-	_view.show_ground_cover(66, 0.0, 0.0, 0.0)
+	_view.show_ground_cover(76, 0.0, 0.0, 0.0)
 	var share: float = terrain.get_shader_parameter("mix_share")
 	assert_between(share, 0.01, 0.99)
 	var summer_atlas := load(

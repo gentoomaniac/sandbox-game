@@ -9,8 +9,8 @@ const SEED := 1
 const LEFT := Vector2i(-2, -1)
 const RIGHT := Vector2i(-1, -1)
 const BELOW := Vector2i(-1, 0)
-const SUMMER := 45
-const WINTER := 105
+const SUMMER := 53
+const WINTER := 123
 
 var _generator := WorldGenerator.new(SEED)
 var _view: WorldView

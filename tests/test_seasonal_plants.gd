@@ -3,8 +3,8 @@ extends ResourceCase
 ## in the way), a berry bush bears only from early summer to late autumn.
 
 const SPRING_START := 1
-const SUMMER := 45
-const WINTER := 105
+const SUMMER := 53
+const WINTER := 123
 const NEXT_SUMMER := SUMMER + GameClock.DAYS_PER_YEAR
 ## Berries until the last day of the plateau, then none within 4 days, whatever the bush's
 ## threshold.

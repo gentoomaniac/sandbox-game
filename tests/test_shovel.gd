@@ -6,7 +6,7 @@ const SEED := 42
 ## The area searched for clay spots: it holds the river and wetland.
 const SEARCH_AREA := Rect2i(0, -170, 96, 340)
 const SPOTS_TO_DIG := 120
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 
 var _generator := WorldGenerator.new(SEED)
 var _state: GameState

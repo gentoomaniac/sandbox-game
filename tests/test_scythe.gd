@@ -2,9 +2,9 @@ extends ResourceCase
 ## The scythe and tall grass: the pattern of a swing, hay on the ground, regrowth, the seasons
 ## and saving.
 
-const WINTER := 105
-const AUTUMN := 80
-const SPRING := 12
+const WINTER := 123
+const AUTUMN := 93
+const SPRING := 14
 ## The tiles around the player's tile that are made grass and filled with tall grass.
 const FIELD_RADIUS := 3
 

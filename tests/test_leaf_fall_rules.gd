@@ -4,9 +4,9 @@ extends GutTest
 
 const KINDS := HitEffect.Kind
 const LOOKS := SeasonBlend.Look
-const EARLY_SUMMER := 40
-const LATE_SUMMER := 58
-const AUTUMN := 75
+const EARLY_SUMMER := 47
+const LATE_SUMMER := 68
+const AUTUMN := 88
 const BREEZE := 6.0
 const GALE := 14.0
 

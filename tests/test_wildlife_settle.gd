@@ -1,7 +1,7 @@
 extends WildlifeCase
 ## After a skip of time the ambient wildlife is what the new hour has, at once.
 
-const MIDSUMMER := 45
+const MIDSUMMER := 53
 
 
 func before_each() -> void:

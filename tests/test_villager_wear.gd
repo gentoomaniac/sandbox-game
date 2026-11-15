@@ -3,7 +3,7 @@ extends GutTest
 ## PathRules.villager_step): outdoors only, on or off screen, and it grows back when they stop.
 
 const STEP_SECONDS := 0.05
-const DAY := 45
+const DAY := 53
 const NOON := 12 * 60
 const MIDNIGHT := 0
 

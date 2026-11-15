@@ -2,10 +2,10 @@ extends GutTest
 ## When and where crows are about (rules in data/wildlife.cfg, what they do to the crops in
 ## test_crop_raids.gd).
 
-const SPRING := 15
-const SUMMER := 45
-const AUTUMN := 75
-const WINTER := 105
+const SPRING := 18
+const SUMMER := 53
+const AUTUMN := 88
+const WINTER := 123
 const NOON := 12 * 60
 const MIDNIGHT := 0
 

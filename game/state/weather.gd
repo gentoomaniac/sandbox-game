@@ -345,7 +345,7 @@ func _season_curve(minutes: int) -> Array:
 ## (see [thaw] in the data file).
 func _temperature_mean(season_curve: Array, minutes: int) -> float:
 	var year_day := fposmod(float(minutes) / GameClock.MINUTES_PER_DAY, GameClock.DAYS_PER_YEAR)
-	# The span runs over the turn of the year, so the early days count past 120.
+	# The span runs over the turn of the year, so the early days count past the year's end.
 	if year_day < GameClock.DAYS_PER_YEAR / 2.0:
 		year_day += GameClock.DAYS_PER_YEAR
 	var winter_middle := 3.5 * GameClock.DAYS_PER_SEASON

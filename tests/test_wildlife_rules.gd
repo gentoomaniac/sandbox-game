@@ -3,10 +3,10 @@ extends GutTest
 ## weather, where they may appear, and when they react to the player.
 
 const SEED := 1
-const SPRING := 15
-const SUMMER := 45
-const AUTUMN := 75
-const WINTER := 105
+const SPRING := 18
+const SUMMER := 53
+const AUTUMN := 88
+const WINTER := 123
 const NOON := 12 * 60
 const MIDNIGHT := 0
 ## Tiles of flowers in bloom around the view: a meadow in flower.

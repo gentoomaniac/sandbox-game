@@ -7,8 +7,8 @@ atmosphere only: no player impact, not hunted, not saved.
   - birds: hop and peck on open ground, fly off when the player comes close; small flocks
     cross the sky now and then (a shadow on the ground), in a V. They migrate (task 183): in
     autumn they fly south only, within 25 degrees of due south, in spring north only, in summer
-    any way, and in winter there are none. They come twice as often in the middle two weeks of
-    spring and autumn, and the season factor fades over 6 days either side of a season boundary
+    any way, and in winter there are none. They come twice as often in the middle 15 days of
+    spring and autumn, and the season factor fades over 7 days either side of a season boundary
     (the factor is the mean of the two seasons at the boundary), so they thin out and return
     rather than stop and start. The greylag geese and the dunlin keep their own seasons and
     rules. A skein of flying geese migrates the same way, south in autumn and north in spring,
@@ -39,7 +39,7 @@ atmosphere only: no player impact, not hunted, not saved.
     flower to flower within a few tiles and fly off when none is left near (task 75);
   - butterflies: over meadows and flowers by day in spring and summer;
   - fireflies (task 135): the glow-worms of northern Germany (Lampyris and Lamprohiza), which
-    fly from about June to mid July. In the game: summer (day 31 to 60), from the start of the
+    fly from about June to mid July. In the game: summer (day 36 to 70), from the start of the
     dusk until 4 hours after sunset (past midnight in midsummer), up to 6 together, on grass, the
     floodplain and wetland within 3 tiles of a tree, a Knick or open water: over meadows, hedges
     and the edges of woods and water, not over open ground. They stay in for rain, a storm, fog,
@@ -62,12 +62,12 @@ atmosphere only: no player impact, not hunted, not saved.
     hall house or barn; about 4 in 10, by where it stands and the world seed, so every game of a
     seed has the same nests) and the year of each, by the date (`StorkNests`, numbers in the
     `[stork_nest]` section of `data/wildlife.cfg`). Empty in winter; the pair flies in in early
-    spring (days 3 to 8) and stands on the nest, clattering; the young (2 to 4) hatch in
-    late spring (days 17 to 26) and grow through the summer; the parents
+    spring (days 4 to 10) and stands on the nest, clattering; the young (2 to 4) hatch in
+    late spring (days 20 to 31) and grow through the summer; the parents
     go to the meadows by day for a few hours at a time (one always stays by the newly hatched)
-    and are home at night; in late summer (days 41 to 52) the young stand on the rim and flap,
+    and are home at night; in late summer (days 48 to 61) the young stand on the rim and flap,
     and from two days later leave one by one, one every two days, the pair with the last (by day
-    60 at the latest); empty in autumn. Each nest has its own days, drawn again every
+    69 at the latest); empty in autumn. Each nest has its own days, drawn again every
     year, so they are not in step. Nothing of it is saved: the nests and who is in them follow from
     the world seed and the date (as the weather does), and the player changes one only by taking
     its building down, which takes the nest with it. On screen (`StorkNestView`, one for each nest

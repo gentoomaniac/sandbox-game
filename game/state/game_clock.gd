@@ -16,7 +16,8 @@ const START_MINUTE := 6 * MINUTES_PER_HOUR
 ## How fast game time runs in play: one game day lasts 16 real minutes.
 const GAME_MINUTES_PER_REAL_SECOND := 1.5
 
-const DAYS_PER_SEASON := 30
+## Five weeks.
+const DAYS_PER_SEASON := 35
 const DAYS_PER_YEAR := DAYS_PER_SEASON * 4
 const SEASON_NAMES := ["Spring", "Summer", "Autumn", "Winter"]
 

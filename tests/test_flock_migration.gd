@@ -3,10 +3,10 @@ extends GutTest
 ## winter, more often in the migration weeks and fading at the season edges. The skeins of geese
 ## migrate the same way, but stay in winter and are not about in summer.
 
-const SPRING := 15
-const SUMMER := 45
-const AUTUMN := 75
-const WINTER := 105
+const SPRING := 18
+const SUMMER := 53
+const AUTUMN := 88
+const WINTER := 123
 const NOON := 12 * 60
 
 var _rules := WildlifeRules.default_rules()
@@ -54,8 +54,8 @@ func test_a_skein_of_geese_migrates_too_and_flies_any_way_in_winter() -> void:
 
 func test_skeins_of_geese_fade_in_from_the_empty_summer() -> void:
 	var geese := WildlifeRules.FLYING_GEESE
-	var last_of_summer := 60
-	assert_eq(_rules.season_factor(geese, 45), 0.0, "none in high summer")
+	var last_of_summer := 70
+	assert_eq(_rules.season_factor(geese, SUMMER), 0.0, "none in high summer")
 	assert_gt(_rules.season_factor(geese, last_of_summer), 0.0, "fading in before autumn")
 	assert_lt(_rules.season_factor(geese, last_of_summer), 1.0)
 	assert_eq(_rules.season_factor(geese, AUTUMN), 1.0, "full in autumn")
@@ -63,7 +63,7 @@ func test_skeins_of_geese_fade_in_from_the_empty_summer() -> void:
 
 func test_sky_flocks_come_more_often_in_the_migration_weeks() -> void:
 	var flock := WildlifeRules.FLOCK
-	var first_day_of_autumn := 61
+	var first_day_of_autumn := 71
 	assert_true(_rules.is_migrating(flock, AUTUMN))
 	assert_false(_rules.is_migrating(flock, first_day_of_autumn))
 	assert_gt(
@@ -74,30 +74,43 @@ func test_sky_flocks_come_more_often_in_the_migration_weeks() -> void:
 
 func test_sky_flocks_fade_out_into_winter_and_in_from_it_without_a_step() -> void:
 	var flock := WildlifeRules.FLOCK
-	var last_autumn_day := 90
+	var last_autumn_day := 105
 	var previous := 1.0
 	for day in range(last_autumn_day - 8, last_autumn_day + 9):
 		var factor := _rules.season_factor(flock, day)
 		assert_lte(factor, previous + 0.001, "day %d" % day)
 		assert_lte(previous - factor, 0.25, "no step at day %d" % day)
 		previous = factor
-	assert_eq(_rules.season_factor(flock, 70), 1.0, "full in mid-autumn")
-	assert_eq(_rules.season_factor(flock, 105), 0.0, "none in mid-winter")
-	assert_gt(_rules.season_factor(flock, 121), 0.0, "back with the first days of spring")
+	assert_eq(_rules.season_factor(flock, AUTUMN), 1.0, "full in mid-autumn")
+	assert_eq(_rules.season_factor(flock, WINTER), 0.0, "none in mid-winter")
+	assert_gt(_rules.season_factor(flock, 141), 0.0, "back with the first days of spring")
 
 
 func test_no_sky_flock_is_wanted_on_the_fade_days_of_winter() -> void:
-	for day in [91, 96, 115, 116, 117, 118, 119, 120]:
+	for day in [106, 111, 135, 136, 137, 138, 139, 140]:
 		assert_eq(_rules.target_count(WildlifeRules.FLOCK, day, NOON, _clear()), 0, "day %d" % day)
 
 
 func test_sky_flocks_fade_in_across_the_turn_of_the_year() -> void:
 	var flock := WildlifeRules.FLOCK
-	var previous := _rules.season_factor(flock, 120)
+	var previous := _rules.season_factor(flock, 140)
 	assert_gt(previous, 0.0, "the last winter day is already fading in")
-	for day in range(121, 128):
+	for day in range(141, 148):
 		var factor := _rules.season_factor(flock, day)
 		assert_gte(factor, previous, "day %d" % day)
 		assert_lte(factor - previous, 0.25, "no step at day %d" % day)
 		previous = factor
-	assert_eq(_rules.season_factor(flock, 130), 1.0, "full a week into spring")
+	assert_eq(_rules.season_factor(flock, 150), 1.0, "full a week into spring")
+
+
+func test_the_migration_weeks_are_the_middle_15_days_of_spring_and_autumn() -> void:
+	var flock := WildlifeRules.FLOCK
+	for first_day_of_season in [1, 71]:
+		var migrating: Array[int] = []
+		for day in range(first_day_of_season, first_day_of_season + GameClock.DAYS_PER_SEASON):
+			if _rules.is_migrating(flock, day):
+				migrating.append(day - first_day_of_season + 1)
+		assert_eq(migrating.size(), 15)
+		assert_eq([migrating[0], migrating[-1]], [11, 25], "ten days either side")
+	for day in range(36, 71):
+		assert_false(_rules.is_migrating(flock, day), "not in summer, day %d" % day)
