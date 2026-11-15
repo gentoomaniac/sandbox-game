@@ -51,7 +51,7 @@ def biggest_patch(tile):
 class WornGroundTest(unittest.TestCase):
     def test_full_tiles_are_even_with_a_few_single_specks(self):
         for art in (terrain, classic_terrain):
-            for layer in (art.trodden, art.path):
+            for layer in (art.trodden, art.path, art.muddy_trodden, art.muddy_path):
                 tiles, _ = layer()
                 for tile in tiles[terrain.EDGE_VARIANTS * terrain.FULL :]:
                     name = f"{art.__name__}.{layer.__name__}"

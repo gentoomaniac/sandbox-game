@@ -4,7 +4,7 @@ assets/decorations.png.
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
 top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass, dry grass, trodden grass,
-path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
+path, muddy trodden grass, muddy path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
 - EDGE_VARIANTS blocks of 15 columns: the dual-grid edge shapes for masks 0..14 (mask 0
@@ -673,9 +673,11 @@ def warft():
 
 # The share of pixels of worn ground that are a speck.
 SPECK_CHANCE = 0.03
+# Mud has more of them: the glints of water that make it look wet.
+MUDDY_SPECK_CHANCE = 0.06
 
 
-def worn_earth(base, specks):
+def worn_earth(base, specks, speck_chance=SPECK_CHANCE):
     """The texture of worn ground: an even `base` colour with a few single pixels of `specks`,
     so that the full tiles, picked at random, show no shape of their own where they meet."""
 
@@ -684,16 +686,15 @@ def worn_earth(base, specks):
         tile = filled(base)
         for y in range(TILE):
             for x in range(TILE):
-                if rng.random() < SPECK_CHANCE:
+                if rng.random() < speck_chance:
                     tile[y][x] = rng.choice(specks)
         return tile
 
     return texture
 
 
-def trodden():
-    """Flattened grass worn down to even dark earth, with the odd speck of dry blade or bare mud."""
-    texture = worn_earth("mud_dark", ("mud", "mud", "dry"))
+def trodden_tiles(texture):
+    """The atlas row of trodden grass of the earth `texture` (see `worn_earth`)."""
     fulls = [texture(90 + n) for n in range(4)]
     shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
 
@@ -710,9 +711,20 @@ def trodden():
     return edge_tiles(texture, shapes, 90, decorate) + fulls, []
 
 
-def path():
-    """Bare trodden earth, an even colour with a few specks of grit; grass creeps in at the edges."""
-    texture = worn_earth("mud", ("sand", "sand", "mud_dark"))
+def trodden():
+    """Flattened grass worn down to even dark earth, with the odd speck of dry blade or bare mud."""
+    return trodden_tiles(worn_earth("mud_dark", ("mud", "mud", "dry")))
+
+
+def muddy_trodden():
+    """Trodden grass in the rain: dark wet earth with glints of standing water. It is drawn over
+    the trodden grass of a tile (see World.is_muddy), so it is the same shapes."""
+    return trodden_tiles(worn_earth("soil_dark", ("soil", "water", "water_light"), MUDDY_SPECK_CHANCE))
+
+
+def path_tiles(texture):
+    """The atlas row of a path of the earth `texture` (see `worn_earth`); grass creeps in at the
+    edges."""
     fulls = [texture(101 + n) for n in range(6)]
     shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
 
@@ -731,6 +743,16 @@ def path():
                     tile[y][x] = "green_dark"
 
     return edge_tiles(texture, shapes, 100, decorate) + fulls, []
+
+
+def path():
+    """Bare trodden earth, an even colour with a few specks of grit."""
+    return path_tiles(worn_earth("mud", ("sand", "sand", "mud_dark")))
+
+
+def muddy_path():
+    """A path in the rain: wet earth, darker and redder, with glints of standing water."""
+    return path_tiles(worn_earth("soil", ("soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE))
 
 
 def soil_pixel_of(ramp):
@@ -793,5 +815,5 @@ def weeds():
 
 
 LAYERS = [
-    water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, soil
+    water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, muddy_trodden, muddy_path, soil
 ]

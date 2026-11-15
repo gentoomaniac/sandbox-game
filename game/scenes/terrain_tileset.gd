@@ -10,11 +10,12 @@ extends RefCounted
 ## Grass comes in three looks (ordinary, lush, dry), picked by slow noise across the world
 ## so the colour shifts gradually. Lush and dry grass are layers drawn over ordinary grass.
 ## Grass walked often wears to a desire path (see World.wear_stage): trodden grass, then a
-## path, two layers over any grass (and the floodplain) that fade into it. The tidal mud lies
-## just over the water, so the tideways are water cut into it; it looks the same in every
-## season and weather, as the tide washes it. The salt marsh is a grass too, drawn over ordinary
-## grass like the lush and dry grass, with seasons of its own: red-purple in autumn. A Warft (a
-## dwelling mound) is grass over grass too, whose edges are its slopes.
+## path, two layers over any grass (and the floodplain) that fade into it. In rain they turn to
+## mud (see World.is_muddy): a muddy look of each, of the same shapes, drawn over it. The tidal
+## mud lies just over the water, so the tideways are water cut into it; it looks the same in
+## every season and weather, as the tide washes it. The salt marsh is a grass too, drawn over
+## ordinary grass like the lush and dry grass, with seasons of its own: red-purple in autumn. A
+## Warft (a dwelling mound) is grass over grass too, whose edges are its slopes.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -34,6 +35,8 @@ enum Layer {
 	DRY_GRASS,
 	TRODDEN,
 	PATH,
+	MUDDY_TRODDEN,
+	MUDDY_PATH,
 	SOIL,
 }
 ## The tiles of a meadow flower (see FLOWER_ROW).
@@ -69,7 +72,7 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 12
+const LAYER_COUNT := 14
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -116,6 +119,8 @@ const BASE_LAYER: Array[Layer] = [
 	Layer.GRASS,
 	Layer.GRASS,
 	Layer.GRASS,
+	Layer.TRODDEN,
+	Layer.PATH,
 	Layer.TRODDEN,
 	Layer.PATH,
 	Layer.SOIL,
@@ -190,14 +195,15 @@ func show_art_set() -> void:
 
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile, and
-## `wear` how worn its grass is (World.wear_stage; only ground that wears is ever worn).
+## `wear` how worn its grass is (World.wear_stage; only ground that wears is ever worn), and
+## `is_muddy` whether the rain has made worn ground mud (World.is_muddy).
 static func terrain_layer(
-	terrain: Tile.Terrain, variety: float, wear := PathRules.Stage.UNWORN
+	terrain: Tile.Terrain, variety: float, wear := PathRules.Stage.UNWORN, is_muddy := false
 ) -> int:
 	if wear == PathRules.Stage.TRODDEN:
-		return Layer.TRODDEN
+		return Layer.MUDDY_TRODDEN if is_muddy else Layer.TRODDEN
 	if wear == PathRules.Stage.PATH:
-		return Layer.PATH
+		return Layer.MUDDY_PATH if is_muddy else Layer.PATH
 	var layer := LAYER_OF_TERRAIN[terrain]
 	if layer == Layer.GRASS and variety < LUSH_BELOW:
 		return Layer.LUSH_GRASS

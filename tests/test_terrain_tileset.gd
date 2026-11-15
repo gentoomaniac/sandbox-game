@@ -179,6 +179,39 @@ func test_tilled_soil_has_no_decorations() -> void:
 		assert_eq(_tileset.decoration_cell(SOIL, Vector2i(x, 0), 1.0), TerrainTileset.NO_DECORATION)
 
 
+func test_muddy_worn_ground_is_drawn_in_its_muddy_look() -> void:
+	for terrain in [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN]:
+		assert_eq(
+			TerrainTileset.terrain_layer(terrain, 0.0, PathRules.Stage.TRODDEN, true),
+			TerrainTileset.Layer.MUDDY_TRODDEN
+		)
+		assert_eq(
+			TerrainTileset.terrain_layer(terrain, 0.0, PathRules.Stage.PATH, true),
+			TerrainTileset.Layer.MUDDY_PATH
+		)
+
+
+func test_unworn_ground_stays_as_it_is_in_the_rain() -> void:
+	assert_eq(
+		TerrainTileset.terrain_layer(Tile.Terrain.GRASS, 0.0, PathRules.Stage.UNWORN, true),
+		TerrainTileset.Layer.GRASS
+	)
+
+
+func test_a_muddy_look_is_drawn_over_the_worn_look_it_has() -> void:
+	var cell_corners := PackedInt32Array(
+		[
+			TerrainTileset.Layer.MUDDY_PATH,
+			TerrainTileset.Layer.GRASS,
+			TerrainTileset.Layer.GRASS,
+			TerrainTileset.Layer.GRASS
+		]
+	)
+	var drawn := TerrainTileset.drawn_layers(cell_corners)
+	assert_ne(drawn & (1 << TerrainTileset.Layer.PATH), 0)
+	assert_ne(drawn & (1 << TerrainTileset.Layer.MUDDY_PATH), 0)
+
+
 func test_worn_ground_is_drawn_trodden_or_as_a_path_whatever_its_grass() -> void:
 	for terrain in [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN]:
 		for variety: float in [-0.9, 0.0, 0.9]:
