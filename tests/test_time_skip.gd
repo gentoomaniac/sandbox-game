@@ -45,7 +45,7 @@ func _make_farm(state: GameState) -> void:
 	station.fill(&"bricks", 1)
 	station.start()
 	state.livestock.rng.seed = SEED
-	state.livestock.spawn(LivestockRules.SHEEP, 3, Vector2(_tile) + Vector2(3, 5), world)
+	state.livestock.spawn(LivestockRules.SHEEP, 3, Vector2(_tile) + Vector2(-5, 2), world)
 
 
 ## Whether the kiln's run is still going at the time of `state`.

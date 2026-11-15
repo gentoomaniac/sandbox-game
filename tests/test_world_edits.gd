@@ -2,8 +2,8 @@ extends GutTest
 ## Edits live outside the chunks, so they survive a chunk being unloaded and generated again.
 
 const SEED := 42
-## A chunk by the river with trees on it.
-const COORDS := Vector2i(0, -1)
+## A chunk with trees on it.
+const COORDS := Vector2i(0, -2)
 
 var _world: World
 var _generator := WorldGenerator.new(SEED)

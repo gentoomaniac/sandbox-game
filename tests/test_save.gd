@@ -2,6 +2,8 @@ extends GutTest
 ## Saving: every class writes itself to plain JSON values and reads itself back.
 
 const SEED := 7
+## A chunk of the seed with a wood on it: the camp is in the bare open land.
+const WOOD_CHUNK := Vector2i(2, -2)
 const SAVE_DIR := "user://test_saves"
 const SAVE_PATH := SAVE_DIR + "/world.json"
 
@@ -91,6 +93,7 @@ func _crop_in(world: World) -> WorldObject:
 
 
 func _remove_a_tree() -> Vector2i:
+	_state.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(WOOD_CHUNK))
 	for coords in _state.world.loaded_chunk_coords():
 		for object in _state.world.chunk_at(coords).objects():
 			if object.type == WorldObjectTypes.OAK:

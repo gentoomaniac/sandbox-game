@@ -41,12 +41,20 @@
     nothing was edited, and its seams with old edits may look odd. That is accepted (the saves of
     that time were test saves) and goes into the release notes.
 
-- **Which trees grow where** (task 56, 2026-11-06): the forests stand where they stood, only the
-  species of each tree changed, so old saves keep the shape of their land and need no upgrade.
-  The woods are broadleaved: on wet ground (the marsh, and the Geest by wetland) alder 4, oak 1
-  and birch 1 by weight, on the dry Geest beech 4, oak 3 and birch 2. Pine and spruce were not
-  common before the heath plantations of the late 18th century, so they stand only in clumps on
-  the Geest, where the composition noise is high (with a mixed rim), two in three of them Scots
-  pine. Over three seeds the trees are about 28 % beech, 24 % oak, 19 % birch, 16 % alder, 7 %
-  pine and spruce and 4 % willow (before: about half oak, half conifers). Numbers in
+- **Woods** (task 56, 2026-11-06, redone in [#60](https://github.com/gentoomaniac/sandbox-game/issues/60)):
+  trees stand in woods, compact patches that cover about 15 % of the Geest, and nowhere else: a
+  lone tree outside a wood is not generated (a village's grove will be one, later). `WoodLayout`
+  (numbers in `data/landscape.cfg`, `[woods]`) makes them: a wood is where the forest noise, read
+  at a position pushed about by a slow warp noise, is above 0.27 (the noise has a wavelength of about 80 tiles), so the outline is no contour
+  line of one noise. There are none in the marsh (the warp makes the marsh edge wavy). The depth
+  inside a wood gives an **edge** (shrubs, bushes, few young trees: where the noise barely
+  clears the threshold a wood is only a tuft of shrubs) and a **core** (a tile
+  holds a trunk with a chance of 0.15 at the edge to 0.55 in the core; crowns overlap). **Clearings** are cut into
+  the core by a fine noise: grass and bushes, no tree. Bushes are common at the edge, rare in the
+  core.
+- **Which trees grow where** (task 56, 2026-11-06): the woods are broadleaved: on wet ground (the
+  marsh, and the Geest by wetland) alder 4, willow 2, oak 1 and birch 1 by weight, on the dry
+  Geest beech 4, oak 3 and birch 2. Pine and spruce were not common before the heath plantations
+  of the late 18th century, so they stand only as patches inside the woods of the Geest, where the
+  composition noise is high (with a mixed rim), two in three of them Scots pine. Numbers in
   `WorldGenerator`, first values, tune in play.

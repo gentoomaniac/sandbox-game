@@ -6,6 +6,8 @@ const SEED := 1
 const LEFT := Vector2i(-2, -1)
 const RIGHT := Vector2i(-1, -1)
 const BELOW := Vector2i(-1, 0)
+## A chunk with oaks on it, which the open land of the others has none of.
+const WOOD := Vector2i(0, -3)
 const SUMMER := 53
 const AUTUMN := 72
 const WINTER := 123
@@ -47,9 +49,9 @@ func test_a_refresh_is_spread_over_frames() -> void:
 
 func test_an_oak_is_in_leaf_or_bare_by_the_season() -> void:
 	_show(SUMMER)
-	_residency.load_chunk(RIGHT)
+	_residency.load_chunk(WOOD)
 	_view.finish_drawing()
-	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
+	var oak := _find_object(WOOD, WorldObjectTypes.OAK)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.SUMMER)
 	_show(WINTER)
 	assert_eq(_view._objects.get_cell_source_id(oak.pos), SeasonBlend.Look.BARE)
@@ -70,13 +72,13 @@ func test_the_objects_have_the_cover_shader_and_the_plants_their_own() -> void:
 
 
 func test_trees_turn_one_by_one_across_autumn() -> void:
-	_residency.load_chunk(RIGHT)
+	_residency.load_chunk(WOOD)
 	_view.finish_drawing()
 	_show(SUMMER)
-	var summer_looks := _foliage_looks(RIGHT)
+	var summer_looks := _foliage_looks(WOOD)
 	assert_eq(summer_looks.size(), 1, "all alike in summer")
 	_show(AUTUMN)
-	assert_gt(_foliage_looks(RIGHT).size(), 1, "a mix in autumn")
+	assert_gt(_foliage_looks(WOOD).size(), 1, "a mix in autumn")
 
 
 func _foliage_looks(coords: Vector2i) -> Dictionary:
@@ -88,10 +90,10 @@ func _foliage_looks(coords: Vector2i) -> Dictionary:
 
 
 func test_a_see_through_stand_in_has_the_look_and_the_cover_of_its_cell() -> void:
-	_residency.load_chunk(RIGHT)
+	_residency.load_chunk(WOOD)
 	_view.finish_drawing()
 	_show(WINTER)
-	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
+	var oak := _find_object(WOOD, WorldObjectTypes.OAK)
 	_view._swap_cell_for_sprite(oak)
 	var sprite: SeeThroughSprite = _view._object_sprites[oak.pos]
 	var texture: AtlasTexture = sprite.texture
@@ -109,9 +111,9 @@ func test_a_see_through_stand_in_has_the_look_and_the_cover_of_its_cell() -> voi
 
 
 func test_a_felled_trees_sprite_has_the_cover_too() -> void:
-	_residency.load_chunk(RIGHT)
+	_residency.load_chunk(WOOD)
 	_view.finish_drawing()
-	var oak := _find_object(RIGHT, WorldObjectTypes.OAK)
+	var oak := _find_object(WOOD, WorldObjectTypes.OAK)
 	var fall := FallingTree.beside_trunk_of(oak, _view.world, 0.0)
 	_view._place_object_sprite(fall, oak)
 	assert_true(fall.material.get_shader_parameter("has_cover"))

@@ -3,8 +3,8 @@ extends GutTest
 ## chunk an edit was made.
 
 const SEED := 42
-## A chunk by the river with trees on it.
-const COORDS := Vector2i(0, -1)
+## A chunk with trees on it.
+const COORDS := Vector2i(0, -2)
 
 var _world: World
 var _generator := WorldGenerator.new(SEED)
@@ -67,5 +67,5 @@ func test_an_edit_in_a_chunk_that_is_not_loaded_tells_too() -> void:
 
 
 func test_loading_a_chunk_is_no_edit() -> void:
-	_world.add_chunk(_generator.generate_chunk(Vector2i(1, -1)))
+	_world.add_chunk(_generator.generate_chunk(Vector2i(1, -2)))
 	assert_eq(_edited_chunks, [] as Array[Vector2i])

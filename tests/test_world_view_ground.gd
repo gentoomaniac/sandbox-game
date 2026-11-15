@@ -4,6 +4,8 @@ extends GutTest
 
 const SEED := 1
 const RIGHT := Vector2i(-1, -1)
+## A chunk with trees on it, which the open land of the others has none of.
+const WOOD := Vector2i(0, -3)
 const SUMMER := 53
 const AUTUMN := 88
 const WINTER := 123
@@ -201,7 +203,7 @@ func test_a_world_shown_far_from_the_origin_has_its_cover_from_the_first_draw() 
 
 
 func test_a_tree_felled_while_its_chunk_is_half_drawn_still_changes_the_cover() -> void:
-	var coords := Vector2i(-2, -1)
+	var coords := WOOD
 	_residency.load_chunk(coords)
 	_view._draw_next_step()
 	var tree: WorldObject = null

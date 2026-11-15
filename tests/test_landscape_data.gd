@@ -41,6 +41,13 @@ func test_a_missing_file_is_reported() -> void:
 	assert_push_error_count(rules.problems().size() + 1)
 
 
+func test_a_wood_core_that_is_not_above_its_edge_is_reported() -> void:
+	var text := FileAccess.get_file_as_string(LandscapeRules.DEFAULT_PATH)
+	var rules := _write(text.replace("core_above=0.38", "core_above=0.2"))
+	assert_eq(rules.problems(), ["[woods] core_above must be more than above"])
+	assert_push_error_count(1)
+
+
 func test_tideways_that_could_run_together_are_reported() -> void:
 	var text := FileAccess.get_file_as_string(LandscapeRules.DEFAULT_PATH)
 	var rules := _write(text.replace("meander=11", "meander=15"))

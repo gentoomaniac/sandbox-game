@@ -30,21 +30,18 @@ const FLOODPLAIN_WIDTH := 3.0
 const RIVER_MEANDER_AMPLITUDE := 150.0
 ## Wetland appears where the second noise is above this (dry land only).
 const WETLAND_THRESHOLD := 0.45
+## The five octaves of the wetland noise are weighted 1, 1/2, 1/4, 1/8 and 1/16, so the last three
+## add at most 0.4375 of 1.9375 to the sum: for the whole to pass WETLAND_THRESHOLD, the first two
+## (as a noise of two octaves, weighted 1 and 1/2 of 1.5) have to be above this (0.289, with room).
+const WETLAND_FIRST_OCTAVES_MIN := 0.28
 
-## Forests are where the forest noise is above this; trees fill a forest densely and are
-## rare outside it. Chances are per grass tile; one roll per tile decides tree, bush, stone,
-## boulder, dead tree or nothing, so a tile never has two objects. The tree chance rises from
-## the edge of a forest to its core (noise at FOREST_CORE_THRESHOLD and above), where crowns
-## overlap: they are about 3 tiles wide, so a quarter of the tiles holding a trunk is a dense
-## forest. Bushes are the other way round, common at the edge and in clearings.
-const FOREST_THRESHOLD := 0.1
-const FOREST_CORE_THRESHOLD := 0.35
-const FOREST_EDGE_TREE_CHANCE := 0.05
-const FOREST_CORE_TREE_CHANCE := 0.22
-const CLEARING_TREE_CHANCE := 0.003
-const FOREST_EDGE_BUSH_CHANCE := 0.08
-const FOREST_CORE_BUSH_CHANCE := 0.01
-const CLEARING_BUSH_CHANCE := 0.02
+## The woods (see WoodLayout) hold the trees; outside them none stands alone. Bushes are the
+## other way round: common at the edge of a wood, rare in its core, and in its clearings and the
+## meadows as common as in the open. Chances are per grass tile; one roll per tile decides bush,
+## stone, boulder, dead tree or nothing, so a tile never has two objects.
+const WOOD_EDGE_BUSH_CHANCE := 0.08
+const WOOD_CORE_BUSH_CHANCE := 0.01
+const OPEN_BUSH_CHANCE := 0.01
 const STONE_CHANCE := 0.012
 ## A boulder is 2 tiles wide: it needs the tile right of the rolled one to be free grass.
 const BOULDER_CHANCE := 0.004
@@ -138,7 +135,6 @@ const BUSH_KIND_SHARES := [
 ## Features per tile; lower is larger and smoother.
 const RIVER_FREQUENCY := 0.004
 const WETLAND_FREQUENCY := 0.03
-const FOREST_FREQUENCY := 0.02
 const COMPOSITION_FREQUENCY := 0.012
 const GRASS_FREQUENCY := 0.05
 const CLAY_FREQUENCY := 0.15
@@ -157,7 +153,6 @@ const TIDEWAY_SAMPLE_SPACING := 1000.0
 
 ## Offsets the wetland seed so it is independent of the river noise.
 const WETLAND_SEED_OFFSET := 1
-const FOREST_SEED_OFFSET := 2
 const COMPOSITION_SEED_OFFSET := 4
 const GRASS_SEED_OFFSET := 6
 const CLAY_SEED_OFFSET := 7
@@ -178,7 +173,7 @@ const EWER_ROLL_SEED_OFFSET := 18
 
 var _river_noise := FastNoiseLite.new()
 var _wetland_noise := FastNoiseLite.new()
-var _forest_noise := FastNoiseLite.new()
+var _wetland_first_octaves_noise := FastNoiseLite.new()
 var _composition_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()
 var _clay_noise := FastNoiseLite.new()
@@ -186,6 +181,7 @@ var _dyke_noise := FastNoiseLite.new()
 var _coast_noise := FastNoiseLite.new()
 var _foreshore_noise := FastNoiseLite.new()
 var _tideway_noise := FastNoiseLite.new()
+var _woods: WoodLayout
 var _object_roll_seed: int
 var _variety_roll_seed: int
 var _grass_roll_seed: int
@@ -220,8 +216,9 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_river_noise.frequency = RIVER_FREQUENCY
 	_wetland_noise.seed = world_seed + WETLAND_SEED_OFFSET
 	_wetland_noise.frequency = WETLAND_FREQUENCY
-	_forest_noise.seed = world_seed + FOREST_SEED_OFFSET
-	_forest_noise.frequency = FOREST_FREQUENCY
+	_wetland_first_octaves_noise.seed = world_seed + WETLAND_SEED_OFFSET
+	_wetland_first_octaves_noise.frequency = WETLAND_FREQUENCY
+	_wetland_first_octaves_noise.fractal_octaves = 2
 	_composition_noise.seed = world_seed + COMPOSITION_SEED_OFFSET
 	_composition_noise.frequency = COMPOSITION_FREQUENCY
 	_grass_noise.seed = world_seed + GRASS_SEED_OFFSET
@@ -236,6 +233,7 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_foreshore_noise.frequency = FORESHORE_FREQUENCY
 	_tideway_noise.seed = world_seed + TIDEWAY_SEED_OFFSET
 	_tideway_noise.frequency = TIDEWAY_FREQUENCY
+	_woods = WoodLayout.new(world_seed, landscape)
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
 	_grass_roll_seed = world_seed + GRASS_ROLL_SEED_OFFSET
@@ -489,21 +487,18 @@ func _rolled_type_at(
 ) -> StringName:
 	if terrain != Tile.Terrain.GRASS:
 		return &""
-	var forest_noise := _forest_noise.get_noise_2dv(Vector2(world_pos))
-	var tree_chance := CLEARING_TREE_CHANCE
-	var bush_chance := CLEARING_BUSH_CHANCE
-	if forest_noise > FOREST_THRESHOLD:
-		var depth := clampf(
-			(forest_noise - FOREST_THRESHOLD) / (FOREST_CORE_THRESHOLD - FOREST_THRESHOLD), 0.0, 1.0
+	var wood_depth := _wood_depth_at(world_pos)
+	var is_wood := wood_depth > 0.0
+	if is_wood and _woods.has_tree_at(world_pos, wood_depth):
+		return _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
+	var bush_chance := OPEN_BUSH_CHANCE
+	if is_wood and not _woods.is_clearing_at(world_pos):
+		bush_chance = lerpf(
+			WOOD_EDGE_BUSH_CHANCE, WOOD_CORE_BUSH_CHANCE, clampf(wood_depth, 0.0, 1.0)
 		)
-		tree_chance = lerpf(FOREST_EDGE_TREE_CHANCE, FOREST_CORE_TREE_CHANCE, depth)
-		bush_chance = lerpf(FOREST_EDGE_BUSH_CHANCE, FOREST_CORE_BUSH_CHANCE, depth)
 	# Hashes of the position instead of a shared RNG, so the rolls do not depend on the
 	# order chunks are generated in.
 	var roll := _roll(world_pos, _object_roll_seed)
-	if roll < tree_chance:
-		return _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
-	roll -= tree_chance
 	if roll < bush_chance:
 		return _bush_type(_roll(world_pos, _variety_roll_seed))
 	roll -= bush_chance
@@ -515,13 +510,25 @@ func _rolled_type_at(
 		and (roll < DEAD_TREE_CHANCE or _is_near_wetland(world_pos))
 	):
 		return WorldObjectTypes.DEAD_TREE
-	var is_tall_grass := forest_noise < MEADOW_BELOW and _is_tall_grass_at(world_pos)
+	var is_tall_grass := _woods.noise_at(world_pos) < MEADOW_BELOW and _is_tall_grass_at(world_pos)
 	return WorldObjectTypes.TALL_GRASS if is_tall_grass else &""
 
 
-## Whether a tile lies in a forest, from its edge to its core: where the trees stand close.
+## Whether a tile lies in a wood, from its edge to its core: where the trees stand close.
 func is_forest(world_pos: Vector2i) -> bool:
-	return _forest_noise.get_noise_2dv(Vector2(world_pos)) > FOREST_THRESHOLD
+	return _wood_depth_at(world_pos) > 0.0
+
+
+## How far into a wood a tile lies (see WoodLayout `depth_at`): negative outside one. There is none
+## in the marsh, which is treeless but for what stands by wetland; the marsh edge is pushed about
+## by the wood's warp, so it is no straight line along the river.
+func _wood_depth_at(world_pos: Vector2i) -> float:
+	var warped := _woods.warped(world_pos)
+	var depth := _woods.depth_at(warped)
+	# The marsh is asked second: most tiles are in no wood, and its river distance costs noise calls.
+	if depth > 0.0 and _is_marsh(warped, _river_distance(warped)):
+		return -1.0
+	return depth
 
 
 func _is_tall_grass_at(world_pos: Vector2i) -> bool:
@@ -563,13 +570,18 @@ func _is_wetland_edge(world_pos: Vector2i) -> bool:
 
 
 ## Whether a tile is a spot with clay in it (see CLAY_REACH): a pure function of the seed and
-## the position. Spots are only where no object is generated, so the shovel can reach them.
+## the position. Spots are only where no object is generated, nor the right half of a boulder, so
+## the shovel can reach them.
 func is_clay_spot(world_pos: Vector2i) -> bool:
 	if (
 		_clay_noise.get_noise_2dv(Vector2(world_pos)) <= CLAY_CLUSTER_ABOVE
 		or _roll(world_pos, _clay_roll_seed) >= CLAY_SPOT_CHANCE
 		or terrain_at(world_pos) != Tile.Terrain.GRASS
 		or object_type_at(world_pos, Tile.Terrain.GRASS) != &""
+		or (
+			object_type_at(world_pos + Vector2i.LEFT, terrain_at(world_pos + Vector2i.LEFT))
+			== WorldObjectTypes.BOULDER
+		)
 	):
 		return false
 	# Water and wetland patches are wide, so probing the 8 directions finds them.
@@ -626,6 +638,13 @@ func _bush_type(variety_roll: float) -> StringName:
 
 func _is_near_wetland(world_pos: Vector2i) -> bool:
 	for direction in WETLAND_PROBE_DIRECTIONS:
-		if terrain_at(world_pos + direction * WETLAND_REACH) == Tile.Terrain.WETLAND:
+		var probe := world_pos + direction * WETLAND_REACH
+		# The probes of the many trees of a wood mostly find no wetland, so the cheap question
+		# comes first: whether the first two octaves of the wetland noise leave room for it to pass
+		# WETLAND_THRESHOLD.
+		var may_be_wet := (
+			_wetland_first_octaves_noise.get_noise_2d(probe.x, probe.y) > WETLAND_FIRST_OCTAVES_MIN
+		)
+		if may_be_wet and terrain_at(probe) == Tile.Terrain.WETLAND:
 			return true
 	return false

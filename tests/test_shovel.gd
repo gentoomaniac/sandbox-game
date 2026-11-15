@@ -92,6 +92,22 @@ func test_clay_spots_are_grass_with_water_or_wetland_within_reach() -> void:
 		assert_true(_is_wet_within_reach(spot), "water near %s" % spot)
 
 
+func test_the_tile_under_a_boulder_is_no_clay_spot() -> void:
+	var boulders := 0
+	for y in range(SEARCH_AREA.position.y, SEARCH_AREA.end.y):
+		for x in range(SEARCH_AREA.position.x, SEARCH_AREA.end.x):
+			var pos := Vector2i(x, y)
+			if (
+				_generator.object_type_at(pos, _generator.terrain_at(pos))
+				== WorldObjectTypes.BOULDER
+			):
+				boulders += 1
+				assert_false(
+					_generator.is_clay_spot(pos + Vector2i.RIGHT), "under the boulder at %s" % pos
+				)
+	assert_gt(boulders, 0, "boulders in the search area")
+
+
 ## The first row of water in a column: the river runs west to east.
 func _river_row(x: int) -> int:
 	for y in range(SEARCH_AREA.position.y, SEARCH_AREA.end.y):

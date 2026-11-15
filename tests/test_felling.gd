@@ -3,6 +3,8 @@ extends ResourceCase
 ## stumps in test_stump_rot.gd, seeds in test_tree_seeds.gd.
 
 const OAK_HITS := 5
+## A chunk of the seed with a wood on it: the camp is in the bare open land.
+const WOOD_CHUNK := Vector2i(2, -2)
 
 # --- Hits ---
 
@@ -133,6 +135,7 @@ func test_damage_outlives_the_chunk_and_the_save() -> void:
 
 
 func test_a_generated_tree_keeps_its_damage_when_its_chunk_reloads() -> void:
+	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(WOOD_CHUNK))
 	var generated: WorldObject = null
 	for coords in _world.loaded_chunk_coords():
 		for object in _world.chunk_at(coords).objects():

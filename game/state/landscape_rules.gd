@@ -8,6 +8,7 @@ const DEFAULT_PATH := "res://data/landscape.cfg"
 
 const REQUIRED_KEYS := {
 	"marsh": ["reach"],
+	"woods": ["above", "core_above", "warp", "clearing_above", "edge_trees", "core_trees"],
 	"dykes": ["stretch_above"],
 	"coast": ["line_x", "wander", "salt_marsh_width", "salt_marsh_wander", "flats_width"],
 	"tideways": ["spacing", "meander", "widening", "widest"],
@@ -47,6 +48,8 @@ func problems() -> Array[String]:
 				found.append("[%s] no %s" % [section, key])
 	if not found.is_empty():
 		return found
+	if value("woods", "core_above") <= value("woods", "above"):
+		found.append("[woods] core_above must be more than above")
 	var tideway_band := 2.0 * value("tideways", "meander") + value("tideways", "widest")
 	if tideway_band >= value("tideways", "spacing"):
 		found.append("[tideways] twice the meander and the widest must be less than the spacing")
