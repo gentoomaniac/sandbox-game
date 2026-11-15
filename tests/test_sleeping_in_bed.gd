@@ -58,6 +58,7 @@ func test_the_save_of_a_sleep_is_a_background_save_of_the_new_day_under_the_blac
 
 	_main._blackout.try_sleep()
 	await wait_until(func() -> bool: return not was_black_at_start.is_empty(), SLEEP_SECONDS)
+	await _press_a_key_to_wake()
 	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SLEEP_SECONDS)
 
 	assert_eq(was_black_at_start, [true] as Array[bool], "one save, begun on the black")
@@ -65,6 +66,15 @@ func test_the_save_of_a_sleep_is_a_background_save_of_the_new_day_under_the_blac
 	assert_true(saves.last_succeeded)
 	assert_eq(state.clock.day, day_before + 1)
 	assert_eq(SaveFile.read(_main._options.save_path).clock.day, day_before + 1)
+
+
+## The sleep ends on a message on the black that waits for a key: waits for it, then presses one.
+func _press_a_key_to_wake() -> void:
+	await wait_until(func() -> bool: return _main._fade_screen.is_waiting_for_key(), SLEEP_SECONDS)
+	var key := InputEventKey.new()
+	key.pressed = true
+	key.keycode = KEY_SPACE
+	_main._fade_screen._input(key)
 
 
 ## Puts the player in the bed they start with, at ten at night.
@@ -82,6 +92,26 @@ func _wait_until_world_is_held() -> void:
 			return
 		await get_tree().process_frame
 	fail_test("the world was not held for the sleep")
+
+
+func test_the_sleep_ends_on_a_message_that_waits_for_a_key() -> void:
+	var state: GameState = _main._state
+	_go_to_bed()
+	var day_before := state.clock.day
+	_main._blackout.try_sleep()
+	await wait_until(func() -> bool: return _main._fade_screen.is_waiting_for_key(), SLEEP_SECONDS)
+
+	assert_eq(state.clock.day, day_before + 1, "the new day is made up for first")
+	assert_false(_main._blackout.is_making_up_time)
+	assert_true(_main._blackout.is_in_transition, "the player is still held")
+	assert_true(_main._fade_screen.is_black())
+	await wait_seconds(FadeScreen.TEXT_FADE_SECONDS * 3)
+	assert_true(_main._fade_screen.is_waiting_for_key(), "no timer goes on by itself")
+	assert_true(_main._blackout.is_in_transition)
+
+	await _press_a_key_to_wake()
+	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SLEEP_SECONDS)
+	assert_false(_main._fade_screen.is_black())
 
 
 func test_quitting_in_the_middle_of_the_sleep_waits_and_saves_the_whole_morning() -> void:
@@ -116,6 +146,7 @@ func test_the_chunks_stay_as_they_are_over_the_frames_of_a_sleep() -> void:
 	# The camera would stream chunks round a far focus.
 	_main._residency.set_focus(state.player.tile() + Vector2i(320, 0))
 	_main._residency.update()
+	await _press_a_key_to_wake()
 	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SLEEP_SECONDS)
 
 	assert_eq(could_process_at_skip, [false] as Array[bool])

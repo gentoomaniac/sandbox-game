@@ -80,7 +80,8 @@ extends RefCounted
 ##   --sleep                  go to bed as soon as the world is drawn (a new game starts beside
 ##                            the sleeping bag; with --inside, in the room's first bed). With
 ##                            --time=00:59 and a --screenshot-delay of a second or more the
-##                            player stays up too late instead.
+##                            player stays up too late instead. The sleep ends on a message that
+##                            waits for a key.
 ##
 ## Screens and the console
 ##   --inventory              open the bag at start

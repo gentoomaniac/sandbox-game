@@ -1,15 +1,14 @@
 class_name FadeScreen
 extends CanvasLayer
 ## The black screen between two moments of the game. It fades out and back in around doors and
-## sleep, and can show text on the black: a short note for a moment (the new day after
-## sleeping), or a message that waits for a key or a click (after passing out).
+## sleep, and can show a message on the black that waits for a key or a click (the new day after
+## sleeping, and after passing out).
 
 ## A key or a click went on from the message.
 signal continued
 
 const FADE_SECONDS := 0.5
 const TEXT_FADE_SECONDS := 0.6
-const NOTE_SECONDS := 1.2
 const TEXT_WIDTH := 320.0
 const HINT := "Press any key to go on"
 const HINT_COLOR := Color(1, 1, 1, 0.6)
@@ -62,20 +61,10 @@ func is_black() -> bool:
 	return _black.color.a >= 1.0
 
 
-## Shows `text` on the black for a moment.
-func show_note(text: String) -> void:
-	_text.text = text
-	_hint.hide()
-	await _fade(_lines, "modulate:a", 1.0, TEXT_FADE_SECONDS)
-	await get_tree().create_timer(NOTE_SECONDS).timeout
-	await _fade(_lines, "modulate:a", 0.0, TEXT_FADE_SECONDS)
-
-
 ## Shows `text` on the black until a key or a click (see `continued`). What is pressed while
 ## the text is still fading in doesn't count, so a key that was being hammered doesn't skip it.
 func show_message(text: String) -> void:
 	_text.text = text
-	_hint.show()
 	await _fade(_lines, "modulate:a", 1.0, TEXT_FADE_SECONDS)
 	_is_waiting = true
 	await continued

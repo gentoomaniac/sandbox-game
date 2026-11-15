@@ -60,8 +60,9 @@ The bag, the equipment, energy and sleep.
 
 ## Sleeping and passing out
 
-- Press E next to a bed. The screen fades, shows the new day, and wakes you at 06:30 the next
-  morning (the same morning if it is already past midnight).
+- Press E next to a bed. The screen fades and shows the new day on the black, until you press a key
+  or click; then you wake at 06:30 the next morning (the same morning if it is already past
+  midnight).
 - A bed fills your energy and health. The last bed you slept in is your home.
 - After sleeping you wake lying in the bed (or on the camp's bedroll) and get up with your first
   step. Beds don't block walking.

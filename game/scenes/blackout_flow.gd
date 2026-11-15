@@ -26,8 +26,7 @@ var show_current_map: Callable
 var show_clock: Callable
 
 
-## Fades to black, runs `change` while the screen is black (it may await), and fades back in. A
-## `change` that returns text has it shown on the black for a moment first.
+## Fades to black, runs `change` while the screen is black (it may await), and fades back in.
 func fade_through(change: Callable) -> void:
 	is_in_transition = true
 	# No command runs during a fade: a teleport would meet a door half way through. No window or
@@ -36,9 +35,7 @@ func fade_through(change: Callable) -> void:
 	Modal.close_open()
 	get_viewport().gui_cancel_drag()
 	await fade_screen.fade_out()
-	var note: Variant = await change.call()
-	if note is String:
-		await fade_screen.show_note(note)
+	await change.call()
 	await fade_screen.fade_in()
 	is_in_transition = false
 
@@ -71,22 +68,23 @@ func pass_out() -> void:
 	is_in_transition = false
 
 
-## Sleeps in the bed in reach until the morning, and saves: the new day shows on the black for a
-## moment. As when passing out, the sleep takes some frames and the save one, under the black
-## screen.
+## Sleeps in the bed in reach until the morning, and saves: the new day shows on the black until a
+## key or a click. As when passing out, the sleep takes some frames and the save one, under the
+## black screen. The world goes on meanwhile: the wait is time for what is made ready in the
+## background, such as the villagers' plans for the day.
 func try_sleep() -> void:
 	var bed := state.bed_in_reach()
 	if bed == null:
 		return
 	fade_through(
-		func() -> String:
+		func() -> void:
 			_hold_world(true)
 			await state.sleep_in_over_frames(bed, _next_frame)
 			_hold_world(false)
 			show_clock.call()
 			await get_tree().process_frame
 			await saves.save_without_stalling(state, save_path, SaveHeader.Kind.SLEEP)
-			return state.clock.date_text()
+			await fade_screen.show_message(state.clock.date_text())
 	)
 
 
