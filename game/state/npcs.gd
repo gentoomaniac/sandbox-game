@@ -201,10 +201,10 @@ func walk_to_door(npc: Npc, building: Building, map: GameMap) -> void:
 
 ## Puts a villager whose own chunk is not loaded on `tile`, which ends its trip: it is there when
 ## the chunk loads. Returns false, and does nothing, for one in a loaded chunk or for a `tile` in
-## one: the player may see it, and it walks (`walk_to`). Except in a skip (`is_skipping`), which
-## nobody watches. It does not move the anchor (the routine
-## does) and does not ask whether the tile can be stood on: a villager on a building tile or in the
-## water is put on the nearest free one when its chunk loads (`_step_off_buildings`).
+## one: the player may see it, and it walks (`walk_to`), except in a skip (`is_skipping`), which
+## nobody watches. It does not move the anchor (the routine does) and does not ask whether the tile
+## can be stood on: a villager on a building tile or in the water is put on the nearest free one
+## when its chunk loads (`_step_off_buildings`).
 func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
 	if not is_skipping and (_is_in_loaded_chunk(npc, map) or _is_chunk_of_tile_loaded(tile, map)):
 		return false
