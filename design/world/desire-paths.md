@@ -8,7 +8,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 ## What wears
 
 - Only grass (ordinary, lush, dry) and the floodplain wear. Fields, wetland, water, buildings
-  (their doors too) and the insides of houses don't. Tilling a path clears its wear.
+  (their doors too), the insides of houses and ground with a way laid on it (below) don't. Tilling a path clears its wear.
 - Every tile the player steps onto outdoors takes a step (not with noclip). A farm animal or a
   villager takes half a step onto each tile it walks onto, loaded or not (far walkers wear by the
   `WEARS` bit of their `TravelMask`, `World.wear_unloaded`).
@@ -41,7 +41,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 ## Mud
 
 - Worn ground (trodden grass and paths) turns to mud in the rain and dries out again, so that a
-  laid road, which does not wear and does not get muddy, is worth building (#62).
+  laid road, which does not wear and does not get muddy, is worth building (see Ways).
 - **When** (`[mud]` of `data/paths.cfg`): the ground is muddy when the rain of each of the last
   `window_hours` (10) hours, added up (an hour of downpour is 1, of drizzle 0.1), is at least
   `soaked_by` (1.5). A shower of an hour or two makes no mud, a few hours of steady rain do, and it
@@ -73,6 +73,16 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   later, the place is the cost of a lane in `TravelView.cost_of` (rain flag in the snapshot) for
   routes, and a speed factor in `Npcs._walk` for the live ones only, accepting that the skip
   ignores it.
+
+## Ways
+
+The plank walk and the stone path the player lays (#62, `design/building/ways.md`) are the fix for
+worn ground and mud. A tile with one on it never wears (`World.wear_tile`, `set_wear_days` and so
+the walk of anyone else skip it: `GameMap.is_way_at`), so it is never muddy; laying one clears the
+wear beneath and draws the tile again, and the grass is unworn when it is taken up. The player
+walks a way at `[way] walk_factor` (1.1) of their speed, in the rain and over flooded mud too
+(`GameState.walk_speed_factor`: a way comes before mud and wading). Villagers prefer ways to
+open ground (see `design/tech/pathfinding.md`).
 
 ## Saved
 

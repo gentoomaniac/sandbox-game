@@ -76,6 +76,12 @@ func is_walkable(pos: Vector2i) -> bool:
 	return object == null or not object.blocks_walking()
 
 
+## Whether a way (a plank walk or a stone path the player laid) lies on the tile.
+func is_way_at(pos: Vector2i) -> bool:
+	var object := object_at(pos)
+	return object != null and object.type_data().get("way", false)
+
+
 ## Whether a farm animal can walk on a tile: as anyone can (see `is_walkable`), but not onto what
 ## stops animals (WorldObjectTypes `stops_animals`). The animals ask it at every step, so it looks
 ## at the object once.

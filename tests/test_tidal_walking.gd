@@ -174,3 +174,10 @@ func test_nothing_is_built_planted_or_tilled_on_mud() -> void:
 	HotbarHold.hold(_state.player.inventory, ItemTypes.RUSTY_IRON_HOE)
 	assert_eq(_state.use_facing_tile(), ToolUse.Use.NOTHING)
 	assert_eq(_world.tile_at(_mud_tile).terrain, Tile.Terrain.MUD)
+
+
+func test_a_plank_walk_over_flooded_mud_is_walked_dry_shod_and_a_bit_faster() -> void:
+	_world.add_object(WorldObject.new(WorldObjectTypes.PLANK_WALK, _mud_tile))
+	assert_true(_world.is_walkable(_mud_tile), "at high water")
+	_stand_on(_mud_tile)
+	assert_eq(_state.walk_speed_factor(), PathRules.default_rules().way_walk_factor())

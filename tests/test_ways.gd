@@ -114,3 +114,50 @@ func test_ways_are_kept_through_a_save() -> void:
 	for type in WAYS.values():
 		_lay(type)
 		assert_eq(_through_save().world.object_at(_tile).type, type)
+
+
+func test_a_way_is_never_worn_by_steps() -> void:
+	for type in WAYS.values():
+		_lay(type)
+		_world.wear_tile(_tile, 100.0)
+		_world.end_wear_day()
+		assert_eq(_world.wear_stage(_tile), PathRules.Stage.UNWORN, str(type))
+		_world.set_wear_days(_tile, PathRules.default_rules().path_after_days())
+		assert_eq(_world.wear_stage(_tile), PathRules.Stage.UNWORN, str(type))
+
+
+func test_grass_next_to_a_way_still_wears() -> void:
+	_lay(WorldObjectTypes.STONE_PATH)
+	_world.wear_tile(_tile + Vector2i.LEFT, 100.0)
+	_world.end_wear_day()
+	assert_eq(_world.wear_stage(_tile + Vector2i.LEFT), PathRules.Stage.UNWORN, "one day")
+	_world.set_wear_days(_tile + Vector2i.LEFT, PathRules.default_rules().path_after_days())
+	assert_eq(_world.wear_stage(_tile + Vector2i.LEFT), PathRules.Stage.PATH)
+
+
+func test_laying_a_way_clears_the_wear_beneath_and_draws_the_tile_again() -> void:
+	_world.set_wear_days(_tile, PathRules.default_rules().path_after_days())
+	_world.wear_tile(_tile, 3.0)
+	watch_signals(_world)
+	_lay(WorldObjectTypes.PLANK_WALK)
+	assert_signal_emitted_with_parameters(_world, "tile_changed", [_tile])
+	assert_eq(_world.wear_stage(_tile), PathRules.Stage.UNWORN)
+	assert_true(_world.wear_steps().is_empty())
+	_world.remove_object(_tile)
+	assert_eq(_world.wear_stage(_tile), PathRules.Stage.UNWORN, "grass again once taken up")
+
+
+func test_a_way_is_never_mud() -> void:
+	_lay(WorldObjectTypes.STONE_PATH)
+	_world.set_muddy(true)
+	assert_false(_world.is_muddy_at(_tile))
+
+
+func test_the_player_walks_a_way_a_bit_faster_also_in_the_rain() -> void:
+	var rules := PathRules.default_rules()
+	_world.set_muddy(true)
+	for type in WAYS.values():
+		_lay(type)
+		_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
+		assert_eq(_state.walk_speed_factor(), rules.way_walk_factor(), str(type))
+	assert_gt(rules.way_walk_factor(), 1.0)

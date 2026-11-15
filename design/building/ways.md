@@ -23,3 +23,7 @@ can be fixed. Made and placed a piece a tile like the fence and wall pieces
   player's feet: it has ground under it.
 - **Art:** both in both art sets, atlas rows 60 and 61 (`tools/art/ways.py`): full-tile pieces with
   no connection masks, 2 variants of the planks and 3 of the cobbles, in every season's look.
+- **They never wear and never turn to mud, and are walked a little faster** (chosen: 1.1, `[way]`
+  of data/paths.cfg, a reward for the work, not much). Laying one clears the wear beneath. How is in
+  [desire-paths.md](../world/desire-paths.md#ways). A way over flooded mud (the plank walk) is walked
+  dry-shod, at the same speed, like a jetty.

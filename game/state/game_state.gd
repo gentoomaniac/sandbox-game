@@ -296,8 +296,9 @@ func is_door_ahead() -> bool:
 
 
 ## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
-## a debuff allow, and mud, or wading in flooded tidal mud, slows on top of that. On horseback it
-## is the horse's pace, which nothing slows.
+## a debuff allow, and mud, or wading in flooded tidal mud, slows on top of that, while a way
+## (a plank walk, a stone path) speeds it up. On horseback it is the horse's pace, which nothing
+## slows.
 func walk_speed_factor() -> float:
 	if player.horse != null:
 		var pace := "ride_walk_factor"
@@ -311,11 +312,15 @@ func walk_speed_factor() -> float:
 		factor = minf(factor, energy_rules.debuff_walk_factor())
 	if not is_inside():
 		var tile := player.tile()
-		# Worn ground is never tidal mud, so only one of the two can apply.
-		if world.is_muddy_at(tile):
-			factor *= PathRules.default_rules().walk_factor()
+		var path_rules := PathRules.default_rules()
+		# A way is walked dry-shod over mud and the flats. Worn ground is never tidal mud, so
+		# only one of the other two can apply.
+		if world.is_way_at(tile):
+			factor *= path_rules.way_walk_factor()
+		elif world.is_muddy_at(tile):
+			factor *= path_rules.walk_factor()
 		elif world.is_flooded(tile):
-			factor *= PathRules.default_rules().wading_walk_factor()
+			factor *= path_rules.wading_walk_factor()
 	return factor
 
 

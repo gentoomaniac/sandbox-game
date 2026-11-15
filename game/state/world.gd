@@ -417,6 +417,11 @@ func add_object(object: WorldObject) -> void:
 	_edit_object(object.pos, object)
 	for tile in object.tiles():
 		_tend_soil(tile)
+		if is_way_at(tile):
+			# What was worn beneath is not any more.
+			_steps_today.erase(tile)
+			if _wear_days.erase(tile):
+				tile_changed.emit(tile)
 		objects_changed.emit(tile)
 
 
@@ -731,11 +736,11 @@ func recover_clay_spots() -> void:
 
 
 ## Counts `steps` onto a tile (one each time the player steps onto it). Only grass and the
-## floodplain wear (see `Tile.wears`), and not under a building, whose door is walked on too. The
-## tile only looks worn after the day (see `end_wear_day`).
+## floodplain wear (see `Tile.wears`), and not under a building, whose door is walked on too, or a
+## way. The tile only looks worn after the day (see `end_wear_day`).
 func wear_tile(world_pos: Vector2i, steps := 1.0) -> void:
 	var tile := tile_at(world_pos)
-	if tile == null or not tile.wears() or building_at(world_pos) != null:
+	if tile == null or not tile.wears() or building_at(world_pos) != null or is_way_at(world_pos):
 		return
 	_steps_today[world_pos] = _steps_today.get(world_pos, 0.0) + steps
 
@@ -751,7 +756,7 @@ func wear_unloaded(world_pos: Vector2i, steps: float) -> void:
 ## a row (for the debug views, which make worn ground). The same ground wears as with `wear_tile`.
 func set_wear_days(world_pos: Vector2i, days: int) -> void:
 	var tile := tile_at(world_pos)
-	if tile == null or not tile.wears() or building_at(world_pos) != null:
+	if tile == null or not tile.wears() or building_at(world_pos) != null or is_way_at(world_pos):
 		return
 	var stage := wear_stage(world_pos)
 	if days > 0:

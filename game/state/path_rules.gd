@@ -1,8 +1,9 @@
 class_name PathRules
 extends RefCounted
-## How grass wears to a desire path and grows back, and what the rain makes of worn ground, read
-## from data/paths.cfg (see there for what each number means). `from_file` reports every key that
-## is missing or out of range, and `is_valid` says whether any was.
+## How grass wears to a desire path and grows back, what the rain makes of worn ground and how fast
+## a laid way is walked, read from data/paths.cfg (see there for what each number means).
+## `from_file` reports every key that is missing or out of range, and `is_valid` says whether any
+## was.
 
 ## How worn a tile looks, by its days of wear (see `stage_of`).
 enum Stage { UNWORN, TRODDEN, PATH }
@@ -22,6 +23,7 @@ const REQUIRED_KEYS := {
 	],
 	"mud": ["soaked_by", "window_hours", "walk_factor"],
 	"wading": ["walk_factor"],
+	"way": ["walk_factor"],
 }
 
 static var _default: PathRules
@@ -79,6 +81,8 @@ func problems() -> Array[String]:
 		found.append("[mud] walk_factor must be above 0 and at most 1")
 	if not (0.0 < wading_walk_factor() and wading_walk_factor() <= 1.0):
 		found.append("[wading] walk_factor must be above 0 and at most 1")
+	if way_walk_factor() <= 0.0:
+		found.append("[way] walk_factor must be above 0")
 	return found
 
 
@@ -146,6 +150,11 @@ func walk_factor() -> float:
 ## The fraction of their speed that the player walks at in flooded tidal mud.
 func wading_walk_factor() -> float:
 	return _value("wading", "walk_factor")
+
+
+## The fraction of their speed that the player walks at on a way (a plank walk or a stone path).
+func way_walk_factor() -> float:
+	return _value("way", "walk_factor")
 
 
 func _value(section: String, key: String) -> float:
