@@ -26,6 +26,14 @@ func test_a_villager_in_the_radius_with_no_plan_is_asked_for_the_rest_of_today()
 	assert_eq(_chat.quiet_flags, [true] as Array[bool])
 
 
+func test_with_day_plans_switched_off_a_newcomer_is_not_asked() -> void:
+	var npc := _resident("hinrich")
+	_settings.profiles.set_uses_model_for(&"day_plans", false)
+	await _look_next_minute()
+	assert_eq(_chat.requests.size(), 0)
+	assert_false(npc.asked_plans.has(DAY))
+
+
 func test_a_villager_is_asked_once_for_the_day() -> void:
 	_resident("hinrich")
 	await _look_next_minute()

@@ -10,8 +10,9 @@ extends Node
 ## the judge of the stories (see StoryJudging), and sets the plan that comes back
 ## (ActivityUpkeep `set_plan`), which takes over from that minute. The villager has the default
 ## day until then. No new query starts while a chat reply is awaited (one already out is not
-## cancelled, so a reply may wait behind it on a one-slot model), and without a model nothing is
-## asked.
+## cancelled, so a reply may wait behind it on a one-slot model), and without a model, or with the
+## profile's day plans switched off (see LanguageModelProfiles `uses_model_for`), nothing is asked
+## but by the console's `replan`.
 ##
 ## An answer that does not come in time, with an error, or that can't be used is no plan: the day
 ## stays the default day and the villager is not asked for it again (Npc `asked_plans`).
@@ -64,7 +65,7 @@ func _process(delta: float) -> void:
 func queue_evening() -> void:
 	var clock := _state.clock
 	var is_evening := clock.minute_of_day >= int(rules.value("plan", "plan_hour")) * 60
-	if not is_evening or clock.day == _evening_day or not _dialogue.has_model():
+	if not is_evening or clock.day == _evening_day or not _dialogue.has_model_for(&"day_plans"):
 		return
 	_evening_day = clock.day
 	var tomorrow := clock.day + 1
@@ -78,7 +79,7 @@ func queue_evening() -> void:
 func queue_newcomers() -> void:
 	var clock := _state.clock
 	var minute := clock.total_minutes()
-	if minute == _newcomers_minute or not _dialogue.has_model():
+	if minute == _newcomers_minute or not _dialogue.has_model_for(&"day_plans"):
 		return
 	_newcomers_minute = minute
 	if clock.day != _newcomers_day:
@@ -104,7 +105,10 @@ func replan(npc: Npc) -> String:
 	_forget(npc)
 	npc.asked_plans.erase(day)
 	_enqueue(npc, day, Reason.CONSOLE)
-	return "Asking the model for the rest of the day of %s" % npc.name
+	var told := "Asking the model for the rest of the day of %s" % npc.name
+	if not _dialogue.has_model_for(&"day_plans"):
+		told += " (day plans are switched off in the profile: asked anyway, as a test)"
+	return told
 
 
 ## Asks the model for every query of the queue, one after the other; a call while the queue is

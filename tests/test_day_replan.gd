@@ -45,6 +45,20 @@ func test_replan_without_a_model_or_a_house_says_so() -> void:
 	assert_eq(_chat.requests.size(), 0)
 
 
+func test_replan_asks_anyway_with_day_plans_switched_off_and_says_so() -> void:
+	var npc := _resident("hinrich")
+	_settings.profiles.set_uses_model_for(&"day_plans", false)
+	assert_eq(
+		_planner.replan(npc),
+		(
+			"Asking the model for the rest of the day of Hinrich Boysen"
+			+ " (day plans are switched off in the profile: asked anyway, as a test)"
+		)
+	)
+	await _planner.ask_queue()
+	assert_eq(_chat.requests.size(), 1)
+
+
 func test_replan_asks_again_after_a_failure() -> void:
 	var npc := _resident("hinrich")
 	_chat.answers = ["no idea", REST_OF_DAY_ANSWER]

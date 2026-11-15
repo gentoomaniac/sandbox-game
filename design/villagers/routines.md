@@ -449,7 +449,8 @@ fixed=true
   `plan_radius_tiles` (a new `[plan]` section in `data/npc_talk.cfg`; 120, tuned in play), nearest
   first. The hand-written eight have no priority: far from the player they have the default day
   like anyone else. Villagers with no house, and everyone when no model is set
-  (`NpcDialogue.has_model`), have the default day and no query is made, with no notice: the
+  (`NpcDialogue.has_model`) or the profile's day plans switch is off (`has_model_for`; Settings,
+  Language model), have the default day and no query is made, with no notice: the
   default day is the game without a model.
 - **In the evening.** At `plan_hour` (18:00) the planner queues one query for each villager in
   the radius with no plan for tomorrow yet, nearest first, at most `max_per_night` (12). It has six
@@ -682,7 +683,8 @@ day is never saved: it is made again, the same. A trip and the current entry are
 default day beside it. A villager with no house: "no house: keeps near its anchor (12.5, 8.5),
 default day". A blocked trip: "blocked since 06:12: no way for now". A late or failed plan:
 "default day: the model was late" or "... answered with an error". `replan <villager>` queues a
-query for the rest of today at once and says "asking the model" or "no model set: default day".
+query for the rest of today at once and says "asking the model" (adding that day plans are switched off in the profile, asked anyway: it
+is a test tool) or "no model set: default day".
 `COMMANDS` gets both with the `villager` argument, as `goto`, and their help texts.
 
 ### Cost

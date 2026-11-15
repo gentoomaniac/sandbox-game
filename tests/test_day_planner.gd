@@ -111,6 +111,14 @@ func test_without_a_model_nothing_is_asked() -> void:
 	assert_eq(_chat.requests.size(), 0)
 
 
+func test_with_day_plans_switched_off_the_evening_asks_nothing() -> void:
+	var npc := _resident("hinrich")
+	_settings.profiles.set_uses_model_for(&"day_plans", false)
+	await _plan_evening()
+	assert_eq(_chat.requests.size(), 0)
+	assert_false(npc.asked_plans.has(DAY + 1), "so that it is asked once the switch is on")
+
+
 func test_the_evening_is_queued_once_a_day() -> void:
 	_resident("hinrich")
 	await _plan_evening()
