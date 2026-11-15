@@ -53,16 +53,19 @@ func test_a_chunk_outside_the_world_is_left_out() -> void:
 	assert_null(_builder.texture_of(outside))
 
 
-func test_an_update_within_a_spent_budget_paints_one_chunk() -> void:
+func test_an_update_with_no_time_left_paints_a_row_and_goes_on_next_time() -> void:
 	var chunks := _state.world.loaded_chunk_coords().slice(0, 2)
 	assert_eq(chunks.size(), 2)
 
 	var is_done := _builder.update(chunks, 0)
 
-	assert_false(is_done, "one chunk is left")
-	assert_eq(_builder.built_count(), 1)
-	assert_true(_builder.update(chunks, 0))
+	assert_false(is_done)
+	assert_eq(_builder.built_count(), 0, "a row of a chunk is not a chunk")
+	var calls := 1
+	while not _builder.update(chunks, 0) and calls < 1000:
+		calls += 1
 	assert_eq(_builder.built_count(), 2)
+	assert_gte(calls, Chunk.CHUNK_SIZE, "about a call to a row")
 
 
 ## A tile of a loaded chunk that is explored, or is not.

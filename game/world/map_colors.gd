@@ -81,12 +81,21 @@ static func ground_of(world_seed: int, chunk: Chunk, local: Vector2i) -> Color:
 	return FORD if is_ford else TERRAIN_COLORS.get(terrain, UNKNOWN)
 
 
-## The picture of a chunk for the world map: CHUNK_SIZE pixels square, a pixel a tile, in RGBA8. The
-## map scales it up, so a tile is a crisp block. The chunk need not be loaded in `world`.
+## A new, empty picture of a chunk for the world map: CHUNK_SIZE pixels square, a pixel a tile, in
+## RGBA8. The map scales it up, so a tile is a crisp block. `paint_row` fills it, a row at a time.
+static func new_chunk_image() -> Image:
+	return Image.create_empty(Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, false, Image.FORMAT_RGBA8)
+
+
+## Paints a row of tiles of a chunk into its picture. The chunk need not be loaded in `world`.
+static func paint_row(image: Image, world: World, chunk: Chunk, row: int) -> void:
+	for local_x in Chunk.CHUNK_SIZE:
+		image.set_pixel(local_x, row, of_tile(world, chunk, Vector2i(local_x, row)))
+
+
+## The whole picture of a chunk at once.
 static func image_of_chunk(world: World, chunk: Chunk) -> Image:
-	var image := Image.create_empty(Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, false, Image.FORMAT_RGBA8)
-	for local_y in Chunk.CHUNK_SIZE:
-		for local_x in Chunk.CHUNK_SIZE:
-			var local := Vector2i(local_x, local_y)
-			image.set_pixel(local_x, local_y, of_tile(world, chunk, local))
+	var image := new_chunk_image()
+	for row in Chunk.CHUNK_SIZE:
+		paint_row(image, world, chunk, row)
 	return image
