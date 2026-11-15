@@ -25,6 +25,9 @@ const RING_TILES := 512
 ## Chunks further than this from the focus are not drawn: half the ring, less the chunks that
 ## are drawn around the focus.
 const DRAW_RANGE_CHUNKS := 7
+## Where the snow and the thaw channels are in a texel's bytes (see GroundCover.Channels.as_color).
+const SNOW_BYTE := 1
+const MELT_BYTE := 2
 const NOISE_PATH := "res://assets/cover/ground_noise.png"
 const LEAVES_PATH := "res://assets/cover/leaf_litter.png"
 ## The snow and the frost that the object atlas gets (see object_cover.gdshaderinc).
@@ -32,6 +35,9 @@ const OBJECTS_SNOW_PATH := "res://assets/objects_snow_cover.png"
 const OBJECTS_FROST_PATH := "res://assets/objects_frost_cover.png"
 
 var texture: ImageTexture
+## Counts the changes of where snow lies (the weather's snow cover and thaw, and the channels
+## drawn), so that what is worked out from `snowed_tiles` can be kept until it changes.
+var snow_version := 0
 ## The rule the shaders follow, for the game's own questions (footsteps, flowers under snow);
 ## it has the weather that was set last. Null until a world is shown.
 var ground_cover: GroundCover
@@ -43,6 +49,8 @@ var _focus := Vector2i.ZERO
 ## The chunks that were drawn and are in range.
 var _drawn: Dictionary[Vector2i, bool] = {}
 var _is_changed := false
+var _snow_cover := 0.0
+var _thaw := 0.0
 
 
 func _init(rules := SeasonRules.default_rules()) -> void:
@@ -84,6 +92,9 @@ func show_world(world: World) -> void:
 	_image.fill(Color(0, 0, 0, 0))
 	_drawn.clear()
 	_is_changed = true
+	_snow_cover = 0.0
+	_thaw = 0.0
+	snow_version += 1
 	reset()
 
 
@@ -92,6 +103,10 @@ func set_weather(litter: float, snow_cover: float, thaw: float, frost: float) ->
 	assert(ground_cover != null, "show a world first")
 	_set_shader_weather(litter, snow_cover, thaw, frost)
 	ground_cover.set_weather(litter, snow_cover, thaw, frost)
+	if snow_cover != _snow_cover or thaw != _thaw:
+		_snow_cover = snow_cover
+		_thaw = thaw
+		snow_version += 1
 
 
 ## Moves the focus: the chunks that are out of range now are forgotten (see `draw_missing`).
@@ -100,6 +115,7 @@ func set_focus(focus: Vector2i) -> void:
 	for coords in _drawn.keys():
 		if not _is_in_range(coords):
 			_drawn.erase(coords)
+			snow_version += 1
 
 
 ## Draws a loaded chunk and the tiles around it that belong to loaded chunks, unless it is too far
@@ -119,6 +135,7 @@ func draw_chunk(coords: Vector2i) -> void:
 			_image.set_pixelv(_texel_of(tile), colours[index])
 	_drawn[coords] = true
 	_is_changed = true
+	snow_version += 1
 
 
 ## Draws the next loaded chunk that is in range of the focus chunk and not drawn yet, if any (the
@@ -148,6 +165,7 @@ func redraw_around(tile: Vector2i) -> void:
 			if _drawn.has(Chunk.world_to_chunk(around)):
 				_image.set_pixelv(_texel_of(around), ground_cover.channels_at(around).as_color())
 	_is_changed = true
+	snow_version += 1
 
 
 ## Draws a tile again (its terrain or its wear changed), if its chunk is drawn.
@@ -156,6 +174,7 @@ func redraw_tile(tile: Vector2i) -> void:
 	if _drawn.has(Chunk.world_to_chunk(tile)):
 		_image.set_pixelv(_texel_of(tile), ground_cover.channels_at(tile).as_color())
 		_is_changed = true
+		snow_version += 1
 
 
 ## Sends what was drawn to the graphics card, once however many chunks and tiles it was.
@@ -168,6 +187,25 @@ func upload() -> void:
 ## The texel of a world tile, as drawn.
 func channels_at(tile: Vector2i) -> Color:
 	return _image.get_pixelv(_texel_of(tile))
+
+
+## Where snow lies on most of the tiles of a drawn chunk now: 1 for a tile with snow, row by row,
+## as `GroundCover.is_snowed` says for each, but read from the drawn channels in one pass. Empty
+## where no snow lies at all, and for a chunk that is not drawn (out of range of the focus).
+func snowed_tiles(coords: Vector2i) -> PackedByteArray:
+	if _snow_cover <= 0.0 or not _drawn.has(coords):
+		return PackedByteArray()
+	var size := Chunk.CHUNK_SIZE
+	var corner := _texel_of(Chunk.to_world(coords, Vector2i.ZERO))
+	# The ring is a multiple of the chunk size, so a chunk is in one piece in it.
+	var texels := _image.get_region(Rect2i(corner, Vector2i(size, size))).get_data()
+	var snowed := PackedByteArray()
+	snowed.resize(size * size)
+	for index in size * size:
+		var snow_channel := texels[index * 4 + SNOW_BYTE] / GroundCover.LEVELS
+		var melt_channel := texels[index * 4 + MELT_BYTE] / GroundCover.LEVELS
+		snowed[index] = 1 if ground_cover.is_snowed_by(snow_channel, melt_channel) else 0
+	return snowed
 
 
 static func _set_shader_weather(

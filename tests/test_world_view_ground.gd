@@ -98,6 +98,29 @@ func test_snow_covers_more_of_the_ground_as_the_cover_grows_and_melts_with_the_t
 	assert_lt(ground_cover.snow_at(tile), 1.0, "a thaw takes some off")
 
 
+func test_the_snowed_tiles_of_a_chunk_are_those_the_ground_cover_says() -> void:
+	var tree_tile := _open_tile()
+	_view.world.add_object(WorldObject.new(WorldObjectTypes.OAK, tree_tile))
+	_view.show_ground_cover(WINTER, 0.6, 0.0, 0.0)
+	var snowed := _view._cover_map.snowed_tiles(RIGHT)
+	var origin := Chunk.to_world(RIGHT, Vector2i.ZERO)
+	var snowed_count := 0
+	for index in Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE:
+		var tile := origin + Vector2i(index % Chunk.CHUNK_SIZE, index / Chunk.CHUNK_SIZE)
+		assert_eq(snowed[index] == 1, _view.is_snowed_over(tile), "snow on %s" % tile)
+		snowed_count += snowed[index]
+	assert_gt(snowed_count, 0, "some lie under snow")
+	assert_lt(snowed_count, snowed.size(), "and some, under the crown, do not")
+
+
+func test_no_tile_is_snowed_while_no_snow_lies_and_a_chunk_that_is_not_drawn_has_none() -> void:
+	_view.show_ground_cover(WINTER, 0.0, 0.0, 0.0)
+	assert_true(_view._cover_map.snowed_tiles(RIGHT).is_empty())
+	_view.show_ground_cover(WINTER, 1.0, 0.0, 0.0)
+	assert_false(_view._cover_map.snowed_tiles(RIGHT).is_empty())
+	assert_true(_view._cover_map.snowed_tiles(Vector2i(5, 5)).is_empty())
+
+
 func test_footsteps_ask_the_cover_under_the_feet() -> void:
 	var tile := _open_tile()
 	_view.show_ground_cover(WINTER, 1.0, 0.0, 0.0)

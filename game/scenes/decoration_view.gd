@@ -57,11 +57,18 @@ class DecorationSpot:
 	var layer := 0
 
 
+## Where snow lies on the tiles of a chunk, as of one state of the cover map's snow.
+class ChunkSnow:
+	extends RefCounted
+	var version := -1
+	var snowed_tiles := PackedByteArray()
+
+
 ## The day the decorations are drawn for. WorldView sets it.
 var day := 0
 ## What lies on the ground, which a flower under snow is not in bloom by. WorldView sets it; with
 ## none, no snow lies.
-var ground_cover: GroundCover
+var cover_map: CoverMap
 var _world: World
 var _tileset: TerrainTileset
 var _flower_rules := FlowerRules.default_rules()
@@ -74,6 +81,9 @@ var _clay_hints := TileMapLayer.new()
 ## Where a decoration or flowers could grow, shown or not, so a new day only revisits these
 ## tiles.
 var _spots: Dictionary[Vector2i, DecorationSpot] = {}
+## Where snow lies, per chunk, read from the cover map once for every change of its snow instead
+## of worked out for each flower that is asked about.
+var _chunk_snow: Dictionary[Vector2i, ChunkSnow] = {}
 
 
 func _init(tileset: TerrainTileset) -> void:
@@ -144,6 +154,7 @@ func forget(world_pos: Vector2i) -> void:
 	_decorations.erase_cell(world_pos)
 	_clay_hints.erase_cell(world_pos)
 	_spots.erase(world_pos)
+	_chunk_snow.erase(Chunk.world_to_chunk(world_pos))
 
 
 ## Whether a flower is in bloom on a tile today and not mostly under snow (wildlife visits those).
@@ -152,7 +163,7 @@ func has_flower(world_pos: Vector2i) -> bool:
 	return (
 		spot != null
 		and spot.shown_cell.y == TerrainTileset.FLOWER_ROW
-		and (ground_cover == null or not ground_cover.is_snowed(world_pos))
+		and not _is_snowed(world_pos)
 	)
 
 
@@ -176,6 +187,24 @@ func flower_tiles_within(
 			if is_in_bloom:
 				tiles.append(Vector2i(x, y))
 	return tiles
+
+
+## Whether snow lies on most of a tile now.
+func _is_snowed(world_pos: Vector2i) -> bool:
+	if cover_map == null:
+		return false
+	var coords := Chunk.world_to_chunk(world_pos)
+	var snow: ChunkSnow = _chunk_snow.get(coords)
+	if snow == null:
+		snow = ChunkSnow.new()
+		_chunk_snow[coords] = snow
+	if snow.version != cover_map.snow_version:
+		snow.snowed_tiles = cover_map.snowed_tiles(coords)
+		snow.version = cover_map.snow_version
+	if snow.snowed_tiles.is_empty():
+		return false
+	var local := Chunk.local_pos(world_pos)
+	return snow.snowed_tiles[local.y * Chunk.CHUNK_SIZE + local.x] == 1
 
 
 ## Whether a tile is the sea's, which is drawn as water but has no lily pads.

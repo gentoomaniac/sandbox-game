@@ -213,7 +213,7 @@ func show_world(residency: ChunkResidency) -> void:
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	_cover_map.show_world(world)
-	decorations.ground_cover = _cover_map.ground_cover
+	decorations.cover_map = _cover_map
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world)

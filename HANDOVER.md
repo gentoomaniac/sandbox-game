@@ -50,9 +50,6 @@ Questions still open with the user (no task yet):
 
 - Should speech bubbles that are cut off at the left or right edge be fixed? The in-view check
   only looks at the top of the bubble.
-- The flower snow check is still slow while snow lies: about 0.7 ms per flower in view, every
-  second. Should that become a task, for example reading the snow per chunk that ground cover
-  already computes?
 - The Android plan has 10 open questions, each with a recommended default.
 - [QUESTIONS.md](QUESTIONS.md) items 25 and 26 (relationships, economy) wait for the user.
 
@@ -244,7 +241,7 @@ opinions from other models (normally the untracked `second-opinions.md`) is
 - [ ] 225 Crows in view: in autumn sow a field, crow flocks come and peck, caw now and then (volume ok?), rise together with the flock call when you approach; `spawn crows` / `killall crows`; both arts.
 - [ ] 226 Scarecrow: craft it by hand (Shift+C), put it next to a field, crows no longer settle within 5 tiles; `crows` shows its strength; in wind it sways smoothly (also as the wind changes), still when calm; take it down with the hammer or axe; save and load keep it; both arts.
 - [ ] Gossip fix (e7ce1f64): walk about a village for a minute: no stutter every 1-2 s; sleep through a night: no hitch; FPS back near 60 (if not, something on the GPU side, tell me).
-- [ ] Flower snow check fix: stand in a meadow with flowers in summer: no hitch every second; FPS back near 60. In winter with snow lying, check whether a hitch comes back (the snow check is still costly there).
+- [ ] Flower snow check fix: stand in a meadow with flowers in summer: no hitch every second; FPS back near 60. In winter with snow lying (`snow 1` in the console) no hitch every second either (#91), and after `snow 0` bees visit the flowers again.
 - [ ] Console wrap: `help` and `gossip <name>` lines wrap at the panel edge instead of being cut off; scrolling still works. Speech bubbles: round corners, crisp text.
 - [ ] README/handbook: read README.md on GitHub (pictures load, links work), click through handbook/ pages; `--free-build` debug flag makes the build ghost green.
 

@@ -141,7 +141,10 @@ Warft and an Ewer here and there.
   the season and the leaves, frost and snow over it come from the ground shader (`GroundLook`,
   `ground.gdshader`) with the weather as global shader parameters and a ring texture of what each
   tile catches (`CoverMap`, from the pure `GroundCover`), so a change of weather costs no
-  redrawing. `GroundCover` also answers the game's own questions (footsteps, flowers under snow).
+  redrawing. `GroundCover` also answers the game's own questions (footsteps, flowers under snow): the flowers
+  read where snow lies from the ring texture, per chunk (`CoverMap.snowed_tiles`), which
+  `DecorationView` keeps until the cover map's `snow_version` changes, so asking about a flower costs
+  a lookup, not a search for the crowns and lees around its tile.
 - **Tide** (`game/state/tide.gd`) says how high the water stands at a moment of the clock, and
   ports the relief of the mud from `mud.gdshader` to say which tiles the water covers (`floods`;
   tests/test_tide.gd pins it to the shader). `World.is_flooded` asks it with the world's clock, and

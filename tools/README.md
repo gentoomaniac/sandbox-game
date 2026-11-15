@@ -128,9 +128,9 @@ from 37.2 to 7.3 ms this way, task 147 the longest frame while walking from 82 t
 `frames.gd --snow=<cover>` (#91; not part of `make bench`) forces the snow cover on a summer day and
 times only the wildlife's check of the flowers in bloom round the view, which it makes every second,
 then ends: with 0.4 no tile counts as snowed, so every flower blooms and is asked about. On the
-bench save, before #91: 65 flowers, 54 ms a check with snow lying (the check searched the crowns
-and lees round every flower's tile), 0.3 ms without. Run it with the arguments of `make bench`
-plus `--snow=0.4`.
+bench save: 65 flowers, 54 ms a check with snow lying before #91 (it searched the crowns and lees
+round every flower's tile) and 0.3 ms after, as without snow. Run it with the arguments of
+`make bench` plus `--snow=0.4`.
 
 `make bench-music` times the prototype music renderer of task 169 (`music.gd`): renders of the test
 piece on their own (8 bars and a minute, 22.05 and 44.1 kHz, mono and stereo, with the memory of
