@@ -173,6 +173,10 @@ Press Shift+C for the crafting menu (C is the character window).
 - Wattle fence: made at the workbench, half a log and 2 fibre a piece, woodworking 5.
 - Fences and walls are placed tile by tile and join up. The axe takes a fence down (2 fibre back),
   the pickaxe a wall (3 stone).
+- Ways: a plank walk (workbench, 2 planks make 2 pieces, woodworking 5) and a stone path (by hand,
+  2 stone a piece, masonry 5). Lay them tile by tile on grass (planks also on mud and the salt
+  marsh, never on tilled soil or water). The axe takes up planks, the pickaxe stones, and you get
+  the piece back.
 - The menu lists what you can make with what you carry. A recipe you can't afford is greyed with
   the missing materials marked.
 - With a full bag a craft still goes ahead: what doesn't fit drops at your feet.

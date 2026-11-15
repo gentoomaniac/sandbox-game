@@ -646,12 +646,13 @@ func _rolls_seed(tree: WorldObject) -> bool:
 	return PositionHash.rolls(tree.pos, _state.clock.day, tree.type_data().get("seed_chance", 0.0))
 
 
-## Whether the player's body is on a deck (the jetty): taking it away would leave them standing
-## in the water, so neither a tool nor the hammer does.
+## Whether the player's body is on a deck over water (the jetty): taking it away would leave them
+## standing in the water, so neither a tool nor the hammer does. A way has ground under it.
 func is_standing_on(object: WorldObject) -> bool:
 	var footprint := Rect2i(object.pos, object.type_data()["footprint"])
 	return (
 		object.type_data().get("deck", false)
+		and not object.type_data().get("way", false)
 		and footprint.intersects(PlayerState.body_tiles(_state.player.position))
 	)
 

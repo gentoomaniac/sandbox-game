@@ -68,6 +68,9 @@ extends RefCounted
 ##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
 ##   whoever stands on it;
+## - way: a road the player lays on the ground, a deck of its own kind. Unlike the jetty's, its
+##   ground is under the player's feet either way, so taking one up is never held off by them
+##   standing on it;
 ## - stock_capacity, stock_kind: it holds a stock, from 0 to this many units, of water (a trough)
 ##   or of feed (a hay rack, a feeding trough), which the animals take from it and the player
 ##   refills (see ObjectStock). Its atlas row has the STOCK_LOOKS pictures of how full it is, in
@@ -118,6 +121,9 @@ const KNICK := &"knick"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
 const DYKE := &"dyke"
+## The ways the player lays (#62): a walk of planks and a path of cobbles, a piece a tile.
+const PLANK_WALK := &"plank_walk"
+const STONE_PATH := &"stone_path"
 const WILLOW := &"willow"
 const BEECH := &"beech"
 const BIRCH := &"birch"
@@ -921,7 +927,9 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 
 static func _build_types() -> Dictionary:
-	var types := _with_crops(_OTHER_TYPES.merged(WorldObjectPlants.TYPES))
+	var types := _with_crops(
+		_OTHER_TYPES.merged(WorldObjectPlants.TYPES).merged(WorldObjectWays.TYPES)
+	)
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)
 	ReadOnly.deep(all_types)

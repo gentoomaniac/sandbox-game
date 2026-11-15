@@ -16,6 +16,7 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 			&"planks",
 			&"lantern",
 			&"wattle_fence",
+			&"plank_walk",
 			&"stool",
 			&"trough",
 			&"feed_trough",
@@ -37,6 +38,7 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 		[
 			0.0,
 			0.0,
+			5.0,
 			5.0,
 			10.0,
 			10.0,

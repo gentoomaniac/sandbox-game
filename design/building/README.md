@@ -1,7 +1,8 @@
 # Building and land
 
 The first buildings have a page of their own: [first-buildings.md](first-buildings.md), and the
-fences and walls the player makes another: [fences-and-walls.md](fences-and-walls.md).
+fences and walls the player makes another: [fences-and-walls.md](fences-and-walls.md), and the
+plank walk and stone path they lay as roads: [ways.md](ways.md).
 
 - **No land ownership.** The player can build anywhere, except on blocked tiles.
 - **Placement rules:**

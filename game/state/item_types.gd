@@ -92,6 +92,9 @@ const PIG_SHELTER := &"pig_shelter"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
 const SCARECROW := &"scarecrow"
+# The ways (#62).
+const PLANK_WALK := &"plank_walk"
+const STONE_PATH := &"stone_path"
 # Dug-up bushes (task 208).
 const BERRY_BUSH := &"berry_bush"
 const SHRUB := &"shrub"
@@ -529,6 +532,23 @@ const _OTHER_TYPES := {
 		"weight": 4.5,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.STONE_WALL,
+	},
+	PLANK_WALK:
+	{
+		"name": "Plank walk",
+		"description":
+		"A piece of boardwalk. Laid on grass or mud, it never wears or turns to mud.",
+		"weight": 1.0,
+		"stack_limit": 20,
+		"places": WorldObjectTypes.PLANK_WALK,
+	},
+	STONE_PATH:
+	{
+		"name": "Stone path",
+		"description": "Cobbles set in the earth. Laid on grass, it never wears or turns to mud.",
+		"weight": 3.0,
+		"stack_limit": 10,
+		"places": WorldObjectTypes.STONE_PATH,
 	},
 	BERRY_BUSH:
 	{
