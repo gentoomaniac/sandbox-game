@@ -48,7 +48,7 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
 - **First kinds:** felled a tree, built a building, took down a building, placed a fence or
   wall, tilled, sowed, harvested, dug clay, mowed, and **helped** (not an action: handing in a quest
   tells it, see [quests.md](quests.md)). The list, its words and the fixed opinion changes are in
-  `data/gossip.cfg`. Gifts and theft come with [relationships](relationships.md).
+  `data/gossip.cfg`. Gifts, theft and damage come with [relationships](relationships.md), as new deed kinds.
 - **Helped:** `helped` (fixed change +1) for a quest whose reward has one step of opinion and
   `helped_much` (+2) for two, the most a deed is worth (`GossipRules.MAX_CHANGE`). It is
   seen by the giver and by the villagers outdoors within the usual witness radius of where the player
@@ -117,7 +117,8 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   the day's moves stays within it either way; also clamped to the bounds), `[opinion]` of
   `data/gossip.cfg` has the bounds (-100 to 1000), the cap (20) and the thresholds of the words
   (cold below -20, warm from 20, else neutral; the levels of [relationships](relationships.md)
-  come when that page is decided). The chat prompt tells the word, `opinion_cold`, `opinion_neutral`
+  come with the plan of that page, decided 2026-11-15: ten levels over these points, from
+  `data/friendship.cfg`, which replace the three words). The chat prompt tells the word, `opinion_cold`, `opinion_neutral`
   or `opinion_warm` of `[prompt]` of `data/npc_talk.cfg`, in the last turn after the line that
   the player is a newcomer. `/clear` leaves it. The console's `opinion <villager> [points]` shows
   or sets it.

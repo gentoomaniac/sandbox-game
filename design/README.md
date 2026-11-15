@@ -65,7 +65,7 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
     - [gossip.md](villagers/gossip.md): What villagers see, remember and pass on. Decided, not built.
     - [quests.md](villagers/quests.md): Small goals the villagers give, and the notice board. Decided and built.
     - [reputation.md](villagers/reputation.md): Reputation, and how it spreads.
-    - [relationships.md](villagers/relationships.md): Friendship levels and what moves them. Planned, not decided.
+    - [relationships.md](villagers/relationships.md): Ten friendship levels, what moves them and what they open. Decided, not built.
     - [ideas.md](villagers/ideas.md): Ideas for NPCs, behaviour and LLM dialogue. Not decided.
 - [Economy](economy/README.md): Money, trade and shops. Planned, not decided.
     - [README.md](economy/README.md): Currency, barter, shops, the player's stall, how money is saved.

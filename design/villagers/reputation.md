@@ -12,6 +12,10 @@
   record `World.village` (`World.is_village_land`, not the generator), and a deed done on it weighs
   more (`[village_land]` of `data/gossip.cfg`: [gossip.md](gossip.md)). The one-hop spread through
   friends and enemies is not built.
+- What one villager thinks of the player is **friendship**, in ten levels, and has its own page:
+  [relationships.md](relationships.md) (decided 2026-11-15). A bad name closes shops and services
+  there; when reputation is built, a settlement's name and its villagers' levels meet by the
+  lower of the two.
 - Relationships can be between individual NPCs and between groups.
 - Ideas for NPCs, their behaviour and LLM dialogue (nothing decided):
   [ideas.md](ideas.md).
