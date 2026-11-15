@@ -243,8 +243,8 @@ Seed 1234, around (300, -200):
 ![Before](../../docs/screenshots/map-generation/before-seed1234.png)
 ![After](../../docs/screenshots/map-generation/after-seed1234.png)
 
-Seed 1, 240 x 240 tiles around (-80, 0): a creek from its source to the river, with a ford (the
-yellow gap):
+Seed 1, 240 x 240 tiles around (-80, 0): a creek from its source to the river in S-bends (it has
+fords, two rows of floodplain, drawn in the floodplain's colour):
 
 ![A creek](../../docs/screenshots/map-generation/after-seed1-creek.png)
 
