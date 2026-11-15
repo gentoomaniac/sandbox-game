@@ -1,6 +1,6 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 4 of
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 5 of
 section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
@@ -443,7 +443,17 @@ The user can stop after step 5 and have the village standing, empty.
   commit of its own before. Tests: `tests/test_village_record.gd`. The record holds the name, the land (`area`),
   `meeting_spot`, `square`, `mill_spot`, `lane_tiles` (step 6), `building_origins` (step 5) and
   `is_populated` (step 8), all in world tiles. The flag is in already so that step 8 needs no save version of
-  its own. No builder fills the record yet.
+  its own.
+- **Step 5.** `VillageBuilder.build` (the land, then the 19 buildings, then the record in `world.village`;
+  `build_land` stays for the map tool and the land tests); `GameState.new_game(seed, with_village)` builds the
+  village when `with_village` is true, which the game's two new games in `main.gd` say. **Changed from the plan:**
+  `new_game` builds no village by default. 141 places in the tests start a game, and the village
+  makes each take about 0.3 s longer (the whole test run 38 % longer: 255 s to 352 s) and puts 19
+  buildings into worlds that count their own; the tests that want the village ask for it. A seed
+  with no site has no village. The cost of a new game: the site 130 to 300 ms and the build 115 ms plus
+  the buildings, together 290 to 450 ms for seeds 7, 1 and 20 (a game without the village: about 60 ms).
+  The save is 56 to 73 KB bigger than a bare world's (the record itself is 0.4 KB). Tests:
+  `tests/test_village_buildings.gd` (the land tests of step 3 share `tests/village_case.gd`).
 
 ## 15. Screenshots
 

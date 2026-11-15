@@ -790,7 +790,7 @@ func _load_or_start_game() -> GameState:
 	if _resumed_state != null:
 		return _resumed_state
 	if _options.new_game:
-		return GameState.new_game(WORLD_SEED)
+		return GameState.new_game(WORLD_SEED, true)
 	var paths := SaveList.paths_newest_first(_options.save_path)
 	for index in paths.size():
 		var loaded := SaveFile.load_game(paths[index])
@@ -811,7 +811,7 @@ func _load_or_start_game() -> GameState:
 						await _save_questions.tell_copy_failed(loaded.copy_error)
 					return dropped
 				return null
-	return GameState.new_game(WORLD_SEED)
+	return GameState.new_game(WORLD_SEED, true)
 
 
 ## The settings, with the player's key bindings applied to the input map.

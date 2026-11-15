@@ -12,11 +12,23 @@ const KEPT_WHEN_CLEARING: Array[StringName] = [WorldObjectTypes.DYKE]
 const BIG_OBJECT_REACH := WorldObjectTypes.MAX_FOOTPRINT - Vector2i.ONE
 
 
+## Builds the village: the land (see `build_land`), the buildings, and the record of it in
+## `world.village`. Returns why it did not, or "" when it did.
+static func build(world: World, site: VillageSite, plan: VillagePlan) -> String:
+	return _build(world, site, plan, true)
+
+
 ## Clears the ground, lays the Warften, ponds, the Sielzug, the fields' boundaries, the walls and
-## fences and the things that stand on the ground (everything but the buildings and the lanes) of
-## the plan at the site. Returns why it did not, or "" when it did: the land of the village
-## has to be as the generator made it, with nothing of the player's on it.
+## fences and the things that stand on the ground, but puts up no building. Returns why it did not,
+## or "" when it did: the land of the village has to be as the generator made it, with nothing of
+## the player's on it.
 static func build_land(world: World, site: VillageSite, plan: VillagePlan) -> String:
+	return _build(world, site, plan, false)
+
+
+static func _build(
+	world: World, site: VillageSite, plan: VillagePlan, with_buildings: bool
+) -> String:
 	var land := site.land(plan)
 	var refusal := _refusal(world, land)
 	if refusal != "":
@@ -40,8 +52,28 @@ static func build_land(world: World, site: VillageSite, plan: VillagePlan) -> St
 	for group in plan.objects:
 		for tile: Vector2i in group["tiles"]:
 			_put(world, group["type"], site.to_world(tile))
+	if with_buildings:
+		refusal = _put_up_buildings(world, site, plan)
 	for coords in loaded:
 		world.remove_chunk(coords)
+	return refusal
+
+
+## Puts up the buildings of the plan and makes the record of the village. Returns why a building
+## could not stand, or "".
+static func _put_up_buildings(world: World, site: VillageSite, plan: VillagePlan) -> String:
+	var village := Village.new()
+	village.village_name = plan.village_name
+	village.area = site.land(plan)
+	village.meeting_spot = site.to_world(plan.meeting_spot)
+	village.square = Rect2i(site.to_world(plan.square.position), plan.square.size)
+	village.mill_spot = Rect2i(site.to_world(plan.mill_spot.position), plan.mill_spot.size)
+	for entry in plan.buildings:
+		var origin := site.to_world(entry["origin"])
+		if world.place_building(entry["type"], origin, entry["style"]) == null:
+			return "%s can't stand at %s" % [entry["id"], origin]
+		village.building_origins.append(origin)
+	world.village = village
 	return ""
 
 

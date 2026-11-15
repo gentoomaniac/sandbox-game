@@ -111,14 +111,21 @@ func _init(game_clock := GameClock.new()) -> void:
 
 
 ## A new game: the player starts at a camp site near the world centre, with home set to its
-## sleeping bag. The chunks around the camp are generated into the world here.
-static func new_game(world_seed: int) -> GameState:
+## sleeping bag. The chunks around the camp are generated into the world here. With `with_village`
+## the village Wehlsbüll is built too (a seed with no site for it has none): the game asks for it,
+## the many tests that want a bare world do not pay its third of a second.
+static func new_game(world_seed: int, with_village := false) -> GameState:
 	var state := GameState.new()
 	state.world = World.new(world_seed, state.clock)
 	state.weather = Weather.new(world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
 	state._start_simulation()
 	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
+	var site := VillageSite.find(world_seed) if with_village else null
+	if site != null:
+		var problem := VillageBuilder.build(state.world, site, VillagePlan.default_plan())
+		if problem != "":
+			push_error("The village was not built: %s" % problem)
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.player.home_map = state.world
 	state.player.home_bed = camp.sleeping_bag_pos

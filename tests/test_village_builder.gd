@@ -1,79 +1,11 @@
-extends GutTest
+extends VillageCase
 ## The village built into a world (design/world/wehlsbuell.md, section 4): what its ground is like.
-
-const SEEDS := [1, 4]
-
-var _plan := VillagePlan.default_plan()
-## {seed: [world, site, generator]}, each built once for all the tests.
-var _built := {}
-
-
-func before_all() -> void:
-	for world_seed: int in SEEDS:
-		var world := World.new(world_seed)
-		var site := VillageSite.find(world_seed)
-		assert_eq(VillageBuilder.build_land(world, site, _plan), "")
-		_built[world_seed] = [world, site, WorldGenerator.new(world_seed)]
-
-
-func _world(world_seed: int) -> World:
-	return _built[world_seed][0]
-
-
-func _site(world_seed: int) -> VillageSite:
-	return _built[world_seed][1]
-
-
-func _generator(world_seed: int) -> WorldGenerator:
-	return _built[world_seed][2]
-
-
-## Loads the chunk of a tile into a world, which replays the edits on it.
-func _load(world: World, generator: WorldGenerator, tile: Vector2i) -> void:
-	var coords := Chunk.world_to_chunk(tile)
-	if not world.is_chunk_loaded(coords):
-		world.add_chunk(generator.generate_chunk(coords))
-
-
-func _terrain_at(world_seed: int, plan_tile: Vector2i) -> Tile.Terrain:
-	var tile := _site(world_seed).to_world(plan_tile)
-	_load(_world(world_seed), _generator(world_seed), tile)
-	return _world(world_seed).tile_at(tile).terrain
-
-
-func _object_at(world_seed: int, plan_tile: Vector2i) -> WorldObject:
-	var tile := _site(world_seed).to_world(plan_tile)
-	_load(_world(world_seed), _generator(world_seed), tile)
-	return _world(world_seed).object_at(tile)
-
-
-func _land_tiles() -> Array[Vector2i]:
-	var tiles: Array[Vector2i] = []
-	for v in range(_plan.area.position.y, _plan.area.end.y):
-		for u in range(_plan.area.position.x, _plan.area.end.x):
-			tiles.append(Vector2i(u, v))
-	return tiles
-
-
-func _edits_of(world: World) -> Dictionary:
-	var edits := World.dict_of(world.snapshot())
-	return {"terrain": edits["terrain_edits"], "objects": edits["object_edits"]}
-
-
-func _is_planned_object(type: StringName) -> bool:
-	return _plan.objects.any(func(group: Dictionary) -> bool: return group["type"] == type)
-
-
-func test_the_same_seed_gives_the_same_edits() -> void:
-	var world := World.new(1)
-	assert_eq(VillageBuilder.build_land(world, _site(1), _plan), "")
-	assert_eq(_edits_of(world), _edits_of(_world(1)))
 
 
 func test_it_builds_a_village_of_edits_and_leaves_no_chunk_loaded() -> void:
 	for world_seed: int in SEEDS:
 		var fresh := World.new(world_seed)
-		VillageBuilder.build_land(fresh, _site(world_seed), _plan)
+		VillageBuilder.build(fresh, _site(world_seed), _plan)
 		var edits := _edits_of(fresh)
 		assert_gt(edits["terrain"].size(), 200)
 		assert_gt(edits["objects"].size(), 100)
@@ -215,8 +147,3 @@ func test_land_with_a_building_of_the_player_on_it_is_refused_and_left_alone() -
 	var reason := VillageBuilder.build_land(world, site, _plan)
 	assert_string_contains(reason, "a building stands on the village's land")
 	assert_eq(World.dict_of(world.snapshot())["terrain_edits"], [])
-
-
-func test_building_twice_is_refused() -> void:
-	var reason := VillageBuilder.build_land(_world(1), _site(1), _plan)
-	assert_string_contains(reason, "was changed on the village's land")
