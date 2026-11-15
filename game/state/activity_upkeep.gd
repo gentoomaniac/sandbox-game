@@ -208,7 +208,7 @@ func _follow_day(npc: Npc) -> void:
 ## What the villager is to do now: the next entry once they have to leave for it, else the one
 ## that is on, else keeping to the yard of their home; at home instead for the day's rain or dark.
 func _due_step_of(npc: Npc) -> ActivityStep:
-	var next := _next_step_of(npc)
+	var next := next_step_of(npc)
 	var is_next_due := next != null and _clock.total_minutes() >= next.leaves_at
 	var entry: DayEntry = null if is_next_due else entry_on(npc)
 	var activity := ""
@@ -235,7 +235,7 @@ func _due_step_of(npc: Npc) -> ActivityStep:
 
 ## The first entry that starts after now (today's, else tomorrow's first), with its spot and the
 ## game minute the villager leaves for it; null with none to come. It is kept until it starts.
-func _next_step_of(npc: Npc) -> ActivityStep:
+func next_step_of(npc: Npc) -> ActivityStep:
 	var total := _clock.total_minutes()
 	var kept: ActivityStep = _next_step_of_npc.get(npc)
 	if kept != null and kept.starts_at > total:

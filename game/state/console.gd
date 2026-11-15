@@ -117,6 +117,14 @@ const COMMANDS := {
 			+ " way comes later, F4 shows its path and whether it is blocked."
 		),
 	],
+	"routine":
+	[
+		"routine <villager> [day]",
+		(
+			"Say where a villager is going and why, what comes next and when they leave for it;"
+			+ " with day, every entry of their day."
+		),
+	],
 	"play":
 	[
 		"play <track>",
@@ -142,6 +150,7 @@ const ARGUMENTS := {
 	"home": [&"villager", &"place"],
 	"work": [&"villager", &"place"],
 	"goto": [&"villager", &"destination"],
+	"routine": [&"villager", &"routine_view"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -157,6 +166,8 @@ const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"s
 const PLACE_WORDS: Array[String] = ["here", "none"]
 ## The word of `goto` for the tile the player stands on.
 const HERE := "here"
+## The word of `routine` for the whole day.
+const WHOLE_DAY := "day"
 ## The most characters of a listed line, so the log shows it whole.
 const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
@@ -286,6 +297,8 @@ func run(line: String) -> Array[String]:
 			output = _home_or_work(words[0], arguments)
 		"goto":
 			output = _goto(arguments)
+		"routine":
+			output = _routine(arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -343,6 +356,8 @@ func candidates(kind: StringName) -> Array[String]:
 			values.assign(PLACE_WORDS)
 		&"destination":
 			values.append(HERE)
+		&"routine_view":
+			values.append(WHOLE_DAY)
 		&"weather":
 			for condition in Weather.FORCEABLE:
 				values.append(String(condition))
@@ -802,6 +817,19 @@ func _home_or_work(command: String, arguments: PackedStringArray) -> Array[Strin
 	if command == "home":
 		return _home_commands.home(npc, where)
 	return _home_commands.work(npc, where)
+
+
+## `routine`: where a villager is going and why, or with `day` their whole day.
+func _routine(arguments: PackedStringArray) -> Array[String]:
+	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
+	if arguments.size() == 2 and arguments[1] != WHOLE_DAY:
+		is_usage_wrong = true
+	if is_usage_wrong:
+		return ["Usage: %s" % COMMANDS["routine"][0]]
+	var npc := _npc_named(arguments[0])
+	if npc == null:
+		return _unknown("villager", arguments[0], "routine")
+	return RoutineReport.lines(_state, npc, arguments.size() == 2)
 
 
 ## `goto`: sends a villager to a tile of the world, to watch the way they find.

@@ -1,0 +1,103 @@
+class_name RoutineReport
+extends RefCounted
+## What the console's `routine` says about a villager's day: where they are going and why, what
+## comes next and when they leave for it, and what the weather says to the activity. `day` lists
+## every entry of the day.
+
+const DOINGS := {"stand": "standing", "walk_about": "strolling", "work": "at work"}
+
+
+## The lines about `npc` for the day of the game in `state`.
+static func lines(state: GameState, npc: Npc, is_whole_day := false) -> Array[String]:
+	var upkeep := state.activities
+	var clock := state.clock
+	var head := "%s: " % npc.name
+	if npc.house == null:
+		return [
+			(
+				head
+				+ (
+					"no house: keeps near its anchor (%.1f, %.1f), default day"
+					% [npc.anchor.x, npc.anchor.y]
+				)
+			)
+		]
+	var weekday: String = GameClock.WEEKDAY_NAMES[GameClock.weekday_of(clock.day)]
+	var lines: Array[String] = [head + "today, %s, default day" % weekday]
+	if is_whole_day:
+		lines.append_array(_day_lines(upkeep.entries_of(npc, clock.day), upkeep.entry_on(npc)))
+		return lines
+	lines.append("now: %s" % _now_text(npc))
+	var next := upkeep.next_step_of(npc)
+	lines.append("next: %s" % ("nothing" if next == null else _next_text(next)))
+	var activity := "" if npc.current_step == null else npc.current_step.activity
+	var shelter := upkeep.shelter_of(npc, activity)
+	lines.append("shelter: %s" % ("none" if shelter == "" else shelter))
+	lines.append("trip: %s" % (NpcTravel.text_of(npc) if npc.is_travelling() else "none"))
+	return lines
+
+
+## Every entry of the day, a line each, the one that is on marked.
+static func _day_lines(entries: Array[DayEntry], on: DayEntry) -> Array[String]:
+	var lines: Array[String] = []
+	var rules := ActivityRules.default_rules()
+	for entry in entries:
+		var data := rules.activity(entry.activity)
+		var marker := "> " if entry == on else "  "
+		var time := Sun.time_text(entry.minute)
+		lines.append(
+			(
+				"%s%s %s (%s), up to %d min"
+				% [marker, time, data["verb"], data["target"], entry.minutes]
+			)
+		)
+	if lines.is_empty():
+		lines.append("  no entries")
+	return lines
+
+
+## What they were sent to do last, where, since when, and how it stands with the way there.
+static func _now_text(npc: Npc) -> String:
+	var step := npc.current_step
+	if step == null:
+		return "nothing yet"
+	var text := _step_text(step)
+	if step.minute >= 0:
+		text += " since %s" % Sun.time_text(step.minute)
+	if not step.has_place():
+		return text + ": no place for it, skipped"
+	text += ", %s" % DOINGS[step.doing]
+	if step.shelter != "":
+		text += ", at home for the %s" % step.shelter
+	if step.is_given_up:
+		text += ", no way found: given up, at home"
+	if step.is_arrived:
+		return text + "; there"
+	if step.blocked_since >= 0:
+		return (
+			text + "; blocked since %s: no way for now" % Sun.time_text(step.blocked_since % 1440)
+		)
+	return text + "; on its way"
+
+
+## "dinner at home, 12:00; leaves 11:41 (about 19 min walk)".
+static func _next_text(step: ActivityStep) -> String:
+	if not step.has_place():
+		return "%s, %s; no place for it" % [_step_text(step), Sun.time_text(step.minute)]
+	return (
+		"%s, %s; leaves %s (about %d min walk)"
+		% [
+			_step_text(step),
+			Sun.time_text(step.minute),
+			Sun.time_text(step.leaves_at % GameClock.MINUTES_PER_DAY),
+			ceili(step.walk_minutes),
+		]
+	)
+
+
+## "work (workplace)", or the yard of their home for the time between entries.
+static func _step_text(step: ActivityStep) -> String:
+	if step.activity == "":
+		return "keeping to the yard of their home"
+	var data := ActivityRules.default_rules().activity(step.activity)
+	return "%s (%s)" % [data["verb"], data["target"]]
