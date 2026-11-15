@@ -270,7 +270,8 @@ off, the new beats fell 127 to 128 frames early. Measured:
   so both play the same notes and the fade only moves from one mix to the other. Its clicks fall
   on the old stream's grid within a frame. A start between two frames played a click spread over
   both by Godot's resampling (a one-in-five failure of the test), so a start is put on a whole frame
-  (the beat crossfade's too).
+  (the beat crossfade's too). Since #15 a blend may wait for the next bar of what plays and then
+  start in step (the other version of a piece as the art changes): its clicks on the old grid too.
 - **Quit**: `make bench-music` quits cleanly with streams played by the crossfade (exit status 0,
   all four runs).
 

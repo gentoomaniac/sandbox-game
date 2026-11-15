@@ -162,6 +162,36 @@ func test_a_blend_starts_at_once_in_step_with_what_plays() -> void:
 	_assert_on_the_beats(Vector2i(phases.x, phases.y - _beat_frames / 2))
 
 
+func test_a_blend_on_the_bar_waits_for_it_and_starts_in_step() -> void:
+	var bar_seconds := BEAT_SECONDS * 2
+	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
+	var playing := _crossfade._players[_crossfade._current]
+	# Early in a bar: the next begins at least 0.5 s later.
+	await wait_seconds(0.2)
+	await wait_until(
+		func() -> bool: return fposmod(playing.get_playback_position(), bar_seconds) < 0.3, 5.0
+	)
+	var position := MusicCrossfade._mixed_position(playing)
+	_crossfade.blend(_clicks(-CLICK, _beat_frames / 2), FADE_SECONDS, bar_seconds)
+	assert_true(_crossfade._is_in_step, "a blend")
+	assert_almost_eq(
+		_crossfade._switch_seconds,
+		fmod(ceilf(position / bar_seconds) * bar_seconds, BEATS * BEAT_SECONDS),
+		0.0001,
+		"on the next bar"
+	)
+	await wait_seconds(0.1)
+	assert_false(_crossfade._is_fading, "it waits for the bar")
+	await wait_until(func() -> bool: return _crossfade._is_fading, 5.0)
+	var since_bar := fposmod(
+		MusicCrossfade._mixed_position(playing) - _crossfade._switch_seconds, bar_seconds
+	)
+	assert_lt(since_bar, 0.3, "it began on the bar")
+	var mixed := await _record(func() -> bool: return not _crossfade.is_crossfading(), 2)
+	var phases := _click_phases(mixed)
+	_assert_on_the_beats(Vector2i(phases.x, phases.y - _beat_frames / 2))
+
+
 func test_a_blend_swaps_the_stream_of_a_crossfade_on_its_way() -> void:
 	_crossfade.play(_clicks(CLICK), BEAT_SECONDS)
 	var other := _clicks(-CLICK)
@@ -173,7 +203,7 @@ func test_a_blend_swaps_the_stream_of_a_crossfade_on_its_way() -> void:
 	await wait_until(func() -> bool: return _crossfade._is_fading, 5.0)
 	var last_mix := _clicks(CLICK / 2)
 	_crossfade.blend(last_mix, FADE_SECONDS)
-	assert_eq(_crossfade._queued, [last_mix, BEAT_SECONDS, FADE_SECONDS, true], "after the fade")
+	assert_eq(_crossfade._queued, [last_mix, 0.0, FADE_SECONDS, true], "after the fade")
 	await wait_until(func() -> bool: return not _crossfade.is_crossfading(), 10.0)
 	assert_eq(_crossfade._players[_crossfade._current].stream, last_mix)
 
