@@ -37,6 +37,38 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 - Only the tables of worn tiles and of today's steps are kept: a tile that was stepped on once and
   not again is gone at the next midnight.
 
+## Mud
+
+- Worn ground (trodden grass and paths) turns to mud in the rain and dries out again, so that a
+  laid road, which does not wear and does not get muddy, is worth building (#62).
+- **When** (`[mud]` of `data/paths.cfg`): the ground is muddy when the rain of each of the last
+  `window_hours` (10) hours, added up (an hour of downpour is 1, of drizzle 0.1), is at least
+  `soaked_by` (1.5). A shower of an hour or two makes no mud, a few hours of steady rain do, and it
+  dries out 10 hours after the rain stopped (less in a break: the sum falls as the rain hours leave
+  the window). It follows from the weather alone (`Weather.rain_in_hour` where the player sees the
+  weather, as for `last_hour_rain`), so nothing about it is saved: a loaded game works it out
+  again at its first hour. A forced weather (console) rains steadily.
+- `GameState.refresh_mud` decides once an hour (main calls it with the soil's hourly refresh) and
+  tells `World.set_muddy`. The flag is the world's, not a tile's: a tile is muddy
+  (`World.is_muddy_at`) when it is worn and the flag is on, so no per-tile state, no scan.
+- **Drawn:** `TerrainTileset.Layer.MUDDY_TRODDEN` and `MUDDY_PATH`, two more terrain layers
+  of the same shapes as the dry ones, over them (dark wet earth with glints of standing
+  water, both art sets; the same in every season). When the flag changes, `World` emits
+  `tile_changed` for every worn tile of the loaded chunks, once per change of weather, and a
+  chunk that loads is drawn with the flag as it is.
+- **Villagers and animals walk at normal speed in mud, and path searches don't mind it** (decided
+  after looking at the design). The `TravelMask`s are immutable snapshots of a chunk and know only
+  that grass wears (`WEARS`), not how worn it is or whether it rains; the cost of a lane is read from
+  the periodic `TravelSnapshot`. A rain that made many tiles muddy could not touch the masks,
+  but a mud cost in `TravelView.cost_of` would only make villagers dodge puddles that do not
+  slow them, and slowing them is not clean: far walkers move along masks and the skip
+  (`catch_up`) computes where a trip is after N minutes from a fixed speed, so a speed that varies
+  by tile and by the weather would need the world's wear and the rain in both and agree between
+  them. Animals have no searches and wander in their pens at their own pace. If it is wanted
+  later, the place is the cost of a lane in `TravelView.cost_of` (rain flag in the snapshot) for
+  routes, and a speed factor in `Npcs._walk` for the live ones only, accepting that the skip
+  ignores it.
+
 ## Saved
 
 `world.wear`: `[x, y, days]` for each worn tile, and `world.wear_today`: `[x, y, steps]` for the
@@ -46,7 +78,7 @@ today.
 
 ## Art
 
-Trodden grass and the path are two dual-grid layers over the grass with soft dithered edges, in
+Trodden grass and the path, and their muddy looks, are dual-grid layers over the grass with soft dithered edges, in
 every season's look and the frost (`tools/art/terrain.py` and `tools/art/classic/terrain.py`). Their
 full tiles are an even colour with single specks and no stamps
 (`tools/art/test_worn_ground.py`), so a worn yard reads as one joined patch. Snow covers paths,

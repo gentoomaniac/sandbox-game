@@ -55,6 +55,8 @@ var vegetation := Vegetation.default_vegetation()
 var soil: SoilMoisture
 ## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).
 var fallow := FallowSoil.new()
+## Whether the rain has made worn ground mud (see `set_muddy`).
+var is_muddy := false
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
@@ -788,6 +790,22 @@ func end_wear_day() -> void:
 			rules.stage_of(days) != rules.stage_of(days_before)
 			and is_chunk_loaded(Chunk.world_to_chunk(pos))
 		):
+			tile_changed.emit(pos)
+
+
+## Whether the ground at a tile is mud: worn ground when the rain has made it so.
+func is_muddy_at(world_pos: Vector2i) -> bool:
+	return is_muddy and wear_stage(world_pos) != PathRules.Stage.UNWORN
+
+
+## Makes worn ground mud or dry again (GameState decides by the weather). Emits `tile_changed` for
+## every worn tile of the loaded chunks, to be drawn again.
+func set_muddy(muddy: bool) -> void:
+	if muddy == is_muddy:
+		return
+	is_muddy = muddy
+	for pos: Vector2i in _wear_days:
+		if wear_stage(pos) != PathRules.Stage.UNWORN and is_chunk_loaded(Chunk.world_to_chunk(pos)):
 			tile_changed.emit(pos)
 
 

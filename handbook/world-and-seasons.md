@@ -23,7 +23,9 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
   it is trodden; eight days in a row, and it is a path. A day you skip takes a day off.
 - Unused, a path is trodden again after about a week and grass after about ten days.
 - Animals and villagers wear paths too.
-- A path is only a look: you walk, till and build on it as on grass.
+- A path is only a look: you till and build on it as on grass.
+- In rain, worn ground (trodden grass and paths) turns to mud: a few hours of steady rain make
+  it, and it dries out again about ten hours after the rain stops.
 
 ![A path through a meadow after 3 days, after 8, 5 days after last use, and under snow](../docs/screenshots/desire-paths.png)
 

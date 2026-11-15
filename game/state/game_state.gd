@@ -253,6 +253,24 @@ func last_hour_rain() -> float:
 	)
 
 
+## Makes the worn ground of the world mud or dry again by the rain of the last hours where the
+## player sees the weather (see `last_hour_rain` and data/paths.cfg [mud]). Called every hour.
+func refresh_mud() -> void:
+	var rules := PathRules.default_rules()
+	var rain := 0.0
+	if weather_override != &"":
+		# A forced condition rains steadily.
+		rain = current_weather().rain * rules.window_hours()
+	else:
+		var this_hour := clock.total_minutes() / GameClock.MINUTES_PER_HOUR
+		var first_hour := maxi(this_hour - rules.window_hours(), 0)
+		for hour in range(first_hour, this_hour):
+			rain += weather.rain_in_hour(
+				_outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
+			)
+	world.set_muddy(rain >= rules.soaked_by())
+
+
 ## The tile whose weather the player sees: theirs, or outside the door of the house they are in.
 func _outdoor_tile() -> Vector2i:
 	return _building_inside.door_tile() if is_inside() else player.tile()

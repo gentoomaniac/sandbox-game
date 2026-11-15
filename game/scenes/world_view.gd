@@ -810,7 +810,9 @@ func _draw_missing_cover() -> void:
 
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
 	var variety := _variety_noise.get_noise_2dv(Vector2(world_pos))
-	return TerrainTileset.terrain_layer(terrain, variety, world.wear_stage(world_pos))
+	return TerrainTileset.terrain_layer(
+		terrain, variety, world.wear_stage(world_pos), world.is_muddy
+	)
 
 
 ## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the

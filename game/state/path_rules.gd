@@ -1,6 +1,6 @@
 class_name PathRules
 extends RefCounted
-## How grass wears to a desire path and grows back read
+## How grass wears to a desire path and grows back, and what the rain makes of worn ground, read
 ## from data/paths.cfg (see there for what each number means). `from_file` reports every key that
 ## is missing or out of range, and `is_valid` says whether any was.
 
@@ -20,6 +20,7 @@ const REQUIRED_KEYS := {
 		"animal_step",
 		"villager_step",
 	],
+	"mud": ["soaked_by", "window_hours"],
 }
 
 static var _default: PathRules
@@ -69,6 +70,10 @@ func problems() -> Array[String]:
 		found.append("[wear] animal_step must not be below 0")
 	if villager_step() < 0.0:
 		found.append("[wear] villager_step must not be below 0")
+	if soaked_by() <= 0.0:
+		found.append("[mud] soaked_by must be above 0")
+	if window_hours() < 1:
+		found.append("[mud] window_hours must be at least 1")
 	return found
 
 
@@ -116,6 +121,16 @@ func stage_of(days: int) -> Stage:
 	if days >= trodden_after_days():
 		return Stage.TRODDEN
 	return Stage.UNWORN
+
+
+## The rain (the rain of each hour added up) that makes worn ground mud when it falls within
+## `window_hours`.
+func soaked_by() -> float:
+	return _value("mud", "soaked_by")
+
+
+func window_hours() -> int:
+	return int(_value("mud", "window_hours"))
 
 
 func _value(section: String, key: String) -> float:

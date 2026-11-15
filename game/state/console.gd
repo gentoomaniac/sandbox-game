@@ -639,10 +639,12 @@ func _weather(arguments: PackedStringArray) -> Array[String]:
 		var word := arguments[0]
 		if word == "auto":
 			_state.weather_override = &""
+			_state.refresh_mud()
 			return ["Weather follows the simulation"]
 		if not Weather.FORCEABLE.has(StringName(word)):
 			return ["Usage: %s" % COMMANDS["weather"][0]]
 		_state.weather_override = StringName(word)
+		_state.refresh_mud()
 		return ["Weather forced to %s (weather auto ends it)" % word]
 	var sample := _state.current_weather()
 	var lines: Array[String] = [sample.values_text(), "Conditions: " + sample.conditions_text()]

@@ -76,6 +76,13 @@ func test_a_forced_condition_replaces_the_simulation_and_auto_ends_it() -> void:
 	assert_eq(_state.weather_override, &"")
 
 
+func test_a_forced_rain_makes_worn_ground_muddy_at_once_and_auto_dries_it() -> void:
+	_console.run("weather rain")
+	assert_true(_state.world.is_muddy)
+	_console.run("weather clear")
+	assert_false(_state.world.is_muddy)
+
+
 func test_the_override_is_not_saved() -> void:
 	_state.weather_override = &"snow"
 	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))

@@ -106,6 +106,8 @@ and the day are those, not the clock's). It holds a dictionary of the masks it h
 - `is_free(tile)`: not a building tile, and the mask says free at the view's tide and day.
 - `cost_of(tile)`: 1.0, 0.8 on trodden grass, 0.6 on a lane (the wear in the snapshot), plus
   `cost_object` where the mask has `OBJECT`. **This is the only copy of the cost rule.**
+  Mud (the rain on worn ground, #61) is not in it, nor in the walkers' speed: see
+  [../world/desire-paths.md](../world/desire-paths.md) for why.
 - `provide(masks)` (main thread, only while no search runs on the view): takes the masks of the
   `missing` chunks that are made, asks for the rest, and says whether nothing is missing.
 - `prefetch(masks, start, goal)`: takes the masks already made for the chunks of the way and two

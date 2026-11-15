@@ -63,8 +63,8 @@ there to walk on. There is no lane terrain yet: the cheap tiles are the worn gra
   from a `GameMap` (the world or an `Interior`); 
   `cost_of` is where ground is weighted: today 1.0 on grass, 0.8 trodden (`World.wear_stage`, only
   on `World`), 0.6 on a path and +2.0 where a non-blocking object stands (crops, flowers: they walk
-  round the field). Later ground changes it (mud to avoid, crafted roads to prefer, issues #61 and
-  #62) by editing that one function, not the search.
+  round the field). Later ground changes it (crafted roads to prefer, issue #62; mud was left out of it, #61:
+  design/world/desire-paths.md) by editing that one function, not the search.
 - **Four directions** for now, from tile centre to tile centre. A body (0.6 wide, 0.3 high) on a
   centre stands on one tile, and between two centres on those two, so any path of free tiles can
   be walked and no corner is cut.

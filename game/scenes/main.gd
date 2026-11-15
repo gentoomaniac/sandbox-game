@@ -468,6 +468,7 @@ func _process(delta: float) -> void:
 	if hour != _soil_shown_hour:
 		_soil_shown_hour = hour
 		_view.refresh_soil(_state.last_hour_rain())
+		_state.refresh_mud()
 	_autosave_on_time(delta)
 	_tiredness_view.is_awake = not _is_in_transition
 	_weather_view.visible_region = _camera.visible_region()
