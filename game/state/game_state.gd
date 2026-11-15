@@ -254,7 +254,8 @@ func last_hour_rain() -> float:
 
 
 ## Makes the worn ground of the world mud or dry again by the rain of the last hours where the
-## player sees the weather (see `last_hour_rain` and data/paths.cfg [mud]). Called every hour.
+## player sees the weather (see `last_hour_rain` and data/paths.cfg [mud]). Called every hour, and
+## when a game is loaded.
 func refresh_mud() -> void:
 	var rules := PathRules.default_rules()
 	var rain := 0.0
@@ -764,6 +765,8 @@ static func from_dict(data: Dictionary) -> GameState:
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
 	var minute := state.clock.minute_of_day
 	state.is_up_too_late = minute >= LATE_NIGHT_MINUTE and minute < WAKE_UP_MINUTE
+	# The rain of the hours before the save still lies on the ground.
+	state.refresh_mud()
 	return state
 
 

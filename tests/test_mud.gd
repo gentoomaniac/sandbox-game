@@ -102,3 +102,28 @@ func test_a_walk_over_mud_goes_less_far() -> void:
 	assert_almost_eq(
 		_state.player.position.x - start.x, dry_distance * _rules.walk_factor(), 0.0001
 	)
+
+
+func test_a_loaded_game_is_muddy_at_once_if_it_rained_before_the_save() -> void:
+	var rainy_clock := _find_muddy_moment()
+	_state.clock.day = rainy_clock.x
+	_state.clock.minute_of_day = rainy_clock.y
+	_state.refresh_mud()
+	assert_true(_world.is_muddy)
+
+	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+
+	assert_true(restored.world.is_muddy)
+
+
+## A day and a minute of the day (as a Vector2i) at which the weather has made mud.
+func _find_muddy_moment() -> Vector2i:
+	for day in range(1, 120):
+		for hour in range(0, 24, 3):
+			_state.clock.day = day
+			_state.clock.minute_of_day = hour * GameClock.MINUTES_PER_HOUR
+			_state.refresh_mud()
+			if _world.is_muddy:
+				return Vector2i(day, hour * GameClock.MINUTES_PER_HOUR)
+	fail_test("no rain in 120 days")
+	return Vector2i(1, 0)
