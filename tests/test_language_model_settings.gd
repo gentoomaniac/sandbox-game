@@ -60,6 +60,9 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 			"chat_history_lines": 24,
 			"stories_kept": 10,
 			"memories_kept": 20,
+			"random_speech": true,
+			"day_plans": true,
+			"quest_lines": true,
 		}
 	)
 

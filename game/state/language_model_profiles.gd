@@ -22,6 +22,11 @@ const OLD_CHAT_HISTORY_LINES_KEY := "chat_history_lines"
 ## ModelChat.max_tokens_of and temperature_of).
 const TEXT_KEYS: Array[String] = ["endpoint", "model", "max_tokens", "temperature"]
 
+## What the model may be asked for besides chats and the story judge, each a switch of a
+## profile that is on by default (see `uses_model_for`). "quest_lines" is read by the quest
+## lines of the villagers (#12).
+const USES: Array[StringName] = [&"random_speech", &"day_plans", &"quest_lines"]
+
 ## How many of the latest lines of a chat a villager keeps (and tells the model); the older ones
 ## are compacted into a memory (see NpcDialogue `compact`).
 const MIN_CHAT_HISTORY_LINES := 2
@@ -37,7 +42,7 @@ const MAX_MEMORIES_KEPT := 200
 const DEFAULT_MEMORIES_KEPT := 20
 
 ## The profile in use: {name, provider, endpoint, model, max_tokens, temperature,
-## chat_history_lines, stories_kept, memories_kept}.
+## chat_history_lines, stories_kept, memories_kept, random_speech, day_plans, quest_lines}.
 var active: Dictionary
 
 ## Every profile, with a name of its own each.
@@ -93,6 +98,18 @@ func set_stories_kept(stories: int) -> void:
 ## Memories kept in range. Applied like the lines (see `set_chat_history_lines`).
 func set_memories_kept(memories: int) -> void:
 	active["memories_kept"] = clampi(memories, MIN_MEMORIES_KEPT, MAX_MEMORIES_KEPT)
+	changed.emit()
+
+
+## Whether the profile in use lets the model be asked for `use` (one of `USES`); without a
+## model (see NpcDialogue `has_model`) nothing is asked whatever the switch says.
+func uses_model_for(use: StringName) -> bool:
+	return active[use]
+
+
+## Switches the profile in use on or off for `use` (one of `USES`).
+func set_uses_model_for(use: StringName, is_on: bool) -> void:
+	active[use] = is_on
 	changed.emit()
 
 
@@ -209,6 +226,9 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 		"chat_history_lines": DEFAULT_CHAT_HISTORY_LINES,
 		"stories_kept": DEFAULT_STORIES_KEPT,
 		"memories_kept": DEFAULT_MEMORIES_KEPT,
+		"random_speech": true,
+		"day_plans": true,
+		"quest_lines": true,
 	}
 
 
@@ -300,6 +320,13 @@ func _checked_profile(entry: Variant) -> Dictionary:
 			MAX_MEMORIES_KEPT,
 			DEFAULT_MEMORIES_KEPT
 		)
+	for use in USES:
+		if not entry.has(use):
+			continue
+		if entry[use] is bool:
+			checked[use] = entry[use]
+		else:
+			push_warning("Ignoring language model %s in %s: not true or false" % [use, _path])
 	return checked
 
 

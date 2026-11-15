@@ -40,7 +40,9 @@
   goes only to its own provider (`LanguageModelProfiles`; Settings picks the profile and adds,
   copies, renames and deletes them, the last one stays, and several may share a provider, say
   Gemini with a pro and a flash model; a file from before the profiles is upgraded: a profile
-  for each provider, named after it); a model, picked from the endpoint's list of models or typed; an optional key; an
+  for each provider, named after it; each profile also has three switches, random speech, day plans and quest lines
+  (`LanguageModelProfiles.uses_model_for`), all on by default, and a profile saved without them
+  loads with them on); a model, picked from the endpoint's list of models or typed; an optional key; an
   emptied endpoint is none) it asks the model; without one it says a scripted line of `data/npc_talk.cfg` ("Aye.", "Is that so?"), and so it
   does on the default test endpoint when nothing answers, on an error or after 30 s. With any
   other endpoint, such a failure (also an empty answer) gives no line at all: nothing is added
