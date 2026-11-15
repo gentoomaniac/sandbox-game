@@ -36,7 +36,7 @@ flowchart LR
 
 | Piece | File (in `game/state/`) | Owns | Thread |
 |---|---|---|---|
-| `World` | `world.gd` | the edits, the buildings, the wear; raises `edited(chunk)` | main |
+| `World` | `world.gd` | the edits, the buildings, the wear (`WorldWear`); raises `edited(chunk)` | main |
 | `TravelMask` | `travel_mask.gd` | the flags of one chunk | built on a worker, read-only after |
 | `TravelMasks` | `travel_masks.gd` | the caches of masks and raw chunks, the worker jobs | main, with one worker task |
 | `TravelSnapshot` | `travel_snapshot.gd` | copies of the building tiles and the wear | made on main, read-only after |

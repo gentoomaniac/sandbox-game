@@ -16,12 +16,12 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 
 ## Wear takes days
 
-- The steps a tile takes are counted per day (`World._steps_today`). A day on which a tile took
-  at least `busy_steps` (10: the player crossing it ten times, or twenty villager steps) is a
-  busy day.
-- Each tile that is worn, or was walked on today, has a count of days (`World._wear_days`). At
-  midnight (`World.end_wear_day`, from `NightUpkeep` with the other nightly upkeep, so no
-  per-frame work and nothing for unloaded chunks to do: both tables are plain dictionaries by
+- The steps a tile takes are counted per day (`WorldWear.steps_today`). A day on which a tile
+  took at least `busy_steps` (10: the player crossing it ten times, or twenty villager steps) is
+  a busy day.
+- Each tile that is worn, or was walked on today, has a count of days (`WorldWear.days`, which
+  `World.wear` holds). At midnight (`World.end_wear_day`, `WorldWear.end_day`, from
+  `NightUpkeep` with the other nightly upkeep, so no per-frame work and nothing for unloaded chunks to do: both tables are plain dictionaries by
   world position) a busy day adds one to the count, up to `most_days` (12), and any other day
   takes `quiet_day_loss` (1) off it. A tile with no days left is grass again and forgotten.
 - From `trodden_after_days` (3) the tile is trodden, from `path_after_days` (8) it is a path. So

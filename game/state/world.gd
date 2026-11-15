@@ -57,14 +57,11 @@ var soil: SoilMoisture
 var fallow := FallowSoil.new()
 ## Whether the rain has made worn ground mud (see `set_muddy`).
 var is_muddy := false
+## The wear of the grass, by walking (see `wear_tile`).
+var wear := WorldWear.new()
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
-## The days in a row on which each tile that is worn towards a desire path was walked on enough
-## (see `end_wear_day`), by world position. A tile without wear is not here.
-var _wear_days: Dictionary[Vector2i, int] = {}
-## The steps each tile took today (see `wear_tile`), by world position; counted at midnight.
-var _steps_today: Dictionary[Vector2i, float] = {}
 var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed, kept outside the chunks so it survives their unloading: per world
@@ -307,8 +304,7 @@ func set_terrain(world_pos: Vector2i, terrain: Tile.Terrain) -> void:
 		soil.forget(world_pos)
 		fallow.forget(world_pos)
 	# New ground starts unworn: a path that is tilled and later grassed over is grass.
-	_wear_days.erase(world_pos)
-	_steps_today.erase(world_pos)
+	wear.forget(world_pos)
 	tile_changed.emit(world_pos)
 
 
@@ -419,8 +415,7 @@ func add_object(object: WorldObject) -> void:
 		_tend_soil(tile)
 		if is_way_at(tile):
 			# What was worn beneath is not any more.
-			_steps_today.erase(tile)
-			if _wear_days.erase(tile):
+			if wear.forget(tile):
 				tile_changed.emit(tile)
 		objects_changed.emit(tile)
 
@@ -638,12 +633,12 @@ func building_tiles() -> Dictionary:
 
 ## The steps the tiles took today (see `wear_tile`), as a copy.
 func wear_steps() -> Dictionary:
-	return _steps_today.duplicate()
+	return wear.steps_today.duplicate()
 
 
 ## The days of wear of the worn tiles (see `end_wear_day`), as a copy.
 func wear_days() -> Dictionary:
-	return _wear_days.duplicate()
+	return wear.days.duplicate()
 
 
 ## The building whose footprint covers a tile, or null.
@@ -735,68 +730,50 @@ func recover_clay_spots() -> void:
 # --- Desire paths ---
 
 
-## Counts `steps` onto a tile (one each time the player steps onto it). Only grass and the
-## floodplain wear (see `Tile.wears`), and not under a building, whose door is walked on too, or a
-## way. The tile only looks worn after the day (see `end_wear_day`).
+## Counts `steps` onto a tile (one each time the player steps onto it). The tile only looks worn
+## after the day (see `end_wear_day`).
 func wear_tile(world_pos: Vector2i, steps := 1.0) -> void:
-	var tile := tile_at(world_pos)
-	if tile == null or not tile.wears() or building_at(world_pos) != null or is_way_at(world_pos):
-		return
-	_steps_today[world_pos] = _steps_today.get(world_pos, 0.0) + steps
+	if _wears_at(world_pos):
+		wear.add_steps(world_pos, steps)
 
 
 ## `wear_tile` for a tile of a chunk that is not loaded, where the ground and the building cannot
 ## be asked: the caller knows that the grass there wears (see TravelMask `wears`) and that no
 ## building stands on it.
 func wear_unloaded(world_pos: Vector2i, steps: float) -> void:
-	_steps_today[world_pos] = _steps_today.get(world_pos, 0.0) + steps
+	wear.add_steps(world_pos, steps)
 
 
 ## Gives a tile `days` of wear at once, as if it had been walked on enough for that many days in
 ## a row (for the debug views, which make worn ground). The same ground wears as with `wear_tile`.
 func set_wear_days(world_pos: Vector2i, days: int) -> void:
-	var tile := tile_at(world_pos)
-	if tile == null or not tile.wears() or building_at(world_pos) != null or is_way_at(world_pos):
-		return
-	var stage := wear_stage(world_pos)
-	if days > 0:
-		_wear_days[world_pos] = mini(days, PathRules.default_rules().most_days())
-	else:
-		_wear_days.erase(world_pos)
-	if wear_stage(world_pos) != stage:
+	if _wears_at(world_pos) and wear.set_days(world_pos, days):
 		tile_changed.emit(world_pos)
 
 
 ## How worn the grass of a tile is (see PathRules).
 func wear_stage(world_pos: Vector2i) -> PathRules.Stage:
-	return PathRules.default_rules().stage_of(_wear_days.get(world_pos, 0))
+	return wear.stage_of(world_pos)
 
 
-## The day that has just ended counts for every tile that was walked on (see NightUpkeep): a busy
-## day adds a day of wear, any other takes some off, and a tile whose days are used up is grass
-## again. Emits `tile_changed` for the tiles of loaded chunks that look different now.
+## The day that has just ended counts for every tile that was walked on (see NightUpkeep). Emits
+## `tile_changed` for the tiles of loaded chunks that look different now.
 func end_wear_day() -> void:
-	var rules := PathRules.default_rules()
-	var walked := _steps_today
-	_steps_today = {}
-	var tiles := _wear_days.keys()
-	for pos: Vector2i in walked:
-		if not _wear_days.has(pos):
-			tiles.append(pos)
-	for pos: Vector2i in tiles:
-		var days_before: int = _wear_days.get(pos, 0)
-		var days := days_before - rules.quiet_day_loss()
-		if walked.get(pos, 0.0) >= rules.busy_steps():
-			days = mini(days_before + 1, rules.most_days())
-		if days > 0:
-			_wear_days[pos] = days
-		else:
-			_wear_days.erase(pos)
-		if (
-			rules.stage_of(days) != rules.stage_of(days_before)
-			and is_chunk_loaded(Chunk.world_to_chunk(pos))
-		):
+	for pos in wear.end_day():
+		if is_chunk_loaded(Chunk.world_to_chunk(pos)):
 			tile_changed.emit(pos)
+
+
+## Whether a tile can wear: only grass and the floodplain do (see `Tile.wears`), and not under a
+## building, whose door is walked on too, or a way.
+func _wears_at(world_pos: Vector2i) -> bool:
+	var tile := tile_at(world_pos)
+	return (
+		tile != null
+		and tile.wears()
+		and building_at(world_pos) == null
+		and not is_way_at(world_pos)
+	)
 
 
 ## Whether the ground at a tile is mud: worn ground when the rain has made it so.
@@ -810,7 +787,7 @@ func set_muddy(muddy: bool) -> void:
 	if muddy == is_muddy:
 		return
 	is_muddy = muddy
-	for pos: Vector2i in _wear_days:
+	for pos: Vector2i in wear.days:
 		if wear_stage(pos) != PathRules.Stage.UNWORN and is_chunk_loaded(Chunk.world_to_chunk(pos)):
 			tile_changed.emit(pos)
 
@@ -849,8 +826,8 @@ func snapshot() -> Dictionary:
 		"seed": world_seed,
 		"ground_items": ground_items.snapshot(),
 		"spent_clay_spots": _spent_clay_spots.duplicate(),
-		"wear": _wear_days.duplicate(),
-		"wear_today": _steps_today.duplicate(),
+		"wear": wear.days.duplicate(),
+		"wear_today": wear.steps_today.duplicate(),
 		"terrain_edits": _terrain_edits.duplicate(),
 		"soil_moisture": soil.snapshot(),
 		"fallow_nights": fallow.nights,
@@ -921,9 +898,9 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for entry: Array in data["wear"]:
-		world._wear_days[SaveCodec.vector_from_json(entry)] = int(entry[2])
+		world.wear.days[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for entry: Array in data["wear_today"]:
-		world._steps_today[SaveCodec.vector_from_json(entry)] = float(entry[2])
+		world.wear.steps_today[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for edit: Dictionary in data["object_edits"]:
 		var object_data: Variant = edit["object"]
 		world._edit_object(
