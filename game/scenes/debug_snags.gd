@@ -7,11 +7,13 @@ extends RefCounted
 const COLUMN_SPACING := 3
 const ROW_SPACING := 5
 const GRASS_MARGIN := 3
+## The rows above the first tree that are grass too, for the tall crowns.
+const CROWN_ROWS := 4
 
 
 static func create(world: World, origin: Vector2i) -> void:
 	var kinds := WorldObjectSnags.KINDS
-	for y in range(-GRASS_MARGIN - 4, 3 * ROW_SPACING + GRASS_MARGIN):
+	for y in range(-GRASS_MARGIN - CROWN_ROWS, 3 * ROW_SPACING + GRASS_MARGIN):
 		for x in range(-GRASS_MARGIN, kinds.size() * COLUMN_SPACING + GRASS_MARGIN):
 			var pos := origin + Vector2i(x, y)
 			world.remove_object(pos)
