@@ -120,7 +120,7 @@ func test_quitting_in_the_middle_of_the_sleep_waits_and_saves_the_whole_morning(
 	_main._blackout.try_sleep()
 	await _wait_until_world_is_held()
 
-	var is_saved: bool = await _main._is_saved_for_quit()
+	var is_saved: bool = await _main._session.is_saved_for_quit()
 
 	assert_true(is_saved)
 	assert_false(_main._blackout.is_making_up_time, "it waited for the waking")

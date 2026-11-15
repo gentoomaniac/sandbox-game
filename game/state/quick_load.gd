@@ -1,9 +1,8 @@
 class_name QuickLoad
 extends RefCounted
 ## The handoff of F8: the game read from the save waits here while the game scene starts again,
-## and the new scene takes it (see Main `_quick_load`). A save that holds content the game no
-## longer has waits for the player's answer first (`missing`, then `load_dropping_missing` or
-## `cancel`).
+## and the new scene takes it (see QuickLoadFlow). A save that holds content the game no longer
+## has waits for the player's answer first (`missing`, then `load_dropping_missing` or `cancel`).
 
 enum Outcome { NO_SAVE, UNREADABLE, MISSING_CONTENT, READY }
 

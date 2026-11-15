@@ -6,7 +6,7 @@ extends Modal
 signal save_and_quit_requested
 ## The Load button was pressed (see LoadDialog).
 signal load_requested
-## The New game button was pressed (see Main `_start_new_game`).
+## The New game button was pressed (see SessionFlow `start_new_game`).
 signal new_game_requested
 ## A volume slider moved (see AudioPage).
 signal volume_tested(channel: StringName, percent: float)

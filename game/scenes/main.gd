@@ -24,8 +24,6 @@ const USE_NOTES := {
 	ToolUse.Use.STANDING_ON: "Step off it first.",
 	ToolUse.Use.THE_VILLAGES: GameState.THE_VILLAGES,
 }
-## The key of the notification about a save (see NotificationHud).
-const SAVE_NOTE := &"save"
 
 var _state: GameState
 ## The game F8 loaded, if it started this scene (see QuickLoad); told once the HUD is up.
@@ -90,6 +88,7 @@ var _fast_forward := false
 var _wheel_progress := 0.0
 var _fade_screen := FadeScreen.new()
 var _blackout: BlackoutFlow
+var _session: SessionFlow
 var _debug: DebugRunner
 var _pending_minutes := 0.0
 ## The game hour the wetness of the soil was last shown for.
@@ -276,6 +275,16 @@ func _connect_state_and_views() -> void:
 	_blackout.show_current_map = _show_current_map
 	_blackout.show_clock = _show_clock
 	add_child(_blackout)
+	_session = SessionFlow.new()
+	_session.state = _state
+	_session.saves = _saves
+	_session.save_path = _options.save_path
+	_session.save_questions = _save_questions
+	_session.choice_dialog = _choice_dialog
+	_session.load_dialog = _load_dialog
+	_session.notifications = _notifications
+	_session.blackout = _blackout
+	add_child(_session)
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -343,17 +352,17 @@ func _connect_state_and_views() -> void:
 			if _map_screen.is_open():
 				_console_view.close()
 	)
-	_menu.save_and_quit_requested.connect(_save_and_quit)
+	_menu.save_and_quit_requested.connect(_session.save_and_quit)
 	_menu.load_requested.connect(_load_dialog.open_saves.bind(_options.save_path))
-	_menu.new_game_requested.connect(_start_new_game)
-	_load_dialog.load_requested.connect(_load_picked)
+	_menu.new_game_requested.connect(_session.start_new_game)
+	_load_dialog.load_requested.connect(_session.load_picked)
 	_menu.volume_tested.connect(_audio.play_volume_test)
 	_saves.started.connect(
 		func() -> void:
-			_notifications.hold(SAVE_NOTE, "Saving...")
+			_notifications.hold(SessionFlow.SAVE_NOTE, "Saving...")
 			_autosave_timer.restart()
 	)
-	_saves.finished.connect(_show_save_result)
+	_saves.finished.connect(_session.show_save_result)
 
 
 ## Where the mouse is, in UI units; with `--mouse-tile`, the middle of that tile.
@@ -426,7 +435,7 @@ func _notification(what: int) -> void:
 		if _state == null:
 			get_tree().quit()
 			return
-		_save_and_quit()
+		_session.save_and_quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -455,7 +464,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var can_use := _can_use()
 	# The art switches with a screen open too, so the character screen shows the switch.
-	if _switch_art_set(event) or _quick_save_or_load(event) or _screens_take(event):
+	if _switch_art_set(event) or _session.quick_save_or_load(event) or _screens_take(event):
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
@@ -593,22 +602,6 @@ func _process(delta: float) -> void:
 			_ground_item_view.set_focus(_state.player.tile())
 			_npc_views.set_focus(_state.player.tile())
 	_debug.update(delta)
-
-
-## Quits once the game is saved, or the player chose to quit without (see SaveBeforeQuit).
-func _save_and_quit() -> void:
-	if await _is_saved_for_quit():
-		get_tree().quit()
-
-
-## Whether quitting may go on: the game is saved, or the player chose to quit without (see
-## SaveBeforeQuit). A sleep that is being made up for ends first, the waking included, so that the
-## save is of a whole morning.
-func _is_saved_for_quit() -> bool:
-	while _blackout.is_making_up_time:
-		await get_tree().process_frame
-	var saving := SaveBeforeQuit.new(_saves, _state, _options.save_path, _choice_dialog)
-	return await saving.is_quit_allowed()
 
 
 ## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.
@@ -867,60 +860,6 @@ func _load_settings() -> GameSettings:
 ## TextureRect drawn through UV, so it keeps filling the window and the world view is unchanged.
 func _apply_ui_scale(ui_scale: float) -> void:
 	get_tree().root.content_scale_factor = ui_scale
-
-
-func _show_save_result(succeeded: bool) -> void:
-	if succeeded:
-		_notifications.post(SAVE_NOTE, "Saved")
-	else:
-		_notifications.post(SAVE_NOTE, "Could not save the game", NotificationHud.Tone.ERROR)
-
-
-## F9 saves now, F8 loads; whether it was one of those keys. Both work with a window open too.
-func _quick_save_or_load(event: InputEvent) -> bool:
-	if event.is_action_pressed("quick_save"):
-		_saves.save_in_background(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE)
-	elif event.is_action_pressed("quick_load"):
-		_quick_load()
-	else:
-		return false
-	return true
-
-
-## F8: puts the player into the newest save (see QuickLoadFlow).
-func _quick_load() -> void:
-	await _quick_load_flow().run_newest(_options.save_path)
-
-
-## The save picked in the load dialog: after a question about the game now being played, the
-## player goes into it. Cancel goes back to the list.
-func _load_picked(entry: SaveEntry) -> void:
-	if await _save_questions.is_load_confirmed(entry.header):
-		await _quick_load_flow().run(entry.path)
-	else:
-		_load_dialog.open_saves(_options.save_path)
-
-
-## The pause menu's New game: after a question, the game is saved and a new world starts, the whole
-## scene again as for a load. A save that fails keeps the game as it is.
-func _start_new_game() -> void:
-	if not await _save_questions.is_new_game_confirmed():
-		return
-	while _blackout.is_making_up_time:
-		await get_tree().process_frame
-	if not _saves.save_and_wait(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE):
-		var note := "Not saved, so no new game: %s" % _saves.last_error
-		_notifications.post(QuickLoadFlow.LOAD_NOTE, note, NotificationHud.Tone.ERROR)
-		return
-	QuickLoad.start_new(GameLoader.new_world())
-	if get_tree().reload_current_scene() != OK:
-		QuickLoad.take()
-		var error := "Can't restart the game"
-		_notifications.post(QuickLoadFlow.LOAD_NOTE, error, NotificationHud.Tone.ERROR)
-
-
-func _quick_load_flow() -> QuickLoadFlow:
-	return QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree())
 
 
 ## The message of build mode: in the build menu while it picks, as under its row the HUD's

@@ -93,7 +93,7 @@ func try_sleep() -> void:
 ## villagers of the state; `_process` doesn't stream chunks meanwhile, and the residency's own
 ## streaming (`update`) is held as well, a guard for anything else that would call it
 ## (`require` still loads what an action needs). So the world is the one a skip in one go would
-## have, and the game is not saved or quit half way (see Main `_is_saved_for_quit`).
+## have, and the game is not saved or quit half way (see SessionFlow `is_saved_for_quit`).
 func _hold_world(is_held: bool) -> void:
 	is_making_up_time = is_held
 	residency.is_held = is_held or state.is_inside()
