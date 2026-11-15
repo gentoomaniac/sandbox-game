@@ -40,6 +40,7 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
 
 - [World](world/README.md): The generated land, its coast, the year and the weather, and the wild animals.
     - [generation.md](world/generation.md): Shape, biomes, interiors, the worked land (fields, Knicks, ditches), which trees grow where.
+    - [map-generation-review.md](world/map-generation-review.md): Review of the generator against the region (#60), and the plan of steps. Planned, not built.
     - [coast.md](world/coast.md): The North Sea coast: sea dyke, salt marsh, tidal mud, Warften, Ewer.
     - [seasons-and-weather.md](world/seasons-and-weather.md): Calendar, seasons, vegetation through the year, weather, day length, floods.
     - [wildlife.md](world/wildlife.md): Ambient wildlife: birds, deer, frogs and the rest, and how they come and go.
