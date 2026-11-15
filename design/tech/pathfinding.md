@@ -1,7 +1,7 @@
 # Pathfinding: how villagers find their way
 
 How a villager's way from one tile to another is found and walked, as it is built (tasks 238 and
-#68, steps 1 to 4). The plan and the reasons for it are in
+#68, steps 1 to 6). The plan and the reasons for it are in
 [../villagers/travel.md](../villagers/travel.md) (the decision record, with the measurements) and
 [../villagers/routines.md](../villagers/routines.md) (task 238's plan); this page says what the
 code does and how to change it without breaking it. What is **not built yet** is marked so.
@@ -73,7 +73,7 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
 
 ### `TravelMasks`: making and keeping masks
 
-- **Two LRUs**: masks (`far_masks_kept`, 256, about 1.6 KB each) and raw chunks
+- **Two LRUs**: masks (`far_masks_kept`, 1024, about 1.6 KB each) and raw chunks
   (`far_chunks_kept`, 32, about 300 KB each). A raw chunk is what `WorldGenerator` makes, with no
   edit ever applied, so it never goes stale.
 - **One worker job at a time**: generating and stamping share the one worker task of `TravelMasks`, from `update()` (once a frame, from `NpcTravel.tick`): a stamp job
@@ -338,13 +338,13 @@ for something inside a pool task (a task that waits for a mask can block every w
 | `max_nodes` (2500) | the length of a leg: more sees further in one search, costs more time on a worker |
 | `heuristic_weight` (1.0) | speed of the search against the way being the best one (0.6 is exact and searches fields all over) |
 | `search_tasks` (1) | searches at once: 2 finishes a crowd of 30 in half the time (0.5 s against 0.8 to 1.0 s warm) but, measured under 15 searches a second, costs the main thread's frames (walking p99 21.6 ms against 17.7 with 1, baseline 13.5 to 15.2); each is a pool task |
-| `snapshot_seconds` (2) | how old the wear and the buildings a search sees may be, against the cost of copying them |
+| `snapshot_seconds` (2) | how old the wear and the buildings a search sees may be, against the cost of copying them: 0.4 ms at 6000 worn tiles, 2.5 to 3 ms at 33000, 6 to 9 ms at 55000 to 60000, on the main thread. 10 s gave no clear gain in the stress (p99 10.5 and 5.9 ms in two runs, against 10.4 and 11.7 for 2 s: the runs differ more than that); kept until #70 makes the copy cheaper |
 | `cost_trodden`, `cost_path`, `cost_object` | how much villagers keep to lanes and walk round fields |
 | `max_legs` (6) | how long a chain of legs may be |
 | `blocked_give_up_seconds` (0.5), `retries` (2) | how fast a villager with a blocked step thinks again, and how often before it gives up |
 | `blocked_min_seconds`, `blocked_fallback_seconds` | when a blocked villager looks again |
-| `skip_masks_ahead` (8) | how many chunks ahead of a trip a skip asks the masks of and pins: more waits less for the worker, and keeps more masks past `far_masks_kept` at once |
-| `far_masks_kept` (256), `far_chunks_kept` (32) | memory (1.6 KB a mask, 300 KB a raw chunk) against making masks again; the raw chunks should hold the chunks round the player, as an edit drops four masks that are made again from them |
+| `skip_masks_ahead` (8) | how many chunks ahead of a trip a skip asks the masks of and pins: more waits less for the worker, and keeps more masks past `far_masks_kept` at once. 2, 8 and 32 gave the same skip (0.25 to 0.33 s for 155 trips), since the masks of a trip's leg are there from its search; it matters only when they have been dropped |
+| `far_masks_kept` (1024), `far_chunks_kept` (32) | memory (1.6 KB a mask, 300 KB a raw chunk) against making masks again. The masks must hold what all trips touch at once: 155 villagers sent 100 to 300 tiles touch about 380, and with 256 kept a skip waited 6 s and the searches 7 to 10 s (measured, step 6); beyond 1024 nothing was gained. The raw chunks should hold the chunks round the player, as an edit drops four masks that are made again from them; 128 instead of 32 gained nothing and cost 20 MB |
 
 ## Debugging and measuring
 
@@ -368,7 +368,7 @@ for something inside a pool task (a task that waits for a mask can block every w
     It prints the trips completed and blocked (the clock moves in the scenarios, so a tide closes
     some ways) and the searches a second; compare the 99th percentile and the longest frame with a
     run without (run each a few times: the scenes are noisy).
-  - `tools/bench/paths.gd` (task 238): villagers sent over loaded ground.
+  - `tools/bench/paths.gd` (task 238, #68 step 6): 10, 30 or 155 villagers sent 100 to 300 tiles at once, through a day and into a time skip, masks cold and warm, in real time. The main thread's time in `Npcs.update` split into walking, `Pathfinder.tick`, `TravelMasks.update` and sending, a fixed probe to see whether the workers get in the main thread's way, the wait for the first leg, the searches, the snapshot and the memory. `speed=20` is the stress of #70. Numbers: travel.md, Measured, step 6.
 
   Run them with `taskset -c 0-10 nice -n 19` to leave the machine alone, and with fewer cores to
   see what a small machine does.

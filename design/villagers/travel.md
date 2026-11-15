@@ -66,8 +66,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   answers `is_free(local, tide_level, day)`, `is_trampled(local, day)` and `wears(local)`; tide and
   day are the caller's, never the clock.
 - **`TravelMasks`** (one per `World`, held by `NpcTravel`, which makes it with its first search over
-  that world and calls `update` once a frame; `game/state/travel_masks.gd`): an LRU of masks (256,
-  about 0.4 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are `far_masks_kept` and
+  that world and calls `update` once a frame; `game/state/travel_masks.gd`): an LRU of masks (1024,
+  about 1.6 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are `far_masks_kept` and
   `far_chunks_kept` of `[travel]` in data/npcs.cfg (`TravelMasks.for_world(world, rules)`; the
   constructor takes the numbers). A raw chunk is what the generator makes and
   nothing else: no edit is ever applied to it, so it never goes stale (the seed does not change).
@@ -292,6 +292,112 @@ stands) and walks on. As built:
   tiles a second, adds nothing that shows at 30; per-frame far work is a few float operations and
   about eight chunk lookups (a dictionary `has` each), and a mask lookup when it enters a tile.
 
+## Measured, step 6 (2026-11-15)
+
+`tools/bench/paths.gd`, headless, pinned to 11 cores (`taskset -c 0-10 nice -n 19`; other work ran
+on the machine now and then), the fixture save (155 villagers, 13 x 13 chunks loaded round the
+player), frames paced to 60 a second of real time, each configuration run twice (the two runs agree
+to a few percent unless it says otherwise). Goals are tiles a way leads to, 100 to 300 tiles away.
+**Once**: all leave in one frame, 90 s. **Day**: each leaves at a random moment of the first half of
+240 s, then goes to and fro with rests of up to 20 s. **Skip**: all leave, walk 45 s, then `catch_up`
+of 240 minutes (the main thread waits for the worker). Cold: masks made as the searches ask; warm: the
+same trips again over what the first run left. The main thread in `Npcs.update`'s parts, ms a frame;
+with no trip at all the 155 villagers strolling cost 0.6 to 0.7 ms (mean; p99 1.1 to 1.2) and 30
+cost 0.55 to 0.58.
+
+As built before the tuning (`far_masks_kept=256`):
+
+| Villagers | Run | Frame mean / p99 / longest (ms) | First leg wait mean / last (s) | Skip (s) |
+|---|---|---|---|---|
+| 10 | once, cold | 0.74-0.81 / 1.2-1.4 / 2.1-2.3 | 3.1 / 4.0 | |
+| 10 | once, warm | 0.76-0.79 / 1.2 / 1.5 | 0.16 / 0.28 | |
+| 10 | day, cold; warm | 0.63-0.73 / 1.1-1.3 / 2.2-13.8 | 0.5 / 1.4; 0.05 / 0.22 | 0.20 |
+| 30 | once, cold | 0.93-0.94 / 1.5-1.6 / 2.4-6.5 | 8.0 / 10.1 | |
+| 30 | once, warm | 0.85-0.91 / 1.3 / 2.4-2.6 | 0.46 / 0.93 | |
+| 30 | day, cold; warm | 0.79-0.88 / 1.3-1.7 / 2.4-12 | 0.38 / 1.4; 0.03 / 0.15 | 0.21-0.23 |
+| 155 | once, cold | 1.63-1.65 / 2.7-2.8 / 5.2 | 25.8 / 32.7 | |
+| 155 | once, warm | 1.75-1.96 / 2.5-4.1 / 8.4-32 | 6.7 / 10.4-10.5 | |
+| 155 | day, cold; warm | 1.6-1.9 / 3.7-4.9 / 10-21 | 0.33 / 1.4; 0.31 / 1.1-1.3 | 5.8-6.6 |
+
+- **The wait is the masks, not the searches.** 155 searches are 270,000 tiles, 2.5 s of one worker (a
+  worker is 3 % busy over 90 s). The first leg of the last of 155 villagers leaving cold takes 33 s,
+  of 30 villagers 10 s (the user's answer 5, 10 s for 30, holds; it is the masks of a cold trip, not
+  the search); warm with enough masks, 4 s (below). Spread through a day, nobody waits more than 1.4 s
+  cold. The cold wait is one worker job a frame (`TravelMasks.update` starts one and takes its result
+  the next frame, 60 a second): the 380 masks of 155 such trips are some 760 jobs (a stamp each and
+  about as many generated chunks), 13 s at the least, and the LRU of raw chunks (32) makes some of
+  them twice. More raw chunks (128) changed nothing (25.6 s again). A second job in flight, or
+  generating and stamping in one task, would shorten it; not done here.
+- **The main thread is cheap.** All the Npcs do is 0.7 ms (10 villagers), 0.9 (30) and 1.6 to 1.9
+  (155) in a frame at the mean, 1.2, 1.5 and 2.5 to 4.9 ms at the 99th percentile, no frame over
+  16.7 ms; 0.6 ms of the 155's is the strolling of those who are not on a trip. The longest frames
+  (5 to 20 ms) are the first send after the masks are made (7 to 22 ms in cold runs, not looked into)
+  and the snapshot copy.
+- **Snapshots** (`TravelSnapshot.of`, counted in sending): 0.4 ms with 6000 worn tiles, 2.5 to 3 ms
+  with 33,000, 6 to 9 ms with 55,000 to 62,000 (after 90 s of the stress), one every
+  `snapshot_seconds` while villagers search. The cost grows with the wear all villagers have made
+  (it regrows, see `World`, so it is bounded), so it is the one that grows with the length of a day.
+- **Memory** (static memory, MB; the goals are chosen with masks of their own that are let go of
+  first): 136 with the save, 153 with 10 villagers walking cold, 160 with 30, 172 with 155 sent once,
+  178 after a day. In the stress (below) 200 to 236: the wear of 60,000 tiles and what the paths and
+  views hold; not taken apart.
+- **No interference from the workers.** The probe (4000 lookups in a table of tiles, 0.23 to 0.26
+  ms, p99 0.3 to 0.4) takes the same with 155 villagers searching and a worker making masks as with
+  none, in every run (apart from single frames of 3 to 22 ms that the runs without trips have too).
+  Cache or memory contention that slows the main thread (Sol's first suspect, #70) is not seen at this
+  load.
+
+**Tuned** (each change measured on 155 villagers, once and skip, twice):
+
+| Setting | Was | Now | Result |
+|---|---|---|---|
+| `far_masks_kept` | 256 | 1024 | 155 once, warm: first leg 6.7 / 10.4 s -> 2.1 / 4.1 s; skip 6.0 s -> 0.3 s; the stress below. The trips touched 376 masks, so 256 dropped what the skip and the next search needed. 4096 (with 128 raw chunks) gave the same and 20 MB more. |
+| `far_chunks_kept` | 32 | 32 | 128: no gain, 20 MB more. |
+| `skip_masks_ahead` | 8 | 8 | 2, 8 and 32: the same skip (0.24 to 0.33 s). |
+| `search_tasks` | 1 | 1 | 2 in the stress: waits no shorter (they are mask-bound), main thread no better (p99 7.1 to 10.6 ms, against 5.2 to 6.0 with one task and 1024 masks). |
+| `snapshot_seconds` | 2 | 2 | 10: p99 10.5 and 5.9 ms in two runs against 10.4 and 11.7: the noise is larger than the effect. |
+| `blocked_give_up_seconds`, `retries`, `max_legs`, `max_nodes` | | unchanged | The bench has no fence: nothing was blocked by a step (only `NO_WAY` in the game's frames bench). Left as the user chose them. |
+
+**The stress of #70** (`speed=20`: walkers at 20 times the pace, sent again every few seconds; 155
+villagers, 90 s; 7.6 searches a second with 256 masks, 10 with 1024, 15 to 17 in `frames.gd
+--far-trips=155`, where a village makes about 0.65). Frame mean / p99 / longest (ms) of the parts of
+`Npcs.update`, two runs, cold and warm:
+
+| | 256 masks | 1024 masks |
+|---|---|---|
+| all parts | 3.0-3.7 / 9.3-11.7 / 17-40 | 2.35-2.47 / 5.2-6.0 / 8.6-12 |
+| walking | 2.6-3.1 / 8.2-10.8 | 2.2-2.3 / 3.7-5.2 |
+| `Pathfinder.tick` | 0.08-0.11 / 0.7-1.2 / up to 8 | 0.006-0.011 / 0.03-0.04 / up to 0.9 |
+| `TravelMasks.update` | 0.25-0.31 / 0.8-3.1 / up to 7.5 | 0.002-0.05 / 0.005-0.5 / 0.7 |
+| sending (`walk_to`) | 0.12-0.15 / 0.3-0.4 / 11-17 | 0.08-0.10 / 0.27 / 5-6 (the snapshot) |
+| first leg wait mean / last | 3.4-3.8 / 26-31 s | 0.03-0.24 / 0.08-8 s |
+| trips completed in 90 s | 430-447 | 582-594 |
+
+Most of the main-thread cost of the heavy search load was the masks of 155 trips being dropped and
+made again (an LRU of 256 against 380 in use), not the searches: with 1024 it is gone. What is left
+at 155 walkers is the walking itself.
+
+**What #70 starts from.** A frame of the game (`frames.gd`, headless, walking scenario, ms; none, 30
+and 155 far walkers at 20 times the pace, two runs each, `far_masks_kept=1024`): mean 7.1 / 7.1-7.2 /
+7.2-7.3; p99 11.8 / 12.5-13.3 / 15.5-17.1; longest 24.4-24.5 / 26.7-27.4 / 27.5-49.6. The parts of
+`Npcs.update` (`paths.gd`, mean ms a frame):
+
+| Part | 155 walkers, real pace | 30 walkers, real pace | 155, 20 times the pace, 1024 masks |
+|---|---|---|---|
+| walking (`Npcs.update` without its `tick`: the trips, and a search a stuck walker begins) | 1.5-1.9 | 0.8-0.9 | 2.2-2.3 |
+| `Pathfinder.tick` (reap, parked searches, start tasks) | 0.02-0.04 | 0.003-0.008 | 0.006-0.011 |
+| `TravelMasks.update` | 0.03-0.07 | 0.003-0.024 | 0.002-0.05 |
+| sending (`walk_to`: snapshot, prefetch, queueing) | 0.04-0.05 | 0.01 | 0.08-0.10 |
+| with no trip at all (the others strolling) | 0.6-0.7 | 0.55-0.58 | 1.4-1.5 |
+
+The rest of the frame (about 7 ms: drawing and the world) does not change with the walkers. What is
+left is the walking of those on trips: about 6 us a walker a frame at the real pace, and the p99
+follows the tiles entered a second (at 20 times the pace 4000 a second at 155, each a mask lookup and
+a wear step). Dispatch and reaping are a few percent of it; masks and snapshot are spikes (a snapshot
+of 55,000 worn tiles is 6 to 9 ms in one frame). So #70 starts with the walking (tile entry), the
+copy of the wear for a snapshot, and the first send of a cold run (7 to 22 ms); the workers' share
+of memory and cache is not seen by the probe.
+
 ## Time skips and sleep
 
 A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked
@@ -380,7 +486,8 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    (tests/test_npc_inside.gd; `Npcs.update_unseen`, `NpcTravel.update`).
 6. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
    at once and through the day, cold and warm: longest frame, search time, the last departure's
-   delay, memory. The numbers tuned and written here.
+   delay, memory. The numbers tuned and written here. **Done** (`tools/bench/paths.gd`; numbers and
+   the tuning under "Measured, step 6"; `far_masks_kept` 256 -> 1024).
 
 ## Sol's second opinion
 
