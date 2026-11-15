@@ -75,9 +75,34 @@ func _check_game(game: Variant) -> void:
 		for index in npcs.size():
 			_check_npc(npcs[index], "npcs %d" % index)
 	_check_shops(game)
+	_check_quests(game)
 	_check_deeds(game, "deeds", "", true)
 	_check_map_reference(game, "current_map")
 	_check_map_reference(game, "home_map")
+
+
+## The quests: those posted or taken, each with its id, giver, the day it was posted and whether it
+## is taken, and the day each quest that was done and each that ended was last seen.
+func _check_quests(game: Dictionary) -> void:
+	var quests: Variant = _field(game, "quests", Kind.DICT, "")
+	if quests == null:
+		return
+	var open: Variant = _field(quests, "open", Kind.LIST, "quests")
+	for index in [] if open == null else open.size():
+		var path := "quests open %d" % index
+		var entry: Variant = open[index]
+		if not entry is Dictionary:
+			_report(path, "should be a dictionary")
+			continue
+		_field(entry, "id", Kind.TEXT, path)
+		_field(entry, "giver", Kind.TEXT, path)
+		_field(entry, "posted_day", Kind.WHOLE, path)
+		_field(entry, "is_taken", Kind.BOOL, path)
+	for key in ["done", "ended"]:
+		var days: Variant = _field(quests, key, Kind.DICT, "quests")
+		for id: Variant in [] if days == null else days:
+			if not _is_kind(days[id], Kind.WHOLE):
+				_report("quests %s" % key, "%s %s is not a day" % [id, days[id]])
 
 
 ## The shops: for each, how many of what it has left and has room for, and the day it was worked

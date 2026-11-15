@@ -105,7 +105,7 @@ func test_a_quest_goes_away_the_morning_after_its_last_day_without_a_word_of_bla
 	_quests.noticed.connect(func(text: String) -> void: notices.append(text))
 	_pass_days(1)
 	assert_eq(_quests.open_entries()[0]["posted_day"], 2)
-	assert_eq(_quests.last_day_of(_quests.open_entries()[0]), 4)
+	assert_eq(_quests.rules.last_day_of(_quests.open_entries()[0]), 4)
 
 	_pass_days(2)
 	assert_eq(_ids_open(), ["a"] as Array[String], "day 4, the last day")

@@ -22,7 +22,8 @@ var _clock: GameClock
 var _npcs: Npcs
 ## Gives the player, who is a new one in a loaded game.
 var _player: Callable
-var _world: World
+## Gives the world.
+var _world: Callable
 ## The posted and the taken quests, the oldest first, each `{id, giver, posted_day, is_taken}`.
 var _open: Array[Dictionary] = []
 ## {quest id: the day it was done}.
@@ -32,7 +33,7 @@ var _ended := {}
 
 
 func _init(
-	quest_rules: QuestRules, clock: GameClock, npcs: Npcs, player: Callable, world: World
+	quest_rules: QuestRules, clock: GameClock, npcs: Npcs, player: Callable, world: Callable
 ) -> void:
 	rules = quest_rules
 	_clock = clock
@@ -80,9 +81,28 @@ func take(entry: Dictionary) -> void:
 	entry["is_taken"] = true
 
 
-## The last day the quest stays: the days of its file count from the day it was posted.
-func last_day_of(entry: Dictionary) -> int:
-	return entry["posted_day"] + rules.days_of(entry["id"]) - 1
+## The save data: the quests posted or taken, and the days those done and those that ended (done or
+## gone) were last seen. The rules are data and not saved.
+func to_dict() -> Dictionary:
+	return {"open": _open.duplicate(true), "done": _done.duplicate(), "ended": _ended.duplicate()}
+
+
+## Takes the quests of save data (see `to_dict`). A quest whose id the rules no longer have is
+## left out, and the whole numbers come back from JSON's floats.
+func load_dict(data: Dictionary) -> void:
+	_open.clear()
+	for saved: Dictionary in data["open"]:
+		if not rules.has(saved["id"]):
+			continue
+		var entry := {
+			"id": saved["id"],
+			"giver": saved["giver"],
+			"posted_day": int(saved["posted_day"]),
+			"is_taken": saved["is_taken"],
+		}
+		_open.append(entry)
+	_done = _days_of(data["done"])
+	_ended = _days_of(data["ended"])
 
 
 ## The player, for the objectives that look at what they carry.
@@ -100,7 +120,7 @@ func count_placed_near_home(giver: String, object: StringName, since_day: int, r
 		return 0
 	var home := npc.anchor if npc.house == null else Vector2(npc.house.door_tile())
 	var count := 0
-	for piece in _world.edited_objects():
+	for piece in _world.call().edited_objects():
 		var is_recent: bool = piece.state.get("placed_day", 0) >= since_day
 		if piece.type == object and is_recent and Vector2(piece.pos).distance_to(home) <= radius:
 			count += 1
@@ -196,10 +216,19 @@ func _taken_count() -> int:
 ## Lets the quests whose days are up go away.
 func _expire(today: int) -> void:
 	for entry in _open.duplicate():
-		if last_day_of(entry) < today:
+		if rules.last_day_of(entry) < today:
 			_open.erase(entry)
 			_ended[entry["id"]] = today
 			noticed.emit(WENT_AWAY_TEXT % [_name_of(entry["giver"]), rules.thing_of(entry["id"])])
+
+
+## The quests of `saved` ({id: day}) that the rules still have, with whole days.
+func _days_of(saved: Dictionary) -> Dictionary:
+	var days := {}
+	for id: String in saved:
+		if rules.has(id):
+			days[id] = int(saved[id])
+	return days
 
 
 func _name_of(villager: String) -> String:
@@ -218,7 +247,7 @@ func _post_picked(today: int, only_starters: bool) -> String:
 	if _open.size() >= rules.max_open():
 		return ""
 	var dice := RandomNumberGenerator.new()
-	dice.seed = hash([_world.world_seed, today])
+	dice.seed = hash([_world.call().world_seed, today])
 	var givers_by_quest := {}
 	for id in rules.ids():
 		if (only_starters and not rules.is_starter(id)) or is_open(id) or _is_resting(id, today):

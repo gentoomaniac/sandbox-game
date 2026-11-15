@@ -5,7 +5,7 @@
   built with one: `World.village`, see [../world/wehlsbuell.md](../world/wehlsbuell.md)) + buildings with their interiors (and the
   items lying on their floors) +
   player state (position, current map, home, appearance, inventory) + clock + the shops (#10: for each, what it has left to sell and the room it has left to take, and the
-  day it was worked out, `Shops`; version 51) + the villagers, with the
+  day it was worked out, `Shops`; version 51) + the quests of the villagers (#12: those posted or taken, each with its quest, giver, the day it was posted and whether it is taken, and the days the quests done and those ended were last seen, `Quests`; version 52) + the villagers, with the
   plans the language model made for their days (`Npc.day_plans`, see [../villagers/routines.md](../villagers/routines.md); a default day is made again, not saved) and the building each is inside, with where they stand in its room (`Npc.inside`, see [../villagers/inside.md](../villagers/inside.md)). One JSON
   file per save under `user://saves/`, see the next point.
 - **The newest ten saves are kept** (#16, the user, 2026-11-14: "not just one save file but maybe
@@ -84,7 +84,7 @@
   save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
-  load (42 to 51 today, nine until the next version adds its step); an older one is refused like
+  load (42 to 52 today); an older one is refused like
   any unreadable save (renamed `.bak`,
   a new game). When `VERSION` goes up, the oldest step, its constants, helpers and tests go,
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.

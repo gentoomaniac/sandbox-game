@@ -155,6 +155,12 @@ func days_of(id: String) -> int:
 	return _quests[id].get("days", _limits["villagers"]["default_days"])
 
 
+## The last day the quest of `entry` (see Quests) stays: the days of its file count from the day it
+## was posted.
+func last_day_of(entry: Dictionary) -> int:
+	return entry["posted_day"] + days_of(entry["id"]) - 1
+
+
 ## Whether it may be the quest of the first day.
 func is_starter(id: String) -> bool:
 	return _quests[id].get("starter", false)

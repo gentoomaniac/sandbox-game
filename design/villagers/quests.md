@@ -142,3 +142,13 @@ the witness radius of `data/gossip.cfg` (20 tiles by day) of where the player st
 hears of it and the judge words it. With no model the deed's fixed change counts; with one the
 verdict may differ, within the day's cap of 20 points. A reward with no `opinion_steps` tells no
 deed. Nothing in the quests moves an opinion directly.
+
+## Saving
+
+A part `quests` of the game state (save version 52): `{"open": [{"id", "giver", "posted_day",
+"is_taken"}], "done": {id: day}, "ended": {id: day}}`. `ended` is the last day a quest was done or
+went away (for `repeat_after_days`), `done` the day each was done (for `quest_done`). The day a quest
+goes away is worked out (`posted_day` plus the file's `days`), and the rules are data and not saved.
+A quest whose id is no longer in the data is dropped on load. The validator checks the part, and a
+save of version 51 loads with none. The pieces of a build quest are `placed_day` in the state of the
+placed objects, saved with the world. See [../tech/saving.md](../tech/saving.md).

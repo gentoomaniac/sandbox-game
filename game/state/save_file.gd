@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 51
-## The oldest version we still upgrade. Nine steps back, for the next version (#12) makes its step
-## the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 52
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -238,6 +237,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_49(game)
 	if version <= 50:
 		_upgrade_from_version_50(game)
+	if version <= 51:
+		_upgrade_from_version_51(game)
 
 
 ## Version 42 counted the wear of desire paths in steps (#61): a tile with 8 steps was trodden and
@@ -347,3 +348,8 @@ static func _upgrade_from_version_49(game: Dictionary) -> void:
 ## Version 50 had no shops (#10): none has been looked at, so each starts full when it is.
 static func _upgrade_from_version_50(game: Dictionary) -> void:
 	game["shops"] = {}
+
+
+## Version 51 had no quests (#12): none is posted or taken, and none was done.
+static func _upgrade_from_version_51(game: Dictionary) -> void:
+	game["quests"] = {"open": [], "done": {}, "ended": {}}

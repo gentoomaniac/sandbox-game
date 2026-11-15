@@ -54,7 +54,7 @@ func _list(quests: Quests) -> Array[String]:
 						entry["id"],
 						entry["giver"] if giver == null else giver.name,
 						entry["posted_day"],
-						quests.last_day_of(entry),
+						quests.rules.last_day_of(entry),
 						"taken" if entry["is_taken"] else "not taken",
 					]
 				)

@@ -76,7 +76,6 @@ var activities: ActivityUpkeep
 ## shop).
 var shops: Shops
 ## The quests the villagers have posted, and the player's list (see design/villagers/quests.md).
-## Built with the simulation.
 var quests: Quests
 ## What the player did within sight of villagers.
 var deeds: DeedLog
@@ -115,6 +114,7 @@ func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
 	shops = Shops.new(ShopRules.default_rules(), clock)
+	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, _the_world)
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
 	action_done.connect(deeds.record)
@@ -791,6 +791,7 @@ func snapshot() -> Dictionary:
 		"livestock": livestock.to_array(),
 		"npcs": npcs.to_array(),
 		"shops": shops.to_dict(),
+		"quests": quests.to_dict(),
 		"deeds": deeds.to_array(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
@@ -819,6 +820,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	for npc in state.npcs.all():
 		state.activities.resume(npc)
 	state.shops.load_dict(data["shops"])
+	state.quests.load_dict(data["quests"])
 	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# The land about the player is seen from where they stand (a save from before the record has
@@ -909,7 +911,6 @@ func _start_simulation() -> void:
 		ActorsUpkeep.new(world, livestock, npcs, _player_feet, activities.catch_up)
 	)
 	simulation.add_system(GossipSpread.new(npcs, deeds))
-	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, world)
 	simulation.add_system(LanternUpkeep.new(_the_player))
 	simulation.add_system(CampfireUpkeep.new(world))
 
@@ -918,6 +919,11 @@ func _start_simulation() -> void:
 ## A named method: a lambda would keep the whole game alive from the simulation it belongs to.
 func _tiles_kept_clear() -> Array:
 	return [] if is_inside() else [player.tile()]
+
+
+## The world, for what is made before there is one (see `quests`).
+func _the_world() -> World:
+	return world
 
 
 ## The player: a loaded game has a new one, which systems must not hold on to.
