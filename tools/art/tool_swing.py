@@ -3,7 +3,8 @@ pictures in them. swing.py draws them at 32 px per tile, classic/swing.py at 16 
 
 When the player uses a tool, the arms and the tool swing: four or five frames of a motion in each
 facing (MOTIONS: the chop of the axe, the pickaxe and the hoe, the knock of the hammer, the dig of
-the shovel and the mow of the scythe), each shown for as long as DURATIONS says. A frame (FRAMES) says where the hands are, in the 32 px figure's pixels
+the shovel, the mow of the scythe and the pour of the watering can), each shown for as long as
+DURATIONS says. A frame (FRAMES) says where the hands are, in the 32 px figure's pixels
 (character.py; the classic art halves them), which way the tool points from the hand that holds
 it and which side its blade is on, whether it is behind the figure, how far the figure sinks as
 the blow lands, which arms reach forward out of sight from behind, and where the feet are.
@@ -12,12 +13,13 @@ A tool is one rigid picture in each frame, a map of letters as its icon and the 
 (tool_grades.py): upright as in the hand (held_maps.py) or on the true diagonal (DIAGONALS, at
 the size of the classic icons, whose handle is 2 px a row), turned in quarter turns and mirrored,
 so nothing is drawn at an odd angle. A turned picture is lit anew from the top left (`relit`).
+The watering can is held by its hoop: upright, leant over or tipped on its side (`can_letters`).
 """
 
 import held_maps
 
 # The motions and the tools that make them; the frames of each are in FRAMES.
-MOTIONS = ("chop", "knock", "dig", "mow")
+MOTIONS = ("chop", "knock", "dig", "mow", "pour")
 MOTION_OF_TOOL = {
     "axe": "chop",
     "pickaxe": "chop",
@@ -25,6 +27,7 @@ MOTION_OF_TOOL = {
     "hammer": "knock",
     "shovel": "dig",
     "scythe": "mow",
+    "watering_can": "pour",
 }
 
 # Directions as steps in the picture (x to the right, y down).
@@ -278,7 +281,7 @@ def tool_hand_index(facing):
     return 0 if facing == "down" else 1
 
 
-def frame(hands, points, side, behind=False, sink=0, hidden=(), slide=0, lean=0, lift=(0, 0), step=None, load=False):
+def frame(hands, points, side, behind=False, sink=0, hidden=(), slide=0, lean=0, lift=(0, 0), step=None, load=False, can=None):
     """A frame of a motion: where the hands are (`hands`, in the order of `Figure.arms`, the
     tool's hand at the tool's hand pixel), which way the tool points and its blade's side,
     whether it is behind the figure, how far the figure sinks, and which arms reach forward out
@@ -286,8 +289,8 @@ def frame(hands, points, side, behind=False, sink=0, hidden=(), slide=0, lean=0,
     from where it is held standing (the spade's hands go up the shaft), `lean` how many rows of a
     spade's shaft go up for each pixel it leans aside (to the right if more than 0, see `leant`),
     `lift` how far each foot is raised (from the front or behind) and `step` how far the near foot
-    is put forward and up (from the side, onto the spade's blade), and `load` puts a spit of earth
-    on the blade."""
+    is put forward and up (from the side, onto the spade's blade); `load` puts a spit of earth on
+    the blade, and `can` is the watering can's state in a pour (see `can_letters`)."""
     return {
         "hands": hands,
         "points": points,
@@ -300,6 +303,7 @@ def frame(hands, points, side, behind=False, sink=0, hidden=(), slide=0, lean=0,
         "lift": lift,
         "step": step,
         "load": load,
+        "can": can,
     }
 
 
@@ -398,6 +402,26 @@ FRAMES = {
         frame(((11, 36), (10, 40)), DOWN_LEFT, 1, behind=True, hidden=BOTH),
         frame(((10, 33), (9, 37)), DOWN_LEFT, 1, behind=True, hidden=BOTH),
     ),
+    # The pour of the watering can: lifted forward by its hoop, leant over, and tipped on its side
+    # with the water running from the rose (two frames of the stream, which the game may repeat).
+    ("pour", "right"): (
+        frame((None, (23, 36)), UP, 0, can=("upright", None)),
+        frame((None, (25, 34)), UP, 0, can=("leant", None)),
+        frame((None, (27, 35)), UP, 0, can=("tipped", 0)),
+        frame((None, (27, 35)), UP, 0, can=("tipped", 1)),
+    ),
+    ("pour", "down"): (
+        frame(((6, 38), None), UP, 0, can=("upright", None)),
+        frame(((5, 36), None), UP, 0, can=("leant", None)),
+        frame(((3, 35), None), UP, 0, can=("tipped", 0)),
+        frame(((3, 35), None), UP, 0, can=("tipped", 1)),
+    ),
+    ("pour", "up"): (
+        frame((None, (26, 38)), UP, 0, can=("upright", None)),
+        frame((None, (29, 37)), UP, 0, can=("leant", None)),
+        frame((None, (31, 36)), UP, 0, can=("tipped", 0)),
+        frame((None, (31, 36)), UP, 0, can=("tipped", 1)),
+    ),
 }
 # Where a tool points otherwise than its motion's frame says, by (tool, facing drawn, frame): the
 # pick and the hoe strike the ground before the feet.
@@ -414,10 +438,11 @@ DURATIONS = {
     "knock": (90, 140, 60, 160, 110),
     "dig": (130, 220, 150, 200),
     "mow": (130, 90, 70, 90, 150),
+    "pour": (120, 110, 180, 180),
 }
 # The row of the ground before the feet, in the figure's rows, by facing drawn: a spade's blade
-# thrust into it is cut off below. From the front it is below the feet in the picture, from behind
-# above them.
+# thrust into it is cut off below, and the water from the can falls to it. From the front it is
+# below the feet in the picture, from behind above them.
 GROUND = {"right": 61, "down": 66, "up": 58}
 
 
@@ -445,6 +470,8 @@ def figure_frame(motion, index, facing):
 def tool_letters(tool, motion, index, facing):
     """The tool's picture in a frame (in a facing drawn), around the hand that holds it."""
     motion_frame = figure_frame(motion, index, facing)
+    if tool == "watering_can":
+        return can_letters(*motion_frame["can"], outward=-1 if facing == "down" else 1)
     points = POINTS.get((tool, facing, index), motion_frame["points"])
     letters = oriented(tool, points, motion_frame["side"])
     slide = motion_frame["slide"]
@@ -469,8 +496,9 @@ def leant(letters, lean):
     return {(x + aside(y) - aside(0), y): letter for (x, y), letter in letters.items()}
 
 
-# The letters of what is not the tool: earth on the spade.
+# The letters of what is not the tool: earth on the spade, water from the can.
 SOIL = "oO"
+WATER = "bf"
 
 
 def loaded(letters):
@@ -487,3 +515,67 @@ def loaded(letters):
             result[(x, top - dy)] = "O" if dy == height else "o"
     return result
 
+
+# fmt: off
+# The watering can in a pour, drawn by hand, the hand on its hoop ("h", not drawn): leant over by
+# an eighth of a turn, its spout level; and tipped on its side (the can of held_maps turned a
+# quarter clockwise and lit anew), its foot at the left, the spout running down to the rose.
+CAN_LEANT = (
+    "........h....",
+    ".....m.kk....",
+    "....mkm..k...",
+    "...msskm.k...",
+    "..msksskm....",
+    ".msssksskm..m",
+    "msssssksk..sm",
+    ".ksssssksss..",
+    "..ksssk......",
+    "...ksk.......",
+    "....k........",
+)
+CAN_TIPPED = (
+    ".mmmmmm....",
+    "mssskskmk..",
+    "mssskskmkkh",
+    "mssskskmkk.",
+    "sssskskmk..",
+    ".kkkkkk....",
+    "...s.......",
+    "....s.sm...",
+    ".....skm...",
+)
+# The water running from the rose of the tipped can (its lowest pixel at ROSE in CAN_TIPPED), in
+# two frames: drops falling from it to the ground.
+STREAMS = (
+    ((0, 2, "f"), (0, 3, "b"), (1, 6, "b"), (0, 9, "f"), (0, 10, "b"), (1, 13, "b"), (0, 16, "b"), (1, 19, "b")),
+    ((1, 1, "b"), (0, 4, "f"), (0, 5, "b"), (1, 8, "b"), (0, 11, "b"), (1, 14, "f"), (1, 15, "b"), (0, 18, "b")),
+)
+ROSE = (7, 8)
+# fmt: on
+
+
+def can_letters(state, stream, outward):
+    """The watering can by its hoop in a pour: "upright" as it hangs in the hand (held_maps.CAN),
+    "leant" over or "tipped" on its side, with the water of `stream` (None for none). `outward`
+    is the side its spout is on."""
+    letters = {}
+    if state == "upright":
+        for y, row in enumerate(held_maps.CAN):
+            for x, letter in enumerate(row):
+                if letter != ".":
+                    letters[(x - 2, y + 1)] = letter
+    else:
+        rows = CAN_LEANT if state == "leant" else CAN_TIPPED
+        grip = next((row.index("h"), y) for y, row in enumerate(rows) if "h" in row)
+        for y, row in enumerate(rows):
+            for x, letter in enumerate(row):
+                if letter not in ".h":
+                    letters[(x - grip[0], y - grip[1])] = letter
+        if stream is not None:
+            for dx, dy, letter in STREAMS[stream]:
+                letters[(ROSE[0] + dx - grip[0], ROSE[1] + dy - grip[1])] = letter
+    if outward < 0:
+        # Mirrored about the hand: the upright can's hoop is two pixels wide, as a handle is.
+        mirror = 1 if state == "upright" else 0
+        letters = {(mirror - x, y): letter for (x, y), letter in letters.items()}
+    return letters

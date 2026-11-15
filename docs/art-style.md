@@ -541,6 +541,13 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   top left, never drawn at an odd angle; the hands may hold it further up its handle. The
   classic art (classic/swing.py) halves the frames: arms as lines from the shoulder, the tool the
   32 px picture at half the size. No new colours.
+- **Pouring from the watering can** (task 227, tool_swing.py; awaiting the user's verdict): a
+  motion of its own in the swing sheets, four frames: lifted forward by its hoop, leant over by
+  an eighth of a turn (a map drawn by hand), and tipped on its side (the held can turned a
+  quarter and lit anew by hand) with the water running from the rose down to the ground in two
+  frames, which the game may repeat while it pours: drops of `water_light` and `foam` without an
+  outline. The can hangs from the hand over the sleeve; from the front and from behind its spout
+  points out to the side.
 - **The lantern** (task 177): a horn lantern as carried about 1750, a tin cylinder with a
   pierced cone of a roof and a ring, a pane of horn (`mud`, `sand`, `sand_light`) with the
   tallow candle (`lime`, `cream`) showing through, a wider tin foot. In the hand it hangs from

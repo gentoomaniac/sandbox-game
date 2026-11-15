@@ -39,7 +39,7 @@ assets/character/held_<tool>.png: each tool in the hand, a layer in the same cel
 `HELD_TOOLS`).
 assets/character/use/<slot>_<variant>.png: the player's layers swinging a tool, 96x96 cells with
 the figure's 32x64 frame at swing.FIGURE_AT, a row per facing as above and a column per frame of
-each motion, one motion after the other (chop 5, knock 5, dig 4, mow 5; see swing.py and
+each motion, one motion after the other (chop 5, knock 5, dig 4, mow 5, pour 4; see swing.py and
 tool_swing.py, whose DURATIONS say how long each frame shows). use/held_<grade>_<tool>.png is the
 tool in its motion's columns in front of the figure, use/held_<grade>_<tool>_behind.png behind
 it.

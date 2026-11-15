@@ -1,15 +1,16 @@
 """Tests of the tools' swing (tool_swing.py, swing.py): every tool in every frame is a whole,
-rigid picture held by its handle, and it stays inside its cell."""
+rigid picture held by its handle (the watering can by its hoop), and it stays inside its cell."""
 
 import unittest
 
 import character
 import swing
 import tool_swing
-from tool_swing import FRAMES, GROUND, METAL, MOTION_OF_TOOL, SOIL, WOOD, motion_frames, oriented, tool_hand_index, tool_letters
+from tool_swing import FRAMES, GROUND, METAL, MOTION_OF_TOOL, SOIL, WATER, WOOD, motion_frames, oriented, tool_hand_index, tool_letters
 
 FACINGS = ("down", "up", "right")
-HANDLED = list(MOTION_OF_TOOL)
+# The tools that swing on a handle, not the watering can.
+HANDLED = [tool for tool in MOTION_OF_TOOL if tool != "watering_can"]
 
 
 def frames_of(tool):
@@ -27,6 +28,20 @@ class ToolPictureTest(unittest.TestCase):
                 with self.subTest(tool=tool, motion=motion, index=index, facing=facing):
                     self.assertIn(letters[(0, 0)], WOOD)
                     self.assertLessEqual(set(letters.values()), set(WOOD + METAL + "e" + SOIL))
+
+    def test_the_hand_holds_the_can_by_its_hoop(self):
+        for motion, index, facing in frames_of("watering_can"):
+            letters = tool_letters("watering_can", motion, index, facing)
+            with self.subTest(index=index, facing=facing):
+                self.assertNotIn((0, 0), letters)
+                self.assertTrue(any(letters.get((dx, dy)) == "k" for dx in (-1, 0, 1) for dy in (-1, 0, 1)))
+                self.assertLessEqual(set(letters.values()), set(METAL + WATER))
+
+    def test_the_tipped_can_pours(self):
+        streams = [tool_letters("watering_can", "pour", index, "right") for index in (2, 3)]
+        drops = [{at for at, letter in letters.items() if letter in WATER} for letters in streams]
+        self.assertTrue(all(drops))
+        self.assertNotEqual(drops[0], drops[1])
 
     def test_a_turned_picture_keeps_every_pixel(self):
         for tool in HANDLED:

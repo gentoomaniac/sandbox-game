@@ -7,19 +7,19 @@ feet of a frame are the 32 px figure's halved; the figure's arms are lines from 
 the hand (`character.posed_arms`), only the near one from the side. A tool is its 32 px picture in
 the frame at half the size (`halved`): a pixel where two of the four it covers are wood or metal,
 so the 2 px handles become the classic 1 px shafts, its metal lit anew from the top left; the
-earth on the spade where a block has only earth.
+earth on the spade and the water from the can where a block has only them.
 """
 
 import character
 import tool_grades
 from canvas import blank
 from character import CHARACTER_HEIGHT, CHARACTER_WIDTH, outlined, pixels_of
-from tool_swing import GROUND, METAL, MOTION_OF_TOOL, SOIL, WOOD, figure_frame, motion_frames, raised_feet, relit, tool_hand_index, tool_letters
+from tool_swing import GROUND, METAL, MOTION_OF_TOOL, SOIL, WATER, WOOD, figure_frame, motion_frames, raised_feet, relit, tool_hand_index, tool_letters
 
 USE_CELL = 48
 FIGURE_AT = (16, 8)
-# The colours of what is not the tool in a tool's picture: earth on the spade.
-EXTRAS = {"o": "soil_mid", "O": "soil_light"}
+# The colours of what is not the tool in a tool's picture: earth on the spade, water from the can.
+EXTRAS = {"o": "soil_mid", "O": "soil_light", "b": "water_light", "f": "foam"}
 
 
 def halved(point):
@@ -38,7 +38,7 @@ def pose_of(motion_frame):
 def halved_letters(letters):
     """A tool's 32 px picture at half the size, around the same hand: wood where two of a block's
     four pixels are wood (one dark shaft), else metal where two are metal (the edge if one of them
-    is), the metal lit anew; earth where a block has some and nothing else."""
+    is), the metal lit anew; earth or water where a block has any and nothing else."""
     blocks = {}
     for (x, y), letter in letters.items():
         blocks.setdefault(halved((x, y)), []).append(letter)
@@ -51,10 +51,11 @@ def halved_letters(letters):
         elif len(wood) >= 2:
             result[block] = "d"
         else:
-            if all(letter in SOIL for letter in found):
-                result[block] = max(found, key=found.count)
+            extras = [letter for letter in found if letter in SOIL + WATER]
+            if extras and len(extras) == len(found):
+                result[block] = max(extras, key=extras.count)
     lit = relit({block: letter for block, letter in result.items()})
-    return {block: (letter if letter in WOOD + SOIL else lit[block]) for block, letter in result.items()}
+    return {block: (letter if letter in WOOD + SOIL + WATER else lit[block]) for block, letter in result.items()}
 
 
 def placed(canvas):
@@ -84,9 +85,10 @@ def layer_sheet(draw, variant_colours):
     return rows
 
 
-def tool_frame(tool, grade, motion, index, facing, behind):
+def tool_frame(tool, grade, motion, index, facing, behind, water=False):
     """The tool's layer in one frame, in front of the figure or behind it (empty if the tool is
-    not there in that frame); in front, the arms that are not hidden hold it."""
+    not there in that frame); in front, the arms that are not hidden hold it. With `water`, only
+    the water poured from it, which has no outline."""
     motion_frame = figure_frame(motion, index, facing)
     cell = blank(USE_CELL)
     if motion_frame["behind"] != behind:
@@ -98,13 +100,17 @@ def tool_frame(tool, grade, motion, index, facing, behind):
     hand_y += pose["sink"]
     ground = GROUND[facing] // 2
     for (x, y), letter in halved_letters(tool_letters(tool, motion, index, facing)).items():
-        if tool == "shovel" and letter not in SOIL and hand_y + y > ground:
+        if (letter in WATER) != water:
+            continue
+        if (tool == "shovel" and letter not in SOIL or letter in WATER) and hand_y + y > ground:
             continue
         cell[top + hand_y + y][left + hand_x + x] = colours[letter]
-    if not behind:
+    if not behind and not water:
         for arm in character.posed_arms(facing, pose):
             if not arm.hidden:
-                for x, y in character.arm_pixels(arm):
+                # The watering can hangs from the hand over the sleeve.
+                pixels = character.arm_pixels(arm)
+                for x, y in pixels[-4:] if tool == "watering_can" else pixels:
                     if 0 <= x < CHARACTER_WIDTH and 0 <= y < CHARACTER_HEIGHT:
                         cell[top + y][left + x] = None
         # A foot put up on the spade's blade is in front of it, its clog a pixel wider.
@@ -129,6 +135,8 @@ def tool_sheet(tool, grade, behind):
             pose = pose_of(figure_frame(motion, index, facing))
             body = pixels_of(placed(character.draw_body(drawn, pose)))
             canvas = outlined(tool_frame(tool, grade, motion, index, drawn, behind), body)
+            water = tool_frame(tool, grade, motion, index, drawn, behind, water=True)
+            canvas = [[w or c for w, c in zip(water_row, row_)] for water_row, row_ in zip(water, canvas)]
             row.append(character.mirrored(canvas) if facing == "left" else canvas)
         rows.append(row)
     return rows

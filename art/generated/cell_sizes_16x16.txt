@@ -170,6 +170,8 @@ character/use/held_brittle_steel_scythe_16x16.png 48 48
 character/use/held_brittle_steel_scythe_behind_16x16.png 48 48
 character/use/held_brittle_steel_shovel_16x16.png 48 48
 character/use/held_brittle_steel_shovel_behind_16x16.png 48 48
+character/use/held_brittle_steel_watering_can_16x16.png 48 48
+character/use/held_brittle_steel_watering_can_behind_16x16.png 48 48
 character/use/held_iron_axe_16x16.png 48 48
 character/use/held_iron_axe_behind_16x16.png 48 48
 character/use/held_iron_hammer_16x16.png 48 48
@@ -182,6 +184,8 @@ character/use/held_iron_scythe_16x16.png 48 48
 character/use/held_iron_scythe_behind_16x16.png 48 48
 character/use/held_iron_shovel_16x16.png 48 48
 character/use/held_iron_shovel_behind_16x16.png 48 48
+character/use/held_iron_watering_can_16x16.png 48 48
+character/use/held_iron_watering_can_behind_16x16.png 48 48
 character/use/held_rusty_iron_axe_16x16.png 48 48
 character/use/held_rusty_iron_axe_behind_16x16.png 48 48
 character/use/held_rusty_iron_hammer_16x16.png 48 48
@@ -194,6 +198,8 @@ character/use/held_rusty_iron_scythe_16x16.png 48 48
 character/use/held_rusty_iron_scythe_behind_16x16.png 48 48
 character/use/held_rusty_iron_shovel_16x16.png 48 48
 character/use/held_rusty_iron_shovel_behind_16x16.png 48 48
+character/use/held_rusty_iron_watering_can_16x16.png 48 48
+character/use/held_rusty_iron_watering_can_behind_16x16.png 48 48
 character/use/held_sharp_steel_axe_16x16.png 48 48
 character/use/held_sharp_steel_axe_behind_16x16.png 48 48
 character/use/held_sharp_steel_hammer_16x16.png 48 48
@@ -206,6 +212,8 @@ character/use/held_sharp_steel_scythe_16x16.png 48 48
 character/use/held_sharp_steel_scythe_behind_16x16.png 48 48
 character/use/held_sharp_steel_shovel_16x16.png 48 48
 character/use/held_sharp_steel_shovel_behind_16x16.png 48 48
+character/use/held_sharp_steel_watering_can_16x16.png 48 48
+character/use/held_sharp_steel_watering_can_behind_16x16.png 48 48
 character/use/held_steel_axe_16x16.png 48 48
 character/use/held_steel_axe_behind_16x16.png 48 48
 character/use/held_steel_hammer_16x16.png 48 48
@@ -218,6 +226,8 @@ character/use/held_steel_scythe_16x16.png 48 48
 character/use/held_steel_scythe_behind_16x16.png 48 48
 character/use/held_steel_shovel_16x16.png 48 48
 character/use/held_steel_shovel_behind_16x16.png 48 48
+character/use/held_steel_watering_can_16x16.png 48 48
+character/use/held_steel_watering_can_behind_16x16.png 48 48
 character/use/legs_0_16x16.png 48 48
 crops/beans_16x16.png 16 32
 crops/cabbage_16x16.png 16 16

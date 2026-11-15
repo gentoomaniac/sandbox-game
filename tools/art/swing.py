@@ -13,7 +13,7 @@ tool's sheet (`held_<grade>_<tool>.png`) is drawn in its motion's columns only, 
 so that the game shows every layer at the same frame. A tool is in front of the figure
 (`held_...`) or behind it (`held_..._behind.png`, which the game draws under the body); in front
 of it, the near arms still cover its handle where the hands hold it, and a foot on the spade's
-blade covers the blade.
+blade covers the blade. The water from the can has no outline.
 """
 
 import character
@@ -21,14 +21,14 @@ import forms
 import tool_grades
 from canvas import blank
 from character import CHARACTER_HEIGHT, CHARACTER_WIDTH, Figure, hand, mask, outlined, pixels_of, sleeve
-from tool_swing import GROUND, MOTION_OF_TOOL, SOIL, figure_frame, motion_frames, raised_feet, tool_hand_index, tool_letters
+from tool_swing import GROUND, MOTION_OF_TOOL, SOIL, WATER, figure_frame, motion_frames, raised_feet, tool_hand_index, tool_letters
 
 USE_CELL = 96
 # Where the figure's 32x64 frame is in a cell: room above it for a tool raised over the head, and
 # on both sides and below for one swung back, forward or down at the ground before the feet.
 FIGURE_AT = (32, 16)
-# The colours of what is not the tool in a tool's picture: earth on the spade.
-EXTRAS = {"o": "soil_mid", "O": "soil_light"}
+# The colours of what is not the tool in a tool's picture: earth on the spade, water from the can.
+EXTRAS = {"o": "soil_mid", "O": "soil_light", "b": "water_light", "f": "foam"}
 
 
 def pose_of(motion_frame):
@@ -100,9 +100,10 @@ def layer_sheet(draw, variant_colours):
     return rows
 
 
-def tool_frame(tool, grade, motion, index, facing, behind):
+def tool_frame(tool, grade, motion, index, facing, behind, water=False):
     """The tool's layer in one frame, in front of the figure or behind it (empty if the tool is
-    not there in that frame). A spade's blade is cut off where it goes into the ground."""
+    not there in that frame); with `water`, only the water poured from it, which has no outline.
+    A spade's blade is cut off where it goes into the ground, and the water ends there."""
     motion_frame = figure_frame(motion, index, facing)
     cell = blank(USE_CELL)
     if motion_frame["behind"] != behind:
@@ -112,16 +113,19 @@ def tool_frame(tool, grade, motion, index, facing, behind):
     hand_x, hand_y = motion_frame["hands"][tool_hand_index(facing)]
     hand_y += motion_frame["sink"]
     for (x, y), letter in tool_letters(tool, motion, index, facing).items():
-        if tool == "shovel" and letter not in SOIL and hand_y + y > GROUND[facing]:
+        if (letter in WATER) != water:
+            continue
+        if (tool == "shovel" and letter not in SOIL or letter in WATER) and hand_y + y > GROUND[facing]:
             continue
         cell[top + hand_y + y][left + hand_x + x] = colours[letter]
-    if not behind:
+    if not behind and not water:
         # The near hands hold the handle: their sleeves and hands are in front of it; so is a
-        # foot put up on the spade's blade.
+        # foot put up on the spade's blade. The watering can hangs from the hand over the sleeve.
         figure = Figure(facing, pose_of(motion_frame))
         for arm in figure.arms:
             if not arm.far:
-                cleared(cell, sleeve(arm))
+                if tool != "watering_can":
+                    cleared(cell, sleeve(arm))
                 cleared(cell, hand(arm))
         for leg, raised in zip(figure.legs, raised_feet(motion_frame)):
             if raised:
@@ -143,6 +147,8 @@ def tool_sheet(tool, grade, behind):
             pose = pose_of(figure_frame(motion, index, facing))
             body = pixels_of(placed(character.draw_body(drawn, pose)))
             canvas = outlined(tool_frame(tool, grade, motion, index, drawn, behind), body)
+            water = tool_frame(tool, grade, motion, index, drawn, behind, water=True)
+            canvas = [[w or c for w, c in zip(water_row, row_)] for water_row, row_ in zip(water, canvas)]
             row.append(character.mirrored(canvas) if facing == "left" else canvas)
         rows.append(row)
     return rows

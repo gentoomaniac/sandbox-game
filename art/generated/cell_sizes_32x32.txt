@@ -206,6 +206,8 @@ character/use/held_brittle_steel_scythe_32x32.png 96 96
 character/use/held_brittle_steel_scythe_behind_32x32.png 96 96
 character/use/held_brittle_steel_shovel_32x32.png 96 96
 character/use/held_brittle_steel_shovel_behind_32x32.png 96 96
+character/use/held_brittle_steel_watering_can_32x32.png 96 96
+character/use/held_brittle_steel_watering_can_behind_32x32.png 96 96
 character/use/held_iron_axe_32x32.png 96 96
 character/use/held_iron_axe_behind_32x32.png 96 96
 character/use/held_iron_hammer_32x32.png 96 96
@@ -218,6 +220,8 @@ character/use/held_iron_scythe_32x32.png 96 96
 character/use/held_iron_scythe_behind_32x32.png 96 96
 character/use/held_iron_shovel_32x32.png 96 96
 character/use/held_iron_shovel_behind_32x32.png 96 96
+character/use/held_iron_watering_can_32x32.png 96 96
+character/use/held_iron_watering_can_behind_32x32.png 96 96
 character/use/held_rusty_iron_axe_32x32.png 96 96
 character/use/held_rusty_iron_axe_behind_32x32.png 96 96
 character/use/held_rusty_iron_hammer_32x32.png 96 96
@@ -230,6 +234,8 @@ character/use/held_rusty_iron_scythe_32x32.png 96 96
 character/use/held_rusty_iron_scythe_behind_32x32.png 96 96
 character/use/held_rusty_iron_shovel_32x32.png 96 96
 character/use/held_rusty_iron_shovel_behind_32x32.png 96 96
+character/use/held_rusty_iron_watering_can_32x32.png 96 96
+character/use/held_rusty_iron_watering_can_behind_32x32.png 96 96
 character/use/held_sharp_steel_axe_32x32.png 96 96
 character/use/held_sharp_steel_axe_behind_32x32.png 96 96
 character/use/held_sharp_steel_hammer_32x32.png 96 96
@@ -242,6 +248,8 @@ character/use/held_sharp_steel_scythe_32x32.png 96 96
 character/use/held_sharp_steel_scythe_behind_32x32.png 96 96
 character/use/held_sharp_steel_shovel_32x32.png 96 96
 character/use/held_sharp_steel_shovel_behind_32x32.png 96 96
+character/use/held_sharp_steel_watering_can_32x32.png 96 96
+character/use/held_sharp_steel_watering_can_behind_32x32.png 96 96
 character/use/held_steel_axe_32x32.png 96 96
 character/use/held_steel_axe_behind_32x32.png 96 96
 character/use/held_steel_hammer_32x32.png 96 96
@@ -254,6 +262,8 @@ character/use/held_steel_scythe_32x32.png 96 96
 character/use/held_steel_scythe_behind_32x32.png 96 96
 character/use/held_steel_shovel_32x32.png 96 96
 character/use/held_steel_shovel_behind_32x32.png 96 96
+character/use/held_steel_watering_can_32x32.png 96 96
+character/use/held_steel_watering_can_behind_32x32.png 96 96
 character/use/legs_0_32x32.png 96 96
 crops/beans_32x32.png 32 64
 crops/buckwheat_32x32.png 32 64
