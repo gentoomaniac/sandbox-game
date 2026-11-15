@@ -1,7 +1,7 @@
 # The shop: a keeper who keeps hours and trades
 
 [#10](https://github.com/gentoomaniac/sandbox-game/issues/10) (task 240). **Approved by the user
-(issue comment, all defaults); built step by step, steps 1 to 7 so far** (each step's note below says what
+(issue comment, all defaults); built step by step, steps 1 to 8 so far** (each step's note below says what
 changed from the plan). It is the first step of the economy draft in [README.md](README.md),
 and it is built to carry [#11](https://github.com/gentoomaniac/sandbox-game/issues/11) (seeds from
 the shop) with data alone. Needs the village (#9) and the routines (#7), both built.
@@ -196,9 +196,10 @@ an optional `seasons=[...]` key, added there if wanted).
 
 - A `shops` part of the game state: for each keeper `{"stock": {item: n}, "room": {item: n},
   "restocked_day": d}`. The shop's rules are data and not saved.
-- A shop missing from the save (a save of before, a new shop in the data) starts full. **The save
-  version is 47 now; this takes the next free one (48)** (check at the build): the upgrade step adds
-  an empty `shops`, and the oldest step goes (see [../tech/saving.md](../tech/saving.md)).
+- A shop missing from the save (a save of before, a new shop in the data) starts full. **Built as
+  save version 51** (main was at 50 by then, with #8, #9 and #104 merged): the upgrade step adds an
+  empty `shops`, and the oldest step (40) went in its own commit before (see
+  [../tech/saving.md](../tech/saving.md)). The validator checks the part.
 - Trienke is a villager and saved as one. The stall is a placed object, saved with the world.
 
 ## Steps
@@ -211,7 +212,7 @@ refusal texts are in `Shops`, and what `Shops.trade` refuses changes nothing), 6
 and `TradeRow`, the console's `shop` and `shop restock`, `Shops.cover` and `Shops.fill`; `GameState.shops`
 is not saved until step 8), 7 (`ShopHours`: E trades in hours, the chat with the scripted line out of
 hours; `[shop]` of `data/npc_talk.cfg`; the model's prompt fact; the keeper's line is only said when she
-stands at the stall).
+stands at the stall), 8 (`Shops.to_dict` and `load_dict`, `shops` in the save, version 51).
 
 Each is a commit that passes `make test` and `make lint`, with its tests and doc lines. Steps 1 to 3
 are the keeper and need no trade; 4 to 8 are the trade.

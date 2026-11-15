@@ -74,9 +74,30 @@ func _check_game(game: Variant) -> void:
 	if npcs != null:
 		for index in npcs.size():
 			_check_npc(npcs[index], "npcs %d" % index)
+	_check_shops(game)
 	_check_deeds(game, "deeds", "", true)
 	_check_map_reference(game, "current_map")
 	_check_map_reference(game, "home_map")
+
+
+## The shops: for each, how many of what it has left and has room for, and the day it was worked
+## out.
+func _check_shops(game: Dictionary) -> void:
+	var shops: Variant = _field(game, "shops", Kind.DICT, "")
+	if shops == null:
+		return
+	for shop: String in shops:
+		var path := "shops %s" % shop
+		if not shops[shop] is Dictionary:
+			_report(path, "should be a dictionary")
+			continue
+		_field(shops[shop], "restocked_day", Kind.WHOLE, path)
+		for key in ["stock", "room"]:
+			var counts: Variant = _field(shops[shop], key, Kind.DICT, path)
+			for item: Variant in [] if counts == null else counts:
+				var count: Variant = counts[item]
+				if not _is_kind(count, Kind.WHOLE) or count < 0:
+					_report("%s %s" % [path, key], "%s %s is not a count" % [item, count])
 
 
 func _check_clock(clock: Dictionary) -> void:

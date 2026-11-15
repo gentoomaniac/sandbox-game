@@ -95,6 +95,36 @@ func cover(shop: String, want: Dictionary, bag: ItemSlots) -> Dictionary:
 	return give
 
 
+## The shops as save data: `{shop id: {"stock": {item: count}, "room": {item: count},
+## "restocked_day": day}}`. What the rules say (what is sold and taken, the prices) is data and
+## not saved.
+func to_dict() -> Dictionary:
+	var data := {}
+	for shop: String in _shops:
+		var entry: Dictionary = _shops[shop]
+		data[shop] = {
+			"stock": _counts_to_dict(entry["stock"]),
+			"room": _counts_to_dict(entry["room"]),
+			"restocked_day": entry["restocked_day"],
+		}
+	return data
+
+
+## Takes the shops of save data (see `to_dict`). A shop the rules no longer have is left out, and a
+## good they no longer have in it; a shop that is not in the data starts full when it is looked at.
+func load_dict(data: Dictionary) -> void:
+	_shops.clear()
+	for shop: String in data:
+		if not _rules.shop_ids().has(shop):
+			continue
+		var saved: Dictionary = data[shop]
+		_shops[shop] = {
+			"stock": _counts_of(saved["stock"], _rules.sold(shop)),
+			"room": _counts_of(saved["room"], _rules.taken(shop)),
+			"restocked_day": int(saved["restocked_day"]),
+		}
+
+
 ## Has the shop sell everything and take as much as on its best day: for the console.
 func fill(shop: String) -> void:
 	_shops.erase(shop)
@@ -164,6 +194,22 @@ func _worked_out(shop: String) -> Dictionary:
 			entry["room"][item] = _rules.most_room(shop, item)
 	entry["restocked_day"] = today
 	return entry
+
+
+static func _counts_to_dict(counts: Dictionary) -> Dictionary:
+	var data := {}
+	for item: StringName in counts:
+		data[String(item)] = counts[item]
+	return data
+
+
+## The counts of `data` (item name to count) of the items in `goods`.
+static func _counts_of(data: Dictionary, goods: Array[StringName]) -> Dictionary:
+	var counts := {}
+	for item in goods:
+		if data.has(String(item)):
+			counts[item] = int(data[String(item)])
+	return counts
 
 
 static func _name_of(item: StringName) -> String:

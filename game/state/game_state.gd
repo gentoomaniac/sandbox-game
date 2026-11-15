@@ -72,7 +72,8 @@ var homes := Households.new(npcs)
 ## Sends the villagers where their day has them be. Built with the simulation; nothing of it is
 ## saved.
 var activities: ActivityUpkeep
-## What the shops have left to sell and take today.
+## What the shops have left to sell and take today (saved: a reload does not give back a sold-out
+## shop).
 var shops: Shops
 ## What the player did within sight of villagers.
 var deeds: DeedLog
@@ -785,6 +786,7 @@ func snapshot() -> Dictionary:
 		"player": player_data,
 		"livestock": livestock.to_array(),
 		"npcs": npcs.to_array(),
+		"shops": shops.to_dict(),
 		"deeds": deeds.to_array(),
 		"current_map": _map_to_ref(current_map),
 		"home_map": _map_to_ref(player.home_map),
@@ -812,6 +814,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.npcs.load_array(data["npcs"], state.world)
 	for npc in state.npcs.all():
 		state.activities.resume(npc)
+	state.shops.load_dict(data["shops"])
 	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# The land about the player is seen from where they stand (a save from before the record has
