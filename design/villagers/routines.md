@@ -432,8 +432,10 @@ priority=5
   plan alike. The activities are written *from* it, by hand, once, and what no activity can say
   (the Husum market, the dyke walk) stays in the text only, where the model may use it for a
   `why`. The text is never generated from the activities (it would lose the flavour).
-- **No home:** a villager with no house (or whose house is taken down) has only `walk_the_village`
-  and `sleep` in the default day, and no model query is made for them.
+- **No home:** a villager with no house (or whose house is taken down) has no entries in the
+  default day: nothing sends them anywhere and the anchor rule has them stroll by day and rest at
+  night, as they do now. No model query is made for them. (The first plan gave them
+  `walk_the_village` and `sleep`; that is what the anchor rule does already.)
 
 ### Who is planned and when (`DayPlanner`)
 
@@ -545,8 +547,11 @@ without a world):
 2. Each `at` pair becomes an entry, moved by an offset of 0 to `spread_minutes` made from the
    villager's name and the day (stable, not saved).
 3. Where two entries are less than `min_gap_minutes` apart, the one with the higher `priority`
-   stays (then the earlier).
-4. A `sleep` entry is always in it.
+   stays (then the earlier). An entry that starts while an earlier one of the same or a higher
+   priority is still on (within its length) is left out: the farmer's `work` of the afternoon
+   keeps the flowers of 15:00 away, and the evening's `rest` the Krug's.
+4. A `sleep` entry is always in it. A villager with no house has no entries at all (see "Who has
+   which activities"): the anchor rule gives them their stroll by day and their rest at night.
 
 Rain and the dark are not in the default day; they act while it is executed (next section), so a
 day made a week ahead is as good as one made now.
@@ -568,9 +573,10 @@ the player is inside") and the same code serves a skip.
   searches twice a minute. A lookup of a few comparisons for each villager.
 - **Leaving in time.** The entry's time is the time to be there. They leave at
 
-      start time - walk - the offset - arrive_margin_minutes
+      start time - walk - arrive_margin_minutes
 
-  where *walk* is an estimate: the tiles in x plus the tiles in y from the place of the entry
+  where the start time already holds the offset (`DefaultDay` moves each entry by it, so the villager
+  leaves and starts a few minutes off the default time) and *walk* is an estimate: the tiles in x plus the tiles in y from the place of the entry
   before to the new place, times `detour_factor`, over the pace (a villager walks about one tile
   a game minute). The real path may be shorter or longer; the aim is "there within a few minutes
   of the hour". A late villager is late, nothing is made up. The walk is cut to the length of the
@@ -700,7 +706,7 @@ One file for each part, each short:
   workplace spot), church (none: not offered), meeting, friend, wild (stable all day, another
   tomorrow, walkable).
 - **Executing** (`test_activity_upkeep.gd`): on a flat world (`NpcRoadCase`) each villager arrives
-  within the margin and its detour; leaves not before `start - walk - offset`; the walk cut to
+  within the margin and its detour; leaves not before `start - walk - margin`; the walk cut to
   the entry before; a changed entry replaces the trip; the same entry is sent once; rain sends a
   `needs_dry` activity home and brings it back; the fisher's work stays in rain; January's sunset
   sends the farmer home; a blocked trip gives up after the limit; a gone target; no house keeps

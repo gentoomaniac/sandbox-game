@@ -5,6 +5,8 @@ extends RefCounted
 ## of their work in their sheet, a made-up one has the set of their trade (the tables of
 ## data/npcs.cfg); a trade the tables no longer have gives `base` only.
 
+const CHURCH := "go_to_church"
+
 ## The ids of the activities, `base` first, each once.
 var ids: Array[String] = []
 ## They go to church only on the feasts (see ActivityRules `feast_days`).
@@ -31,3 +33,11 @@ static func of(
 			activities.ids.append(id)
 	activities.is_church_feasts_only = sheet.get(VillagerRules.CHURCH_FEASTS_ONLY_KEY, false)
 	return activities
+
+
+## Whether they can do the activity on game day `day`: its days and seasons hold, and a villager
+## who goes to church only on the feasts does so on a feast, whatever day that is.
+func can_be_on(id: String, day: int, rules: ActivityRules) -> bool:
+	if id == CHURCH and is_church_feasts_only:
+		return rules.day_kinds(day).has("feast") and rules.fits_season(id, day)
+	return rules.fits_day(id, day)

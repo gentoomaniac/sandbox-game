@@ -136,6 +136,58 @@ func default_starts(id: String) -> Array[Dictionary]:
 	return starts
 
 
+## The kinds of day (DAY_KINDS) a game day is: Monday to Friday, Saturday or Sunday, and a feast
+## when it is the day of the year of one.
+func day_kinds(day: int) -> Array[String]:
+	var kinds: Array[String] = []
+	match GameClock.weekday_of(day):
+		5:
+			kinds.append("saturday")
+		6:
+			kinds.append("sunday")
+		_:
+			kinds.append("weekday")
+	if feast_days().has(GameClock.day_of_year_of(day)):
+		kinds.append("feast")
+	return kinds
+
+
+## Whether the activity can be planned on `day`: its `days` and `seasons`, which hold always when
+## the activity has none.
+func fits_day(id: String, day: int) -> bool:
+	var days: Array = _values[id].get("days", DAY_KINDS)
+	return (
+		fits_season(id, day) and day_kinds(day).any(func(kind: String) -> bool: return kind in days)
+	)
+
+
+func fits_season(id: String, day: int) -> bool:
+	var seasons: Array = _values[id].get("seasons", SEASONS)
+	return SEASONS[GameClock.season_of(day)] in seasons
+
+
+## Whether the activity has its default starts on `day`: it can be planned then, and `at_days`
+## holds.
+func has_default_on(id: String, day: int) -> bool:
+	if not fits_day(id, day):
+		return false
+	var at_days: Array = _values[id].get("at_days", DAY_KINDS)
+	return day_kinds(day).any(func(kind: String) -> bool: return kind in at_days)
+
+
+## How long a walk from `from` to `to` takes, in game minutes, by the estimate of the plan: the
+## tiles along x plus the tiles along y, times `detour_factor`.
+func walk_minutes(from: Vector2, to: Vector2, tiles_per_minute: float) -> float:
+	var tiles := absf(to.x - from.x) + absf(to.y - from.y)
+	return tiles * number("detour_factor") / tiles_per_minute
+
+
+## The minute of the day to leave at, to be there at `start_minute` after a walk of `walk`
+## minutes, with the margin of the rules. Before midnight is negative.
+func leaving_minute(start_minute: int, walk: float) -> int:
+	return start_minute - ceili(walk) - int(number("arrive_margin_minutes"))
+
+
 func set_names() -> Array[String]:
 	var found: Array[String] = []
 	found.assign(_values.get(SETS_SECTION, {}).keys())
@@ -157,7 +209,10 @@ func _rules_problems() -> Array[String]:
 	var found: Array[String] = []
 	var section: Dictionary = _values.get(RULES_SECTION, {})
 	for key in RULES_KEYS:
-		if section.has(key) and key not in ["search_tiles", "feasts"] and float(section[key]) <= 0:
+		if not section.has(key) or key in ["search_tiles", "feasts"]:
+			continue
+		# No spread is fine: they all start at once.
+		if float(section[key]) < 0 or float(section[key]) == 0 and key != "spread_minutes":
 			found.append("[%s] %s must be above 0" % [RULES_SECTION, key])
 	if section.has("search_tiles"):
 		var tiles: Variant = section["search_tiles"]

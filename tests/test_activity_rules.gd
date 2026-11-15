@@ -22,7 +22,7 @@ func test_the_activities_are_read_with_their_default_starts() -> void:
 	assert_eq(_rules.activity("work")["target"], "workplace")
 	assert_eq(
 		_rules.default_starts("work"),
-		[{"minute": 6 * 60 + 30, "minutes": 330}, {"minute": 13 * 60, "minutes": 300}]
+		[{"minute": 6 * 60 + 30, "minutes": 330}, {"minute": 13 * 60, "minutes": 240}]
 	)
 	assert_eq(_rules.default_starts("tend_field"), [] as Array[Dictionary], "none: only planned")
 
@@ -120,3 +120,13 @@ func test_base_must_be_there_and_have_sleep() -> void:
 
 func test_a_file_that_cannot_be_read_is_all_problems() -> void:
 	assert_gt(ActivityRules.new({}).problems().size(), 0)
+
+
+func test_the_walk_is_the_tiles_along_x_and_y_with_the_detour_at_the_pace() -> void:
+	assert_eq(_rules.walk_minutes(Vector2(0, 0), Vector2(10, 5), 1.0), 15.0 * 1.3)
+	assert_eq(_rules.walk_minutes(Vector2(10, 5), Vector2(0, 0), 2.0), 15.0 * 1.3 / 2.0)
+
+
+func test_they_leave_the_walk_and_the_margin_before_the_start() -> void:
+	assert_eq(_rules.leaving_minute(7 * 60, 19.5), 7 * 60 - 20 - 3)
+	assert_lt(_rules.leaving_minute(5, 30.0), 0, "the evening before")
