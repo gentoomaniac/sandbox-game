@@ -2,8 +2,8 @@ class_name MusicRules
 extends RefCounted
 ## What the music does, read from data/music.cfg (see there for what every key means): which
 ## pieces play when nothing else asks, how long one plays before the next comes in, the form each
-## piece plays in (a [piece.<name>] section of its own), how long the fades are and how much disk
-## the cache of renders may take.
+## piece plays in (a [piece.<name>] section of its own), the quieter mix indoors, how long the
+## fades are and how much disk the cache of renders may take.
 
 const DEFAULT_PATH := "res://data/music.cfg"
 const BYTES_PER_MEGABYTE := 1000 * 1000
@@ -12,6 +12,7 @@ const PIECE_SECTION := "piece."
 
 const REQUIRED_KEYS := {
 	"everyday": ["pieces", "switch_seconds"],
+	"indoors": ["channel_levels", "fade_seconds"],
 	"fades": ["crossfade_seconds", "stop_seconds"],
 	"cache": ["max_megabytes"],
 }
@@ -62,6 +63,15 @@ func problems() -> Array[String]:
 				bad.append("[%s] form must be a list of section names" % section)
 	if switch_seconds() <= 0.0:
 		bad.append("[everyday] switch_seconds must be above 0")
+	var levels: Variant = _values["indoors"]["channel_levels"]
+	if (
+		not levels is Array
+		or levels.size() != TrackerModule.CHANNELS
+		or levels.any(func(level: Variant) -> bool: return not _is_share(level))
+	):
+		bad.append("[indoors] channel_levels must be a share from 0 to 1 for each of 4 channels")
+	if indoors_fade_seconds() <= 0.0:
+		bad.append("[indoors] fade_seconds must be above 0")
 	for key in ["crossfade_seconds", "stop_seconds"]:
 		if number("fades", key) <= 0.0:
 			bad.append("[fades] %s must be above 0" % key)
@@ -94,6 +104,16 @@ func form(piece: String) -> Array[String]:
 	return sections
 
 
+## The share of its volume each channel plays at in the quieter mix indoors.
+func indoors_levels() -> PackedFloat32Array:
+	return PackedFloat32Array(_values["indoors"]["channel_levels"])
+
+
+## How long the switch between the mixes takes as the player passes a door, in seconds.
+func indoors_fade_seconds() -> float:
+	return number("indoors", "fade_seconds")
+
+
 func crossfade_seconds() -> float:
 	return number("fades", "crossfade_seconds")
 
@@ -109,3 +129,7 @@ func cache_bytes() -> int:
 ## A number of the file.
 func number(section: String, key: String) -> float:
 	return float(_values[section][key])
+
+
+static func _is_share(value: Variant) -> bool:
+	return (value is float or value is int) and value >= 0.0 and value <= 1.0

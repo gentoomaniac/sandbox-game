@@ -123,8 +123,12 @@ in data/music.cfg):
   and the wrap is seamless), the next comes after `switch_seconds` (90 s), and the crossfade starts
   on the next bar (Tide 4 s, Harbour 3 s). Harbour evening's form, three loops and the fill (75 s),
   is 13.2 MB at 44.1 kHz stereo and renders in about 4 s (main thread, load from other work; twice
-  its length, as it loops), against 1.6 s for Tide. Off with `--mute` and
-  under the Dummy driver.
+  its length, as it loops), against 1.6 s for Tide. Off with `--mute` and under the Dummy driver.
+- **Two mixes** (task 171): each piece is rendered twice, the whole mix and the quieter one for
+  indoors (each channel turned down by `channel_levels` of data/music.cfg's [indoors]); the second
+  renders as soon as the first plays, so going through a door blends at once (in step, over 1.5 s).
+  Both mixes of the piece that is wanted are kept: up to 26 MB for Harbour evening, and the cache
+  holds 4 renders (about 38 MB) of the two everyday pieces.
 
 ## Memory
 

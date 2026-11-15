@@ -1,79 +1,5 @@
-extends GutTest
-## The MusicPlayer on a tiny module (one row of silence) in a folder of its own, so a render takes
-## no time, and once on a real piece. Master is muted meanwhile. The renders are kept in a cache
-## folder of the test's own.
-
-const DIR := "user://test_music_player"
-const CACHE_DIR := "user://test_music_player_cache"
-const SETTINGS_PATH := DIR + "/settings.cfg"
-const PATIENCE_SECONDS := 60.0
-const HEADER_SIZE := 20 + TrackerModule.SAMPLE_SLOTS * 30
-## Pattern break at row 0: the order list plays one row.
-## The one-row module is a piece of a single looping section.
-const SECTIONS := (
-	"[piece]\nspeed=6\ntempo=125\nbeat_rows=6\nbar_beats=2\n"
-	+ '[loop]\norder=0\nrows=1\nexits=["loop"]\n'
-)
-const BREAK_CELL := [0, 0, ModuleRenderer.EFFECT_BREAK, 0]
-
-var _music: MusicPlayer
-var _audio: AudioService
-
-
-func before_each() -> void:
-	_audio = AudioService.new()
-	_audio.is_muted = true
-	add_child_autofree(_audio)
-	_audio.apply_settings(GameSettings.new(SETTINGS_PATH))
-	DirAccess.make_dir_recursive_absolute(DIR)
-	_write_module("tiny")
-	_write_module("other")
-	_music = MusicPlayer.new()
-	_music.music_dir = DIR
-	_music.cache = MusicCache.new(CACHE_DIR, 100 * 1000 * 1000)
-	_music.stop_seconds = 0.1
-	add_child_autofree(_music)
-
-
-func after_each() -> void:
-	_music.stop()
-	_audio.is_muted = false
-	_audio.apply_settings(GameSettings.new(SETTINGS_PATH))
-	for file_name in DirAccess.get_files_at(DIR):
-		DirAccess.remove_absolute(DIR.path_join(file_name))
-	DirAccess.remove_absolute(DIR)
-	if DirAccess.dir_exists_absolute(CACHE_DIR):
-		for file_name in DirAccess.get_files_at(CACHE_DIR):
-			DirAccess.remove_absolute(CACHE_DIR.path_join(file_name))
-		DirAccess.remove_absolute(CACHE_DIR)
-
-
-## A module of one pattern and no samples whose first row breaks at once.
-func _write_module(track: String) -> void:
-	var bytes := PackedByteArray()
-	bytes.resize(HEADER_SIZE + 2 + 128 + 4 + TrackerModule.PATTERN_ROWS * 16)
-	# The title, so that no two pieces are the same module (they would share a cached render).
-	bytes.encode_u8(0, track.unicode_at(0))
-	bytes[HEADER_SIZE] = 1
-	var magic := "M.K.".to_ascii_buffer()
-	for index in 4:
-		bytes[HEADER_SIZE + 2 + 128 + index] = magic[index]
-	for index in 4:
-		bytes[TrackerModule.PATTERNS_START + index] = BREAK_CELL[index]
-	var file := FileAccess.open(DIR.path_join(track + ".mod"), FileAccess.WRITE)
-	file.store_buffer(bytes)
-	file.close()
-	file = FileAccess.open(DIR.path_join(track + ".cfg"), FileAccess.WRITE)
-	file.store_string(SECTIONS)
-	file.close()
-
-
-func _playing_players() -> Array[AudioStreamPlayer]:
-	var players: Array[AudioStreamPlayer] = []
-	for node in _music.get_child(0).get_children():
-		if node.playing:
-			players.append(node)
-	return players
+extends MusicPlayerCase
+## The MusicPlayer on the tiny modules of MusicPlayerCase, and once on a real piece.
 
 
 func test_the_tracks_are_the_modules_of_the_folder() -> void:
@@ -118,14 +44,14 @@ func test_a_piece_switches_on_its_own_bar() -> void:
 
 
 func test_a_piece_plays_its_form_round_and_round() -> void:
-	_music.rules = MusicRules.new({"piece.tiny": {"form": ["loop", "loop", "loop"]}})
+	_music.rules = _rules_with_form(["loop", "loop", "loop"])
 	_music.play("tiny")
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
 	assert_almost_eq(_music.loop_seconds, 3 * 6 * 882 / 44100.0, 0.0001, "three rows")
 
 
 func test_a_form_the_piece_does_not_allow_is_not_played() -> void:
-	_music.rules = MusicRules.new({"piece.tiny": {"form": ["loop", "fill"]}})
+	_music.rules = _rules_with_form(["loop", "fill"])
 	assert_eq(_music.play("tiny"), "Can't play tiny")
 	assert_push_error_count(1)
 	assert_eq(_music.wanted_track(), "")
@@ -138,7 +64,8 @@ func test_a_render_is_kept_in_the_cache() -> void:
 	assert_gt(one, 0)
 	_music.play("other")
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
-	assert_eq(DirAccess.get_files_at(CACHE_DIR).size(), 2)
+	await wait_until(func() -> bool: return not _music.is_rendering(), PATIENCE_SECONDS)
+	assert_eq(DirAccess.get_files_at(CACHE_DIR).size(), 4, "both mixes of both pieces")
 
 
 func test_what_plays_goes_on_while_the_next_piece_renders() -> void:
@@ -163,7 +90,6 @@ func test_asking_again_for_the_same_track_starts_nothing_new() -> void:
 	assert_eq(_music.play("tiny"), "Already rendering tiny")
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
 	assert_eq(_music.play("tiny"), "Already playing tiny")
-	assert_false(_music.is_rendering())
 
 
 func test_another_track_crossfades_from_the_one_that_plays() -> void:

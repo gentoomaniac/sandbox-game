@@ -5,6 +5,7 @@ extends GutTest
 const GOOD := {
 	"everyday": {"pieces": ["a", "b"], "switch_seconds": 90.0},
 	"piece.b": {"form": ["loop", "fill"]},
+	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 1.5},
 	"fades": {"crossfade_seconds": 4.0, "stop_seconds": 2.0},
 	"cache": {"max_megabytes": 64},
 }
@@ -41,6 +42,8 @@ func test_the_values_read_back() -> void:
 	assert_eq(rules.switch_seconds(), 90.0)
 	assert_eq(rules.form("b"), ["loop", "fill"] as Array[String])
 	assert_eq(rules.form("a"), [] as Array[String], "no section of its own: no form")
+	assert_eq(rules.indoors_levels(), PackedFloat32Array([0.5, 0.7, 0.8, 0.0]))
+	assert_eq(rules.indoors_fade_seconds(), 1.5)
 	assert_eq(rules.crossfade_seconds(), 4.0)
 	assert_eq(rules.stop_seconds(), 2.0)
 	assert_eq(rules.cache_bytes(), 64 * 1000 * 1000)
@@ -65,6 +68,15 @@ func test_values_out_of_range_are_reported() -> void:
 	assert_has(
 		_with("piece.b", "form", "loop").problems(),
 		"[piece.b] form must be a list of section names"
+	)
+	for levels in [[0.5, 0.7, 0.8], [0.5, 0.7, 0.8, 1.5], [0.5, 0.7, 0.8, "loud"], 0.5]:
+		assert_has(
+			_with("indoors", "channel_levels", levels).problems(),
+			"[indoors] channel_levels must be a share from 0 to 1 for each of 4 channels",
+			str(levels)
+		)
+	assert_has(
+		_with("indoors", "fade_seconds", 0.0).problems(), "[indoors] fade_seconds must be above 0"
 	)
 	assert_has(
 		_with("fades", "crossfade_seconds", 0.0).problems(),

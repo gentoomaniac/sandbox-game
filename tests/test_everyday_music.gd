@@ -15,6 +15,7 @@ const SECTIONS := (
 )
 const RULES := {
 	"everyday": {"pieces": ["first", "second"], "switch_seconds": 0.3},
+	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 0.05},
 	"fades": {"crossfade_seconds": 0.05, "stop_seconds": 0.05},
 	"cache": {"max_megabytes": 10},
 }

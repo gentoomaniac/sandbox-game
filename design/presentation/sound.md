@@ -5,7 +5,9 @@ own volume slider in Settings → Audio, saved with the others; 0 mutes it. Two 
 "Tide" (a slow 6/8 sway in D dorian) and "Harbour evening" (a capstan bass under a
 shanty-like tune, in A aeolian), play by themselves, each looping its form (task 171: the sections
 it plays round and round; Harbour evening's fill after every three loops) for 90 s before the other
-crossfades in on the next bar (EverydayMusic, data/music.cfg); the console's `play` and `stop`
+crossfades in on the next bar (EverydayMusic, data/music.cfg). Each piece has a quieter mix for
+indoors (lead and chords down, the drum or the sea silent), rendered beside the whole one and
+blended in step as the player passes a door; the console's `play` and `stop`
 steer the same player. They are rendered in the background (never waited for: what plays goes on
 looping) and kept in a bounded cache in user://music_cache/. Off in test runs (`--mute`) and
 headless. Task 171's director will choose the music by the time of day, season, weather and place.
