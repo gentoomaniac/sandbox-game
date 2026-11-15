@@ -101,7 +101,7 @@ ms), and "take" what the main thread spends taking the finished stream.
 Reading a render back from the cache takes 5 to 15 ms on the worker, a hundredth of rendering it,
 and neither stalls a frame.
 
-How the game plays them (`EverydayMusic`, `MusicPlayer`, `MusicCache`, `MusicRules`; the rules are
+How the game plays them (`MusicDirector` since task 171, before it `EverydayMusic`, `MusicPlayer`, `MusicCache`, `MusicRules`; the rules are
 in data/music.cfg):
 - **Rendering never waits.** The player starts a render on a worker thread and takes the stream
   when it is done; what plays goes on looping meanwhile (also when a render is slow or fails). A
@@ -120,8 +120,8 @@ in data/music.cfg):
   piece's next beat (a beat of 6 rows for Tide's 6/8 sway, 4 for Harbour). **Since task 171** a
   piece plays its form (`form` of its [piece.<name>] in data/music.cfg: its sections one after the
   other, round and round, rendered as one looping stream, so a fill comes on the bar to the sample
-  and the wrap is seamless), the next comes after `switch_seconds` (90 s), and the crossfade starts
-  on the next bar (Tide 4 s, Harbour 3 s). Harbour evening's form, three loops and the fill (75 s),
+  and the wrap is seamless), the next is chosen by the `MusicDirector` (below), and the crossfade
+  starts on the next bar (Tide 4 s, Harbour 3 s). Harbour evening's form, three loops and the fill (75 s),
   is 13.2 MB at 44.1 kHz stereo and renders in about 4 s (main thread, load from other work; twice
   its length, as it loops), against 1.6 s for Tide. Off with `--mute` and under the Dummy driver.
 - **Two mixes** (task 171): each piece is rendered twice, the whole mix and the quieter one for
@@ -129,6 +129,13 @@ in data/music.cfg):
   renders as soon as the first plays, so going through a door blends at once (in step, over 1.5 s).
   Both mixes of the piece that is wanted are kept: up to 26 MB for Harbour evening, and the cache
   holds 4 renders (about 38 MB) of the two everyday pieces.
+- **The director** (task 171, `MusicDirector`, a node of Main's): each frame it looks at the
+  moment (`MusicMoment`: the clock's hour and whether the player is inside). The everyday pieces
+  that fit the hour (`hours` of their [piece.<name>]: Tide 4 to 22, Harbour evening 15 to 7) take
+  turns: a piece plays at least `min_seconds` (90 s) before another may take over; one that no
+  longer fits then gives way, and one that fits gives way after `switch_seconds` (180 s) when
+  another fits too. Inside a building the quieter mix blends in. The season and the weather are
+  the next conditions: a field of the moment and a key of the piece's section each.
 
 ## Memory
 

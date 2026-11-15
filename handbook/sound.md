@@ -23,8 +23,12 @@ What you hear in the game, and how to turn it up or down.
 
 - Two calm pieces of chiptune instruments: "Tide", a slow sway, and "Harbour evening", a
   shanty-like tune.
-- Each plays for a minute and a half, then the other crossfades in on the next bar.
+- "Tide" plays by day, "Harbour evening" from the afternoon through the night to the early
+  morning. In the evening and at dawn they take turns.
+- A piece plays at least a minute and a half; the next crossfades in on the bar.
 - "Harbour evening" plays a short fill after every third time round its tune.
+- Inside a building the music gets softer: the tune and chords quieter, the drum and the sea
+  gone. It blends back as you step out.
 - The first start takes a second or two before the music begins; later starts are quicker.
 - There is no music in test runs (`--mute`) or headless.
 

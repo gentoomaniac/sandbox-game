@@ -4,13 +4,17 @@ Decided 2026-11-05. Everything makes sound. Music (task 184, 170): a Music bus u
 own volume slider in Settings → Audio, saved with the others; 0 mutes it. Two calm everyday pieces,
 "Tide" (a slow 6/8 sway in D dorian) and "Harbour evening" (a capstan bass under a
 shanty-like tune, in A aeolian), play by themselves, each looping its form (task 171: the sections
-it plays round and round; Harbour evening's fill after every three loops) for 90 s before the other
-crossfades in on the next bar (EverydayMusic, data/music.cfg). Each piece has a quieter mix for
-indoors (lead and chords down, the drum or the sea silent), rendered beside the whole one and
-blended in step as the player passes a door; the console's `play` and `stop`
-steer the same player. They are rendered in the background (never waited for: what plays goes on
-looping) and kept in a bounded cache in user://music_cache/. Off in test runs (`--mute`) and
-headless. Task 171's director will choose the music by the time of day, season, weather and place.
+it plays round and round; Harbour evening's fill after every three loops). The music director
+(task 171, MusicDirector, data/music.cfg) chooses by the hour: Tide by day (4 to 22), Harbour
+evening from the afternoon to the morning (15 to 7), taking turns where both fit; a piece plays at
+least 90 s, one that fits gives way after 180 s when the other fits too, and the next crossfades in
+on the bar. Each piece has a quieter mix for indoors (lead and chords down, the drum or the sea
+silent), rendered beside the whole one and blended in step as the player passes a door. The
+console's `play` and `stop` steer the same player (a stopped player stays quiet; a piece played
+from the console gives way after 90 s when it doesn't fit). They are rendered in the background
+(never waited for: what plays goes on looping) and kept in a bounded cache in user://music_cache/.
+Off in test runs (`--mute`) and headless. Later conditions: the season and the weather (a field of
+MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchronized).
 
 - **All sounds are generated** by a script (`tools/audio/`, run by `make art`), like
   the art: deterministic, in the repo, retro in style, with a few variants per sound
@@ -77,8 +81,8 @@ headless. Task 171's director will choose the music by the time of day, season, 
   no fire and is silent. Every fire burns for good today (nothing lights or puts one out), so
   a room with a fire always crackles; the loops follow the room's fires every second, so one
   built or taken out is heard or gone within a second. The loop fades in and out over
-  `fire_fade_seconds` as the player enters and leaves, and is stopped on leaving. No music
-  indoors yet: see task 171.
+  `fire_fade_seconds` as the player enters and leaves, and is stopped on leaving. The music
+  indoors is the quieter mix of the piece that plays (task 171, see the top).
 - **The bell:** `bell_ring` (task 180, `tools/audio/bell.py`), one strike of a bronze church bell,
   11 seconds long. It is built the way a cast bell sounds: the hum an octave under the strike note,
   the strike note (about G4), the minor third that gives a church bell its dark colour, the fifth,

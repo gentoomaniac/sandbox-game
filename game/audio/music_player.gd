@@ -2,7 +2,7 @@ class_name MusicPlayer
 extends Node
 ## Plays the pieces of assets/music/ (made by tools/music/generate.py) on the Music bus, each
 ## looping its form (its sections one after the other, see MusicRules.form), when asked: `play`
-## and `stop` are the console's commands and EverydayMusic's. A piece is rendered by a
+## and `stop` are the console's commands and the MusicDirector's. A piece is rendered by a
 ## ModuleRenderer on a WorkerThreadPool thread (or loaded from the MusicCache there), so the main
 ## thread only takes the finished stream, and never waits for one: what plays goes on looping
 ## until the next is done; `started` tells when the music begins. Another piece while one plays

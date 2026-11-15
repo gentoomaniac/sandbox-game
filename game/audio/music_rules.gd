@@ -11,7 +11,7 @@ const BYTES_PER_MEGABYTE := 1000 * 1000
 const PIECE_SECTION := "piece."
 
 const REQUIRED_KEYS := {
-	"everyday": ["pieces", "switch_seconds"],
+	"everyday": ["pieces", "min_seconds", "switch_seconds"],
 	"indoors": ["channel_levels", "fade_seconds"],
 	"fades": ["crossfade_seconds", "stop_seconds"],
 	"cache": ["max_megabytes"],
@@ -61,8 +61,16 @@ func problems() -> Array[String]:
 				or form.any(func(part: Variant) -> bool: return part is not String)
 			):
 				bad.append("[%s] form must be a list of section names" % section)
-	if switch_seconds() <= 0.0:
-		bad.append("[everyday] switch_seconds must be above 0")
+			var hours: Variant = _values[section].get("hours", [0, 24])
+			if (
+				not hours is Array
+				or hours.size() != 2
+				or hours.any(func(hour: Variant) -> bool: return not _is_hour(hour))
+			):
+				bad.append("[%s] hours must be two whole hours from 0 to 24" % section)
+	for key in ["min_seconds", "switch_seconds"]:
+		if number("everyday", key) <= 0.0:
+			bad.append("[everyday] %s must be above 0" % key)
 	var levels: Variant = _values["indoors"]["channel_levels"]
 	if (
 		not levels is Array
@@ -91,9 +99,34 @@ func everyday_pieces() -> Array[String]:
 	return pieces
 
 
-## How long a piece plays before the next comes in, in seconds.
+## How long a piece plays at least before another may take over, in seconds.
+func min_seconds() -> float:
+	return number("everyday", "min_seconds")
+
+
+## How long a piece plays before the next that fits too takes over, in seconds.
 func switch_seconds() -> float:
 	return number("everyday", "switch_seconds")
+
+
+## Whether `piece` fits the hour of the game's clock (0 to 23): its section's `hours`, from and
+## to, the second not included (from 16 to 5 runs over midnight); a piece without hours always fits.
+func fits(piece: String, hour: int) -> bool:
+	var hours: Array = _values.get(PIECE_SECTION + piece, {}).get("hours", [0, 24])
+	var from := int(hours[0])
+	var to := int(hours[1])
+	if from <= to:
+		return hour >= from and hour < to
+	return hour >= from or hour < to
+
+
+## The everyday pieces that fit `hour`, in the order of the file; all of them when none does, so
+## something always plays.
+func fitting_pieces(hour: int) -> Array[String]:
+	var fitting := everyday_pieces().filter(func(piece: String) -> bool: return fits(piece, hour))
+	var pieces: Array[String] = []
+	pieces.assign(everyday_pieces() if fitting.is_empty() else fitting)
+	return pieces
 
 
 ## The sections `piece` plays one after the other, round and round (see MusicPiece.parts): its
@@ -133,3 +166,9 @@ func number(section: String, key: String) -> float:
 
 static func _is_share(value: Variant) -> bool:
 	return (value is float or value is int) and value >= 0.0 and value <= 1.0
+
+
+static func _is_hour(value: Variant) -> bool:
+	return (
+		(value is float or value is int) and value == floorf(value) and value >= 0 and value <= 24
+	)

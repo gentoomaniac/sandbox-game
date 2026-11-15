@@ -3,8 +3,8 @@ extends GutTest
 ## what is missing or out of range is reported.
 
 const GOOD := {
-	"everyday": {"pieces": ["a", "b"], "switch_seconds": 90.0},
-	"piece.b": {"form": ["loop", "fill"]},
+	"everyday": {"pieces": ["a", "b"], "min_seconds": 90.0, "switch_seconds": 180.0},
+	"piece.b": {"form": ["loop", "fill"], "hours": [15, 7]},
 	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 1.5},
 	"fades": {"crossfade_seconds": 4.0, "stop_seconds": 2.0},
 	"cache": {"max_megabytes": 64},
@@ -39,7 +39,11 @@ func test_the_forms_fit_their_pieces() -> void:
 func test_the_values_read_back() -> void:
 	var rules := MusicRules.new(GOOD)
 	assert_eq(rules.everyday_pieces(), ["a", "b"] as Array[String])
-	assert_eq(rules.switch_seconds(), 90.0)
+	assert_eq(rules.min_seconds(), 90.0)
+	assert_eq(rules.switch_seconds(), 180.0)
+	assert_true(rules.fits("a", 12), "no hours: always")
+	assert_false(rules.fits("b", 12))
+	assert_true(rules.fits("b", 3))
 	assert_eq(rules.form("b"), ["loop", "fill"] as Array[String])
 	assert_eq(rules.form("a"), [] as Array[String], "no section of its own: no form")
 	assert_eq(rules.indoors_levels(), PackedFloat32Array([0.5, 0.7, 0.8, 0.0]))
@@ -61,10 +65,14 @@ func test_a_missing_key_is_reported() -> void:
 
 func test_values_out_of_range_are_reported() -> void:
 	assert_has(_with("everyday", "pieces", []).problems(), "[everyday] pieces must name a piece")
-	assert_has(
-		_with("everyday", "switch_seconds", 0.0).problems(),
-		"[everyday] switch_seconds must be above 0"
-	)
+	for key in ["min_seconds", "switch_seconds"]:
+		assert_has(_with("everyday", key, 0.0).problems(), "[everyday] %s must be above 0" % key)
+	for hours in [[15], [15, 25], [15.5, 7], "evening"]:
+		assert_has(
+			_with("piece.b", "hours", hours).problems(),
+			"[piece.b] hours must be two whole hours from 0 to 24",
+			str(hours)
+		)
 	assert_has(
 		_with("piece.b", "form", "loop").problems(),
 		"[piece.b] form must be a list of section names"

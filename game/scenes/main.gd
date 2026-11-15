@@ -33,7 +33,7 @@ var _resumed_state: GameState
 var _builder: Builder
 var _settings: GameSettings
 var _audio := AudioService.new()
-## The music: what the console's `play` and `stop` drive.
+## The music: what the console's `play` and `stop` drive, and the MusicDirector.
 var _music := MusicPlayer.new()
 var _sounds := GameSounds.new()
 var _ambience := AmbienceSounds.new()
@@ -160,8 +160,8 @@ func _load_game() -> void:
 	_audio.is_logging = _options.sound_log
 	add_child(_audio)
 	add_child(_music)
-	if EverydayMusic.is_wanted(_options.mute):
-		add_child(EverydayMusic.new(_music))
+	if MusicDirector.is_wanted(_options.mute):
+		add_child(MusicDirector.new(_music, _music_moment))
 	_world.audio_listener_enable_2d = true
 	_audio.use_world(_world)
 	_audio.apply_settings(_settings)
@@ -188,6 +188,11 @@ func _load_game() -> void:
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
 	DebugGameOptions.apply(_options, _state)
+
+
+## What the music is chosen by now (see MusicDirector); null until the game is loaded.
+func _music_moment() -> MusicMoment:
+	return null if _state == null else MusicMoment.of(_state)
 
 
 ## Puts every view in the tree, in the order they are drawn and take input.
