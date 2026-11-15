@@ -1,7 +1,8 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Plan: nothing here is
-built.** This page says what will be built: where the village stands, its buildings, fields and
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: step 1 of
+section 14 is built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
+will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
 ([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
 [#75](https://github.com/gentoomaniac/sandbox-game/issues/75),
@@ -56,7 +57,9 @@ no two buildings overlap, every door has its free tile in front and a walk to th
 field is shut in (every one has a gap to a lane), and the town square is free. Brown on the left is
 the sea dyke, green-grey the salt marsh, tan the mud. White is wall and fence, tan lanes, blue water
 (a ditch in the marsh), orange a Knick (on the Geest), the cream square the town square, the red dot
-the meeting place.
+the meeting place. The script is the mock the plan was drawn from; from step 1 the layout lives in
+`data/village_plan.cfg`, which `VillagePlan.problems` checks (the same rules), and the script is not kept in step
+with it.
 
 ## 2. Where
 
@@ -147,7 +150,7 @@ Boysen and Farm 2 yards, one south of Farm 3, and one Koppel by the mill road.
 | Building | Type | Notes |
 |---|---|---|
 | Church | `church` (6x4) | on the highest Warft, 24x16 tiles, middle of the village |
-| Churchyard | stone wall, 19x13 tiles | one gate on the south side, graves (`grave_marker`) inside |
+| Churchyard | stone wall, 19x13 tiles | one gate on the south side, graves (`grave`) inside |
 | Bell frame | `bell_frame` | inside the yard, east of the church (task 102) |
 | Parsonage | `kate`, style `brick` | **stand-in:** the pastor has no house type; nobody lives there |
 | Krug | `longhouse` | **stand-in:** an inn is not a type; nobody lives there. By the square |
@@ -192,8 +195,8 @@ The sexton's house with the school is left out (no villager, no type).
 A free open square of 13 by 6 tiles between the Krug, the churchyard and the Sielweg (the picture's
 cream area), kept free for a future market (#76).
 
-- **Free:** the village puts nothing on it but a draw well and four benches on its rim, and the record
-  keeps it as `square`. A later market task puts its stalls there; until then it is empty ground.
+- **Free:** the village puts nothing on it but a draw well beside it (the benches of the first draft are
+  gone: a bench is furniture that only stands indoors), and the record keeps it as `square`. A later market task puts its stalls there; until then it is empty ground.
   The player is not stopped from building on it (it is the village's land, with the goodwill cost of
   section 9).
 - **Ground:** trodden earth like the lanes, kept (section 8).
@@ -253,8 +256,8 @@ reputation with its NPCs". Reputation itself is not in the code yet
 ([../villagers/relationships.md](../villagers/relationships.md)). What is there: the deed log and the
 villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
 
-- **The land is a record.** `World.village` holds the name, `area` (a rectangle, here from `u` -16 to
-  60 and `v` -28 to 34, about 76 x 62 tiles, clipped to the land), the meeting spot, the square, the mill
+- **The land is a record.** `World.village` holds the name, `area` (a rectangle, here from `u` -18 to
+  60 and `v` -28 to 34, about 79 x 63 tiles, clipped to the land), the meeting spot, the square, the mill
   spot, the lanes and the buildings the village put there. `World.is_village_land(tile)` answers.
 - **Deeds in the land weigh otherwise.** A new section `[village_land]` in `data/gossip.cfg` has a
   `change` for `built` (-2), `fenced` (-1) and `felled` (-1) done inside the land, used instead of the
@@ -393,6 +396,14 @@ The village is built after #60 has merged.
     of section 16, this page marked as built, the bench numbers.
 
 The user can stop after step 5 and have the village standing, empty.
+
+### What was built, and what changed from the plan
+
+- **Step 1.** `data/village_plan.cfg` and `VillagePlan` (`game/world/village_plan.gd`), checked by
+  `tests/test_village_plan.gd`. The data is the layout above, with these changes: the land's rectangle
+  starts at `u` -18 (the jetty reaches `u` -18); the benches of the square are gone (a bench is indoor
+  furniture only) and its draw well stands beside it; the graves are the type `grave`; the well of the
+  Boysen yard moved to `(31, -18)`, as the old place shut the barn's door in (found by the check).
 
 ## 15. Screenshots
 
