@@ -4,6 +4,7 @@ extends GutTest
 ## level, and shown and set by the console's `opinion`.
 
 var _rules := GossipRules.default_rules()
+var _friendship := FriendshipRules.default_rules()
 var _antje: Npc
 var _state: GameState
 var _console: Console
@@ -95,3 +96,43 @@ func test_a_level_without_a_prompt_line_is_a_problem() -> void:
 	values["prompt"].erase("level_7")
 	var problems := NpcTalkRules.new(values).problems()
 	assert_eq(problems.filter(func(p: String) -> bool: return "level_7" in p).size(), 1)
+
+
+func test_the_actions_of_the_player_have_a_cap_of_their_own_each_way() -> void:
+	var cap := _friendship.action_daily_cap()
+	_antje.change_friendship(cap, 3, _friendship, _rules)
+	_antje.change_friendship(10, 3, _friendship, _rules)
+	assert_eq(_antje.opinion, cap, "nothing more upwards today")
+	_antje.change_friendship(-10, 3, _friendship, _rules)
+	assert_eq(_antje.opinion, cap - 10, "a step back is taken")
+	_antje.change_friendship(-1000, 3, _friendship, _rules)
+	assert_eq(_antje.opinion, -cap, "and down to the cap the other way, no further")
+
+
+func test_a_new_day_has_its_own_cap_for_actions() -> void:
+	var cap := _friendship.action_daily_cap()
+	_antje.change_friendship(cap, 3, _friendship, _rules)
+	_antje.change_friendship(cap, 4, _friendship, _rules)
+	assert_eq(_antje.opinion, 2 * cap)
+
+
+func test_what_stories_move_and_what_actions_move_are_counted_apart() -> void:
+	_antje.change_opinion(_rules.opinion_daily_cap(), 3, _rules)
+	_antje.change_friendship(_friendship.action_daily_cap(), 3, _friendship, _rules)
+	assert_eq(_antje.opinion, _rules.opinion_daily_cap() + _friendship.action_daily_cap())
+
+
+func test_actions_keep_the_opinion_between_its_bounds() -> void:
+	_antje.opinion = _rules.opinion_max() - 5
+	_antje.change_friendship(30, 3, _friendship, _rules)
+	assert_eq(_antje.opinion, _rules.opinion_max())
+	_antje.opinion = _rules.opinion_min() + 5
+	_antje.change_friendship(-30, 4, _friendship, _rules)
+	assert_eq(_antje.opinion, _rules.opinion_min())
+
+
+func test_a_villager_starts_with_no_gift_chat_rating_or_bond() -> void:
+	assert_eq(_antje.last_gift_day, 0)
+	assert_eq(_antje.chat_counted_day, 0)
+	assert_eq(_antje.ratings_today, 0)
+	assert_eq(_antje.bond, FriendshipRules.BOND_NONE)

@@ -7,6 +7,10 @@ extends RefCounted
 const DEFAULT_PATH := "res://data/friendship.cfg"
 
 const LEVEL_COUNT := 10
+## What binds a villager to the player besides friendship; only `none` is built (courting and
+## marriage come with their own design, see design/villagers/relationships.md).
+const BOND_NONE := &"none"
+const BONDS: Array[StringName] = [BOND_NONE]
 const MOODS: Array[String] = ["cold", "neutral", "warm"]
 ## Where an entry of a level is in its value: [name, first point, mood].
 const NAME := 0
@@ -55,6 +59,10 @@ func problems() -> Array[String]:
 			bad.append("[levels] %s must be [name, first point, mood]" % _level_key(level))
 	if not bad.is_empty():
 		return bad
+	if not _values.get("caps", {}).get("action_daily_cap_points") is int:
+		bad.append("[caps] action_daily_cap_points must be a whole number")
+	if not bad.is_empty():
+		return bad
 	if levels.size() != LEVEL_COUNT:
 		bad.append("[levels] must have the levels 1 to %d and no others" % LEVEL_COUNT)
 	for level in range(1, LEVEL_COUNT + 1):
@@ -94,6 +102,11 @@ func mood_of(points: int) -> StringName:
 ## The lowest opinion, in points, that is of this level.
 func first_point_of(level: int) -> int:
 	return _entry(level)[FIRST_POINT]
+
+
+## The most points the player's actions move a villager's opinion in a day, up or down.
+func action_daily_cap() -> int:
+	return _values["caps"]["action_daily_cap_points"]
 
 
 func _entry(level: int) -> Array:

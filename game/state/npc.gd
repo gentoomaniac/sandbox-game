@@ -92,6 +92,20 @@ var opinion := 0
 ## its sum, up and down (see `change_opinion`).
 var opinion_day := 0
 var opinion_moved_today := 0
+## What the player's actions have done with the friendship today (see `change_friendship`): the
+## day `action_moved_today` counts and how far the actions have moved the opinion since it began,
+## up and down.
+var action_day := 0
+var action_moved_today := 0
+## The day of the last gift they took, and of the first chat that counted for friendship: each
+## counts once a day.
+var last_gift_day := 0
+var chat_counted_day := 0
+## The day word ratings are counted for and how many were asked on it (see NpcDialogue).
+var rating_day := 0
+var ratings_today := 0
+## What binds them to the player, one of FriendshipRules BONDS.
+var bond := FriendshipRules.BOND_NONE
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
 
@@ -246,6 +260,21 @@ func change_opinion(points: int, today: int, rules: GossipRules) -> void:
 	var moved := clampi(opinion_moved_today + points, -cap, cap) - opinion_moved_today
 	opinion_moved_today += moved
 	opinion = clampi(opinion + moved, rules.opinion_min(), rules.opinion_max())
+
+
+## Moves the opinion by the `points` of what the player did on game day `today`, as far as the
+## day's cap for actions allows (like `change_opinion`, but its own total: what stories moved does
+## not count), and within `bounds` of the opinion.
+func change_friendship(
+	points: int, today: int, friendship: FriendshipRules, bounds: GossipRules
+) -> void:
+	if action_day != today:
+		action_day = today
+		action_moved_today = 0
+	var cap := friendship.action_daily_cap()
+	var moved := clampi(action_moved_today + points, -cap, cap) - action_moved_today
+	action_moved_today += moved
+	opinion = clampi(opinion + moved, bounds.opinion_min(), bounds.opinion_max())
 
 
 ## Takes a story into the gossip buffer (the same deed of the same day and place is one story),

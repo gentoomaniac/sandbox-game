@@ -75,3 +75,13 @@ func test_an_eleventh_level_is_a_problem() -> void:
 	var values := DataFile.read_sections(FriendshipRules.DEFAULT_PATH)
 	values["levels"]["level_11"] = ["Lover", 1000, "warm"]
 	assert_eq(FriendshipRules.new(values).problems().size(), 1)
+
+
+func test_the_cap_of_the_actions_is_60_points_a_day() -> void:
+	assert_eq(_rules.action_daily_cap(), 60)
+
+
+func test_a_cap_that_is_no_number_is_a_problem() -> void:
+	var values := DataFile.read_sections(FriendshipRules.DEFAULT_PATH)
+	values["caps"]["action_daily_cap_points"] = "sixty"
+	assert_eq(FriendshipRules.new(values).problems().size(), 1)

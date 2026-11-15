@@ -14,6 +14,11 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   `data/npc_talk.cfg` (`NpcTalkRules` checks all ten are there), the bubbles take the level's mood,
   quests are not posted by a villager of a cold mood (levels 1 and 2), and the console's
   `opinion` names the level.
+- Step 3: the state. `Npc` has `last_gift_day`, `chat_counted_day`, `action_day` and
+  `action_moved_today`, `rating_day` and `ratings_today`, and `bond` (`none`, the only word of
+  `FriendshipRules.BONDS`). `Npc.change_friendship(points, today, friendship, bounds)` moves the
+  opinion within the cap of the actions, `action_daily_cap_points` (60) of `[caps]` of
+  `data/friendship.cfg`, which is counted apart from the stories' cap. Not saved yet (step 4).
 
 ## The user's words
 
