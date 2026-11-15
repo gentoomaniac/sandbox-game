@@ -194,3 +194,15 @@ func test_the_nest_goes_with_its_house() -> void:
 	for parent: Stork in _parents():
 		_run(parent, 10.0)
 		assert_eq(parent._state, Stork.FLY, "the pair leaves the roof that is gone")
+
+
+func test_a_parent_freed_elsewhere_is_replaced_without_an_error() -> void:
+	_at(LATE_SPRING)
+	_wildlife._follow_nests()
+	var parent: Stork = _nest_view()._parents[0]
+	parent.free()
+	_nest_view().update(true)
+	var occupants := _wildlife.occupants_of(_house)
+	assert_eq(_nest_view()._parents.size(), occupants.parents_home, "a new one took its place")
+	for each: Stork in _nest_view()._parents:
+		assert_true(is_instance_valid(each))

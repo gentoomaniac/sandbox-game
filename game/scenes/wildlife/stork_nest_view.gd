@@ -84,9 +84,13 @@ func update(is_instant := false) -> void:
 	var occupants := wildlife.occupants_of(building)
 	_show_young(occupants, is_instant)
 	_show_nest_lift()
-	_parents = _parents.filter(
-		func(parent: Stork) -> bool: return is_instance_valid(parent) and not parent.is_done
-	)
+	# A plain loop: a parent can already be freed, and a freed object can't be passed to a lambda
+	# that takes a Stork.
+	var kept: Array[Stork] = []
+	for parent: Variant in _parents:
+		if is_instance_valid(parent) and not (parent as Stork).is_done:
+			kept.append(parent)
+	_parents = kept
 	while _parents.size() > occupants.parents_home:
 		_parents.pop_back().dismiss()
 	while _parents.size() < occupants.parents_home:
