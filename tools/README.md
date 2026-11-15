@@ -153,11 +153,13 @@ a circle, or the time skipped every hour: `godot --headless --path . -s tools/be
 (`build/bench/fixture.save`, `make bench` writes it) 100 to 300 tiles, in real time at 60 frames a
 second, `once` (all together), through a `day` (to and fro, from random moments) and into a time `skip`,
 each with cold masks and then warm ones. It prints what the main thread spends in a frame split into
-walking, the pathfinder, the masks and sending, how long the villagers waited for their first leg,
-searches, memory and what a snapshot costs: `taskset -c 0-10 nice -n 19 godot --headless --path . -s
-tools/bench/paths.gd -- <save> [send=<n>] [once=<s>] [day=<s>] [skip=<minutes>] [speed=<factor>]
-[<key>=<number> ...]` (the keys are numbers of `[travel]` to try; set `XDG_DATA_HOME` away from the
-real one). A run with 155 villagers takes about 20 minutes. Numbers: design/villagers/travel.md.
+walking, the pathfinder, the masks and sending (and the frames that sent the most), how long the
+villagers waited for their first leg, searches, memory and what a snapshot costs: `taskset -c 0-10
+nice -n 19 godot --headless --path . -s tools/bench/paths.gd -- <save> [send=<n>] [once=<s>]
+[day=<s>] [skip=<minutes>] [speed=<factor>] [wear=<tiles>] [<key>=<number> ...]` (`wear` gives that
+many tiles days of wear first, as a game of many days has; the keys are numbers of `[travel]` to try;
+set `XDG_DATA_HOME` away from the real one). A run with 155 villagers takes about 20 minutes. Numbers:
+design/villagers/travel.md.
 
 `tools/bench/path_search.gd` (task 238; no make target, it needs no save and writes nothing) times
 `PathSearch` for each tile it looks at, over the real chunks around a new game's start, with the

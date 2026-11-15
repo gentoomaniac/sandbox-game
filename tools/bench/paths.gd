@@ -24,7 +24,7 @@ extends SceneTree
 ## The pieces come from Npcs' `_travel`, which this reaches into: `update` is called with
 ## `may_search = false`, which leaves out its `tick`, and the `tick` is timed on its own.
 ## `make bench` writes the save (build/bench/fixture.save); this needs no Main. Run it with
-## `taskset`.
+## `taskset`. `wear=<n>` gives n tiles round the player days of wear first.
 ## godot --headless --path . -s tools/bench/paths.gd -- <save file> [<key>=<number> ...]
 ## The keys after the save are `send`, `once`, `day` and `skip`, `speed=<factor>` to multiply
 ## `walk_speed` (trips end that much sooner, and the next is searched sooner: a stress), or numbers
@@ -59,6 +59,7 @@ var _send_count := 1000000
 var _once_seconds := 90.0
 var _day_seconds := 300.0
 var _skip_minutes := 240
+var _worn_tiles := 0
 var _villagers: Array[Npc] = []
 var _homes: Dictionary[Npc, Vector2] = {}
 var _goals: Dictionary[Npc, Vector2i] = {}
@@ -90,6 +91,8 @@ var _walk_ms: Array[float] = []
 var _pathfinder_ms: Array[float] = []
 var _masks_ms: Array[float] = []
 var _sending_ms: Array[float] = []
+## How many trips each frame sent, to tell a slow frame of sending from a big one.
+var _sent_in_frame: Array[int] = []
 var _total_ms: Array[float] = []
 var _probe_ms: Array[float] = []
 var _probe_table: Dictionary[Vector2i, int] = {}
@@ -109,6 +112,7 @@ func _init() -> void:
 	for npc in _villagers:
 		_homes[npc] = npc.position
 	print("villagers ", _villagers.size(), " of ", npcs.all().size())
+	_wear_tiles_round_the_player()
 	_pick_goals()
 	_run_baseline()
 	if _once_seconds > 0.0:
@@ -134,6 +138,8 @@ func _rules_with_arguments() -> NpcRules:
 				_day_seconds = float(pair[1])
 			"skip":
 				_skip_minutes = int(pair[1])
+			"wear":
+				_worn_tiles = int(pair[1])
 			"speed":
 				values["behaviour"]["walk_speed"] *= float(pair[1])
 			_:
@@ -151,6 +157,15 @@ func _load_chunks() -> void:
 			var coords := centre + Vector2i(x, y)
 			if World.is_chunk_in_bounds(coords) and not _state.world.is_chunk_loaded(coords):
 				_state.world.add_chunk(generator.generate_chunk(coords))
+
+
+## `wear=<n>`: about n tiles in a square round the player have days of wear, as a game of many days
+## leaves (the cost of a snapshot grows with them).
+func _wear_tiles_round_the_player() -> void:
+	var side := ceili(sqrt(_worn_tiles))
+	var corner := _state.player.tile() - Vector2i(side, side) / 2
+	for index in _worn_tiles:
+		_state.world.wear.days[corner + Vector2i(index % side, index / side)] = 5
 
 
 ## A goal for each villager: a tile a villager can stand on, REACH tiles away, that a way leads
@@ -280,7 +295,9 @@ func _reset_run() -> void:
 	_snapshots = 0
 	_blocked_by_reason.clear()
 	_first_leg_waits.clear()
-	for list in [_walk_ms, _pathfinder_ms, _masks_ms, _sending_ms, _total_ms, _probe_ms]:
+	for list in [
+		_walk_ms, _pathfinder_ms, _masks_ms, _sending_ms, _sent_in_frame, _total_ms, _probe_ms
+	]:
 		list.clear()
 	for npc in _villagers:
 		npc.position = _homes[npc]
@@ -310,7 +327,9 @@ func _run_frames(seconds: float) -> void:
 	var next_frame_at := Time.get_ticks_usec()
 	for _frame in frames:
 		_now += FRAME_SECONDS
+		var sent_before := _sent
 		var sending_usec := _send_villagers()
+		_sent_in_frame.append(_sent - sent_before)
 		var masks_started := Time.get_ticks_usec()
 		if travel._masks != null:
 			travel._masks.update()
@@ -419,6 +438,7 @@ func _print_run(seconds: float) -> void:
 	print("    pathfinder tick             ", _stats(_pathfinder_ms))
 	print("    masks update                ", _stats(_masks_ms))
 	print("    sending (walk_to)           ", _stats(_sending_ms))
+	_print_slowest_sending_frames()
 	var slow := _total_ms.filter(func(ms: float) -> bool: return ms > SLOW_FRAME_MS).size()
 	print("  probe (the same work)         ", _stats(_probe_ms))
 	print("  %d of %d frames over %.1f ms" % [slow, _total_ms.size(), SLOW_FRAME_MS])
@@ -449,6 +469,18 @@ func _print_run(seconds: float) -> void:
 		)
 	)
 	_print_footprint()
+
+
+## The frames that spent the most on sending: the frame, the milliseconds and the trips sent.
+func _print_slowest_sending_frames() -> void:
+	var frames: Array[int] = []
+	for frame in _sending_ms.size():
+		frames.append(frame)
+	frames.sort_custom(func(a: int, b: int) -> bool: return _sending_ms[a] > _sending_ms[b])
+	var lines: Array[String] = []
+	for frame in frames.slice(0, 4):
+		lines.append("#%d %.1f ms (%d sent)" % [frame, _sending_ms[frame], _sent_in_frame[frame]])
+	print("    slowest sending frames      ", ", ".join(lines))
 
 
 ## What a snapshot of the world costs now, and what the memory is.
