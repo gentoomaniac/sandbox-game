@@ -305,9 +305,13 @@ for something inside a pool task (a task that waits for a mask can block every w
     frame.
   - `tools/bench/travel_masks.gd`: making masks (generating, stamping, the copy of the edits,
     `update` on the main thread).
-  - `tools/bench/frames.gd -- ... --far-trips=<n>`: the frames of the game with n villagers sent
-    over and over to chunks that are not loaded; compare the 99th percentile and the longest frame
-    with a run without (run each a few times: the scenes are noisy).
+  - `tools/bench/frames.gd -- ... --far-trips=<n> [--far-speed=<factor>]`: the frames of the game
+    with n villagers walking, one trip after the other, to goals 150 to 300 tiles out in chunks that
+    are not loaded (goals a way leads to are chosen). A trip takes 100 to 200 s at the villagers'
+    pace, so `walk_speed` is multiplied by the factor (default 20) to have trips end within the run.
+    It prints the trips completed and blocked (the clock moves in the scenarios, so a tide closes
+    some ways) and the searches a second; compare the 99th percentile and the longest frame with a
+    run without (run each a few times: the scenes are noisy).
   - `tools/bench/paths.gd` (task 238): villagers sent over loaded ground.
 
   Run them with `taskset -c 0-10 nice -n 19` to leave the machine alone, and with fewer cores to

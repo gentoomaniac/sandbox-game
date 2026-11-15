@@ -6,12 +6,16 @@ extends SceneTree
 ## borders, at the normal pace, through everything). Each prints the mean and the longest frame and
 ## how many frames went over 33 and over 16.7 ms; the frames over 33 ms are listed with their
 ## scenario and number. The first frames after the settle are left out. With `--far-trips=<n>` n
-## villagers are sent, over and over, to one of 40 tiles 150 to 300 tiles from the player in chunks
-## that are not loaded (cold masks, the worker busy), so that the frames can be compared with and
-## without them (#68).
+## villagers are sent, one trip after the other, to one of FAR_GOALS tiles 150 to 300 tiles from the
+## player in chunks that are not loaded (cold masks, the worker busy), and walk there: goals are
+## chosen that a way leads to from the player. A trip lasts 100 to 200 s at the villagers' pace, so
+## `--far-speed=<factor>` (default 20) multiplies `walk_speed`: trips end within the run, and each
+## walker enters tiles (mask lookups, wear) that much faster. The end prints the trips completed
+## and blocked and the searches a second, so that the frames can be compared with and without them
+## (#68).
 ## `make bench` runs it on a copy of the fixture save.
 ## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute --max-fps=0
-##   [--far-trips=<n>]
+##   [--far-trips=<n> [--far-speed=<factor>]]
 
 enum Scenario { STANDING, PASSING_OUT, SLEEPING, WALKING }
 
@@ -23,8 +27,8 @@ const SLOW_MS := 16.7
 ## The time of day the scenarios start at: no late night to pass out in by itself.
 const START_HOUR := 10
 ## How many goals for the far trips (`--far-trips`) to choose from.
-const FAR_GOALS := 40
-## How often a far walker is sent to a new goal (one search each time).
+const FAR_GOALS := 24
+## How long a far walker whose trip is blocked waits before it is sent to another goal.
 const FAR_RESEND_SECONDS := 10
 
 var main: Node
@@ -40,16 +44,26 @@ var walk_start := Vector2.ZERO
 ## Whether the fade of the passing out or the sleep has begun: its end ends the scenario.
 var has_faded := false
 var far_trips := 0
+var far_speed := 20.0
 var far_goals: Array[Vector2i] = []
 var far_walkers: Array[Npc] = []
 var far_sent_at := {}
 var far_rng := RandomNumberGenerator.new()
+var far_started_at := 0
+var far_arrived := 0
+var far_blocked: Array[int] = [0, 0]
+## What each walker's current trip had made of searches when last seen, to count them when it ends.
+var far_trip_searches: Dictionary[Npc, int] = {}
+var far_trip_of: Dictionary[Npc, NpcTrip] = {}
+var far_searches := 0
 
 
 func _initialize() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--far-trips="):
 			far_trips = int(argument.trim_prefix("--far-trips="))
+		elif argument.begins_with("--far-speed="):
+			far_speed = float(argument.trim_prefix("--far-speed="))
 	main = load("res://game/scenes/main.tscn").instantiate()
 	root.add_child(main)
 	t0 = Time.get_ticks_usec()
@@ -102,6 +116,7 @@ func _process(delta: float) -> bool:
 				_end_scenario()
 				for line in long_frames:
 					print(line)
+				_print_far_trips()
 				quit()
 	return false
 
@@ -121,8 +136,10 @@ func _start_far_trips() -> void:
 	var missing := far_trips - state.npcs.all().size()
 	if missing > 0:
 		state.npcs.spawn(missing, state.player.position, state.world)
-	# The goals are made now, before the frames are timed: finding grass takes generated chunks.
+	# The goals are made now, before the frames are timed: finding grass takes generated chunks, and
+	# the way to each is searched here (a goal on an island is no goal).
 	var generator := WorldGenerator.new(state.world.world_seed)
+	var masks := TravelMasks.for_world(state.world, state.npcs.rules)
 	while far_goals.size() < FAR_GOALS:
 		var reach := far_rng.randf_range(150.0, 300.0)
 		var tile := state.player.tile() + Vector2i(Vector2.from_angle(far_rng.randf() * TAU) * reach)
@@ -131,20 +148,70 @@ func _start_far_trips() -> void:
 			continue
 		var chunk := generator.generate_chunk(coords)
 		var local := Chunk.local_pos(tile)
-		if chunk.terrain_at(local) == Tile.Terrain.GRASS and chunk.object_at(local) == null:
+		if (
+			chunk.terrain_at(local) == Tile.Terrain.GRASS
+			and chunk.object_at(local) == null
+			and _is_reachable(state, masks, state.player.tile(), tile)
+		):
 			far_goals.append(tile)
+	state.npcs.rules._values["behaviour"]["walk_speed"] *= far_speed
+	state.npcs.trip_arrived.connect(func(_npc: Npc) -> void: far_arrived += 1)
+	state.npcs.trip_blocked.connect(
+		func(_npc: Npc, reason: NpcTrip.Block) -> void: far_blocked[reason] += 1
+	)
 	far_walkers = state.npcs.all().slice(0, far_trips)
+	far_started_at = Time.get_ticks_usec()
 	for npc in far_walkers:
 		_send_far(npc)
 
 
-## Sends each far walker again every FAR_RESEND_SECONDS: one search each, at a steady rate. (Walking
-## over chunks that are not loaded is not built, so a trip never ends by itself; left to itself it
-## would be stuck and search over and over, which is no load anyone will see.)
+## Whether a way leads from `start` to `goal`: searched over the masks as the villagers do, leg after
+## leg, on this thread.
+func _is_reachable(state: GameState, masks: TravelMasks, start: Vector2i, goal: Vector2i) -> bool:
+	var rules: NpcRules = state.npcs.rules
+	var view := TravelView.new(
+		TravelSnapshot.of(state.world, 0), rules, state.world.clock.total_minutes()
+	)
+	for _leg in int(rules.travel("max_legs")) + 1:
+		var search := PathSearch.new(
+			start,
+			goal,
+			view.is_free,
+			view.cost_of,
+			int(rules.travel("max_nodes")),
+			rules.travel("heuristic_weight"),
+			view.is_known
+		)
+		while not search.is_over():
+			if search.step(1 << 30) == PathSearch.State.WAITING:
+				while not view.provide(masks):
+					masks.update(true)
+		if search.state == PathSearch.State.FOUND:
+			return true
+		if search.state != PathSearch.State.LEG:
+			return false
+		start = search.path.back()
+	return false
+
+
+## Sends a far walker whose trip is over to a new goal, and one whose trip has been blocked for
+## FAR_RESEND_SECONDS. Counts the searches the trips make: a trip's own count, when it ends.
 func _resend_far_trips() -> void:
 	var now := Time.get_ticks_usec()
 	for npc in far_walkers:
-		if now - far_sent_at.get(npc, 0) > FAR_RESEND_SECONDS * 1000000:
+		var trip := npc.trip
+		if far_trip_of.get(npc) != trip:
+			far_searches += far_trip_searches.get(npc, 0)
+			far_trip_searches[npc] = 0
+			far_trip_of[npc] = trip
+		if trip != null:
+			far_trip_searches[npc] = trip.searches
+		if trip == null:
+			_send_far(npc)
+		elif (
+			trip.state == NpcTrip.State.BLOCKED
+			and now - far_sent_at.get(npc, 0) > FAR_RESEND_SECONDS * 1000000
+		):
 			_send_far(npc)
 
 
@@ -153,6 +220,31 @@ func _send_far(npc: Npc) -> void:
 	far_sent_at[npc] = Time.get_ticks_usec()
 	state.npcs.cancel_trip(npc)
 	state.npcs.walk_to(npc, far_goals[far_rng.randi() % far_goals.size()], state.world)
+
+
+func _print_far_trips() -> void:
+	if far_trips == 0:
+		return
+	for npc in far_walkers:
+		far_searches += far_trip_searches.get(npc, 0)
+	var seconds := (Time.get_ticks_usec() - far_started_at) / 1000000.0
+	print(
+		(
+			"far trips: %d walkers at %.0fx the pace, %d trips completed, %d blocked (%d no way, %d stuck), "
+			+ "%d searches in %.1f s (%.2f a second)"
+		)
+		% [
+			far_trips,
+			far_speed,
+			far_arrived,
+			far_blocked[0] + far_blocked[1],
+			far_blocked[NpcTrip.Block.NO_WAY],
+			far_blocked[NpcTrip.Block.STUCK],
+			far_searches,
+			seconds,
+			far_searches / seconds
+		]
+	)
 
 
 func _end_scenario() -> void:

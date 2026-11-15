@@ -279,6 +279,16 @@ stands) and walks on. As built:
   same within the noise (21.6 and 57.6 with them), so the worker's lookups are not what slows the
   main thread. Not found yet: the workers' share of memory and cache with the main thread is
   suspected; to look at once villagers really walk (step 3).
+- **Measured with villagers walking** (step 3, 2026-11-15; `frames.gd --far-trips=<n>`, now trips
+  that walk to reachable goals one after the other, `walk_speed` x 20 so that trips end within the
+  run; 11 cores; 2 runs each, walking scenario p99 / longest frame): none 13.2 / 28.9 and 12.6 / 26.5;
+  30 walkers 13.8 / 29.9 (and 13.8 / 38.8 in the first run); 154 walkers 16.5 / 32.4 and 15.9 / 38.6.
+  The 154 walkers make 13 to 15 searches a second, complete 36 to 41 trips in 21 s and are blocked
+  35 to 49 times (all `NO_WAY`: the clock moves in the scenarios, and the tide closes some of the
+  ways); standing p99 25 to 29 against 23 (and 19.5) for none. So the cost under a heavy search load
+  of step 2 (#70) stays about what it was (p99 +3 ms at 154), and the walking itself, at 20 times the
+  tiles a second, adds nothing that shows at 30; per-frame far work is a few float operations and
+  about eight chunk lookups (a dictionary `has` each), and a mask lookup when it enters a tile.
 
 ## Time skips and sleep
 
@@ -347,7 +357,8 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
    stays closed when that chunk loads; a search waits for a mask, goes on, and loses no neighbour;
    a far request runs while near ones are queued; NOT_LOADED is gone. **Done** (tests/test_travel_view.gd,
    tests/test_path_search_waiting.gd, tests/test_npc_trips_far.gd); the far search bench is below.
-3. **Far walking in `NpcTrip`, `Npcs.update`, far wear, `NpcViews`.** Tests: a villager from far
+3. **Far walking in `NpcTrip`, `Npcs.update`, far wear, `NpcViews`.** **Done** (tests/test_npc_far_walk.gd,
+   tests/test_npc_views.gd, `frames.gd`; numbers under Measured with villagers walking). Tests: a villager from far
    comes into the loaded area on its path and arrives at the goal; one leaves it and walks on; its
    position never moves more than `walk_speed x delta` in an update, also when its chunks load one
    an update or unload, and when that happens between two centres; the tide rising over a far path
