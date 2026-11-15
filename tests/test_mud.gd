@@ -1,5 +1,7 @@
 extends ResourceCase
-## Worn ground turns to mud in the rain and dries out again.
+## Worn ground turns to mud in the rain and dries out again, and the player walks slower on it.
+
+const ONE_TILE_SECONDS := 1.0 / PlayerState.SPEED
 
 var _rules := PathRules.default_rules()
 var _path: Vector2i
@@ -70,3 +72,33 @@ func _rain_before_now() -> float:
 	for hour in range(maxi(now_hour - _rules.window_hours(), 0), now_hour):
 		rain += _state.weather.rain_in_hour(_state.player.tile(), hour / 24 + 1, hour % 24)
 	return rain
+
+
+func test_the_player_walks_slower_on_mud() -> void:
+	_state.player.position = Vector2(_path) + Vector2(0.5, 0.5)
+	var dry := _state.walk_speed_factor()
+	_world.set_muddy(true)
+	assert_almost_eq(_state.walk_speed_factor(), dry * _rules.walk_factor(), 0.0001)
+	assert_lt(_state.walk_speed_factor(), dry)
+
+
+func test_the_player_walks_at_full_speed_on_unworn_ground_in_the_rain() -> void:
+	_world.set_muddy(true)
+	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
+	assert_eq(_state.walk_speed_factor(), 1.0)
+
+
+func test_a_walk_over_mud_goes_less_far() -> void:
+	_world.set_wear_days(_path + Vector2i.RIGHT, _rules.path_after_days())
+	_world.remove_object(_path)
+	_world.remove_object(_path + Vector2i.RIGHT)
+	var start := Vector2(_path) + Vector2(0.1, 0.5)
+	_state.player.position = start
+	_state.walk(Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.walk_speed_factor())
+	var dry_distance := _state.player.position.x - start.x
+	_world.set_muddy(true)
+	_state.player.position = start
+	_state.walk(Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.walk_speed_factor())
+	assert_almost_eq(
+		_state.player.position.x - start.x, dry_distance * _rules.walk_factor(), 0.0001
+	)

@@ -30,6 +30,7 @@ func test_the_data_file_holds_every_rule_with_the_first_values() -> void:
 	assert_eq(rules.villager_step(), 0.5)
 	assert_eq(rules.soaked_by(), 1.5)
 	assert_eq(rules.window_hours(), 10)
+	assert_eq(rules.walk_factor(), 0.7)
 
 
 func test_the_stage_follows_the_days() -> void:
@@ -48,7 +49,7 @@ func test_every_missing_key_is_reported() -> void:
 	assert_false(rules.is_valid())
 	assert_true(missing.has("[wear] no path_after_days"))
 	assert_true(missing.has("[wear] no animal_step"))
-	assert_true(missing.has("[mud] no window_hours"))
+	assert_true(missing.has("[mud] no walk_factor"))
 	assert_false(missing.has("[wear] no busy_steps"))
 	assert_push_error_count(missing.size())
 
@@ -62,6 +63,7 @@ func test_numbers_out_of_order_or_range_are_reported() -> void:
 	text = text.replace("animal_step=0.5", "animal_step=-1")
 	text = text.replace("villager_step=0.5", "villager_step=-1")
 	text = text.replace("soaked_by=1.5", "soaked_by=0").replace("window_hours=10", "window_hours=0")
+	text = text.replace("walk_factor=0.7", "walk_factor=1.5")
 	var rules := _write(text)
 	assert_eq(
 		rules.problems(),
@@ -73,9 +75,10 @@ func test_numbers_out_of_order_or_range_are_reported() -> void:
 			"[wear] villager_step must not be below 0",
 			"[mud] soaked_by must be above 0",
 			"[mud] window_hours must be at least 1",
+			"[mud] walk_factor must be above 0 and at most 1",
 		]
 	)
-	assert_push_error_count(7)
+	assert_push_error_count(8)
 
 
 func test_a_missing_file_is_reported() -> void:

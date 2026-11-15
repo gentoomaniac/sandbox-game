@@ -25,7 +25,8 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - Animals and villagers wear paths too.
 - A path is only a look: you till and build on it as on grass.
 - In rain, worn ground (trodden grass and paths) turns to mud: a few hours of steady rain make
-  it, and it dries out again about ten hours after the rain stops.
+  it, and it dries out again about ten hours after the rain stops. You walk slower on mud, so a
+  road that stays dry is worth laying. Villagers and animals are not slowed.
 
 ![A path through a meadow after 3 days, after 8, 5 days after last use, and under snow](../docs/screenshots/desire-paths.png)
 

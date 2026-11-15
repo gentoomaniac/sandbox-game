@@ -295,7 +295,8 @@ func is_door_ahead() -> bool:
 
 
 ## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
-## a debuff allow. On horseback it is the horse's pace, which nothing slows.
+## a debuff allow, and mud slows on top of that. On horseback it is the horse's pace, which nothing
+## slows.
 func walk_speed_factor() -> float:
 	if player.horse != null:
 		var pace := "ride_walk_factor"
@@ -307,6 +308,8 @@ func walk_speed_factor() -> float:
 	var factor := energy_rules.walk_factor(player.energy)
 	if player.is_debuffed:
 		factor = minf(factor, energy_rules.debuff_walk_factor())
+	if not is_inside() and world.is_muddy_at(player.tile()):
+		factor *= PathRules.default_rules().walk_factor()
 	return factor
 
 

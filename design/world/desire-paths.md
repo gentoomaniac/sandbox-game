@@ -12,7 +12,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 - Every tile the player steps onto outdoors takes a step (not with noclip). A farm animal or a
   villager takes half a step onto each tile it walks onto, loaded or not (far walkers wear by the
   `WEARS` bit of their `TravelMask`, `World.wear_unloaded`).
-- A path is a look only: it walks, tills and builds like grass.
+- A path is a look only: it walks, tills and builds like grass (except in mud, below).
 
 ## Wear takes days
 
@@ -56,6 +56,9 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   water, both art sets; the same in every season). When the flag changes, `World` emits
   `tile_changed` for every worn tile of the loaded chunks, once per change of weather, and a
   chunk that loads is drawn with the flag as it is.
+- **Slower:** the player walks at `walk_factor` (0.7) of their speed on a muddy tile
+  (`GameState.walk_speed_factor`, so their walk animation slows too). Not on horseback: a horse's
+  pace is its own and nothing slows it.
 - **Villagers and animals walk at normal speed in mud, and path searches don't mind it** (decided
   after looking at the design). The `TravelMask`s are immutable snapshots of a chunk and know only
   that grass wears (`WEARS`), not how worn it is or whether it rains; the cost of a lane is read from
