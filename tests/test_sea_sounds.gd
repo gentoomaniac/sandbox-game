@@ -68,21 +68,21 @@ func test_it_is_loudest_at_the_edge_and_falls_with_the_distance() -> void:
 func test_it_is_gone_a_few_chunks_inland_and_no_loop_plays() -> void:
 	_level_at_high_tide_for(90)
 	assert_eq(_sea._level, 0.0)
-	assert_null(_sea._loop)
+	assert_null(_sea._calm.loop)
 	assert_false(_events.has(&"sea_loop"))
 
 
 func test_it_starts_a_flat_loop_on_the_ambience_bus_and_stops_it_when_the_sea_is_gone() -> void:
 	_level_at_high_tide_for(10)
 	assert_eq(_events.count(&"sea_loop"), 1)
-	var player: AudioStreamPlayer2D = _sea._loop._player
+	var player: AudioStreamPlayer2D = _sea._calm.loop._player
 	assert_eq(player.bus, AudioService.AMBIENCE, "muffled by the same bus as the weather")
 	assert_eq(player.attenuation, 0.0, "the level is the rule's, not the engine's")
 	_look()
 	assert_eq(_events.count(&"sea_loop"), 1, "not started again")
 	_make_sea(-90, -95)
 	_look()
-	assert_null(_sea._loop)
+	assert_null(_sea._calm.loop)
 
 
 func test_it_pans_to_the_side_the_water_is_on() -> void:
@@ -96,7 +96,7 @@ func test_it_pans_to_the_side_the_water_is_on() -> void:
 func test_the_loop_sounds_to_the_side_of_the_player() -> void:
 	_level_at_high_tide_for(10)
 	_sea._process(0.0)
-	var player: AudioStreamPlayer2D = _sea._loop._player
+	var player: AudioStreamPlayer2D = _sea._calm.loop._player
 	var at := _state.player.position * TerrainTileset.TILE_SIZE
 	assert_lt(player.position.x, at.x)
 	assert_eq(player.position.y, at.y)
@@ -112,10 +112,52 @@ func test_a_playing_loop_stops_only_well_below_the_least_level() -> void:
 	# that is not playing doesn't start, and one that is goes on.
 	var least := AmbienceRules.default_rules().value("loops", "min_level")
 	var level := _level_at_high_tide_for(63)
-	assert_null(_sea._loop, "not started")
+	assert_null(_sea._calm.loop, "not started")
 	_level_at_high_tide_for(10)
-	assert_not_null(_sea._loop)
+	assert_not_null(_sea._calm.loop)
 	_level_at_high_tide_for(63)
-	assert_not_null(_sea._loop, "not stopped at the edge of hearing")
+	assert_not_null(_sea._calm.loop, "not stopped at the edge of hearing")
 	assert_between(_sea._level, least * SeaSounds.STOP_SHARE, least)
 	assert_eq(level, 0.0)
+
+
+func test_in_no_storm_only_the_calm_loop_plays() -> void:
+	_level_at_high_tide_for(10)
+	assert_not_null(_sea._calm.loop)
+	assert_null(_sea._rough.loop)
+	assert_false(_events.has(&"sea_storm_loop"))
+
+
+func test_in_a_full_storm_the_rough_loop_plays_and_the_calm_one_is_gone() -> void:
+	_state.weather_override = &"storm"
+	_level_at_high_tide_for(10)
+	assert_eq(_events.count(&"sea_storm_loop"), 1)
+	assert_not_null(_sea._rough.loop)
+	assert_gt(_sea._rough.level, 0.9 * _sea._level, "mostly the rough one")
+	assert_null(_sea._calm.loop, "the calm waves have faded out")
+
+
+func test_the_loops_crossfade_as_the_storm_rises_and_the_total_keeps_its_level() -> void:
+	_level_at_high_tide_for(10)
+	var level := _sea._level
+	var rough_before := 0.0
+	for step in range(1, 5):
+		_sea._follow(level, step / 4.0 * 0.75)
+		assert_gt(_sea._rough.level, rough_before, "rougher with every step")
+		rough_before = _sea._rough.level
+		var power := sqrt(_sea._calm.level ** 2 + _sea._rough.level ** 2)
+		assert_almost_eq(power, level, 0.0001, "no dip while they swap")
+	assert_not_null(_sea._calm.loop, "both are heard in between")
+	assert_not_null(_sea._rough.loop)
+	_sea._follow(level, 0.0)
+	assert_null(_sea._rough.loop, "calm again: the rough loop fades out")
+	assert_eq(_events.count(&"sea_loop"), 1, "the calm loop played on, not restarted")
+
+
+func test_both_loops_stop_when_the_sea_is_gone() -> void:
+	_state.weather_override = &"storm"
+	_level_at_high_tide_for(10)
+	_make_sea(-90, -150)
+	_look()
+	assert_null(_sea._rough.loop)
+	assert_null(_sea._calm.loop)

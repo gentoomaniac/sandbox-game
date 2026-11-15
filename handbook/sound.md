@@ -38,8 +38,9 @@ What you hear in the game, and how to turn it up or down.
 - Near the sea you hear soft waves lapping the shore, from the side the water is on. They get
   quieter with every step inland and are gone about two chunks from the water. At high water the
   flooded flats bring the sea nearer and the waves are louder; at low water there is only a far
-  quiet hush. In a storm they are rougher and carry further; indoors they are muffled. They are
-  on the Ambience volume, with the other sounds of the world.
+  quiet hush. In a storm they carry further and turn rough: heavier breakers, closer together, with more
+  foam and roar, blending in as the storm rises; indoors they are muffled. They are on the
+  Ambience volume, with the other sounds of the world.
 - Thunder follows each flash by how far the strike was: a far rumble many seconds later, now
   and then a close crack almost at once.
 - Birds chirp by day; deer, rabbits and squirrels are heard; bees buzz at their flowers.

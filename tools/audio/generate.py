@@ -81,6 +81,9 @@ EVENTS = {
     "wind_loop": (-12, [weather.wind_loop] * 2),
     # Soft waves on a flat shore (task 97): a steady ambience, a little under the wind.
     "sea_loop": (-12, [sea.sea_loop] * 2),
+    # The same shore in a storm (#101): heavier breakers, closer together, with more foam and roar;
+    # the game crossfades to it with the weather's storm.
+    "sea_storm_loop": (-10, [sea.sea_storm_loop] * 2),
     "wind_gust": (-8, [weather.wind_gust] * 3),
     # By distance (task 214): the game also lowers and dulls them the farther the strike was.
     "thunder_far": (-16, weather.thunder_variants(weather.FAR)),

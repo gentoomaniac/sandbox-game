@@ -76,6 +76,8 @@ const REQUIRED_KEYS := {
 		"flooded_mud_is_sea",
 		"storm_gain",
 		"storm_reach",
+		"storm_blend_from",
+		"storm_blend_full",
 	],
 }
 const SEASON_COUNT := 4
@@ -160,6 +162,13 @@ func _sea_problems() -> Array[String]:
 	for key in ["pan_full_tiles", "pan_width_tiles", "storm_gain", "storm_reach"]:
 		if value("sea", key) < 0.0:
 			bad.append("[sea] %s must not be below 0" % key)
+	var from := value("sea", "storm_blend_from")
+	if (
+		from < 0.0
+		or value("sea", "storm_blend_full") > 1.0
+		or value("sea", "storm_blend_full") <= from
+	):
+		bad.append("[sea] storm_blend_from and storm_blend_full must be 0 <= from < full <= 1")
 	return bad
 
 
@@ -283,6 +292,21 @@ func sea_level(
 	if is_inside:
 		level *= value("sea", "indoors_share")
 	return minf(level, 1.0)
+
+
+## How far the waves have turned rough in this weather, 0 (all calm) to 1 (all stormy): the storm's
+## way from `storm_blend_from` to `storm_blend_full`.
+func sea_roughness(weather: WeatherSample) -> float:
+	var from := value("sea", "storm_blend_from")
+	var full := value("sea", "storm_blend_full")
+	return clampf((weather.storm - from) / (full - from), 0.0, 1.0)
+
+
+## The shares of the sea's level that the calm loop and the rough one get, as x and y, for a
+## roughness (`sea_roughness`): an equal-power crossfade, so the two never dip below the level.
+static func sea_blend(roughness: float) -> Vector2:
+	var angle := clampf(roughness, 0.0, 1.0) * PI * 0.5
+	return Vector2(cos(angle), sin(angle))
 
 
 ## How far to one side the waves sound, -1 (left) to 1 (right), for the way to the water in tiles

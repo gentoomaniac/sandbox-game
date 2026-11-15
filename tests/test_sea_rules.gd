@@ -86,3 +86,28 @@ func test_the_pan_is_slight_at_the_very_edge_and_never_past_full() -> void:
 	assert_eq(_rules.sea_pan(Vector2.ZERO), 0.0)
 	assert_lt(absf(_rules.sea_pan(Vector2(-1, 0))), absf(_rules.sea_pan(Vector2(-20, 0))))
 	assert_lte(absf(_rules.sea_pan(Vector2(-500, 3))), 1.0)
+
+
+func test_the_waves_are_calm_up_to_a_storm_and_rough_in_a_full_one() -> void:
+	assert_eq(_rules.sea_roughness(_calm), 0.0)
+	assert_eq(_rules.sea_roughness(_storm), 1.0)
+	var middle := WeatherSample.new()
+	var from := _rules.value("sea", "storm_blend_from")
+	var full := _rules.value("sea", "storm_blend_full")
+	middle.storm = (from + full) / 2.0
+	assert_almost_eq(_rules.sea_roughness(middle), 0.5, 0.0001)
+	middle.storm = from * 0.5
+	assert_eq(_rules.sea_roughness(middle), 0.0, "a breeze doesn't roughen it")
+
+
+func test_the_crossfade_is_equal_power_and_all_calm_or_all_rough_at_the_ends() -> void:
+	assert_eq(AmbienceRules.sea_blend(0.0), Vector2(1.0, 0.0))
+	assert_almost_eq(AmbienceRules.sea_blend(1.0).x, 0.0, 0.0001)
+	assert_almost_eq(AmbienceRules.sea_blend(1.0).y, 1.0, 0.0001)
+	var last := Vector2(1.0, 0.0)
+	for step in range(1, 11):
+		var blend := AmbienceRules.sea_blend(step / 10.0)
+		assert_almost_eq(blend.length(), 1.0, 0.0001, "no dip in the middle")
+		assert_lt(blend.x, last.x, "the calm fades out")
+		assert_gt(blend.y, last.y, "the rough fades in")
+		last = blend

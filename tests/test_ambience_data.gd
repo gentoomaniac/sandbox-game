@@ -77,3 +77,5 @@ func test_sea_values_that_make_no_sense_are_bad() -> void:
 	_assert_bad(_rules_with("sea", "indoors_share", 1.5), "indoors_share")
 	_assert_bad(_rules_with("sea", "low_water_share", -0.1), "low_water_share")
 	_assert_bad(_rules_with("sea", "pan_max", 2.0), "pan_max")
+	_assert_bad(_rules_with("sea", "storm_blend_full", 0.1), "storm_blend_full")
+	_assert_bad(_rules_with("sea", "storm_blend_full", 1.5), "storm_blend_full")

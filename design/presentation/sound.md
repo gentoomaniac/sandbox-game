@@ -94,7 +94,14 @@ MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchr
   1), so the water is nearer at high water, and at low water the level is `low_water_share` (0.4)
   of itself, the sea far out over the mud and the tideways: a far quiet hush; **storms** (the
   weather's `storm`, 0 to 1): up to `storm_gain` (0.4) louder and `storm_reach` (0.3) further, so
-  a storm's reach is 94 tiles, within what is loaded (no rougher sound yet); **indoors** it is
+  a storm's reach is 94 tiles, within what is loaded; **rougher waves** (#101): `sea_storm_loop`
+  (`sea.sea_storm_loop`, two 15-second circles, level -10 dBFS against -12, about 4 dB more RMS) is
+  the same flat shore in a gale, a heavier breaker every 3.6 s (not every 6) that comes up in under
+  a second and breaks into a long roar with a hard hiss and dense foam, over a steady roar of the
+  sea. `SeaSounds` crossfades the two loops by the storm, over `storm_blend_from` (0.2) to
+  `storm_blend_full` (0.8) as an equal-power pair (`AmbienceRules.sea_blend`: cos and sin of the way
+  across, so the sum never dips), and each loop exists only while its share is audible (the stop
+  margin `STOP_SHARE` applies to each); **indoors** it is
   `indoors_share` (0.6) of its level at the house's door (the weather's tile), on top of the
   Ambience bus's low-pass and -24 dB, so it is a faint, dull wash; **panning** as above. The sea
   goes out of the music (task 15, separately).

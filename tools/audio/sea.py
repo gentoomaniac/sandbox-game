@@ -54,3 +54,46 @@ def sea_loop(rng):
         place(wave_sum, _wash(rng, rng.uniform(0.55, 1.0)), at % SEA_LENGTH, loop=True)
     # The wash of the sea itself comes and goes in the gaps of the waves, quietly.
     return out + wave_sum / rms(wave_sum) * 0.35
+
+
+# The stormy shore (#101): the same flat coast in a gale, so breakers still, not surf with a
+# boom, but heavier and closer together: one every three to four seconds.
+STORM_WAVE_PERIOD = 3.6
+
+
+def _breaker(rng, strength):
+    """One breaker on the flats in a storm: it comes up quickly, breaks into a long roar of
+    foam with a hard hiss and a crackle of bubbles, and the water rushes back with a patter.
+    `strength` (0.6 to 1) is how heavy it is."""
+    length = rng.uniform(4.0, 5.0)
+    t = times(length)
+    rise = rng.uniform(0.6, 1.0)
+    up = np.sin(0.5 * np.pi * np.clip(t / rise, 0, 1)) ** 1.5
+    down = np.exp(-(np.maximum(t - rise, 0)) / rng.uniform(1.1, 1.6))
+    swell = up * down
+    roar = bandpass(noise(rng, length), 120, 1800) * swell
+    roar = roar / rms(roar)
+    hiss = bandpass(noise(rng, length), 1500, 8000) * swell
+    hiss = hiss / rms(hiss)
+    # Foam: dense bubbles bursting along the whole break, and the rush back off the mud.
+    bubbles = bandpass(grains(rng, length, 2500), 2000, 9000) * swell**1.5
+    rush = bandpass(grains(rng, length, 900), 700, 4500) * np.clip((t - rise) / 1.0, 0, 1) * down
+    out = roar * 0.8 + hiss * 0.55
+    out += bubbles / (rms(bubbles) + 1e-9) * 0.2 + rush / (rms(rush) + 1e-9) * 0.12
+    tail = np.cos(0.5 * np.pi * np.clip((t - (length - 0.8)) / 0.8, 0, 1)) ** 2
+    return out * strength * tail
+
+
+def sea_storm_loop(rng):
+    """Heavy breakers, close together, over the continuous roar of a rough sea."""
+    count = round(SEA_LENGTH / STORM_WAVE_PERIOD)
+    # The roar of the sea beyond never lets up, but swells and sinks with the gusts.
+    out = 0.6 * noise_band(rng, SEA_LENGTH, 80, 2500, loop=True)
+    out *= 0.6 + 0.8 * drift(rng, SEA_LENGTH, 0.4, loop=True)
+    wave_sum = np.zeros(samples(SEA_LENGTH))
+    slot = SEA_LENGTH / count
+    start = rng.uniform(0, slot)
+    for index in range(count):
+        at = start + (index + rng.uniform(-0.2, 0.2)) * slot
+        place(wave_sum, _breaker(rng, rng.uniform(0.6, 1.0)), at % SEA_LENGTH, loop=True)
+    return out + wave_sum / rms(wave_sum) * 0.5
