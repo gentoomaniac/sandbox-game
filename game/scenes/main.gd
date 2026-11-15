@@ -8,7 +8,6 @@ extends Node2D
 ## quit (see SaveFile). The debug flags after `--` on the Godot command line are documented in
 ## StartupOptions.
 
-const WORLD_SEED := 1
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
 ## What the player is told when they try on horseback what needs them on foot.
@@ -181,7 +180,7 @@ func _load_game() -> void:
 	_settings.art_set_changed.connect(
 		func() -> void: ArtSet.show(_settings.is_classic_art, get_tree())
 	)
-	_state = await _load_or_start_game()
+	_state = await GameLoader.new(_options, _save_questions).load_or_start(_resumed_state)
 	if _state == null:
 		return
 	_state.energy_drain = _settings.energy_drain_factor()
@@ -854,38 +853,6 @@ func _start_sounds() -> void:
 	_sea_sounds.listen(_audio, _state)
 
 
-## The game F8 has just loaded, else the newest save that can be loaded, or a new one if there is
-## none or `--new-game` is given. A save that is refused is moved aside, the player is told, and
-## the save before it is tried. A save that holds content the game no longer has is up to the
-## player: null if they cancel (the game then quits, with the file as it was).
-func _load_or_start_game() -> GameState:
-	if _resumed_state != null:
-		return _resumed_state
-	if _options.new_game:
-		return GameState.new_game(WORLD_SEED, true)
-	var paths := SaveList.paths_newest_first(_options.save_path)
-	for index in paths.size():
-		var loaded := SaveFile.load_game(paths[index])
-		match loaded.outcome:
-			LoadResult.Outcome.READY:
-				return loaded.state
-			LoadResult.Outcome.REFUSED:
-				push_error("Can't load %s: %s" % [paths[index], "; ".join(loaded.problems)])
-				var moved_to := SaveFile.move_aside(paths[index])
-				var has_older_save := index < paths.size() - 1
-				await _save_questions.tell_refused(loaded.reason, moved_to, has_older_save)
-			LoadResult.Outcome.ASK:
-				if await _save_questions.is_missing_content_loaded(
-					loaded.missing, loaded.backup_path, "Cancel and quit the game"
-				):
-					var dropped := loaded.load_dropping_missing()
-					if dropped == null:
-						await _save_questions.tell_copy_failed(loaded.copy_error)
-					return dropped
-				return null
-	return GameState.new_game(WORLD_SEED, true)
-
-
 ## The settings, with the player's key bindings applied to the input map.
 func _load_settings() -> GameSettings:
 	# The settings take the project's key bindings as the defaults, so after F8 restarted the scene
@@ -945,7 +912,7 @@ func _start_new_game() -> void:
 		var note := "Not saved, so no new game: %s" % _saves.last_error
 		_notifications.post(QuickLoadFlow.LOAD_NOTE, note, NotificationHud.Tone.ERROR)
 		return
-	QuickLoad.start_new(GameState.new_game(WORLD_SEED, true))
+	QuickLoad.start_new(GameLoader.new_world())
 	if get_tree().reload_current_scene() != OK:
 		QuickLoad.take()
 		var error := "Can't restart the game"
