@@ -80,7 +80,7 @@ func test_a_press_held_on_the_bag_takes_nothing_down() -> void:
 func test_a_door_or_a_sleep_closes_the_docked_windows() -> void:
 	_press_key(KEY_B)
 	_press_key(KEY_C)
-	_main._fade_through(func() -> void: pass)
+	_main._blackout.fade_through(func() -> void: pass)
 	assert_false(_main._bag_screen.is_open())
 	assert_false(_main._character_screen.is_open())
-	await wait_until(func() -> bool: return not _main._is_in_transition, SETTLE_SECONDS)
+	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SETTLE_SECONDS)

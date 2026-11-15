@@ -151,9 +151,9 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   on a panel or a stack is dragged (Main's `is_pointer_on_gui`), the use highlight and the build
   ghost are hidden, Space (use) acts on the tile in front of the player as it does without a mouse,
   Space does not place a building, and a hold to take down counts only a press that began on the
-  world. A door or a sleep (`_fade_through`) closes the windows and cancels a drag. Opening any
-  other window closes both, and a docked window opened by code closes a window of the other kind.
-  When the two do not fit side by side inside the screen at their docks (a small window or a large
+  world. A door or a sleep (`BlackoutFlow.fade_through`) closes the windows and cancels a drag.
+  Opening any other window closes both, and a docked window opened by code closes a window of the
+  other kind. When the two do not fit side by side inside the screen at their docks (a small window or a large
   UI scale), the one opened first closes when the second opens, or when the window changes size: the
   old one-at-a-time rule. A docked window's backdrop (`ModalBackdrop`) lets clicks through; the
   bag's takes the mouse only while a stack is dragged (`takes_mouse_while_dragging`, set by

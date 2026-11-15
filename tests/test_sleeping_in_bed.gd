@@ -56,9 +56,9 @@ func test_the_save_of_a_sleep_is_a_background_save_of_the_new_day_under_the_blac
 	state.player.position = Vector2(state.player.home_bed) + Vector2(0.5, 0.5)
 	var day_before := state.clock.day
 
-	_main._try_sleep()
+	_main._blackout.try_sleep()
 	await wait_until(func() -> bool: return not was_black_at_start.is_empty(), SLEEP_SECONDS)
-	await wait_until(func() -> bool: return not _main._is_in_transition, SLEEP_SECONDS)
+	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SLEEP_SECONDS)
 
 	assert_eq(was_black_at_start, [true] as Array[bool], "one save, begun on the black")
 	assert_gt(frames_of_snapshot[0], frames_of_sleep[0], "the snapshot is a frame after the sleep")
@@ -78,7 +78,7 @@ func _go_to_bed() -> void:
 ## physics ticks, which a sleep of a few frames may pass between.
 func _wait_until_world_is_held() -> void:
 	for _frame in MAX_FRAMES_TO_WAIT:
-		if _main._is_making_up_time:
+		if _main._blackout.is_making_up_time:
 			return
 		await get_tree().process_frame
 	fail_test("the world was not held for the sleep")
@@ -87,13 +87,13 @@ func _wait_until_world_is_held() -> void:
 func test_quitting_in_the_middle_of_the_sleep_waits_and_saves_the_whole_morning() -> void:
 	var state: GameState = _main._state
 	_go_to_bed()
-	_main._try_sleep()
+	_main._blackout.try_sleep()
 	await _wait_until_world_is_held()
 
 	var is_saved: bool = await _main._is_saved_for_quit()
 
 	assert_true(is_saved)
-	assert_false(_main._is_making_up_time, "it waited for the waking")
+	assert_false(_main._blackout.is_making_up_time, "it waited for the waking")
 	var saved := SaveFile.read(_main._options.save_path)
 	assert_eq(saved.clock.total_minutes(), state.clock.total_minutes())
 	assert_eq(saved.player.position, state.player.position)
@@ -110,13 +110,13 @@ func test_the_chunks_stay_as_they_are_over_the_frames_of_a_sleep() -> void:
 			could_process_at_skip.append(_main._view.can_process())
 	)
 	_go_to_bed()
-	_main._try_sleep()
+	_main._blackout.try_sleep()
 	await _wait_until_world_is_held()
 	var chunks_at_start := state.world.loaded_chunk_coords()
 	# The camera would stream chunks round a far focus.
 	_main._residency.set_focus(state.player.tile() + Vector2i(320, 0))
 	_main._residency.update()
-	await wait_until(func() -> bool: return not _main._is_in_transition, SLEEP_SECONDS)
+	await wait_until(func() -> bool: return not _main._blackout.is_in_transition, SLEEP_SECONDS)
 
 	assert_eq(could_process_at_skip, [false] as Array[bool])
 	chunks_at_start.sort()
@@ -145,7 +145,7 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	# rested: the livestock that is stepped for those minutes must not pounce, nor look about.
 	var mouse: Mouse = _main._wildlife._animals.back()
 	var probe := WalkedMinuteProbe.new()
-	probe.is_held = func() -> bool: return _main._is_making_up_time
+	probe.is_held = func() -> bool: return _main._blackout.is_making_up_time
 	probe.setup = func() -> void:
 		cat.hunt_rest_seconds = 0.0
 		cat.position = mouse.prey.position - Vector2(1.0, 0.0)
@@ -158,7 +158,7 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	# Every frame is sampled as it begins: the wait's own polling is on the physics ticks, which
 	# a quick sleep of a few frames may pass between.
 	var sample_held_frame := func() -> void:
-		if not _main._is_making_up_time:
+		if not _main._blackout.is_making_up_time:
 			return
 		could_process.append(cat_view.can_process())
 		# What the livestock would turn into a hunt if it ran: an idle cat, rested, about to pick
@@ -168,8 +168,9 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 		cat.seconds_left = 0.0
 		cat.hunt_rest_seconds = 0.0
 	get_tree().process_frame.connect(sample_held_frame)
-	_main._try_sleep()
-	var is_done := func() -> bool: return not activities.is_empty() and not _main._is_making_up_time
+	_main._blackout.try_sleep()
+	var is_done := func() -> bool:
+		return not activities.is_empty() and not _main._blackout.is_making_up_time
 	await wait_until(is_done, SLEEP_SECONDS)
 	get_tree().process_frame.disconnect(sample_held_frame)
 

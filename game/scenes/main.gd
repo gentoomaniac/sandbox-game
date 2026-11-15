@@ -82,12 +82,8 @@ var _frost := 0.0
 var _fast_forward := false
 ## The mouse wheel's turns not yet a whole hotbar slot (see HotbarWheel).
 var _wheel_progress := 0.0
-## A fade (a door, sleep) or passing out is running: the player neither walks nor acts.
-var _is_in_transition := false
-## The time of a sleep is being made up for over some frames (see Simulation `skip_over_frames`),
-## up to the player's waking: the world is held, and quitting waits (see `_hold_world`).
-var _is_making_up_time := false
 var _fade_screen := FadeScreen.new()
+var _blackout: BlackoutFlow
 var _debug: DebugRunner
 var _pending_minutes := 0.0
 ## The game hour the wetness of the soil was last shown for.
@@ -248,6 +244,18 @@ func _apply_villager_memory_settings() -> void:
 ## Shows the state in the views and wires what they report back.
 func _connect_state_and_views() -> void:
 	_residency = ChunkResidency.new(_state.world)
+	_blackout = BlackoutFlow.new()
+	_blackout.state = _state
+	_blackout.view = _view
+	_blackout.residency = _residency
+	_blackout.player_view = _player_view
+	_blackout.console_view = _console_view
+	_blackout.fade_screen = _fade_screen
+	_blackout.saves = _saves
+	_blackout.save_path = _options.save_path
+	_blackout.show_current_map = _show_current_map
+	_blackout.show_clock = _show_clock
+	add_child(_blackout)
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -361,7 +369,7 @@ func _apply_start_options() -> void:
 	_debug.process_screen = _process_screen
 	_debug.chat_screen = _chat_screen
 	_debug.open_chat = _open_chat
-	_debug.try_sleep = _try_sleep
+	_debug.try_sleep = _blackout.try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _menu.open_page
 	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
@@ -379,7 +387,7 @@ func _notification(what: int) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	# A collapse, the message on black and the sleep fade take all input (the message screen
 	# reads its own key): no menu, console, hotbar or hammer until the player is up again.
-	if _is_in_transition:
+	if _blackout.is_in_transition:
 		return
 	if event.is_action_pressed("console") and _can_open_console():
 		# The key that opens it must not be typed into the input line.
@@ -451,7 +459,7 @@ func _process(delta: float) -> void:
 		_view.refresh_soil(_state.last_hour_rain())
 		_state.refresh_mud()
 	_autosave_on_time(delta)
-	_tiredness_view.is_awake = not _is_in_transition
+	_tiredness_view.is_awake = not _blackout.is_in_transition
 	_weather_view.visible_region = _camera.visible_region()
 	_weather_view.show_weather(_weather, _tint.color, _tint.daylight)
 	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
@@ -475,10 +483,10 @@ func _process(delta: float) -> void:
 		is_in_play
 		and not is_pointer_on_gui
 		and not _builder.is_building()
-		and not _is_in_transition
+		and not _blackout.is_in_transition
 	)
 	# On horseback E gets off instead.
-	var can_act := is_in_play and not _build_mode.is_active() and not _is_in_transition
+	var can_act := is_in_play and not _build_mode.is_active() and not _blackout.is_in_transition
 	var can_chat := can_act and _state.player.horse == null
 	var aim := _use_highlight.targeting()
 	_action_hint.show_for(_state, _settings, aim.tile, can_act)
@@ -494,14 +502,18 @@ func _process(delta: float) -> void:
 	)
 	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
 	# to clear its message when it goes off.
-	_build_mode.visible = is_in_play and not _state.is_inside() and not _is_in_transition
+	_build_mode.visible = is_in_play and not _state.is_inside() and not _blackout.is_in_transition
 	_build_menu.visible = _build_mode.is_active()
 	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
 	# that starts so shows the world first.
 	var is_drawn := _view.is_settled or _state.is_inside()
-	if (_state.is_out_of_energy() or _state.is_up_too_late) and is_drawn and not _is_in_transition:
-		_pass_out()
-	if not _is_in_transition:
+	if (
+		(_state.is_out_of_energy() or _state.is_up_too_late)
+		and is_drawn
+		and not _blackout.is_in_transition
+	):
+		_blackout.pass_out()
+	if not _blackout.is_in_transition:
 		var direction := Vector2.ZERO
 		if not _is_any_screen_open():
 			var is_menu_up := _build_mode.is_active() and not _builder.is_taking_down()
@@ -516,11 +528,11 @@ func _process(delta: float) -> void:
 		_interior_view.cover_bed(_state.player.bed_lying_in)
 		_object_cover.cover(_state.player.bed_lying_in)
 		if _state.door_underfoot():
-			_fade_through(_pass_door)
+			_blackout.fade_through(_pass_door)
 	# The world, its animals too, stands still while the player is in a house, and while the sleep
 	# is made up for in steps; but the villagers on a trip go on over the masks, so they are where
 	# one expects them when the player comes out.
-	if not _is_making_up_time:
+	if not _blackout.is_making_up_time:
 		if _state.is_inside():
 			_state.npcs.update_unseen(delta, _state.world, _state.clock)
 		else:
@@ -547,7 +559,7 @@ func _save_and_quit() -> void:
 ## SaveBeforeQuit). A sleep that is being made up for ends first, the waking included, so that the
 ## save is of a whole morning.
 func _is_saved_for_quit() -> bool:
-	while _is_making_up_time:
+	while _blackout.is_making_up_time:
 		await get_tree().process_frame
 	var saving := SaveBeforeQuit.new(_saves, _state, _options.save_path, _choice_dialog)
 	return await saving.is_quit_allowed()
@@ -573,11 +585,11 @@ func _is_any_screen_open() -> bool:
 
 
 func _can_open_console() -> bool:
-	return not _console_view.is_open() and not get_tree().paused and not _is_in_transition
+	return not _console_view.is_open() and not get_tree().paused and not _blackout.is_in_transition
 
 
 func _can_use() -> bool:
-	return not _is_in_transition and not _build_mode.is_active()
+	return not _blackout.is_in_transition and not _build_mode.is_active()
 
 
 ## The hotbar slot (0 to 7) whose key `event` presses, or -1.
@@ -600,53 +612,6 @@ func _use_on(target: Targeting) -> void:
 		_harvest_hud.show_note("Needs a better %s." % tool_name)
 
 
-## Out of energy or up too late: the player collapses where they stand (the world keeps
-## running), the screen goes black, and a message says what happened until a key or a click.
-## Then they wake in their home bed (see GameState `pass_out`).
-func _pass_out() -> void:
-	_is_in_transition = true
-	# Nothing else may move the player meanwhile.
-	Modal.close_open()
-	_console_view.close()
-	# They slide off the horse first, if there is room beside it; else they collapse in the saddle.
-	if _state.player.horse != null:
-		_state.dismount()
-	var was_up_too_late := _state.is_up_too_late
-	_player_view.collapse()
-	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
-	await _fade_screen.fade_out()
-	_hold_world(true)
-	var minutes_slept: int = await _state.pass_out_over_frames(_next_frame)
-	_hold_world(false)
-	_player_view.stand_up()
-	_show_current_map()
-	# The sleep takes some frames and the save one, under the black screen.
-	await get_tree().process_frame
-	await _saves.save_without_stalling(_state, _options.save_path)
-	await _fade_screen.show_message(PassOutMessage.text(_state, was_up_too_late, minutes_slept))
-	await _fade_screen.fade_in()
-	_is_in_transition = false
-
-
-## Holds everything that changes the world by itself while the time of a sleep is made up for
-## over frames, or lets it go: the views (the wildlife) and the animals (their hunts too) and
-## villagers of the state; `_process` doesn't stream chunks meanwhile, and the residency's own
-## streaming (`update`) is held as well, a guard for anything else that would call it
-## (`require` still loads what an action needs). So the world is the one a skip in one go would
-## have, and the game is not saved or quit half way (see `_is_saved_for_quit`).
-func _hold_world(is_held: bool) -> void:
-	_is_making_up_time = is_held
-	_residency.is_held = is_held or _state.is_inside()
-	_view.process_mode = (
-		PROCESS_MODE_DISABLED if is_held or _state.is_inside() else PROCESS_MODE_INHERIT
-	)
-
-
-## The signal of the next frame, for the work that is spread over frames.
-func _next_frame() -> Signal:
-	return get_tree().process_frame
-
-
 ## Where the camera looks. The player is drawn on the art pixel grid (rounded), the camera
 ## is not, so the world scrolls smoothly and the player wobbles by up to half an art pixel
 ## against the screen (the user chose this over a pixel-locked camera).
@@ -659,7 +624,7 @@ func _camera_target() -> Vector2:
 ## the game is paused for (the pause menu, a chat) is not counted, as `_process` does not run.
 func _autosave_on_time(delta: float) -> void:
 	_autosave_timer.tick(delta)
-	var is_free := not _is_in_transition and not _is_any_screen_open()
+	var is_free := not _blackout.is_in_transition and not _is_any_screen_open()
 	if is_free and _autosave_timer.is_due(_settings.autosave_minutes):
 		_saves.save_in_background(_state, _options.save_path)
 
@@ -753,49 +718,13 @@ func _interact() -> void:
 		Interaction.Kind.RING_BELL:
 			_state.ring_bell_in_reach()
 		Interaction.Kind.SLEEP:
-			_try_sleep()
+			_blackout.try_sleep()
 
 
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).
 func _open_chat(npc: Npc) -> void:
 	_state.npcs.talk_to(npc, _state.player.position)
 	_chat_screen.open_chat(npc, _state)
-
-
-## Sleeps in the bed in reach until the morning, and saves: the new day shows on the black for a
-## moment. As when passing out, the sleep takes some frames and the save one, under the black
-## screen.
-func _try_sleep() -> void:
-	var bed := _state.bed_in_reach()
-	if bed == null:
-		return
-	_fade_through(
-		func() -> String:
-			_hold_world(true)
-			await _state.sleep_in_over_frames(bed, _next_frame)
-			_hold_world(false)
-			_show_clock()
-			await get_tree().process_frame
-			await _saves.save_without_stalling(_state, _options.save_path)
-			return _state.clock.date_text()
-	)
-
-
-## Fades to black, runs `change` while the screen is black (it may await), and fades back in. A
-## `change` that returns text has it shown on the black for a moment first.
-func _fade_through(change: Callable) -> void:
-	_is_in_transition = true
-	# No command runs during a fade: a teleport would meet a door half way through. No window or
-	# drag goes through a door or a sleep.
-	_console_view.close()
-	Modal.close_open()
-	get_viewport().gui_cancel_drag()
-	await _fade_screen.fade_out()
-	var note: Variant = await change.call()
-	if note is String:
-		await _fade_screen.show_note(note)
-	await _fade_screen.fade_in()
-	_is_in_transition = false
 
 
 func _pass_door() -> void:
@@ -812,7 +741,7 @@ func _show_current_map() -> void:
 	_view.visible = not is_inside
 	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
-	_residency.is_held = is_inside or _is_making_up_time
+	_residency.is_held = is_inside or _blackout.is_making_up_time
 	_interior_view.visible = is_inside
 	if is_inside:
 		_wildlife.clear()
