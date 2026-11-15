@@ -6,7 +6,6 @@ extends RefCounted
 ## Command name to its usage and what it does, in the order `help` lists them.
 const COMMANDS := {
 	"help": ["help [command]", "List the commands, or show what one takes."],
-	"give": ["give <item> [count]", "Put items in the inventory."],
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
 	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
@@ -41,12 +40,6 @@ const COMMANDS := {
 	[
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
-	],
-	"skill": ["skill <skill> <points>", "Set a skill's points (0 to 100)."],
-	"attribute":
-	[
-		"attribute <attribute> <level>",
-		"Set an attribute's level (strength, agility, stamina or hp) and show what it gives.",
 	],
 	"friendship":
 	[
@@ -121,13 +114,10 @@ const COMMANDS := {
 ## missing or unknown name list the candidates of the kinds in ConsoleHelper.LISTED_KINDS.
 const ARGUMENTS := {
 	"help": [&"command"],
-	"give": [&"item", &"number"],
 	"spawn": [&"animal", &"number"],
 	"killall": [&"animal"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
-	"skill": [&"skill", &"number"],
-	"attribute": [&"attribute", &"number"],
 	"gossip": [&"villager"],
 	"opinion": [&"villager", &"number"],
 	"home": [&"villager", &"place"],
@@ -177,8 +167,6 @@ func run(line: String) -> Array[String]:
 	match words[0]:
 		"help":
 			output = _help(arguments)
-		"give":
-			output = _give(arguments)
 		"god":
 			cheats.is_god = not cheats.is_god
 			output = [ConsoleHelper.toggle_message("God mode", cheats.is_god)]
@@ -225,10 +213,6 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
-		"skill":
-			output = _skill(arguments)
-		"attribute":
-			output = _attribute(arguments)
 		"friendship":
 			output = _friendship(arguments)
 		"deeds":
@@ -334,58 +318,6 @@ func _candidates_text(command: String) -> Array[String]:
 		if ConsoleHelper.LISTED_KINDS.has(kind):
 			lines.append_array(ConsoleHelper.candidates_lines(kind, context))
 	return lines
-
-
-func _give(arguments: PackedStringArray) -> Array[String]:
-	var is_count_valid := (
-		arguments.size() < 2 or (arguments[1].is_valid_int() and int(arguments[1]) > 0)
-	)
-	if arguments.is_empty() or arguments.size() > 2 or not is_count_valid:
-		return ["Usage: %s" % COMMANDS["give"][0]]
-	var item := StringName(arguments[0])
-	if not ItemTypes.TYPES.has(item):
-		return ConsoleHelper.unknown_item(arguments[0])
-	var count := 1 if arguments.size() < 2 else int(arguments[1])
-	var left := _state.player.inventory.add(item, count)
-	var lines: Array[String] = []
-	if left < count:
-		lines.append("Gave %d %s" % [count - left, ItemTypes.TYPES[item]["name"]])
-	if left > 0:
-		lines.append("Inventory full: %d not added" % left)
-	return lines
-
-
-func _skill(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() != 2 or not arguments[1].is_valid_float():
-		return ["Usage: %s" % COMMANDS["skill"][0]]
-	var skills := _state.player.skills
-	var skill := StringName(arguments[0])
-	if not skills.rules.has_skill(skill):
-		return ["Unknown skill: %s" % arguments[0]]
-	skills.set_points(skill, float(arguments[1]))
-	return ["%s is %s" % [skills.rules.skill_name(skill), skills.points(skill)]]
-
-
-func _attribute(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() != 2 or not arguments[1].is_valid_int():
-		return ["Usage: %s" % COMMANDS["attribute"][0]]
-	var attributes := _state.player.attributes
-	var attribute := StringName(arguments[0])
-	if not attributes.rules.has_attribute(attribute):
-		return ["Unknown attribute: %s" % arguments[0]]
-	attributes.set_level(attribute, int(arguments[1]))
-	return [
-		(
-			"%s is %d: %d energy, %d health, %.1f kg carried before it tires you"
-			% [
-				attributes.rules.attribute_name(attribute),
-				attributes.level(attribute),
-				attributes.max_energy(),
-				attributes.max_health(),
-				attributes.carry_capacity(),
-			]
-		)
-	]
 
 
 func _friendship(arguments: PackedStringArray) -> Array[String]:
