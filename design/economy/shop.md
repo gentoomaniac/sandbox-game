@@ -1,7 +1,8 @@
 # The shop: a keeper who keeps hours and trades
 
-[#10](https://github.com/gentoomaniac/sandbox-game/issues/10) (task 240). **Plan, not built:** the
-user approves it before any code. It is the first step of the economy draft in [README.md](README.md),
+[#10](https://github.com/gentoomaniac/sandbox-game/issues/10) (task 240). **Approved by the user
+(issue comment, all defaults); built step by step, steps 1 to 4 so far** (each step's note below says what
+changed from the plan). It is the first step of the economy draft in [README.md](README.md),
 and it is built to carry [#11](https://github.com/gentoomaniac/sandbox-game/issues/11) (seeds from
 the shop) with data alone. Needs the village (#9) and the routines (#7), both built.
 
@@ -201,6 +202,11 @@ an optional `seasons=[...]` key, added there if wanted).
 - Trienke is a villager and saved as one. The stall is a placed object, saved with the world.
 
 ## Steps
+
+Built so far: 1 (the shop hours: `fixed`, `keep_shop`, the set `shopkeeper`; the model is not offered a
+fixed activity), 2 (the stall, `WorldObjectVillage`, its art is a placeholder), 3 (Trienke's sheet and
+story, [../villagers/villagers.md](../villagers/villagers.md); her `people` name Kerrin and Antje, who
+name her back), 4 (`ShopRules`, `data/shops.cfg`).
 
 Each is a commit that passes `make test` and `make lint`, with its tests and doc lines. Steps 1 to 3
 are the keeper and need no trade; 4 to 8 are the trade.
