@@ -37,7 +37,7 @@ func test_the_coast_has_the_objects_that_matter() -> void:
 	var types := {}
 	for object in world.chunk_at(COAST).objects():
 		types[object.type] = true
-	for type in [WorldObjectTypes.DYKE, WorldObjectTypes.WILLOW, WorldObjectTypes.REEDS]:
+	for type in [WorldObjectTypes.DYKE, WorldObjectTypes.STONE]:
 		assert_true(types.has(type), "%s in the chunk" % type)
 
 

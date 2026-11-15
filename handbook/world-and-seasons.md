@@ -38,17 +38,14 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 
 ![A yard worn into one patch of bare earth by many feet](../docs/screenshots/worn-ground.png)
 
-## Fields, Knicks and dykes
+## Dykes, Knicks and willows
 
-- On the dry Geest, fields are bounded by Knicks (hedges on earth banks), stone walls and wattle
-  fences.
-- In the marsh, fields are cut by ditches lined with reeds and pollard willows, with dykes along
-  the floodplain.
-- Every field has a gap or crossing, so none is shut in.
+- The open land is bare: no fields, fences or ditches stand in it until you or a village make
+  them. Only dykes run along the floodplain and the coast.
 - The axe cuts a Knick down for logs and fibre; the pickaxe takes a wall apart for stone.
-- Willows are felled like other trees.
+- Willows grow on wet ground and are felled like other trees.
 
-![The marsh with dykes, ditches, reeds and pollard willows](../docs/screenshots/landscape.png)
+![The marsh with dykes, ditches, reeds and pollard willows (a picture from before the open land became bare, #60)](../docs/screenshots/landscape.png)
 
 ## The coast and the tides
 

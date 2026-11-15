@@ -9,7 +9,7 @@
   - **The sea dyke** stands on the first tiles of the land all along the coast (the floodplain
     too), without gaps but for the river: the dykes of the river (task 54) sit between the land
     and the marsh, this one between the land and the salt marsh, as real sea dykes do. The marsh
-    with its ditches reaches 36 tiles inland from it as from the river.
+    reaches 36 tiles inland from it as from the river.
   - **The foreshore**, west of the line, which nothing grows on: a band of **salt marsh** (about
     12 tiles, give or take 5), then the **tidal mud** (out to about 140 tiles, give or take a
     third), then the open **sea**. **Tideways** wind through the mud, one per 36 rows, from a tile

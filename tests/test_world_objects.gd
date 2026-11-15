@@ -5,11 +5,8 @@ const SEED := 42
 ## Chunks around the river: they have grass with trees as well as water, floodplain and
 ## wetland.
 const CHUNKS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(0, 0), Vector2i(1, -1), Vector2i(-3, -2)]
-## What stands on wetland and floodplain: reeds on the banks and by the ditches, willows by the
-## ditches, and the dykes along the floodplain.
-const WET_LAND_TYPES: Array[StringName] = [
-	WorldObjectTypes.REEDS, WorldObjectTypes.WILLOW, WorldObjectTypes.DYKE
-]
+## What stands on wetland and floodplain: reeds on the banks, and the dykes along the floodplain.
+const WET_LAND_TYPES: Array[StringName] = [WorldObjectTypes.REEDS, WorldObjectTypes.DYKE]
 
 var _world: World
 
@@ -77,6 +74,11 @@ func test_every_natural_object_type_is_generated() -> void:
 			continue
 		if object_type == WorldObjectTypes.EWER:
 			continue  # It lies on the mud of the coast, far from here (see test_coast.gd).
+		if (
+			object_type
+			in [WorldObjectTypes.KNICK, WorldObjectTypes.STONE_WALL, WorldObjectTypes.WATTLE_FENCE]
+		):
+			continue  # The open land has no field boundaries: the villages and the player make them.
 		assert_true(types.has(object_type), "Missing object type %s" % object_type)
 
 

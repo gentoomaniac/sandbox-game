@@ -11,10 +11,10 @@ func before_each() -> void:
 
 
 func test_an_object_taken_off_no_longer_blocks() -> void:
-	var willow := find_object(COAST, WorldObjectTypes.WILLOW)
-	assert_false(mask_is_free(willow.pos), "the willow blocks")
-	world.take_off(willow)
-	assert_true(mask_is_free(willow.pos), "and no more once it is gone")
+	var stone := find_object(COAST, WorldObjectTypes.STONE)
+	assert_false(mask_is_free(stone.pos), "the stone blocks")
+	world.take_off(stone)
+	assert_true(mask_is_free(stone.pos), "and no more once it is gone")
 	assert_parity(COAST)
 
 
@@ -98,8 +98,10 @@ func test_a_gate_is_walked_through_and_a_player_fence_is_not() -> void:
 
 
 func test_an_object_that_is_spoiled_by_feet_costs_more() -> void:
-	var reeds := find_object(COAST, WorldObjectTypes.REEDS)
-	var mask := masks.wait_for_mask(COAST)
+	var east := COAST + Vector2i.RIGHT
+	load_chunk_and_neighbours(east)
+	var reeds := find_object(east, WorldObjectTypes.REEDS)
+	var mask := masks.wait_for_mask(east)
 	assert_true(mask.is_free(Chunk.local_pos(reeds.pos), 0.0, 1))
 	assert_true(mask.is_trampled(Chunk.local_pos(reeds.pos), 1))
 
@@ -180,16 +182,6 @@ func test_a_seasonal_plant_blocks_nothing_and_costs_something_only_when_it_is_pr
 	assert_parity(COAST, "dormant")
 
 
-func test_a_ditch_and_the_dyke_and_the_hedge_are_as_the_loaded_chunk_has_them() -> void:
-	var ditch: Array[Vector2i] = []
-	for y in Chunk.CHUNK_SIZE:
-		for x in Chunk.CHUNK_SIZE:
-			if generator.is_ditch(tile_of(COAST + Vector2i.RIGHT, Vector2i(x, y))):
-				ditch.append(Vector2i(x, y))
-	load_chunk_and_neighbours(COAST + Vector2i.RIGHT)
-	assert_gt(ditch.size(), 0, "a ditch in the chunk")
-	assert_false(mask_is_free(tile_of(COAST + Vector2i.RIGHT, ditch[0])), "water")
+func test_the_dyke_is_as_the_loaded_chunk_has_it() -> void:
 	find_object(COAST, WorldObjectTypes.DYKE)
-	find_object(COAST + Vector2i.RIGHT, WorldObjectTypes.KNICK)
 	assert_parity(COAST)
-	assert_parity(COAST + Vector2i.RIGHT)

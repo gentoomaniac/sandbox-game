@@ -67,7 +67,7 @@ func test_a_way_over_the_masks_is_the_way_over_the_loaded_world() -> void:
 	var wall := empty_row(COAST + Vector2i.RIGHT, Tile.Terrain.GRASS, 8)
 	for x in 8:
 		world.add_object(WorldObject.new(WorldObjectTypes.PEN_FENCE, wall + Vector2i(x, 0)))
-	world.take_off(find_object(COAST, WorldObjectTypes.WILLOW))
+	world.take_off(find_object(COAST, WorldObjectTypes.STONE))
 	var live := _find_live_way(start, goal)
 	assert_eq(live.state, PathSearch.State.FOUND)
 	assert_gt(_chunks_of(live.path).size(), 2, "a way across several chunks")

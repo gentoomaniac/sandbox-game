@@ -2,7 +2,8 @@
 
 The user, 2026-11-11: "Are the willow fences or the stone walls that the map generated creatable?
 If not they should". The world generator lays both along field boundaries (task 31); since task 203
-the player makes them and places them piece by piece, like the pig pen's fence (task 165).
+the player makes them and places them piece by piece, like the pig pen's fence (task 165). Since #60 the generator lays none in the open land; the
+villages will lay their field boundaries.
 
 - **The pieces are the generated objects.** `wattle_fence` and `stone_wall` are one world object
   type each, whoever put them there: they `connect` "field_boundary" (so a placed piece joins the

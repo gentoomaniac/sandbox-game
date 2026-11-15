@@ -33,7 +33,7 @@ func _day(mean_temperature: float, sunlight_hours: float) -> WeatherDay:
 # --- Where they stand ---
 
 
-func test_reeds_stand_on_banks_near_water_at_wetland_edges_and_by_ditches_only() -> void:
+func test_reeds_stand_on_banks_near_water_and_at_wetland_edges_only() -> void:
 	var generator := WorldGenerator.new(SEED)
 	var found := 0
 	var on_bank := 0
@@ -44,8 +44,6 @@ func test_reeds_stand_on_banks_near_water_at_wetland_edges_and_by_ditches_only()
 			if generator.object_type_at(pos, terrain) != WorldObjectTypes.REEDS:
 				continue
 			found += 1
-			if _is_beside_ditch(generator, pos):
-				continue
 			if terrain == Tile.Terrain.FLOODPLAIN:
 				on_bank += 1
 				assert_true(generator._is_water_within(pos, WorldGenerator.REEDS_REACH), str(pos))
@@ -56,7 +54,7 @@ func test_reeds_stand_on_banks_near_water_at_wetland_edges_and_by_ditches_only()
 	assert_gt(on_bank, 10, "the river's bank has reeds")
 
 
-func test_no_reeds_stand_in_the_water_or_on_grass_away_from_ditches() -> void:
+func test_no_reeds_stand_in_the_water_or_on_grass() -> void:
 	var generator := WorldGenerator.new(SEED)
 	for y in range(-SEARCH_RADIUS, SEARCH_RADIUS):
 		for x in range(-SEARCH_RADIUS, SEARCH_RADIUS, 3):
@@ -64,7 +62,7 @@ func test_no_reeds_stand_in_the_water_or_on_grass_away_from_ditches() -> void:
 			var terrain := generator.terrain_at(pos)
 			if terrain == Tile.Terrain.WATER:
 				assert_ne(generator.object_type_at(pos, terrain), WorldObjectTypes.REEDS)
-			elif terrain == Tile.Terrain.GRASS and not _is_beside_ditch(generator, pos):
+			elif terrain == Tile.Terrain.GRASS:
 				assert_ne(generator.object_type_at(pos, terrain), WorldObjectTypes.REEDS)
 
 
@@ -185,9 +183,3 @@ func test_a_cut_stand_stays_cut_and_keeps_its_growth_through_the_save() -> void:
 	var loaded := restored.world.object_at(_tile)
 	assert_true(loaded.is_picked())
 	assert_almost_eq(float(loaded.state[ReedLife.REGROWTH]), growth, 0.0001)
-
-
-func _is_beside_ditch(generator: WorldGenerator, pos: Vector2i) -> bool:
-	return World.CONNECTION_SIDES.any(
-		func(side: Vector2i) -> bool: return generator.is_ditch(pos + side)
-	)

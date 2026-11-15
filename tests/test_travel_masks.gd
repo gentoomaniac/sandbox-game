@@ -43,16 +43,16 @@ func test_making_masks_changes_nothing_in_the_world() -> void:
 
 func test_the_raw_chunks_follow_edits_made_after_they_were_generated() -> void:
 	masks.wait_for_mask(COAST)
-	var willow := find_object(COAST, WorldObjectTypes.WILLOW)
+	var stone := find_object(COAST, WorldObjectTypes.STONE)
 	var tile := empty_row(COAST, Tile.Terrain.GRASS)
-	world.take_off(willow)
+	world.take_off(stone)
 	world.add_object(WorldObject.new(WorldObjectTypes.PEN_FENCE, tile))
 	assert_false(masks.mask_coords().has(COAST), "the mask is dropped")
 	assert_not_null(masks.raw_chunk(COAST), "the generated chunk is not")
-	assert_true(mask_is_free(willow.pos))
+	assert_true(mask_is_free(stone.pos))
 	assert_false(mask_is_free(tile))
 	assert_parity(COAST)
-	assert_not_null(masks.raw_chunk(COAST).object_at(Chunk.local_pos(willow.pos)), "no edit in it")
+	assert_not_null(masks.raw_chunk(COAST).object_at(Chunk.local_pos(stone.pos)), "no edit in it")
 
 
 func test_an_edit_drops_the_masks_of_its_chunk_and_the_three_it_reaches_into() -> void:
@@ -61,7 +61,7 @@ func test_an_edit_drops_the_masks_of_its_chunk_and_the_three_it_reaches_into() -
 		for x in range(-1, 3):
 			masks.wait_for_mask(edited + Vector2i(x, y))
 	var before := masks.mask_coords().size()
-	world.take_off(find_object(edited, WorldObjectTypes.WILLOW))
+	world.take_off(find_object(edited, WorldObjectTypes.STONE))
 	var dropped := [edited, edited + Vector2i.RIGHT, edited + Vector2i.DOWN, edited + Vector2i.ONE]
 	assert_eq(masks.mask_coords().size(), before - 4)
 	for coords in dropped:
@@ -70,9 +70,9 @@ func test_an_edit_drops_the_masks_of_its_chunk_and_the_three_it_reaches_into() -
 
 func test_an_edit_made_while_a_mask_waits_for_its_chunks_is_in_the_mask() -> void:
 	assert_null(masks.mask_of(COAST))
-	var willow := find_object(COAST, WorldObjectTypes.WILLOW)
-	world.take_off(willow)
-	assert_true(mask_is_free(willow.pos))
+	var stone := find_object(COAST, WorldObjectTypes.STONE)
+	world.take_off(stone)
+	assert_true(mask_is_free(stone.pos))
 	assert_parity(COAST)
 
 
@@ -97,11 +97,11 @@ func test_a_mask_whose_chunks_were_edited_meanwhile_is_not_published_but_made_ag
 	masks.mask_of(COAST)
 	while not masks.is_stamping():
 		masks.update(true)
-	var willow := find_object(COAST, WorldObjectTypes.WILLOW)
-	world.take_off(willow)
+	var stone := find_object(COAST, WorldObjectTypes.STONE)
+	world.take_off(stone)
 	masks.update(true)
 	assert_false(masks.mask_coords().has(COAST), "made from the chunk as it was")
-	assert_true(mask_is_free(willow.pos), "and made again, with the edit")
+	assert_true(mask_is_free(stone.pos), "and made again, with the edit")
 	assert_parity(COAST)
 
 
@@ -110,7 +110,7 @@ func test_an_edit_to_a_chunk_it_does_not_reach_does_not_stop_a_mask() -> void:
 	masks.mask_of(COAST)
 	while not masks.is_stamping():
 		masks.update(true)
-	world.take_off(find_object(COAST + Vector2i.RIGHT, WorldObjectTypes.KNICK))
+	world.take_off(find_object(COAST + Vector2i.RIGHT, WorldObjectTypes.STONE))
 	masks.update(true)
 	assert_true(masks.mask_coords().has(COAST), "the chunk to the east is not one it is made from")
 

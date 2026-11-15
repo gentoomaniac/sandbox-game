@@ -19,10 +19,10 @@ the state never knows about scenes.** That is why almost everything in `game/sta
 
 Names are not always where you would guess: the `World` class (tiles, chunks, objects,
 buildings) is in `game/state/world.gd`. `game/world/` holds the code that builds a world
-and plans which chunks to load (`WorldGenerator`, `FieldLayout`, `ChunkStreaming`, `CampSite`,
+and plans which chunks to load (`WorldGenerator`, `ChunkStreaming`, `CampSite`,
 `InteriorLoader`, `PositionHash`). `WorldGenerator` makes the natural land (river, wetland,
-forests) and lays the worked land of `data/landscape.cfg` over it: the fields of a `FieldLayout`
-with Knicks, walls and fences on the Geest, ditches in the marsh, and dykes. In the west it makes
+forests) and lays the dykes of `data/landscape.cfg` over it; the open land is bare (no fields,
+fences or ditches, see `design/world/generation.md`). In the west it makes
 the coast (task 61, same file): a coast line x = f(y) like the river's centre line, the sea dyke on
 the first land, and beyond it the foreshore (salt marsh, tidal mud with tideways, the sea), with a
 Warft and an Ewer here and there.

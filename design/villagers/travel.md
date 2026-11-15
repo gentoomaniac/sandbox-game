@@ -78,7 +78,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   returns the mask or null and asks for it; `update()` runs once a frame; `wait_for_mask(coords)`
   waits for the worker, for a time skip (step 4) and for tests.
 - **Raw chunks are generated on worker threads** (several at once from #70, `far_mask_jobs`), each job by a `WorldGenerator` of its own.
-  `generate_chunk` reads only the seed, its own noise objects and its own `FieldLayout.cover`, and
+  `generate_chunk` reads only the seed, its own noise objects, and
   the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`). `TravelMasks`
   asks for each of them on the main thread before it starts the worker, so the worker only reads
   them. It writes nothing shared. A cold mask

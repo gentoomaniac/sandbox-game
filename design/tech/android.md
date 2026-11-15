@@ -567,7 +567,7 @@ time, peak resident memory, storage and temperature in a signed device build.
 - `game/world/chunk_residency.gd:64` generates a whole chunk synchronously. Loading one per
   frame does not bound that frame's cost. Its load/unload radii are 3/5 (`:13`), giving a 7x7
   desired set and a larger retained fringe. Test new-game camp search, horse travel and loads
-  with many edits. Profile `game/world/world_generator.gd` and `field_layout.gd` separately.
+  with many edits. Profile `game/world/world_generator.gd` and its layouts separately.
 - If chunk generation misses the budget, stage it over frames or use a worker-owned generator
   and immutable results. Commit state and TileMapLayer changes on the main thread. Never
   share mutable noise, world dictionaries or scene nodes across workers. Keep deterministic
