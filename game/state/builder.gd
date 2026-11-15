@@ -161,6 +161,8 @@ func take_down_gives(target: TakeDownTarget) -> Dictionary:
 func why_not_take_down(target: TakeDownTarget) -> String:
 	if target.building != null:
 		return _state.why_not_take_down(target.building)
+	if _state.world.is_village_cobble(target.object):
+		return GameState.THE_VILLAGES
 	if ToolUse.new(_state).is_standing_on(target.object):
 		return "Step off it first."
 	if _state.player.bed_lying_in == target.object:

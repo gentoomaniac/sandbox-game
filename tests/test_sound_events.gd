@@ -98,6 +98,7 @@ func test_a_use_that_did_not_work_is_denied() -> void:
 		ToolUse.Use.NO_ROOM,
 		ToolUse.Use.RIDING,
 		ToolUse.Use.STANDING_ON,
+		ToolUse.Use.THE_VILLAGES,
 	]:
 		assert_eq(SoundEvents.failed_use(use, ItemTypes.HOE), &"denied", str(use))
 	assert_eq(SoundEvents.failed_use(ToolUse.Use.OUT_OF_REACH, ItemTypes.SCYTHE), &"")

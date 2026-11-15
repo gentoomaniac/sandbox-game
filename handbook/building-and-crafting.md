@@ -158,7 +158,8 @@ costs goodwill where it earns some elsewhere, and a fence or a felled tree costs
   bedroll shows its ghost.
 - Press X again to go back to building.
 - The village's own houses (Wehlsbüll's) are not yours to take down: the panel says "That is the
-  village's." Walls and fences there you may take down.
+  village's." Walls and fences there you may take down. The cobbles of its lanes stay too: neither the
+  hammer nor the pickaxe takes one up there, and you can't set a cobble of your own on its land.
 
 ![Taking down: a shack marked red, and what it gives](../docs/screenshots/take-down.png)
 

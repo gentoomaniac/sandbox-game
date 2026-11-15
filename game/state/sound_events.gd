@@ -84,7 +84,7 @@ static func failed_use(result: ToolUse.Use, held_tool: StringName) -> StringName
 	match result:
 		ToolUse.Use.NEEDS_BETTER_TOOL, ToolUse.Use.NO_ROOM:
 			return &"denied"
-		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON, ToolUse.Use.CAN_EMPTY:
+		ToolUse.Use.RIDING, ToolUse.Use.STANDING_ON, ToolUse.Use.CAN_EMPTY, ToolUse.Use.THE_VILLAGES:
 			return &"denied"
 		ToolUse.Use.NOTHING:
 			return &"scythe_swish" if held_tool == ItemTypes.SCYTHE else &""

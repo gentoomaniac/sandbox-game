@@ -16,6 +16,8 @@ signal action_done(outcome: ActionOutcome)
 ## What using the held lantern does (see `held_lantern_use`).
 enum LanternUse { NONE, PUT_OUT, LIGHT, FIT_CANDLE }
 
+## What is said of a thing of the village that the player may not take down or up.
+const THE_VILLAGES := "That is the village's."
 ## Sleeping and passing out wake the player the next time the clock shows this.
 const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
 ## Passing out sleeps at least this long, even when the morning comes sooner.
@@ -612,7 +614,7 @@ func refund_of_building(building: Building) -> Dictionary:
 ## with it.
 func why_not_take_down(building: Building) -> String:
 	if world.is_village_building(building):
-		return "That is the village's."
+		return THE_VILLAGES
 	if is_inside():
 		return "You can't take a house down from inside."
 	if building.interior == null:

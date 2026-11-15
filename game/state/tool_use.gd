@@ -20,7 +20,8 @@ extends RefCounted
 ## given to a dog, which then follows the player, SADDLE the saddle put on a horse and UNSADDLE an
 ## empty hand taking it off again, PET an empty hand stroking a farm animal or a pet (see Livestock
 ## `pet`), RIDING anything on horseback (the player gets off first),
-## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`), OUT_OF_REACH a tile
+## STANDING_ON a tool at a deck the player stands on (see `is_standing_on`), THE_VILLAGES a
+## pickaxe at one of the village's cobbles (see World `is_village_cobble`), OUT_OF_REACH a tile
 ## beyond the player's reach (Targeting.REACH) or not on their map: nothing is done there. What a
 ## harvest, a pick or a final hit gives lies on the ground (see GameMap `drop_items`).
 enum Use {
@@ -51,6 +52,7 @@ enum Use {
 	PET,
 	RIDING,
 	STANDING_ON,
+	THE_VILLAGES,
 	OUT_OF_REACH,
 }
 
@@ -381,7 +383,14 @@ func _can_place_on(pos: Vector2i, placed_type: StringName) -> bool:
 		for y in range(footprint.position.y, footprint.end.y):
 			if not _is_free_for(Vector2i(x, y), placed):
 				return false
+			# The village's cobbles can't be taken up, so none is set on its land to stay for good.
+			if placed_type == WorldObjectTypes.STONE_PATH and _is_village_land_out(Vector2i(x, y)):
+				return false
 	return true
+
+
+func _is_village_land_out(pos: Vector2i) -> bool:
+	return not _state.is_inside() and _state.world.is_village_land(pos)
 
 
 ## Whether one tile is free for an object of the type `placed`: where the map lets one tile
@@ -566,6 +575,8 @@ func _use_cutting_tool(tool_item: Dictionary, object: WorldObject) -> Use:
 		return Use.NOTHING
 	if is_standing_on(object):
 		return Use.STANDING_ON
+	if _state.world.is_village_cobble(object):
+		return Use.THE_VILLAGES
 	if tool_item["level"] >= object.type_data()["harvest_level"]:
 		return Use.HIT
 	return Use.NEEDS_BETTER_TOOL

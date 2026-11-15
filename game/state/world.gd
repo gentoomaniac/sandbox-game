@@ -631,6 +631,12 @@ func is_village_land(world_pos: Vector2i) -> bool:
 	return village != null and village.is_land(world_pos)
 
 
+## Whether an object is one of the village's cobbles: a cobble way on its land, which is not the
+## player's to take up (the lanes and the square are laid with them, see VillageBuilder).
+func is_village_cobble(object: WorldObject) -> bool:
+	return object.type == WorldObjectTypes.STONE_PATH and is_village_land(object.pos)
+
+
 ## Whether a building is one the village put up.
 func is_village_building(building: Building) -> bool:
 	return village != null and village.has_building(building)

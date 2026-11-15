@@ -81,6 +81,7 @@ func test_every_use_is_named_or_left_unsaid_on_purpose() -> void:
 		ToolUse.Use.NO_ROOM,
 		ToolUse.Use.RIDING,
 		ToolUse.Use.STANDING_ON,
+		ToolUse.Use.THE_VILLAGES,
 		ToolUse.Use.OUT_OF_REACH,
 		# Named apart: the item or the gate gives the words.
 		ToolUse.Use.PLACE,

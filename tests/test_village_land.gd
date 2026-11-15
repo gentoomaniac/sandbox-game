@@ -70,3 +70,46 @@ func test_the_hint_is_given_where_the_ghost_stands_on_the_land_and_not_elsewhere
 
 	assert_eq(messages[0], "Wehlsbüll's land: the villagers will not like it.")
 	assert_ne(messages[1], messages[0])
+
+
+func _cobble_on_the_land() -> WorldObject:
+	var tile := _state.world.village.meeting_spot
+	var coords := Chunk.world_to_chunk(tile)
+	if not _state.world.is_chunk_loaded(coords):
+		_state.world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
+	_state.teleport_to(tile + Vector2i(0, 1))
+	var cobble := WorldObject.new(WorldObjectTypes.STONE_PATH, tile)
+	_state.world.add_object(cobble)
+	return cobble
+
+
+func test_a_cobble_on_the_land_is_not_taken_up_by_the_hammer_or_the_pickaxe() -> void:
+	var cobble := _cobble_on_the_land()
+	var builder := Builder.new(_state)
+	var target := builder.take_down_target(cobble.pos)
+	assert_eq(builder.why_not_take_down(target), "That is the village's.")
+	assert_false(builder.take_down(target))
+	_state.player.inventory.add(ItemTypes.RUSTY_IRON_PICKAXE, 1)
+	_state.player.inventory.hold(ItemTypes.RUSTY_IRON_PICKAXE)
+	assert_eq(_state.use_at(cobble.pos), ToolUse.Use.THE_VILLAGES)
+	_state.use_tile(cobble.pos)
+	assert_eq(_state.world.object_at(cobble.pos), cobble)
+
+
+func test_a_cobble_off_the_land_is_taken_up() -> void:
+	var tile := _state.player.tile() + Vector2i(0, -6)
+	_state.world.add_object(WorldObject.new(WorldObjectTypes.STONE_PATH, tile))
+	var builder := Builder.new(_state)
+	assert_eq(builder.why_not_take_down(builder.take_down_target(tile)), "")
+
+
+func test_no_cobble_is_set_on_the_land_where_it_could_never_be_taken_up() -> void:
+	var tile := _state.world.village.meeting_spot
+	var coords := Chunk.world_to_chunk(tile)
+	if not _state.world.is_chunk_loaded(coords):
+		_state.world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
+	_state.world.remove_object(tile)
+	_state.teleport_to(tile + Vector2i(0, 1))
+	_state.player.inventory.add(ItemTypes.STONE_PATH, 1)
+	_state.player.inventory.hold(ItemTypes.STONE_PATH)
+	assert_ne(_state.use_at(tile), ToolUse.Use.PLACE)
