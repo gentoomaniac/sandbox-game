@@ -88,3 +88,17 @@ func test_a_lane_tile_that_was_tilled_does_not_wear_again() -> void:
 	_end_nights(world, 2)
 
 	assert_eq(world.wear_stage(tile), PathRules.Stage.UNWORN)
+
+
+func test_a_kept_tile_that_the_quiet_day_changed_and_the_keeping_changed_back_is_announced_once(
+) -> void:
+	var world := _fresh_world()
+	var tile := _site(1).to_world(Vector2i(30, 12))
+	_load(world, _generator(1), tile)
+	world.wear.restore_days(tile, PathRules.default_rules().path_after_days())
+	var announced: Array[Vector2i] = []
+	world.tile_changed.connect(announced.append)
+
+	world.end_wear_day()
+
+	assert_eq(announced.count(tile), 1)

@@ -768,8 +768,11 @@ func end_wear_day() -> void:
 	var changed := wear.end_day()
 	if village != null:
 		changed.append_array(wear.keep_worn(village.kept_worn_tiles, _is_kept_tile_free_to_wear))
+	# A kept tile that the quiet day changed and the keeping changed back is on the list twice.
+	var emitted: Dictionary[Vector2i, bool] = {}
 	for pos in changed:
-		if is_chunk_loaded(Chunk.world_to_chunk(pos)):
+		if not emitted.has(pos) and is_chunk_loaded(Chunk.world_to_chunk(pos)):
+			emitted[pos] = true
 			tile_changed.emit(pos)
 
 
