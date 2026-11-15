@@ -64,6 +64,7 @@ var _is_livestock_to_spawn: bool
 var _is_hunt_to_stage: bool
 var _npcs_to_spawn: int
 var _villager_to_spawn: String
+var _villager_to_put_inside: String
 var _chat_lines: PackedStringArray
 var _chat_script: PackedStringArray
 var _hit_tile: Vector2i
@@ -93,6 +94,7 @@ func _init(options: StartupOptions) -> void:
 	_is_hunt_to_stage = options.hunt
 	_npcs_to_spawn = options.npcs
 	_villager_to_spawn = options.villager
+	_villager_to_put_inside = options.villager_inside
 	_chat_lines = options.chat
 	_chat_script = options.chat_script
 	_hit_tile = options.hit
@@ -279,8 +281,21 @@ func _enter_first_house() -> void:
 	if houses.is_empty() or not view.is_settled:
 		return
 	_is_entering_first_house = false
+	if _villager_to_put_inside != "":
+		_put_villager_inside(houses[0])
 	state.player.position = Vector2(houses[0].door_tile()) + Vector2(0.5, 0.5)
 	pass_door.call()
+
+
+## Puts the villager of `--villager-inside` in the room of `house`, which becomes their home.
+func _put_villager_inside(house: Building) -> void:
+	if not state.npcs.villagers.has(_villager_to_put_inside):
+		push_error("--villager-inside expects one of %s" % [state.npcs.villagers.ids()])
+		return
+	var npc := Npc.create_villager(_villager_to_put_inside, house.yard(), state.npcs.villagers)
+	npc.house = house
+	state.npcs.add(npc)
+	state.npcs.indoors.go_in(npc, house, true)
 
 
 ## Puts the player on the first bed of the room, so that it is in reach.

@@ -170,6 +170,8 @@ extends RefCounted
 ##                            creeps up for a few seconds and pounces (use --screenshot-delay)
 ##   --npcs=<count>           put that many villagers near the player, the same ones every time
 ##   --villager=<id>          put the villager of data/villagers.cfg with that id near the player
+##   --villager-inside=<id>   with --inside: that villager of data/villagers.cfg is in the room the
+##                            player walks into (see design/villagers/inside.md)
 ##   --bubbles                a villager in view says a line in a bubble all the time, one after
 ##                            the other, instead of once a minute (see NpcSpeech)
 ##   --switch-art             with --screenshot: press the key that switches the art (F7) when
@@ -296,6 +298,7 @@ var livestock := PackedStringArray()
 var hunt := false
 var npcs := 0
 var villager := ""
+var villager_inside := ""
 var bubbles := false
 var switch_art := false
 
@@ -503,6 +506,8 @@ func _init(args := PackedStringArray()) -> void:
 				npcs = _value(arg).to_int()
 			"--villager":
 				villager = _value(arg)
+			"--villager-inside":
+				villager_inside = _value(arg)
 			"--free-build":
 				is_build_free = true
 			"--bubbles":

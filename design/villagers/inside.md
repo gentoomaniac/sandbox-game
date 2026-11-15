@@ -4,7 +4,7 @@ The user, 2026-11-11: villagers enter their houses (and the church, workplaces) 
 instead of waiting in front of it, and are seen in the interior. The activities and the planned
 day are built ([routines.md](routines.md), #7), and so are the paths and the doors
 ([../tech/pathfinding.md](../tech/pathfinding.md)): until now a villager who "goes home to sleep"
-stands in the yard. This is how they go in. Decided here, to be built in the steps below.
+stands in the yard. This is how they go in. Decided here and built in the steps below (all done).
 
 ## The decisions
 
@@ -128,4 +128,5 @@ without a walk, so nothing is searched or walked.
    `update_inside`), and `NpcBubbles.pick_speaker` and `Interaction.npc_to_chat` skip them. Tests.
 5. **Saving:** drop the upgrade from 37; then version 48 with `inside`, its upgrade, the validator.
    Tests.
-6. **Seeing it:** the debug flag for the screenshot, the handbook, the pictures.
+6. **Seeing it:** the debug flag `--villager-inside=<id>` for the screenshot, the handbook, the pictures
+   (`docs/screenshots/villager-inside*.png`).

@@ -64,6 +64,13 @@ func test_flags_with_a_value() -> void:
 	assert_eq(options.inside_building, &"barn")
 
 
+func test_a_villager_can_be_put_inside_the_first_house() -> void:
+	var options := StartupOptions.new(PackedStringArray(["--inside", "--villager-inside=antje"]))
+	assert_true(options.inside)
+	assert_eq(options.villager_inside, "antje")
+	assert_eq(StartupOptions.new().villager_inside, "")
+
+
 func test_the_building_can_come_with_a_style() -> void:
 	var own := StartupOptions.new(PackedStringArray(["--building=kate"]))
 	assert_eq([own.building, own.building_style], [&"kate", &""])

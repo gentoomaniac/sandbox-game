@@ -94,6 +94,9 @@ out of date. Recipes that were used (add `--classic-art` for the classic art):
   each art cropped to its left 700 px.
 - The farm yard: `make screenshot SIZE=1000x700 AT=69,-15 TIME=12:00 ZOOM=0.75 ARGS="--yard=40,-20 --day=45"`
   (`--yard` also shows the stations and the lines across the land, 22 tiles west of it).
+- A villager in a room (`docs/screenshots/villager-inside.png`): `make screenshot SIZE=800x560 ZOOM=1
+  TIME=12:20 ARGS="--inside=kate --villager-inside=antje --screenshot-delay=1.0"` (she is given the
+  house and stays in it at dinner time; she strolls, so each shot differs).
 - A speech bubble: `--bubbles` lets a bubble follow the last at once. A lone villager in the rain with
   room above her head: `make screenshot SIZE=640x360 ZOOM=2 TIME=09:00 ARGS="--bubbles --villager=antje
   --weather=rain --camera-shift=0,-10 --screenshot-delay=0.2 --mouse-tile=0,0"`; `--mouse-tile=0,0` keeps the highlight off the villager. The scripted line shows when
