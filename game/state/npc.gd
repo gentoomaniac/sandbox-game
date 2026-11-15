@@ -310,6 +310,7 @@ func to_dict() -> Dictionary:
 		"anchor": SaveCodec.float_vector_to_json(anchor),
 		"house": null if house == null else SaveCodec.vector_to_json(house.origin),
 		"workplace": null if workplace == null else workplace.to_dict(),
+		"inside": null if inside == null else _inside_to_saved(),
 		"chat_history": chat_history.duplicate(true),
 		"memories": memories.map(_memory_to_saved),
 		"uncompacted_lines": uncompacted_lines.duplicate(true),
@@ -367,13 +368,23 @@ static func from_dict(data: Dictionary) -> Npc:
 	return npc
 
 
-## Gives them back the house and the workplace saved in `data` (what `to_dict` wrote), which are
-## buildings of `world`.
+## Gives them back the house, the workplace and the building they are inside, saved in `data` (what
+## `to_dict` wrote), which are buildings of `world`.
 func restore_places(data: Dictionary, world: World) -> void:
 	if data["house"] != null:
 		house = world.building_at(SaveCodec.vector_from_json(data["house"]))
 	if data["workplace"] != null:
 		workplace = Workplace.from_dict(data["workplace"], world)
+	if data["inside"] != null:
+		inside = world.building_at(SaveCodec.vector_from_json(data["inside"]["building"]))
+		inside_position = SaveCodec.float_vector_from_json(data["inside"]["position"])
+
+
+func _inside_to_saved() -> Dictionary:
+	return {
+		"building": SaveCodec.vector_to_json(inside.origin),
+		"position": SaveCodec.float_vector_to_json(inside_position),
+	}
 
 
 static func _story_to_saved(story: Dictionary) -> Dictionary:

@@ -534,6 +534,22 @@ func _check_places(npc: Dictionary, path: String) -> void:
 		_field(workplace, "spot_tile", Kind.VECTOR, path + " workplace")
 
 
+## What `inside` of a villager holds: null, or the origin of a building of the world and where they
+## stand in its room.
+func _check_inside(npc: Dictionary, path: String) -> void:
+	if not npc.has("inside"):
+		_report(path, "no inside")
+		return
+	var inside: Variant = npc["inside"]
+	if inside == null:
+		return
+	if not inside is Dictionary:
+		_report(path, "inside should be a dictionary or null")
+		return
+	_check_building_reference(inside, "building", path + " inside")
+	_field(inside, "position", Kind.POINT, path + " inside")
+
+
 ## `owner[key]` is the origin of a building of the world.
 func _check_building_reference(owner: Dictionary, key: String, path: String) -> void:
 	var origin: Variant = _field(owner, key, Kind.VECTOR, path)
@@ -564,6 +580,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 	for key in ["position", "anchor"]:
 		_field(npc, key, Kind.POINT, path)
 	_check_places(npc, path)
+	_check_inside(npc, path)
 	_check_memories(npc, path)
 	var appearance: Variant = _field(npc, "appearance", Kind.DICT, path)
 	if appearance != null:
