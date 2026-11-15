@@ -116,28 +116,7 @@ func _ready() -> void:
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
 	if _options.with_working_window_title:
 		DisplayServer.window_set_title(StartupOptions.WORKING_WINDOW_TITLE)
-	if (
-		not EnergyRules.default_rules().is_valid()
-		or not CropRules.default_rules().is_valid()
-		or not Vegetation.default_vegetation().is_valid()
-		or not WildlifeRules.default_rules().is_valid()
-		or not LivestockRules.default_rules().is_valid()
-		or not NpcRules.default_rules().is_valid()
-		or not VillagerRules.default_rules().is_valid()
-		or not VillageSheet.default_sheet().is_valid()
-		or not NpcTalkRules.default_rules().is_valid()
-		or not SeasonRules.default_rules().is_valid()
-		or not BuildingRules.default_rules().is_valid()
-		or not RecipeRules.default_rules().is_valid()
-		or not SkillRules.default_rules().is_valid()
-		or not StationRules.default_rules().is_valid()
-		or not CatalogCheck.report()
-		or not SoundRules.default_rules().is_valid()
-		or not AmbienceRules.default_rules().is_valid()
-		or not LandscapeRules.default_rules().is_valid()
-		or not PathRules.default_rules().is_valid()
-		or not AssetCheck.report()
-	):
+	if not RulesCheck.is_everything_valid():
 		# The load has reported the missing rules, crops, curves or pictures. Nothing else runs
 		# before the quit.
 		set_process(false)
