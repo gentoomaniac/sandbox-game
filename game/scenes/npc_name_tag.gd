@@ -32,6 +32,6 @@ func show_over(npc: Npc, camera: CameraController) -> void:
 	if npc == null:
 		return
 	_label.text = npc.name
-	var head := npc.position * TerrainTileset.TILE_SIZE - Vector2(0, ABOVE_FEET)
+	var head := npc.feet() * TerrainTileset.TILE_SIZE - Vector2(0, ABOVE_FEET)
 	var size := _label.get_minimum_size()
 	_label.position = (camera.world_to_ui(head) - Vector2(size.x / 2.0, size.y)).round()

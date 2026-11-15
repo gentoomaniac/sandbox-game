@@ -187,8 +187,19 @@ func is_travelling() -> bool:
 
 ## Looks towards a point of the world, such as the player's feet.
 func turn_to(point: Vector2) -> void:
-	if not point.is_equal_approx(position):
-		facing = facing_of(point - position)
+	var from := feet()
+	if not point.is_equal_approx(from):
+		facing = facing_of(point - from)
+
+
+## Where their feet are on the map they are on: in the world, or in the room they are inside.
+func feet() -> Vector2:
+	return inside_position if inside != null else position
+
+
+## Whether they are on `map`: the world, or the interior of the building they are inside.
+func is_on(map: GameMap) -> bool:
+	return map is World if inside == null else inside.interior == map
 
 
 ## Whether they are of one household with `other`: husband and wife, or parent and child, as

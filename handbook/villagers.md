@@ -37,7 +37,7 @@ campfire nearest to where they came. You walk through them, so they never shut y
 - A villager goes in through the door of a building: to sleep and to eat in their house, to work
   in a workplace that is a building (the barn), and to church on a Sunday. You see them in the
   room when you are in it, where they stand and stroll about, and they come out when their day
-  has them elsewhere. Outside, a villager inside is not to be seen or spoken to; and a house you
+  has them elsewhere. In the room with them you can speak to them with E, as outside; from outside a villager inside is not to be seen or spoken to; and a house you
   take down puts out whoever is in it.
 
 ![Antje in her kitchen at dinner time, a few steps from the player](../docs/screenshots/villager-inside.png)

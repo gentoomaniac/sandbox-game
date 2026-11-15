@@ -80,7 +80,9 @@ On the villager (`Npc`, not the building, so a building does not know who is in 
   (the activities of standing: a meal, sleep) and the villagers' rest time stand them still.
 - No bed, chair or pose of their own: a sleeper stands on a free tile, as they stood in the yard.
   That is art and a place each; later (it changes nothing here).
-- Not talked to indoors: `Interaction.npc_to_chat` is still null while the player is in a house.
+- Talked to indoors (the user's default on #8): `Interaction.npc_to_chat` asks the villagers on the
+  player's map (`Npc.is_on`, `Npc.feet`): in a room, those inside that building; out in the world,
+  never one who is inside. The name tag and the turn to the player use `feet` too.
 
 ## What happens when the player comes and goes
 
