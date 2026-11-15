@@ -22,15 +22,23 @@ MANIFESTS = "atlas_*.txt"
 def save_sheets(folder, entities, looks, cells_by_look, cell_width, cell_height):
     """Writes the sheets of `entities` (their names, in the atlas's row order) into `folder`
     under art/generated/. `cells_by_look[look][i]` is the list of cells of entity i in that look."""
-    counts = [len(cells) for cells in cells_by_look[looks[0]]]
     lines = [f"cell {cell_width} {cell_height}", f"looks {' '.join(looks)}"]
-    for index, (entity, count) in enumerate(zip(entities, counts)):
-        assert all(len(cells_by_look[look][index]) == count for look in looks), f"{entity}: looks differ in their variants"
+    for entity, count in save_entity_sheets(folder, entities, looks, cells_by_look, cell_width, cell_height):
         lines.append(f"{entity} {count}")
-        if count:
-            save([cells_by_look[look][index] for look in looks], f"{folder}/{entity}.png", cell_width, cell_height)
     (GENERATED / folder).mkdir(parents=True, exist_ok=True)
     (GENERATED / folder / f"atlas{palette.art_set}.txt").write_text("\n".join(lines) + "\n")
+
+
+def save_entity_sheets(folder, entities, looks, cells_by_look, cell_width, cell_height):
+    """Writes the sheet of each of `entities` as `save_sheets` does, without the manifest: for
+    entities drawn ahead of their rows in the atlas (the dead and half-dead trees of snags.py).
+    Returns (entity, cells in a row of its sheet) of each."""
+    counts = [len(cells) for cells in cells_by_look[looks[0]]]
+    for index, (entity, count) in enumerate(zip(entities, counts)):
+        assert all(len(cells_by_look[look][index]) == count for look in looks), f"{entity}: looks differ in their variants"
+        if count:
+            save([cells_by_look[look][index] for look in looks], f"{folder}/{entity}.png", cell_width, cell_height)
+    return list(zip(entities, counts))
 
 
 def read_manifest(path):

@@ -125,9 +125,11 @@ def bare_willow(seed):
     return canvas
 
 
-def willow(seed):
+def willow(seed, crown=None):
     """The willow in leaf: the same rods, their upper parts in a dense, rounded crown of narrow
-    leaves with a dark edge and a shaded underside, the rods showing below it and over it."""
+    leaves with a dark edge and a shaded underside, the rods showing below it and over it.
+    `crown`, if given, picks the clumps (cx, cy, radius) of leaves that are drawn (a half-dead
+    willow's, see snags.py)."""
     rng = random.Random(seed)
     canvas = cell()
     feet = _trunk_and_head(canvas, rng)
@@ -139,14 +141,14 @@ def willow(seed):
             if len(rod) > 8 and rng.random() < 0.6:
                 x, y = rod[min(len(rod) - 1, round(len(rod) * share))]
                 clumps.append((x, y, rng.uniform(4.5, 7)))
-    crown = cell()
-    foliage(crown, rng, clumps, LEAVES, LEAF_EDGE, leaf_size=2.4, holes=6)
+    leaves = cell()
+    foliage(leaves, rng, crown(clumps) if crown else clumps, LEAVES, LEAF_EDGE, leaf_size=2.4, holes=6)
     # The rods below the crown and through it: brown at their foot, the shaded right ones darker.
     for index, rod in enumerate(rods):
         for step, (x, y) in enumerate(rod[: len(rod) // 2]):
             if canvas[y][x] is None and (index % 2 or step < 4):
                 canvas[y][x] = RODS[0] if x > CENTRE or step < 6 else RODS[1]
-    for y, row in enumerate(crown):
+    for y, row in enumerate(leaves):
         for x, colour in enumerate(row):
             if colour is not None and canvas[y][x] not in KNOBS:
                 canvas[y][x] = colour
@@ -155,7 +157,7 @@ def willow(seed):
     for rod in rods:
         for step in range(len(rod) // 2, len(rod), 3):
             x, y = rod[step]
-            under = crown[y][x]
+            under = leaves[y][x]
             if under is None or under == LEAF_EDGE:
                 continue
             index = LEAVES.index(under)
@@ -165,17 +167,17 @@ def willow(seed):
             side = 1 if step % 2 else -1
             for k in range(1, 3):
                 lx, ly = x + side * k, y + (k - 1)
-                if 0 <= lx < WIDTH and crown[ly][lx] not in (None, LEAF_EDGE):
+                if 0 <= lx < WIDTH and leaves[ly][lx] not in (None, LEAF_EDGE):
                     canvas[ly][lx] = shade
     # Every third rod shows over the leaves, a dark line up to its tip.
     for rod in rods[::3]:
         for x, y in rod[round(len(rod) * 0.4) : round(len(rod) * 0.8)]:
-            if crown[y][x] not in (None, LEAF_EDGE) and rng.random() < 0.8:
-                canvas[y][x] = LEAVES[2] if crown[y][x] in LEAVES[:2] else LEAVES[3]
+            if leaves[y][x] not in (None, LEAF_EDGE) and rng.random() < 0.8:
+                canvas[y][x] = LEAVES[2] if leaves[y][x] in LEAVES[:2] else LEAVES[3]
     # The tips of the longest rods stand out over the crown, bare and thin.
     for rod in rods:
         for x, y in rod[round(len(rod) * 0.8) :]:
-            if canvas[y][x] is None and y + 1 < HEIGHT and crown[y + 1][x] is not None:
+            if canvas[y][x] is None and y + 1 < HEIGHT and leaves[y + 1][x] is not None:
                 canvas[y][x] = LEAVES[2]
             elif canvas[y][x] is None and rng.random() < 0.7:
                 canvas[y][x] = LEAVES[1]

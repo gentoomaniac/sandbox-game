@@ -552,46 +552,71 @@ _WINTER_LOOKS = {
     "way_edge": {"specks": {"sand"}, "snow_remap": _SNOWED_EDGE},
 }
 
+# The dead and the half-dead trees of each kind (snags.py, issue #102). A half-dead tree turns with
+# the seasons as the living tree of its kind does (LIVING_KIND) and has its winter looks, its dead
+# wood rimed and snowed on too. A dead tree looks the same all year; in a frost its lit wood is
+# rimed in specks, under snow its limbs carry snow.
+SNAG_KINDS = ("oak", "beech", "birch", "alder", "willow", "pine", "spruce")
+LIVING_KIND = {f"half_dead_{kind}": kind for kind in SNAG_KINDS}
+_DEAD_WOOD_LIT = {"stone_light", "stone", "bare_light", "sand_light"}
+# The lit colours of each kind's bark, which snow lies on.
+_LIT_BARK = {
+    "oak": {"soil_mid", "soil"},
+    "beech": {"stone_light", "stone", "bare_light"},
+    "birch": {"lime", "stone_light"},
+    "alder": {"mud", "mud_dark"},
+    "willow": {"sand", "mud"},
+    "pine": {"soil_light", "soil_mid", "mud"},
+    "spruce": {"soil_mid", "soil"},
+}
+for _kind in SNAG_KINDS:
+    _WINTER_LOOKS[f"dead_{_kind}"] = {"specks": _DEAD_WOOD_LIT, "snow": (_LIT_BARK[_kind] | _DEAD_WOOD_LIT, set(), 3)}
+    if _kind in _WINTER_LOOKS:
+        _surfaces, _edges, _depth = _WINTER_LOOKS[_kind]["snow"]
+        _WINTER_LOOKS[f"half_dead_{_kind}"] = _WINTER_LOOKS[_kind] | {"specks": _DEAD_WOOD_LIT, "snow": (_surfaces | _DEAD_WOOD_LIT, _edges, _depth)}
+
 
 def _season_object(look, kind, variant, canvas, redraw):
     """One object cell in a look. `variant` is its column in the atlas row (picked bushes
     repeat their bush's variants)."""
     rng = random.Random(f"{look}-{kind}-{variant}")
     centre = len(canvas[0]) // 2
+    # A half-dead tree's leaves turn as its living kind's.
+    turns_as = LIVING_KIND.get(kind, kind)
     if look in LEAF_OUT_LOOKS:
-        if kind not in _LEAF_OUT_KINDS:
+        if turns_as not in _LEAF_OUT_KINDS:
             # Everything else is as in spring meanwhile.
             return _season_object("spring", kind, variant, canvas, redraw)
         bare = _winter_object("bare", kind, variant, canvas, redraw, rng, centre)
         canvas = buds(bare, canvas, rng) if look == "buds" else young_leaves(bare, canvas, rng)
-    elif look == "spring" and kind == "knick":
+    elif look == "spring" and turns_as == "knick":
         canvas = remap(canvas, _KNICK_SPRING)
         _dot(canvas, rng, _KNICK_BLOSSOM, 40, "blossom")
-    elif look == "autumn" and kind == "knick":
+    elif look == "autumn" and turns_as == "knick":
         canvas = remap(canvas, _KNICK_AUTUMN)
         _dot(canvas, rng, _KNICK_HAWS, 28, "red_light")
-    elif look in ("spring", "autumn") and kind == "willow":
+    elif look in ("spring", "autumn") and turns_as == "willow":
         canvas = remap(canvas, _WILLOW_SPRING if look == "spring" else _WILLOW_AUTUMN)
-    elif look == "spring" and kind in _SPRING_KINDS:
+    elif look == "spring" and turns_as in _SPRING_KINDS:
         canvas = remap(canvas, _SPRING_GREENS)
-        if kind in _BLOSSOM_KINDS:
+        if turns_as in _BLOSSOM_KINDS:
             blossoms(canvas, rng, {"spring_light", "spring", "spring_pale"}, 7)
     elif look == "autumn":
-        if kind == "oak":
+        if turns_as == "oak":
             canvas = remap(canvas, _AUTUMN_OAK[variant])
-        elif kind == "beech":
+        elif turns_as == "beech":
             canvas = remap(canvas, _COPPER)
-        elif kind == "birch":
+        elif turns_as == "birch":
             canvas = remap(canvas, _YELLOW)
-        elif kind == "alder":
+        elif turns_as == "alder":
             canvas = remap(canvas, _GREEN_BROWN)
-        elif kind in ("berry_bush", "shrub", "sapling", "fern"):
+        elif turns_as in ("berry_bush", "shrub", "sapling", "fern"):
             canvas = remap(canvas, _AUTUMN_BUSH[variant % 3])
-        elif kind == "dyke":
+        elif turns_as == "dyke":
             canvas = remap(canvas, AUTUMN_GROUND)
-        elif kind == "tall_grass":
+        elif turns_as == "tall_grass":
             canvas = remap(canvas, _AUTUMN_TALL_GRASS)
-        elif kind == "reeds":
+        elif turns_as == "reeds":
             canvas = remap(canvas, _GOLDEN_REEDS)
     elif look in ("bare", "frost", "snow"):
         canvas = _winter_object(look, kind, variant, canvas, redraw, rng, centre)

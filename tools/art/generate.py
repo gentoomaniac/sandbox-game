@@ -124,6 +124,7 @@ import reeds
 import scarecrow
 import sea_birds
 import seasons
+import snags
 import stall
 import terrain
 import tool_icons
@@ -350,6 +351,18 @@ def write_seasonal_art():
     atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS + cover.COVER_LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
 
 
+def write_snags():
+    """The dead and the half-dead trees of every kind (snags.py, issue #102): a sheet each in
+    objects/, as the object atlas's entities have (a row per look, the snow and frost covers
+    included, a cell per variant), but not yet rows of the atlas, whose rows each need an object
+    type. To place them, add `snags.rows()` to `object_atlas` (new rows at the end) and
+    `snags.redraws()` to its winter redraws."""
+    rows = snags.rows()
+    by_look = {look: seasons.object_rows(look, rows, snags.redraws()) for look in seasons.LOOKS}
+    by_look |= cover.object_cover_looks(by_look)
+    atlas.save_entity_sheets("objects", [kind for kind, _ in rows], seasons.LOOKS + cover.COVER_LOOKS, by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
+
+
 def write_character():
     layers = character.layers() | villagers.layers()
     for name, layer in layers.items():
@@ -428,6 +441,7 @@ def write_items():
 
 def main():
     write_seasonal_art()
+    write_snags()
     cover.write_textures(GAME_TILE)
     write_character()
     write_interior()

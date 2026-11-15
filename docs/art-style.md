@@ -199,6 +199,19 @@ neither: they are rimmed in their darkest bark. The meadow flowers are a stem ov
 and a head of a few pixels lit on its upper left. The plants' 16 px art stays as the classic
 art.
 
+The dead and the half-dead trees (issue #102: snags.py)
+are drawn for every kind of tree, so a dead oak reads as an oak and a dead pine as a pine. A dead
+tree keeps its kind's trunk, bark and build: its limbs in bark near the trunk and weathered
+silver-grey (`stone`) beyond, a few stiff twigs, broken ends splintered pale (`sand_light`), bark
+peeling in patches under a dark lip, and on the older ones a snapped, hollow top, woodpecker holes
+and bracket fungi (the tinder fungus of beech, oak and alder, the birch polypore). Three per kind,
+from lately dead to an old ruin. A half-dead tree is the living tree of its kind, its crown drawn
+without the clumps of a dead side or top (the `crown` filter of each living tree), with dead limbs
+standing out of the gap; in winter the deciduous ones are drawn bare again with only the living
+part's twigs. Two per kind. They follow their kind's seasons (`seasons.LIVING_KIND`); the dead
+ones look the same all year, rimed in specks in a frost and with snow on their limbs. Their sheets
+are written into art/generated/objects/ but are not rows of the atlas yet (`write_snags`).
+
 In the wind the plants sway on their own pixels (`AmbientMotion.SWAY_PROFILES`), calmly: half as
 far on screen as the doubled 16 px art did (the user, 2026-11-08). Small plants move more than
 big ones: tall grass, reeds, fern and the meadow flowers most, so their tips flick in a light

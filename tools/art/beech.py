@@ -45,9 +45,10 @@ def bare_beech(seed):
     return canvas
 
 
-def beech(seed):
+def beech(seed, crown=None):
     """The beech in leaf: the bole and the first of its limbs, under a broad, round dome of a
-    crown, its rim of sprays of uneven size."""
+    crown, its rim of sprays of uneven size. `crown`, if given, picks the clumps (cx, cy, radius)
+    that are drawn (a half-dead beech's, see snags.py)."""
     rng = random.Random(seed)
     canvas = cell()
     _bole(canvas, rng)
@@ -61,7 +62,7 @@ def beech(seed):
         angle = math.pi * (0.9 + 1.2 * index / 9) + rng.uniform(-0.15, 0.15)
         radius = rng.uniform(9, 16)
         blobs.append((CENTRE + math.cos(angle) * 30, centre_y + math.sin(angle) * 24, radius))
-    foliage(canvas, rng, blobs, LEAVES[:4], "green_deep", leaf_size=3.6, holes=3)
+    foliage(canvas, rng, crown(blobs) if crown else blobs, LEAVES[:4], "green_deep", leaf_size=3.6, holes=3)
     shade_under_crown(canvas, BARK)
     return canvas
 
