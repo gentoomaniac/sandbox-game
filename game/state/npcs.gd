@@ -4,8 +4,8 @@ extends RefCounted
 ## (the yard in front of the nearest building's door, or the nearest fireplace, when it came into
 ## the world), stands about and strolls by day, and stands still at night. The numbers are
 ## data/npcs.cfg (NpcRules). GameState owns it; Main moves them with `update` while the player is
-## out in the world. A villager can also be sent to a place (`walk_to`, see NpcTravel), which goes
-## before everything else it does.
+## out in the world, and with `update_unseen` while they are in a building. A villager can also be
+## sent to a place (`walk_to`, see NpcTravel), which goes before everything else it does.
 ##
 ## The player walks through villagers, so none can shut the player in; a villager stops short
 ## of the player instead of walking into them. A villager never stands on a tile of a building,
@@ -247,20 +247,39 @@ func update(
 	only_loaded := false,
 	may_search := true
 ) -> void:
+	_update(delta, map, player_feet, clock, only_loaded, may_search, false)
+
+
+## `update` while the player is inside a building: there is no one to see the outside, so the trips
+## are walked on the masks alone, as if far, and nobody strolls. No villager stands off from the
+## player, who is not on the map.
+func update_unseen(delta: float, map: GameMap, clock: GameClock) -> void:
+	_update(delta, map, Vector2.INF, clock, false, true, true)
+
+
+func _update(
+	delta: float,
+	map: GameMap,
+	player_feet: Vector2,
+	clock: GameClock,
+	only_loaded: bool,
+	may_search: bool,
+	is_far_only: bool
+) -> void:
 	var is_resting := is_rest_time(clock.day, clock.minute_of_day)
 	delta = minf(delta, MAX_STEP_SECONDS)
 	if may_search:
 		_travel.tick()
 	for npc in _npcs:
 		var is_loaded := _is_in_loaded_chunk(npc, map)
-		if is_loaded and npc.free_body_tiles == Rect2i():
+		if not is_far_only and is_loaded and npc.free_body_tiles == Rect2i():
 			_step_off_buildings(npc, map)
 		# Where it was sent it goes, day and night, over chunks that are not loaded too: when to
 		# send it is for the routine to say.
 		if npc.trip != null:
-			_travel.update(npc, delta, player_feet, _fits)
+			_travel.update(npc, delta, player_feet, _fits, is_far_only)
 			continue
-		if only_loaded and not is_loaded:
+		if is_far_only or (only_loaded and not is_loaded):
 			continue
 		if is_resting:
 			npc.activity = Npc.Activity.IDLE

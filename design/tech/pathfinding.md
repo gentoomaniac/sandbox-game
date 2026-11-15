@@ -190,10 +190,11 @@ route it was stopped on, at most `retries` (2) times in a row, and is then `BLOC
 walkers are ignored (no collisions); the player is stood off by `personal_space`.
 `NpcTravel.tick()` runs the masks' `update()` and the Pathfinder's `tick()` once per
 `Npcs.update`. `Npcs.update` moves every trip wherever it is; `only_loaded` keeps only the strolls
-of villagers with no trip to loaded chunks (time skips: below). A far walker costs a few float operations a frame, and a
-dictionary lookup per chunk asked and a mask lookup when it enters a tile; it allocates nothing.
-
-**Not built yet (step 5):** trips while the player is inside.
+of villagers with no trip to loaded chunks (time skips: below). While the player is inside a
+building, Main calls `Npcs.update_unseen` instead: every trip is walked as a far one, on the masks
+(`NpcTravel._walk` with `is_far_only` skips the live check), loaded chunks too, and no one
+strolls. A far walker costs a few float operations a frame, and a dictionary lookup per chunk
+asked and a mask lookup when it enters a tile; it allocates nothing.
 
 ## Time skips
 

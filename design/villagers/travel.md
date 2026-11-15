@@ -49,7 +49,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 - Time: 1.5 game minutes a second and `walk_speed` 1.5 tiles a second, so a villager walks one tile a
   game minute. A game day is 960 seconds of play.
 - `Npcs.update` runs from Main for all villagers, and from `ActorsUpkeep.walked_minute` for those in
-  loaded chunks only. It does not run while the player is inside. A skip makes up the rest of its
+  loaded chunks only. While the player is inside, Main runs it for the trips alone, on the masks
+  (see "While the player is inside"). A skip makes up the rest of its
   time in `catch_up`, which walks the trips by the skip's minutes and puts the other loaded villagers
   somewhere around their anchors.
 
@@ -375,7 +376,8 @@ terrain, #61 and #62) then cost what they cost near. The parity test gets a vill
 5. **While the player is inside:** `Npcs.update` and the trips go on, everyone on the masks.
    Tests: a villager sent off before the player goes in is at the tile the same minutes of play
    would take it when the player comes out; two whose trips cross while the player is inside meet
-   (a rumour passes); none jumps more than `walk_speed x delta` on the way out.
+   (a rumour passes); none jumps more than `walk_speed x delta` on the way out. **Done**
+   (tests/test_npc_inside.gd; `Npcs.update_unseen`, `NpcTravel.update`).
 6. **The bench** (`tools/bench/paths.gd` of 238): 10, 30 and 155 villagers sent 100 to 300 tiles
    at once and through the day, cold and warm: longest frame, search time, the last departure's
    delay, memory. The numbers tuned and written here.
@@ -413,8 +415,8 @@ in a catch-up, the rules warmed before the worker, and a frame gate that counts 
 
 ## While the player is inside
 
-Today the outside stands still while the player is inside (`Npcs.update` does not run, and the
-world's chunks are held: `_residency.is_held`). With the answer to question 4 the outside goes on:
+The world's chunks are held while the player is inside (`_residency.is_held`), and the outside goes
+on (built, step 5; before it stood still):
 
 - `Npcs.update` and the trips run while the player is inside, with the clock, as in play. The
   chunks around the house stay as they are (held, not drawn); every villager walks as if far, on the
@@ -428,5 +430,10 @@ world's chunks are held: `_residency.is_held`). With the answer to question 4 th
   shown (a speech bubble, a wave) is not.
 - Sleep and other skips stay as in "Time skips and sleep": the player sleeps inside, and 239 places
   villagers at the skip's end.
+- As built: `Main._process` calls `Npcs.update_unseen`, with the player's feet
+  infinitely far. An unseen update walks the trips with every step a far one (the mask, at the
+  minute of entry), loaded chunks too, and leaves the strolling villagers standing. Meetings
+  need nothing more: `GossipSpread` runs with the clock and looks at positions, views or not.
+  No villager is inside a house (interiors hold none), so there is nothing to keep there.
 - Cost: the same budget as outside (`Pathfinder`'s per-frame budget), and less drawing, since the
   outside view is hidden.

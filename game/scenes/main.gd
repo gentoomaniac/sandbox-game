@@ -535,19 +535,23 @@ func _process(delta: float) -> void:
 		_object_cover.cover(_state.player.bed_lying_in)
 		if _state.door_underfoot():
 			_fade_through(_pass_door)
-	# The world, its animals and villagers too, stands still while the player is in a house, and
-	# while the sleep is made up for in steps.
-	if not _state.is_inside() and not _is_making_up_time:
-		_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
-		_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
-		_view.player_feet = _player_view.position
-		_view.player_size = (
-			Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
-		)
-		_residency.set_focus(_state.player.tile())
-		_residency.update(func() -> bool: return not _view.is_drawing())
-		_ground_item_view.set_focus(_state.player.tile())
-		_npc_views.set_focus(_state.player.tile())
+	# The world, its animals too, stands still while the player is in a house, and while the sleep
+	# is made up for in steps; but the villagers on a trip go on over the masks, so they are where
+	# one expects them when the player comes out.
+	if not _is_making_up_time:
+		if _state.is_inside():
+			_state.npcs.update_unseen(delta, _state.world, _state.clock)
+		else:
+			_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
+			_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
+			_view.player_feet = _player_view.position
+			_view.player_size = (
+				Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
+			)
+			_residency.set_focus(_state.player.tile())
+			_residency.update(func() -> bool: return not _view.is_drawing())
+			_ground_item_view.set_focus(_state.player.tile())
+			_npc_views.set_focus(_state.player.tile())
 	_debug.update(delta)
 
 

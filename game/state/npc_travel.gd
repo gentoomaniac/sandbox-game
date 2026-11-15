@@ -141,8 +141,11 @@ func make_masks(is_waiting: bool) -> void:
 
 
 ## Lets `delta` seconds pass for a villager with a trip. `fits` is a Callable `(npc, feet, map) ->
-## bool` that says whether its body fits there.
-func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
+## bool` that says whether its body fits there. With `is_far_only`, every step is checked on
+## the masks alone, loaded ground too.
+func update(
+	npc: Npc, delta: float, player_feet: Vector2, fits: Callable, is_far_only := false
+) -> void:
 	var trip := npc.trip
 	trip.seconds_since_search += delta
 	match trip.state:
@@ -154,7 +157,7 @@ func update(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> voi
 				trip.retries = 0
 				_begin_search(npc)
 		_:
-			_walk(npc, delta, player_feet, fits)
+			_walk(npc, delta, player_feet, fits, is_far_only)
 
 
 ## The path overlay's line (F4) on the trip of a villager: where from and to, how far it has got
@@ -314,13 +317,14 @@ func _finish_path(npc: Npc) -> void:
 
 ## Steps along the path, if it may: it waits while the player talks to it or stands too close, and
 ## is stuck when the step is not free. Where the world answers for by itself (`_is_step_whole`) the
-## step is checked live, with the body (`fits`); elsewhere, far from the player, only the tile it
+## step is checked live, with the body (`fits`); elsewhere, far from the player (or everywhere with
+## `is_far_only`, while the player is inside a building), only the tile it
 ## enters is checked, against the mask of its chunk at the time of entry (the tide, the season), and
 ## a tile whose mask is not there yet (an edit dropped it) is waited for. Both ways move towards the
 ## same tile centre at the same speed, so the position does not jump when a chunk loads or unloads
 ## between two centres. What is left of a frame's reach at a tile centre goes on along the next tile
 ## (through the same checks), so that a walker covers `walk_speed * delta` however long the frame.
-func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
+func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable, is_far_only: bool) -> void:
 	var trip := npc.trip
 	if trip.pause_seconds > 0.0:
 		trip.pause_seconds -= delta
@@ -342,7 +346,7 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 			trip.state = NpcTrip.State.WAITING
 			npc.activity = Npc.Activity.IDLE
 			return
-		if _is_step_whole(world, feet, next_tile):
+		if not is_far_only and _is_step_whole(world, feet, next_tile):
 			if not fits.call(npc, feet, trip.map):
 				_be_stuck(npc, delta)
 				return
