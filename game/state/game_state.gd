@@ -335,6 +335,9 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	# A noclip walk (through trees, rocks and walls) leaves no path.
 	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
 		world.wear_tile(player.tile())
+		# A horse's hooves, not the rider's boots, would leave the prints (see Footprints).
+		if player.horse == null:
+			world.footprints.step(world, player.tile(), direction)
 
 
 ## Puts a player who stands where they don't fit (noclip just turned off in a lake, a rock or a

@@ -351,6 +351,7 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable, is_far_
 				_be_stuck(npc, delta)
 				return
 			Npcs.wear_step(trip.map, feet, npc.tile())
+			Npcs.leave_footprint(trip.map, feet, npc.tile())
 		elif not _may_enter_far_tile(npc, world, feet, delta):
 			return
 		trip.state = NpcTrip.State.WALKING

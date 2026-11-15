@@ -57,6 +57,8 @@ var soil: SoilMoisture
 var fallow := FallowSoil.new()
 ## Whether the rain has made worn ground mud (see `set_muddy`).
 var is_muddy := false
+## The prints in snow and mud that walkers leave (see Footprints).
+var footprints := Footprints.new()
 ## The wear of the grass, by walking (see `wear_tile`).
 var wear := WorldWear.new()
 ## The clay spots that were dug, with the nights left until they hold clay again (see
