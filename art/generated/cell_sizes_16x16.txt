@@ -213,6 +213,7 @@ objects/pig_shelter_16x16.png 48 80
 objects/pine_16x16.png 48 80
 objects/pine_short_trunk_16x16.png 48 80
 objects/pine_trunk_16x16.png 48 80
+objects/plank_walk_16x16.png 48 80
 objects/reeds_16x16.png 48 80
 objects/rowing_boat_16x16.png 48 80
 objects/sapling_16x16.png 48 80
@@ -223,6 +224,7 @@ objects/spruce_16x16.png 48 80
 objects/spruce_short_trunk_16x16.png 48 80
 objects/spruce_trunk_16x16.png 48 80
 objects/stone_16x16.png 48 80
+objects/stone_path_16x16.png 48 80
 objects/stone_wall_16x16.png 48 80
 objects/stump_16x16.png 48 80
 objects/tall_grass_16x16.png 48 80

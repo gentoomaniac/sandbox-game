@@ -122,6 +122,7 @@ import trees
 import trunks
 import ui
 import villagers
+import ways
 import willow
 import yard
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE
@@ -208,6 +209,8 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 57 pig_shelter (1)
 # 58 pen_gate_open (16, the gate swung open)
 # 59 scarecrow (3 frames: still, then blown by the wind, see scarecrow.py)
+# 60 plank_walk (2, full-tile ground pieces that meet at every seam, see ways.py)
+# 61 stone_path (3, the same)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -265,6 +268,8 @@ def object_atlas():
         ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
         ("pen_gate_open", pen.pen_gate_row(is_open=True)),
         ("scarecrow", [standing_outdoors(picture, scarecrow.SHADOW) for picture in scarecrow.frames()]),
+        ("plank_walk", ways.plank_walk_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
+        ("stone_path", ways.stone_path_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
     ]
 
 
@@ -384,7 +389,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons()
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | ways.icons(GAME_TILE, items.icon_of)
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

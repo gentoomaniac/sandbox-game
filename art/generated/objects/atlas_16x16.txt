@@ -60,3 +60,5 @@ pen_gate 16
 pig_shelter 1
 pen_gate_open 16
 scarecrow 3
+plank_walk 2
+stone_path 3

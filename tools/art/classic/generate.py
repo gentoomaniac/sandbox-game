@@ -59,6 +59,7 @@ import portraits  # noqa: E402
 import trees  # noqa: E402
 import trunks  # noqa: E402
 import villagers  # noqa: E402
+import ways  # noqa: E402
 import willow  # noqa: E402
 import yard  # noqa: E402
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
@@ -214,6 +215,9 @@ def object_atlas():
         ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
         ("pen_gate_open", pen.pen_gate_row(is_open=True)),
         ("scarecrow", [standing_outdoors(picture) for picture in scarecrow.frames()]),
+        # The ways are drawn by the new art's module, at this tile size (see ways.py).
+        ("plank_walk", ways.plank_walk_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
+        ("stone_path", ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
     ]
 
 
@@ -253,7 +257,7 @@ def write_interior():
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon()}
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon()} | ways.icons(TILE, yard.icon_of)
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

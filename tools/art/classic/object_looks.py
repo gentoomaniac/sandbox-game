@@ -299,6 +299,14 @@ def _dot(canvas, rng, surfaces, count, colour):
 # - "snow_remap": a remap in place of the caps, in the snow look (a mound of snow, a bedroll).
 # Planks lying flat (a jetty's deck, a boat's floor) under snow.
 _SNOWED_PLANKS = {"bare_light": "snow_light", "bare": "snow", "mud_dark": "snow_shadow"}
+# The ways (ways.py) under snow: it lies even over the boards and the stones, the gaps between
+# the boards and the earth between the stones showing through as its shade.
+_SNOWED_WALK = {"bare_light": "snow_light", "bare": "snow", "mud": "snow", "stone_dark": "snow", "mud_dark": "snow_shadow"}
+_SNOWED_COBBLES = {
+    "stone_light": "snow_light", "bare_light": "snow_light", "sand": "snow_light",
+    "stone": "snow", "bare": "snow", "mud": "snow",
+    "stone_dark": "snow_shadow", "mud_dark": "snow_shadow",
+}
 _TRUNK_WINTER = {"frost_only": _FROST_STONE, "snow": _SNOW_TRUNK}
 _WINTER_LOOKS = {
     "spruce": {"frost": _FROST_CONIFER, "snow": _SNOW_CONIFER},
@@ -390,6 +398,9 @@ _WINTER_LOOKS = {
         "frost_only": _FROST_STONE,
         "snow": ({"stone_light", "stone", "sand_light", "bare_light", "bare", "olive"}, set(), 2),
     },
+    # The ways lie flat on the ground: a frost rimes their lit edges in specks, snow covers them.
+    "plank_walk": {"specks": {"bare_light"}, "snow_remap": _SNOWED_WALK},
+    "stone_path": {"specks": {"stone_light", "bare_light", "sand"}, "snow_remap": _SNOWED_COBBLES},
 }
 
 
