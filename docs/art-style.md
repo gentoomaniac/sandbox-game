@@ -518,6 +518,29 @@ so there was no single male costume; that gives freedom, as long as it is 18th-c
   behind it, from the side in front of it; the head points away from the body (forward from
   the side), so it shows beside the figure. The classic art has only the hoe and the lantern;
   the others show the new picture in both sets.
+- **Swinging a tool** (task 227, tool_swing.py, swing.py; awaiting the user's verdict): four or
+  five frames of a motion in each facing, in sheets of their own (`character/use/`), every layer
+  of the player and each tool in its grade, 96x96 cells with the figure's frame at (32, 16), a
+  column per frame, one motion after the other; `DURATIONS` says how long each frame shows (the
+  blow and the push longest, the fast middle of a swing shortest). The axe, the pickaxe and the
+  hoe chop in five frames (brought up before the chest, lifted back over the head, swung forward,
+  struck down before the feet as the figure sinks into the blow, held there as it straightens;
+  from the front out to the side and down before the body; from behind up beside the head and
+  forward out of sight). The hammer knocks with one hand at the height of the chest in five
+  (brought up, cocked back beside the head, swung, struck forward level with the chest, bounced
+  back). The shovel digs in four: set upright on the ground before the feet with the hands high
+  on the shaft, the near foot put up on the blade to drive it into the ground (the foot in front
+  of the shaft, the blade cut off at the ground), the shaft pulled back to lever the blade in the
+  ground (the shaft leant a pixel every three rows above the upright blade), and the spit of
+  earth (`soil_mid`, `soil_light`) lifted on the blade held flat. The scythe mows in five: drawn
+  back and up, swept from behind along the ground to before the figure, and lifted off as the
+  stroke runs out. The arms are posed by their hands (`Figure` with `hands`); a raised far
+  sleeve stays behind the head, and from behind arms reaching forward are hidden by the back. A
+  tool is one rigid picture: upright as in the hand or on the true diagonal (the classic icons'
+  maps, their handles lengthened), turned in quarter turns and mirrored and lit anew from the
+  top left, never drawn at an odd angle; the hands may hold it further up its handle. The
+  classic art (classic/swing.py) halves the frames: arms as lines from the shoulder, the tool the
+  32 px picture at half the size. No new colours.
 - **The lantern** (task 177): a horn lantern as carried about 1750, a tin cylinder with a
   pierced cone of a roof and a ring, a pane of horn (`mud`, `sand`, `sand_light`) with the
   tallow candle (`lime`, `cream`) showing through, a wider tin foot. In the hand it hangs from

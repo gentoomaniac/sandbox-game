@@ -18,6 +18,8 @@ DOUBLED = (
     "character/*.png",
     "character/collapse/*.png",
     "character/riding/*.png",
+    # Swinging a tool (task 227; classic/swing.py).
+    "character/use/*.png",
     "effects/*.png",
     "ui/bubble_*.png",
     # The farm animals (task 114; livestock.py and animals.py of commit 2793065).

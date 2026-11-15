@@ -10,6 +10,8 @@ rows (y 5..12), torso 10 (13..22), legs 8 (23..30). Only the outer silhouette ha
 outline; inside it, parts are separated by darker shades of their own colour.
 """
 
+from collections import namedtuple
+
 import tool_grades
 from canvas import NEIGHBOURS, blank, rect
 
@@ -56,12 +58,17 @@ def leg_boxes(facing, pose):
     riding figure, whose legs are folded (see `draw_kneeling_legs` and `draw_riding_legs`)."""
     if pose.get("kneel") or pose.get("ride"):
         return []
-    stride = pose["stride"]
+    stride, lifts = pose["stride"], pose["lift"]
     if facing in ("down", "up"):
         columns = ((5, 7), (9, 11))
     else:
         columns = ((6 - stride, 8 - stride), (7 + stride, 9 + stride))
-    return [(x0, x1, 23 + pose["sink"], 30 - lift) for (x0, x1), lift in zip(columns, pose["lift"])]
+        if pose.get("step"):
+            # The near foot put forward and up (onto a spade's blade, see tool_swing.py).
+            forward, raised = pose["step"]
+            columns = (columns[0], (columns[1][0] + forward, columns[1][1] + forward))
+            lifts = (lifts[0], raised)
+    return [(x0, x1, 23 + pose["sink"], 30 - lift) for (x0, x1), lift in zip(columns, lifts)]
 
 
 def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
@@ -82,8 +89,9 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         if boxes:
             rect(canvas, 8, boxes[0][2], 8, boxes[0][3] - 3, shade)
         # The right arm swings; the left one holds the tool.
-        rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
-        rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
+        if not posed_arms(facing, pose):
+            rect(canvas, 4, 14 + sink, 5, 20 + sink, skin)
+            rect(canvas, 11, 14 + sink + swing // 2, 12, 20 + sink + swing // 2, skin)
         if facing == "down":
             for x in (6, 10):
                 rect(canvas, x, 9 + sink, x, 10 + sink, "soil_dark")
@@ -91,7 +99,7 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         # The undershirt, with short sleeves, and the shorts down to the thighs.
         rect(canvas, 6, 13 + sink, 10, 20 + sink, UNDERSHIRT)
         rect(canvas, 10, 15 + sink, 10, 20 + sink, UNDERSHIRT_SHADE)
-        for x0, dy in ((4, 0), (11, swing // 2)):
+        for x0, dy in () if posed_arms(facing, pose) else ((4, 0), (11, swing // 2)):
             rect(canvas, x0, 14 + sink + dy, x0 + 1, 15 + sink + dy, UNDERSHIRT)
         rect(canvas, 6, 21 + sink, 10, 22 + sink, SHORTS)
     else:
@@ -102,11 +110,13 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
             canvas[10 + sink][11] = "soil_dark"
         else:
             rect(canvas, 11, 9 + sink, 11, 10 + sink, "soil_dark")
-        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
-        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
+        if not posed_arms(facing, pose):
+            rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 17 + sink, skin)
+            rect(canvas, 7 + swing, 18 + sink, 8 + swing, 20 + sink, skin)
         rect(canvas, 5, 13 + sink, 10, 20 + sink, UNDERSHIRT)
         rect(canvas, 5, 15 + sink, 5, 20 + sink, UNDERSHIRT_SHADE)
-        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 15 + sink, UNDERSHIRT)
+        if not posed_arms(facing, pose):
+            rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 15 + sink, UNDERSHIRT)
         rect(canvas, 5, 21 + sink, 10, 22 + sink, SHORTS)
     for x0, x1, top, _bottom in boxes:
         rect(canvas, x0, top, x1, top + 2, SHORTS)
@@ -114,7 +124,80 @@ def draw_body(facing, pose, skin="skin", shade="skin_shade", **_):
         draw_kneeling_legs(canvas, (SHORTS, skin), (skin, shade), (shade, shade, shade))
     if pose.get("ride"):
         draw_riding_legs(canvas, facing, (SHORTS, SHORTS), skin, (skin, shade), (shade, shade))
+    for arm in posed_arms(facing, pose) or ():
+        draw_arm(canvas, arm, skin, shade, hand=skin)
+        for x, y in arm.points[:2]:
+            if not (arm.hidden and x in TORSO_COLUMNS):
+                canvas[y][x] = UNDERSHIRT
     return canvas
+
+
+# The arms of a swing (see swing.py and tool_swing.py): an arm as the pixels of its line from the
+# shoulder to the hand, shoulder first, and the way the line is two pixels thick (a pixel to the
+# right of each, or below it where the arm reaches out more than up or down), and whether it
+# reaches forward out of sight behind the torso of a figure seen from behind (`hidden`).
+PosedArm = namedtuple("PosedArm", "points thick hidden")
+# The torso's columns from the front or behind, which a hidden arm is behind.
+TORSO_COLUMNS = range(6, 11)
+# Where each arm is from the shoulder down when the pose names no hand for it: from the front or
+# behind the left of the picture first, from the side the near arm.
+SHOULDERS = {"front": ((4, 14), (11, 14)), "side": ((7, 14),)}
+HANGING_HANDS = {"front": ((4, 20), (11, 20)), "side": ((7, 20),)}
+
+
+def posed_arms(facing, pose):
+    """The arms of a pose with `hands` (in the order of tool_swing's frames: far and near from the
+    side, of which only the near is drawn, left and right of the picture from the front or
+    behind); those its `hidden` names reach forward out of sight. None for a pose without
+    `hands`."""
+    hands = pose.get("hands")
+    if not hands:
+        return None
+    view = "front" if facing in ("down", "up") else "side"
+    if view == "side":
+        hands = hands[1:]
+    hidden = () if view == "side" else pose.get("hidden", ())
+    sink = pose["sink"]
+    arms = []
+    for index, (shoulder, hanging, hand) in enumerate(zip(SHOULDERS[view], HANGING_HANDS[view], hands)):
+        end = hanging if hand is None else hand
+        points = line((shoulder[0], shoulder[1] + sink), (end[0], end[1] + sink))
+        reach_x, reach_y = abs(end[0] - shoulder[0]), abs(end[1] - shoulder[1])
+        arms.append(PosedArm(points, (0, 1) if reach_x > reach_y else (1, 0), index in hidden))
+    return arms
+
+
+def line(start, end):
+    """The pixels from `start` to `end`, both included, a step at a time."""
+    (x0, y0), (x1, y1) = start, end
+    steps = max(abs(x1 - x0), abs(y1 - y0), 1)
+    return [(round(x0 + (x1 - x0) * i / steps), round(y0 + (y1 - y0) * i / steps)) for i in range(steps + 1)]
+
+
+def arm_pixels(arm, upto=None):
+    """The pixels of a posed arm's line, two thick, to `upto` points from the shoulder."""
+    dx, dy = arm.thick
+    return [pixel for x, y in arm.points[:upto] for pixel in ((x, y), (x + dx, y + dy))]
+
+
+def draw_arm(canvas, arm, base, shade, hand=None):
+    """A posed arm's sleeve in `base`, its second pixel in `shade`; the last two points of the line
+    (the hand) in `hand`, or left clear for the body's hand. A hidden arm is drawn only beside the
+    torso."""
+    dx, dy = arm.thick
+    sleeve_end = len(arm.points) - 2
+    for index, (x, y) in enumerate(arm.points):
+        colours = (base, shade) if index < sleeve_end else (hand, hand)
+        for (px, py), colour in zip(((x, y), (x + dx, y + dy)), colours):
+            if arm.hidden and px in TORSO_COLUMNS:
+                continue
+            if colour is not None and 0 <= px < CHARACTER_WIDTH and 0 <= py < CHARACTER_HEIGHT:
+                canvas[py][px] = colour
+
+
+def draw_posed_sleeves(canvas, facing, pose, base, shade):
+    for arm in posed_arms(facing, pose) or ():
+        draw_arm(canvas, arm, base, shade)
 
 
 def draw_kneeling_legs(canvas, thigh, shin, foot):
@@ -254,7 +337,7 @@ def draw_shirt(facing, pose, **_):
         rect(canvas, 10, 15 + sink, 10, 22 + sink, shade)
         rect(canvas, 6, 22 + sink, 10, 22 + sink, shade)
         # Sleeves; the right one swings with the arm.
-        for x0, dy in ((4, 0), (11, swing // 2)):
+        for x0, dy in () if posed_arms(facing, pose) else ((4, 0), (11, swing // 2)):
             rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
             rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
             rect(canvas, x0, 18 + sink + dy, x0 + 1, 18 + sink + dy, shade)
@@ -268,12 +351,15 @@ def draw_shirt(facing, pose, **_):
         rect(canvas, 5, 15 + sink, 5, 22 + sink, shade)
         rect(canvas, 5, 22 + sink, 10, 22 + sink, shade)
         draw_near_sleeve(canvas, pose, base, shade)
+    draw_posed_sleeves(canvas, facing, pose, base, shade)
     return canvas
 
 
 def draw_near_sleeve(canvas, pose, base, shade):
     """The sleeve of the near arm, seen from the side over the torso: a shaded edge at the back,
-    and the cuff."""
+    and the cuff. A posed arm has its own (`draw_posed_sleeves`)."""
+    if pose.get("hands"):
+        return
     sink, swing = pose["sink"], pose["swing"]
     for y in range(14 + sink, 19 + sink):
         x = 7 + (swing // 2 if y < 17 + sink else swing)
@@ -310,6 +396,7 @@ def draw_waistcoat(facing, pose, **colours):
         for y in (16, 18, 20):
             canvas[y + sink][10] = waistcoat["button"]
         draw_near_sleeve(canvas, pose, SHIRT["base"], SHIRT["shade"])
+    draw_posed_sleeves(canvas, facing, pose, SHIRT["base"], SHIRT["shade"])
     return canvas
 
 
@@ -342,7 +429,7 @@ def draw_jacket(facing, pose, **colours):
             rect(canvas, 8, 19 + sink, 8, 22 + sink, shade)
         rect(canvas, 5, 22 + sink, 11, 22 + sink, shade)
         # Sleeves; the right one swings with the arm.
-        for x0, dy in ((4, 0), (11, swing // 2)):
+        for x0, dy in () if posed_arms(facing, pose) else ((4, 0), (11, swing // 2)):
             rect(canvas, x0, 14 + sink + dy, x0 + 1, 18 + sink + dy, base)
             rect(canvas, x0, 14 + sink + dy, x0 + 1, 14 + sink + dy, light)
             rect(canvas, x0 + 1, 15 + sink + dy, x0 + 1, 17 + sink + dy, shade)
@@ -354,8 +441,10 @@ def draw_jacket(facing, pose, **colours):
         rect(canvas, 5, 15 + sink, 5, 22 + sink, shade)
         rect(canvas, 5, 22 + sink, 10, 22 + sink, shade)
         draw_near_sleeve(canvas, pose, base, shade)
-        rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
-        rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, light)
+        if not posed_arms(facing, pose):
+            rect(canvas, 7 + swing // 2, 14 + sink, 8 + swing // 2, 14 + sink, light)
+            rect(canvas, 7 + swing, 18 + sink, 8 + swing, 18 + sink, light)
+    draw_posed_sleeves(canvas, facing, pose, base, shade)
     return canvas
 
 

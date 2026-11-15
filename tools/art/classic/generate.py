@@ -53,6 +53,7 @@ import reeds  # noqa: E402
 import scarecrow  # noqa: E402
 import sea_birds  # noqa: E402
 import stork_nest  # noqa: E402
+import swing  # noqa: E402
 import seasons  # noqa: E402
 import terrain  # noqa: E402
 import tool_icons  # noqa: E402
@@ -81,6 +82,11 @@ def write_character():
         save(character.character_sheet(draw, {}), f"character/held_{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     for name, draw in (("lantern", character.draw_held_lantern), ("lantern_lit", character.draw_held_lantern_lit)):
         save(character.character_sheet(draw, {}), f"character/held_{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    # Only the player swings tools (swing.py; the motions are tool_swing.py's).
+    for name, layer in character.layers().items():
+        save(swing.layer_sheet(*layer), f"character/use/{name}.png", swing.USE_CELL)
+    for name, arguments in swing.tool_sheets().items():
+        save(swing.tool_sheet(*arguments), f"character/use/{name}.png", swing.USE_CELL)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")

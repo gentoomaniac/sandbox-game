@@ -37,6 +37,12 @@ layer that shows in a bust, for the chat: the top of its frame facing the viewer
 portraits.py).
 assets/character/held_<tool>.png: each tool in the hand, a layer in the same cells (see
 `HELD_TOOLS`).
+assets/character/use/<slot>_<variant>.png: the player's layers swinging a tool, 96x96 cells with
+the figure's 32x64 frame at swing.FIGURE_AT, a row per facing as above and a column per frame of
+each motion, one motion after the other (chop 5, knock 5, dig 4, mow 5; see swing.py and
+tool_swing.py, whose DURATIONS say how long each frame shows). use/held_<grade>_<tool>.png is the
+tool in its motion's columns in front of the figure, use/held_<grade>_<tool>_behind.png behind
+it.
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 assets/effects/pet_heart.png and pet_annoyed.png: what rises over an animal that is petted, awake
 or asleep.
@@ -92,6 +98,7 @@ import beech
 import birch
 import birds
 import stork_nest
+import swing
 import boundaries
 import buildings
 import camp
@@ -352,6 +359,11 @@ def write_character():
         save(character.riding_sheet(*layer), f"character/riding/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
     for tool, draw in character.HELD_TOOLS.items():
         save(character.character_sheet(draw, {}), f"character/held_{tool}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
+    # Only the player swings tools.
+    for name, layer in character.layers().items():
+        save(swing.layer_sheet(*layer), f"character/use/{name}.png", swing.USE_CELL)
+    for name, arguments in swing.tool_sheets().items():
+        save(swing.tool_sheet(*arguments), f"character/use/{name}.png", swing.USE_CELL)
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")

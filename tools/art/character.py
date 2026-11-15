@@ -14,6 +14,7 @@ parts are told apart by the shades of their own colours. The face has eyes with 
 a nose shadow, cheeks and a mouth.
 """
 
+import math
 from collections import namedtuple
 
 import forms
@@ -57,8 +58,9 @@ SLEEVE_RADII = (2.9, 2.5)
 # A leg: its thigh, shin and foot as masks, the garter band at the knee (where breeches end), and
 # whether it is the far one, drawn darker.
 Leg = namedtuple("Leg", "thigh shin foot garter far")
-# An arm: shoulder and hand, in pixels; the far one is drawn darker and behind the body.
-Arm = namedtuple("Arm", "shoulder hand far")
+# An arm: shoulder and hand, in pixels; the far one is drawn darker and behind the body. A posed
+# arm (in a tool's swing, see swing.py) reaches its hand anywhere, not only down beside the body.
+Arm = namedtuple("Arm", "shoulder hand far posed", defaults=(False,))
 
 
 def mask(function, *args):
@@ -90,6 +92,8 @@ class Figure:
 
     def _arms(self):
         top, swing = self.top, self.pose["swing"]
+        if self.pose.get("hands"):
+            return self._posed_arms()
         if self.is_side:
             # The far arm swings against the near one, behind the body.
             return [
@@ -100,6 +104,19 @@ class Figure:
         return [
             Arm((7.5, 29 + top), (7.5, 41.5 + top), far=False),
             Arm((24.5, 29 + top), (24.5, 41.5 + top + swing // 2), far=False),
+        ]
+
+    def _posed_arms(self):
+        """The arms of a swing (see swing.py): the pose's `hands` say where each hand is, in the
+        order of the arms (far and near from the side, left and right of the picture from the
+        front or behind), None for one that hangs as when standing. The arms that the pose's
+        `hidden` names reach forward in front of a figure seen from behind, so they are drawn
+        behind it as a far arm is."""
+        hanging = Figure(self.facing, self.pose | {"hands": None}).arms
+        hidden = self.pose.get("hidden", ())
+        return [
+            arm if at is None else Arm(arm.shoulder, (at[0], at[1] + self.top), arm.far or index in hidden, posed=True)
+            for index, (arm, at) in enumerate(zip(hanging, self.pose["hands"]))
         ]
 
     def _legs(self):
@@ -113,7 +130,13 @@ class Figure:
                 far = index == 0
                 stride = -self.pose["stride"] if far else self.pose["stride"]
                 hip_x = 15.5 if far else 16.5
-                if lift:
+                if self.pose.get("step") and not far:
+                    # Put forward and up (onto a spade's blade, see tool_swing.py): the knee bent
+                    # forward over the foot.
+                    forward, raised = self.pose["step"]
+                    knee = (hip_x + forward / 2 + 2, KNEES - raised / 2)
+                    ankle = (hip_x + forward, ANKLES - raised)
+                elif lift:
                     # Swinging through: the knee forward, the foot raised under the body.
                     knee, ankle = (hip_x + 3, KNEES - 1), (hip_x + 0.5, ANKLES - lift)
                 else:
@@ -187,9 +210,15 @@ def shade_part(canvas, part_mask, shades, far=False, radius=2):
 
 
 def sleeve(arm, length=1.0):
-    """The sleeve of an arm from the shoulder towards the wrist, `length` of the way."""
+    """The sleeve of an arm from the shoulder towards the wrist, `length` of the way; of a posed
+    arm along it to 3 px short of the hand's middle."""
     (sx, sy), (hx, hy) = arm.shoulder, arm.hand
-    end = (sx + (hx - sx) * 0.85 * length, sy + (hy - 3 - sy) * length)
+    if arm.posed:
+        reach = max(math.hypot(hx - sx, hy - sy), 3.5)
+        along = (reach - 3) / reach * length
+        end = (sx + (hx - sx) * along, sy + (hy - sy) * along)
+    else:
+        end = (sx + (hx - sx) * 0.85 * length, sy + (hy - 3 - sy) * length)
     return mask(forms.capsule, (sx, sy), end, *SLEEVE_RADII)
 
 
@@ -457,7 +486,7 @@ def draw_sleeves(canvas, figure, shades, far_only=False, cuffs=SHIRT["fold"], fo
             # The arm's back edge, where it hangs in front of the body.
             back = forms.edge(sleeve(arm)) & ~mask(forms.box, int(arm.shoulder[0]) + 1, 0, 31, 63)
             forms.paint(canvas, back & figure.torso, fold)
-        if not arm.far and not figure.is_side:
+        if not arm.far and not figure.is_side and not arm.posed:
             inner = 9 if arm.shoulder[0] < 16 else 22
             forms.dots(canvas, [(inner, y + figure.top) for y in range(30, 39)], fold)
 
