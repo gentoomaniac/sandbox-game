@@ -23,7 +23,8 @@ The answers of 2026-11-15 that shape this page:
 3. Courting and marriage come later, but the levels already allow for them.
 4. The player's words are rated by a second small model request, capped per day, and the game
    works without a model. It has its own per-profile switch, `word_rating`.
-5. Stealing and damage cost friendship (only if seen, or found out the next day at half).
+5. Stealing and damage cost friendship, only with those who see them (the user, 2026-11-15:
+   nobody finds out later).
 6. Events: later, kept in mind.
 7. Friendship does **not** fade, not yet (see [Later](#later)).
 8. Friends get benefits, which may open below best friends too. A bad name closes options:
@@ -110,8 +111,8 @@ actions"): a method of the state, not of a scene. First values in points, all in
 | **Help with work** the sheet names (hay for Antje, nets for Momme) | +30 | Once per job. |
 | Bring what a villager `wants` this year | +50 | Once. |
 | **Rudeness**: pushing through them, hitting them | -20 | Seen. |
-| **Stealing**: taking from their chest, crops or animals | -50 | Seen, or found out next day at half. |
-| **Damage**: cutting their Knick, breaking their fence | -20 | Seen, or found out next day at half. |
+| **Stealing**: taking from their chest, crops or animals | -50 | Only if seen. |
+| **Damage**: cutting their Knick, breaking their fence | -20 | Only if seen. |
 
 Later, with the events: attending an event with them (+10), a feast day doubling a gift, being
 nearby in trouble and helping (+40).
@@ -142,7 +143,7 @@ nearby in trouble and helping (+40).
   sheet's `wants` and `day` follow if wanted.
 - **Seeing.** Rudeness, stealing and damage cost friendship with the villagers who see them:
   the witnesses of the deed log ([gossip.md](gossip.md), `DeedLog`: within the radius, by night
-  a smaller one), and with the owner, who finds out the next day, at half. The harms are **new
+  a smaller one), and only with them: an unseen harm costs nothing, the owner included. The harms are **new
   deed kinds** (`stole`, `damaged`, `rude`, and `gave_gift`), so the log, the witnesses and the
   spread of stories carry them: a seen theft is also a story the village tells and the others
   hear it as gossip, by the gossip's rules, halved and capped. The witness's own loss is the
@@ -282,8 +283,8 @@ those by hand).
    Docs: [dialogue.md](dialogue.md), the Settings page.
 8. **Harm: stealing, damage, rudeness.** `owner_of`, the deed kinds `stole`, `damaged` and `rude`
    in `data/gossip.cfg`, the hooks where the player takes from a chest, crop or animal, cuts a
-   Knick, breaks a fence or pushes a villager; the friendship moves for the witnesses at once and
-   for the owner the next day at half. Tests: seen and unseen, owner away, night, the half, the
+   Knick, breaks a fence or pushes a villager; the friendship moves for the witnesses at once,
+   and an unseen harm costs nothing. Tests: seen and unseen, owner away, night, the
    caps, the player's own things cost nothing. Docs: [gossip.md](gossip.md) (deeds).
 9. **Benefits as data.** `[benefits]` and `allows(benefit, level)`, the sheet's `benefit_level`
    with its check. Tests: each benefit's level, an override moves it. Docs: this page.
@@ -320,9 +321,9 @@ Kept in mind, not planned in detail:
 - **Reputation** of a settlement, as above.
 - **Deeds in the hosted prompt**, five lines.
 
-## Open questions
+## Questions (answered)
 
-Each has the default the work goes ahead with.
+Answered by the user on 2026-11-15: the defaults stand, except 6.
 
 1. **How big is the action cap?** Gifts alone are +40 and the story cap is 20. Default: a
    separate `action_daily_cap_points` of 60 per villager, tuned in play.
@@ -332,8 +333,8 @@ Each has the default the work goes ahead with.
    Neighbour, Good neighbour, Friend, Trusted friend, Close friend, Heart's friend.
 5. **Does a pop-up tell the points?** Default: no, only a heart or a cloud, and the line when a
    level is crossed.
-6. **Does an unseen theft from a house cost anything?** Default: the owner finds out the next day
-   at half, only if the chest was theirs; nothing if no one ever finds out (no dice).
+6. **Does an unseen theft from a house cost anything?** No (the user, 2026-11-15): only what is
+   seen counts.
 7. **Who may be courted?** Default: `romance` off for everyone until the user names villagers.
 8. **Does level 2 (Mistrusted) still trade?** Default: no, shops and quests are shut at 1 and 2
    (`trade` from 3). Tell if a Mistrusted villager should still sell, dearer.
