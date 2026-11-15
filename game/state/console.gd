@@ -14,23 +14,6 @@ const COMMANDS := {
 	"noneeds": ["noneeds", "Toggle: the farm animals' hunger and thirst do not rise."],
 	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
 	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
-	"spawn":
-	[
-		"spawn <kind> [count]",
-		(
-			"Put animals or villagers (npc, or the id of one written by hand, such as antje) near"
-			+ " you; farm animals and villagers stay."
-		),
-	],
-	"killall":
-	[
-		"killall <kind> | killall npc [<id>]",
-		(
-			"Remove every animal of a kind (the same kinds as spawn), or villagers (npc: those made"
-			+ " up; npc <id>: one named), from the game and the save. Wild animals are not saved:"
-			+ " others may come by the usual rules."
-		),
-	],
 	"weather":
 	[
 		"weather [clear|cloudy|overcast|rain|snow|fog|wind|storm|thunder|auto]",
@@ -40,11 +23,6 @@ const COMMANDS := {
 	[
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
-	],
-	"friendship":
-	[
-		"friendship [0..100]",
-		"Show the friendship of the animal nearest to you, or set it.",
 	],
 	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
 	"gossip":
@@ -114,8 +92,6 @@ const COMMANDS := {
 ## missing or unknown name list the candidates of the kinds in ConsoleHelper.LISTED_KINDS.
 const ARGUMENTS := {
 	"help": [&"command"],
-	"spawn": [&"animal", &"number"],
-	"killall": [&"animal"],
 	"weather": [&"weather"],
 	"snow": [&"snow"],
 	"gossip": [&"villager"],
@@ -130,8 +106,6 @@ const ARGUMENTS := {
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
 ## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
 const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
-## How far (in tiles) the `friendship` command looks for an animal.
-const FRIENDSHIP_SEARCH_RADIUS := 3.0
 
 ## What the commands work on, and the hooks the game scene sets (see ConsoleContext).
 var context: ConsoleContext
@@ -194,27 +168,10 @@ func run(line: String) -> Array[String]:
 		"freeze":
 			cheats.is_time_stopped = not cheats.is_time_stopped
 			output = [ConsoleHelper.toggle_message("Time stopped", cheats.is_time_stopped)]
-		"killall":
-			output = _killall(arguments)
-		"spawn":
-			if arguments.is_empty():
-				output = _candidates_text("spawn")
-			elif (
-				arguments.size() == 2
-				and arguments[0] == ConsoleHelper.NPC
-				and not arguments[1].is_valid_int()
-			):
-				output = _spawn_villager(arguments[1])
-			elif arguments.size() == 1 and _state.npcs.villagers.has(arguments[0]):
-				output = _spawn_villager(arguments[0])
-			else:
-				output = _spawn(arguments)
 		"weather":
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
-		"friendship":
-			output = _friendship(arguments)
 		"deeds":
 			output = _deeds()
 		"gossip":
@@ -279,6 +236,14 @@ func candidates(kind: StringName) -> Array[String]:
 	return values
 
 
+## The answer to a name that is not a kind (`what` is "villager" or "track"): it and the names that
+## the command takes.
+func _unknown(what: String, word: String, command: String) -> Array[String]:
+	var lines: Array[String] = ["Unknown %s: %s" % [what, word]]
+	lines.append_array(_candidates_text(command))
+	return lines
+
+
 func _words(line: String) -> PackedStringArray:
 	return line.strip_edges().trim_prefix("/").to_lower().split(" ", false)
 
@@ -318,159 +283,6 @@ func _candidates_text(command: String) -> Array[String]:
 		if ConsoleHelper.LISTED_KINDS.has(kind):
 			lines.append_array(ConsoleHelper.candidates_lines(kind, context))
 	return lines
-
-
-func _friendship(arguments: PackedStringArray) -> Array[String]:
-	var livestock := _state.livestock
-	var maximum := livestock.rules.friendship("max")
-	var is_value_valid := (
-		arguments.size() == 1 and arguments[0].is_valid_int() and int(arguments[0]) >= 0
-	)
-	if arguments.size() > 1 or (arguments.size() == 1 and not is_value_valid):
-		return ["Usage: %s" % COMMANDS["friendship"][0]]
-	var animal := (
-		null
-		if _state.is_inside()
-		else livestock.nearest_pettable(_state.player.position, FRIENDSHIP_SEARCH_RADIUS)
-	)
-	if animal == null:
-		return ["No animal that can be petted near you"]
-	if is_value_valid:
-		animal.friendship = mini(int(arguments[0]), maximum)
-	var petted := "never" if animal.last_petted_day == 0 else "day %d" % animal.last_petted_day
-	return [
-		(
-			"%s: friendship %d of %d, last petted %s"
-			% [animal.species, animal.friendship, maximum, petted]
-		)
-	]
-
-
-func _spawn(arguments: PackedStringArray) -> Array[String]:
-	var is_count_valid := (
-		arguments.size() < 2 or (arguments[1].is_valid_int() and int(arguments[1]) > 0)
-	)
-	if arguments.is_empty() or arguments.size() > 2 or not is_count_valid:
-		return ["Usage: %s" % COMMANDS["spawn"][0]]
-	var word := arguments[0]
-	var count := 1 if arguments.size() < 2 else int(arguments[1])
-	# Farm animals and villagers stay in the world: they are part of the state.
-	if (
-		word == ConsoleHelper.NPC
-		or word == ConsoleHelper.ROOSTER
-		or LivestockRules.SPECIES.has(StringName(word))
-	):
-		if _state.is_inside():
-			return ["No %s here" % ("villagers" if word == ConsoleHelper.NPC else "animals")]
-		var near := _state.player.position
-		var spawned := 0
-		if word == ConsoleHelper.NPC:
-			spawned = _state.npcs.spawn(count, near, _state.world)
-		elif word == ConsoleHelper.ROOSTER:
-			spawned = _state.livestock.spawn(
-				LivestockRules.CHICKEN, count, near, _state.world, LivestockRules.ROOSTER_LOOK
-			)
-		else:
-			spawned = _state.livestock.spawn(StringName(word), count, near, _state.world)
-		return ["Spawned %d of %d %s" % [spawned, count, word]]
-	var kind := WildlifeRules.RABBIT if word == ConsoleHelper.WILD_RABBIT else StringName(word)
-	if not WildlifeRules.KINDS.has(kind):
-		return _unknown("animal", word, "spawn")
-	if _state.is_inside() or not context.wildlife_spawner.is_valid():
-		return ["No animals here"]
-	var placed: int = context.wildlife_spawner.call(kind, count)
-	return ["Spawned %d of %d %s" % [placed, count, word]]
-
-
-## The answer to a name that is not a kind (`what` is "animal" or "villager"): it and the names that
-## the command takes.
-func _unknown(what: String, word: String, command: String) -> Array[String]:
-	var lines: Array[String] = ["Unknown %s: %s" % [what, word]]
-	lines.append_array(_candidates_text(command))
-	return lines
-
-
-func _spawn_villager(villager_id: String) -> Array[String]:
-	var npcs := _state.npcs
-	if not npcs.villagers.has(villager_id):
-		return _unknown("villager", villager_id, "spawn")
-	var here := npcs.find(villager_id)
-	if here != null:
-		return ["%s is already here" % here.name]
-	if _state.is_inside():
-		return ["No villagers here"]
-	var npc := npcs.spawn_villager(villager_id, _state.player.position, _state.world)
-	if npc == null:
-		return ["No room for %s here" % villager_id]
-	return ["Spawned %s" % npc.name]
-
-
-## Takes the animals of a kind, or one villager, out of the game and the state that is saved.
-## A bare `killall npc` removes the villagers made up (those with no id): the ones written by hand
-## are the village's, so each needs its id. A ridden horse is not removed from under the
-## player: they get off first, as the dismount needs a free spot that is theirs to choose.
-func _killall(arguments: PackedStringArray) -> Array[String]:
-	if arguments.is_empty():
-		return _candidates_text("killall")
-	var word := arguments[0]
-	if arguments.size() > 2 or (arguments.size() == 2 and word != ConsoleHelper.NPC):
-		return ["Usage: %s" % COMMANDS["killall"][0]]
-	if word == ConsoleHelper.NPC and arguments.size() == 1:
-		return _kill_made_up_villagers()
-	if word == ConsoleHelper.NPC:
-		return _kill_villager(arguments[1])
-	if _state.npcs.villagers.has(word):
-		return _kill_villager(word)
-	return _kill_animals(word)
-
-
-func _kill_animals(word: String) -> Array[String]:
-	if word == ConsoleHelper.ROOSTER:
-		var roosters := _state.livestock.remove_species(
-			LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK
-		)
-		return [_removed_text(roosters, word)]
-	if LivestockRules.SPECIES.has(StringName(word)):
-		var horse := _state.player.horse
-		if horse != null and horse.species == StringName(word):
-			return ["You are riding a %s: get off first" % word]
-		return [_removed_text(_state.livestock.remove_species(StringName(word)), word)]
-	var kind := WildlifeRules.RABBIT if word == ConsoleHelper.WILD_RABBIT else StringName(word)
-	if not WildlifeRules.KINDS.has(kind):
-		return _unknown("animal", word, "killall")
-	var cleared: int = (
-		context.wildlife_clearer.call(kind) if context.wildlife_clearer.is_valid() else 0
-	)
-	return [_removed_text(cleared, word) + " (wild animals are not saved: more may come)"]
-
-
-func _kill_made_up_villagers() -> Array[String]:
-	var removed := 0
-	var named: Array[String] = []
-	for npc in _state.npcs.all():
-		if npc.id.is_empty():
-			_state.npcs.remove(npc)
-			removed += 1
-		else:
-			named.append(npc.id)
-	var line := (
-		_removed_text(removed, ConsoleHelper.NPC) + " (the named villagers stay: killall npc <id>"
-	)
-	return [line + (", here: %s)" % ", ".join(named) if not named.is_empty() else ")")]
-
-
-func _kill_villager(villager_id: String) -> Array[String]:
-	if not _state.npcs.villagers.has(villager_id):
-		return _unknown("villager", villager_id, "killall")
-	var npc := _state.npcs.find(villager_id)
-	if npc == null:
-		return ["%s is not in the world" % villager_id]
-	_state.npcs.remove(npc)
-	return ["Removed %s" % npc.name]
-
-
-func _removed_text(count: int, word: String) -> String:
-	return "Removed %d %s" % [count, word] if count > 0 else "No %s to remove" % word
 
 
 func _weather(arguments: PackedStringArray) -> Array[String]:

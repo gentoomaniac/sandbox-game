@@ -140,6 +140,11 @@ static func npc_named(word: String, context: ConsoleContext) -> Npc:
 	return null
 
 
+## The kind of wild animal a word of `spawn` and `killall` stands for.
+static func wildlife_kind(word: String) -> StringName:
+	return WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
+
+
 static func toggle_message(cheat: String, is_on: bool) -> String:
 	return "%s %s" % [cheat, "on" if is_on else "off"]
 
