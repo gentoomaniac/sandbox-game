@@ -17,7 +17,7 @@ from canvas import blank
 # What a print is made of: its floor, the shaded rim at the top left and the lit one at the
 # lower right.
 SNOW = ("snow_shadow", "snow_deep", "snow_shadow")
-MUD = ("soil", "soil_dark", "mud")
+MUD = ("soil_dark", "ink", "sand")
 KINDS = {"snow": SNOW, "mud": MUD}
 
 # The left foot, toes up, arch on its right. The right foot is its mirror.
