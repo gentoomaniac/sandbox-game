@@ -124,8 +124,8 @@ without a walk, so nothing is searched or walked.
 3. **The day sends them in:** `inside` in `data/activities.cfg` and its header, `ActivityPlaces`
    `building_at_yard`, `ActivityStep.building`, `ActivityUpkeep` (arrive, send, skip). Tests,
    routines.md and villagers.md lines.
-4. **They are seen:** `NpcViews` has none for one who is inside, `InteriorNpcViews`, Main, and the
-   speech and the chat skip them. Tests.
+4. **They are seen:** `NpcViews` has none for one who is inside, `InteriorNpcViews`, Main (which also calls
+   `update_inside`), and `NpcBubbles.pick_speaker` and `Interaction.npc_to_chat` skip them. Tests.
 5. **Saving:** drop the upgrade from 37; then version 48 with `inside`, its upgrade, the validator.
    Tests.
 6. **Seeing it:** the debug flag for the screenshot, the handbook, the pictures.

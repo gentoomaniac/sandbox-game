@@ -102,6 +102,12 @@ func test_one_who_answers_the_player_does_not_speak() -> void:
 	assert_null(_bubbles.pick_speaker(npcs, _region(), HEAD))
 
 
+func test_one_who_is_inside_a_building_does_not_speak() -> void:
+	_antje.inside = Building.new(BuildingTypes.KATE, Vector2i.ZERO)
+	var npcs: Array[Npc] = [_antje]
+	assert_null(_bubbles.pick_speaker(npcs, _region(), HEAD))
+
+
 func test_the_speaker_is_drawn_among_those_in_view() -> void:
 	_momme.position = Vector2(12, 10)
 	var npcs: Array[Npc] = [_antje, _momme]

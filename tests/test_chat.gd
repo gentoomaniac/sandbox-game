@@ -43,6 +43,11 @@ func test_e_speaks_to_a_villager_just_in_front_off_the_targeted_tile() -> void:
 	assert_eq(Interaction.npc_to_chat(_state, _tile + Vector2i(-1, 0)), _npc)
 
 
+func test_e_does_not_speak_to_a_villager_who_is_inside_a_building() -> void:
+	_npc.inside = Building.new(BuildingTypes.KATE, Vector2i.ZERO)
+	assert_null(Interaction.npc_to_chat(_state, _tile))
+
+
 func test_e_does_not_speak_to_a_villager_behind_or_too_far() -> void:
 	_state.player.facing = Vector2i.UP
 	assert_null(Interaction.npc_to_chat(_state, _state.player.facing_tile()))

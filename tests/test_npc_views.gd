@@ -77,6 +77,19 @@ func test_a_villager_who_walks_away_loses_the_view_and_gets_it_back_once() -> vo
 	assert_eq(_entities.get_child_count(), 1)
 
 
+func test_a_villager_who_is_inside_a_building_has_no_view_in_the_world() -> void:
+	var npc := _villager_at(Vector2(3, 3))
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 1)
+	npc.inside = Building.new(BuildingTypes.KATE, Vector2i.ZERO)
+	_focus_and_update(Vector2i(2, 2))
+	await get_tree().process_frame
+	assert_eq(_entities.get_child_count(), 0)
+	npc.inside = null
+	_focus_and_update(Vector2i(2, 2))
+	assert_eq(_entities.get_child_count(), 1, "and one again when they come out")
+
+
 func test_a_view_is_kept_one_chunk_beyond_where_it_is_made() -> void:
 	var edge := NpcViews.NEAR_CHUNKS
 	_villager_at(Vector2((edge + 0.5) * SIZE, 5))

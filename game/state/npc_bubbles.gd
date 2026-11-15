@@ -46,11 +46,15 @@ func is_due() -> bool:
 
 
 ## The villager of `npcs` who speaks: one at random out of those in `region` (see `is_in_view`)
-## that are not answering the player; null if there is none.
+## that are not answering the player and are not inside a building; null if there is none.
 func pick_speaker(npcs: Array[Npc], region: Rect2, head_pixels: float) -> Npc:
 	var in_view: Array[Npc] = []
 	for npc in npcs:
-		if not npc.is_answering and is_in_view(npc.position, head_pixels, region):
+		if (
+			npc.inside == null
+			and not npc.is_answering
+			and is_in_view(npc.position, head_pixels, region)
+		):
 			in_view.append(npc)
 	return in_view[rng.randi_range(0, in_view.size() - 1)] if not in_view.is_empty() else null
 

@@ -58,6 +58,7 @@ var _saves := SaveService.new()
 var _autosave_timer := AutosaveTimer.new()
 var _ground_item_view := GroundItemView.new()
 var _npc_views := NpcViews.new()
+var _interior_npc_views := InteriorNpcViews.new()
 var _coordinates_hud := CoordinatesHud.new()
 var _paths_hud := PathsHud.new()
 var _hotbar := HotbarHud.new()
@@ -241,6 +242,7 @@ func _make_views() -> void:
 	add_child(_fade_screen)
 	_interior_view.hide()
 	_world.add_child(_interior_view)
+	add_child(_interior_npc_views)
 	_world.add_child(_weather_view)
 
 
@@ -275,6 +277,7 @@ func _connect_state_and_views() -> void:
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
+	_interior_npc_views.show_npcs(_state.npcs, _interior_view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
 	# applied once it is closed rather than at every step) are compacted.
 	_apply_villager_memory_settings()
@@ -555,6 +558,7 @@ func _process(delta: float) -> void:
 	if not _blackout.is_making_up_time:
 		if _state.is_inside():
 			_state.npcs.update_unseen(delta, _state.world, _state.clock)
+			_state.npcs.update_inside(delta, _state.current_map as Interior, _state.clock)
 		else:
 			_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
 			_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
@@ -766,6 +770,7 @@ func _show_current_map() -> void:
 	if is_inside:
 		_wildlife.clear()
 		_interior_view.show_interior(_state.current_map)
+	_interior_npc_views.show_room(_state.current_map as Interior if is_inside else null)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
 	_use_highlight.reparent(_interior_view if is_inside else _view, false)
 	_show_clock()

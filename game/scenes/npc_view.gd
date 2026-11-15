@@ -1,22 +1,25 @@
 class_name NpcView
 extends Node2D
-## A villager (Npc) in the world: one sprite per layer of its look, drawn like the player (see
-## PlayerView, whose sheets and frames it shares) on a contact shadow, walking while it moves. It
-## lives among the world view's y-sorted entities, so it stands behind and in front of things as
-## the player does.
+## A villager (Npc) in the world, or in the room they are in: one sprite per layer of its look,
+## drawn like the player (see PlayerView, whose sheets and frames it shares) on a contact shadow,
+## walking while it moves. It lives among the y-sorted entities of the world view or of the room,
+## so it stands behind and in front of things as the player does.
 
 ## The walk frames go at this fraction of the player's pace: villagers stroll.
 const WALK_PACE := 0.5
 
 var npc: Npc
+## Whether it is drawn in the room the villager is inside: at `Npc.inside_position`, not `position`.
+var _is_in_room: bool
 var _sprites: Array[Sprite2D] = []
 var _last_position: Vector2
 var _walk_time := 0.0
 
 
-func _init(shown_npc: Npc) -> void:
+func _init(shown_npc: Npc, is_in_room := false) -> void:
 	npc = shown_npc
-	_last_position = npc.position
+	_is_in_room = is_in_room
+	_last_position = _feet()
 	position = _pixel_position()
 	add_to_group(ArtSet.VIEWS)
 	for layer in npc.appearance.layers:
@@ -47,8 +50,8 @@ func _draw() -> void:
 
 
 func _show_frame(delta: float) -> void:
-	var is_walking := npc.position != _last_position
-	_last_position = npc.position
+	var is_walking := _feet() != _last_position
+	_last_position = _feet()
 	position = _pixel_position()
 	_walk_time = _walk_time + delta * WALK_PACE if is_walking else 0.0
 	var frame := PlayerView.frame_index(npc.facing, PlayerView.frame_column(is_walking, _walk_time))
@@ -58,4 +61,8 @@ func _show_frame(delta: float) -> void:
 
 ## Rounded to whole art pixels, so the villager stays put on the world as the camera moves.
 func _pixel_position() -> Vector2:
-	return (npc.position * TerrainTileset.TILE_SIZE).round()
+	return (_feet() * TerrainTileset.TILE_SIZE).round()
+
+
+func _feet() -> Vector2:
+	return npc.inside_position if _is_in_room else npc.position

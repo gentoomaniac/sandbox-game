@@ -4,7 +4,8 @@ extends Node
 ## the world view's entities, and stands on a chunk that is loaded: one on a chunk that is not has
 ## no ground to be drawn on. A villager far away has no view, but goes on in the state (see Npcs
 ## `update`, which walks its trip over chunks that are not loaded) and has one again when it is near
-## and its chunk is loaded.
+## and its chunk is loaded. One who is inside a building has none here: InteriorNpcViews shows them
+## in its room.
 
 ## Villagers get a view within this many chunks of the focus, the ones the world view draws, and
 ## keep it until they are further than one chunk more, so one who strolls over a chunk border
@@ -45,6 +46,9 @@ func _process(_delta: float) -> void:
 
 func _update_view(npc: Npc) -> void:
 	if not _has_focus:
+		return
+	if npc.inside != null:
+		_free_view(npc)
 		return
 	var chunk := Chunk.world_to_chunk(Vector2i(npc.position.floor()))
 	var offset := (chunk - _focus_chunk).abs()

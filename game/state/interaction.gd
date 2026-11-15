@@ -126,8 +126,8 @@ static func _distance(state: GameState, object: WorldObject) -> float:
 
 ## The villager E speaks to, or null: the one on the targeted tile if that is in reach, else the
 ## nearest one in reach in front of the player (villagers move, so the player need not face their
-## very tile; one behind them would take E from the chest they face). None indoors, where there
-## are none.
+## very tile; one behind them would take E from the chest they face). Not one who is inside a
+## building, who is not to be seen. None indoors.
 static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
 	if state.is_inside():
 		return null
@@ -135,7 +135,7 @@ static func npc_to_chat(state: GameState, target: Vector2i) -> Npc:
 	var facing := Vector2(state.player.facing)
 	var nearest: Npc = null
 	for npc in state.npcs.all():
-		if not Targeting.is_tile_in_reach(player_tile, npc.tile()):
+		if npc.inside != null or not Targeting.is_tile_in_reach(player_tile, npc.tile()):
 			continue
 		if npc.tile() == target:
 			return npc
