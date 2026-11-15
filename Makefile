@@ -38,7 +38,7 @@ help:
 	@echo "  test-tools  Run only the tests of the Python tools (tools/ and its art, llm and music folders, test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  weather-probe  Print a year of weather per seed: wet share, longest spell, wet hours per season, snow days and a day-by-day strip. WEATHER_PROBE_ARGS=\"2 1 5\" picks the strip's season (0-3) and the seeds."
-	@echo "  world-map   Draw a top-down PNG map of a seed's generated land (headless, no save). SEED, AT, MAP_SIZE, MAP_SCALE, MAP_OUT."
+	@echo "  world-map   Draw a top-down PNG map of a seed's generated land (headless, no save). SEED, AT, MAP_SIZE, MAP_SCALE, MAP_OUT; VILLAGE=1 builds the village first."
 	@echo "  bench-music Time the music renderer: renders on their own, then frame times in the game while it renders, then the everyday pieces rendered and loaded from the cache (headless, muted)."
 	@echo "  music-latency  Time how late the music crossfade starts after the beat on the real audio driver (AUDIO_DRIVER, default PulseAudio), silent: the master bus is muted."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
@@ -319,16 +319,16 @@ weather-probe: assets
 	$(BENCH_GODOT) -s tools/bench/weather_probe.gd -- $(WEATHER_PROBE_ARGS)
 
 # A top-down map of a seed's generated land (tools/world_map.gd), e.g.
-# make world-map SEED=42 AT=0,0 MAP_OUT=/tmp/map.png. AT is the middle tile of the map.
+# make world-map SEED=42 AT=0,0 MAP_OUT=/tmp/map.png. AT is the middle tile of the map. With
+# VILLAGE=1 the seed's village Wehlsbüll is built first and the map is of it (AT, MAP_SIZE and
+# MAP_SCALE then default to the village's middle, 128 and 8); otherwise they are 0,0, 320 and 3.
 SEED ?= 1
-MAP_SIZE ?= 320
-MAP_SCALE ?= 3
 MAP_OUT ?= $(CURDIR)/build/world-map.png
 
 world-map:
 	$(IMPORT)
 	mkdir -p $(dir $(MAP_OUT))
-	$(GODOT) --headless --path . -s tools/world_map.gd -- --seed=$(SEED) --center=$(if $(AT),$(AT),0,0) --size=$(MAP_SIZE) --scale=$(MAP_SCALE) --out=$(MAP_OUT)
+	$(GODOT) --headless --path . -s tools/world_map.gd -- --seed=$(SEED) $(if $(VILLAGE),--village) $(if $(AT),--center=$(AT)) $(if $(MAP_SIZE),--size=$(MAP_SIZE)) $(if $(MAP_SCALE),--scale=$(MAP_SCALE)) --out=$(MAP_OUT)
 
 # The game's prototype music renderer (task 169) against libmodplug, an independent player: the
 # pieces rendered headless into build/music/, then compared by tools/music/check.py.

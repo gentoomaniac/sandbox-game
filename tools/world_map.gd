@@ -5,6 +5,10 @@ extends SceneTree
 ##
 ##   godot --headless --path . -s tools/world_map.gd -- --seed=42 --center=0,0 --size=320 \
 ##       --scale=3 --out=/abs/path/map.png
+##
+## With --village the seed's village Wehlsbüll is built into the land first (see VillageBuilder),
+## and the map shows it: unless given, the centre is the village's middle and the size is 128
+## tiles at scale 8.
 
 const OBJECT_COLORS := {
 	&"oak": Color("12401a"),
@@ -24,6 +28,15 @@ const OBJECT_COLORS := {
 	&"stone": Color("9e9e9e"),
 	&"boulder": Color("757575"),
 	&"ewer": Color("000000"),
+	&"knick": Color("e65100"),
+	&"stone_wall": Color("ffffff"),
+	&"wattle_fence": Color("f5f5f5"),
+	&"grave": Color("616161"),
+	&"draw_well": Color("0277bd"),
+	&"jetty": Color("795548"),
+	&"rowing_boat": Color("4e342e"),
+	&"net_frame": Color("ffb300"),
+	&"eel_traps": Color("ffb300"),
 }
 const TERRAIN_COLORS := {
 	Tile.Terrain.GRASS: Color("c8e6c9"),
@@ -39,10 +52,21 @@ const TERRAIN_COLORS := {
 
 func _init() -> void:
 	var options := _options()
-	var size := int(options.get("size", "320"))
-	var tile_px := int(options.get("scale", "3"))
-	var center := _vector(options.get("center", "0,0"))
-	var generator := WorldGenerator.new(int(options.get("seed", "1")))
+	var world_seed := int(options.get("seed", "1"))
+	var generator := WorldGenerator.new(world_seed)
+	var world := World.new(world_seed)
+	var has_village := options.has("village")
+	var village_center := Vector2i.ZERO
+	if has_village:
+		var plan := VillagePlan.default_plan()
+		var site := VillageSite.find(world_seed)
+		var reason := VillageBuilder.build_land(world, site, plan)
+		if reason != "":
+			push_error("No village: %s" % reason)
+		village_center = site.to_world(plan.area.get_center())
+	var size := int(options.get("size", "128" if has_village else "320"))
+	var tile_px := int(options.get("scale", "8" if has_village else "3"))
+	var center := _vector(options["center"]) if options.has("center") else village_center
 	var top_left := center - Vector2i.ONE * (size / 2)
 	var image := Image.create_empty(size * tile_px, size * tile_px, false, Image.FORMAT_RGB8)
 	var first_chunk := Chunk.world_to_chunk(top_left)
@@ -52,6 +76,8 @@ func _init() -> void:
 			var chunk := generator.generate_chunk(Vector2i(chunk_x, chunk_y))
 			if chunk == null:
 				continue
+			# The village's edits are replayed on the chunk by the world.
+			world.add_chunk(chunk)
 			for local_y in Chunk.CHUNK_SIZE:
 				for local_x in Chunk.CHUNK_SIZE:
 					var local := Vector2i(local_x, local_y)
@@ -76,7 +102,7 @@ func _options() -> Dictionary:
 	var options := {}
 	for argument in OS.get_cmdline_user_args():
 		var parts := argument.trim_prefix("--").split("=", true, 1)
-		options[parts[0]] = parts[1]
+		options[parts[0]] = parts[1] if parts.size() > 1 else ""
 	return options
 
 

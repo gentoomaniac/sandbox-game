@@ -1,6 +1,6 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 and 2 of
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 3 of
 section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
@@ -122,7 +122,10 @@ walking: the worn track and the handbook have to be good for those.
   public functions. Every random choice is a hash of the seed and a tile, never the global random
   generator. A test builds twice and compares the edits.
 - **The cost:** the edits and buildings make the save bigger and the new game builds a dozen chunks
-  more than today. Both are measured in steps 3 and 5 and written here.
+  more than today. Measured for the ground (step 3, seeds 1, 4, 7, 13, 20): about 115 ms, 1 060 to 1 130
+  terrain edits (the Warften, the ditches and the Sielzug) and 610 to 970 object edits (270 to 630 of
+  them removals of what was felled), together about 55 to 70 KB of JSON in the save. The buildings come
+  in step 5.
 - **Later changes of the generator** change the land inside the village's rectangle that the village
   did not edit, as they change every other unedited tile of a save. #71 decided against a freeze, so
   the village takes no special care.
@@ -203,7 +206,8 @@ The sexton's house with the school is left out (no villager, no type).
 - **Clean ground:** the builder fells the trees and removes the bushes, stones and tall grass inside
   the rectangle (object edits `null`) and drains wetland (terrain edits), so the village stands on
   clean ground. The open land is bare now, so there are no generated boundaries or ditches to clear,
-  and far fewer edits than the first draft expected (it said 1 500). The count is measured in step 3.
+  and far fewer edits than the first draft expected (it said 1 500): 1 700 to 2 100 edits for the
+  ground (see section 3).
 
 ## 5. The town square
 
@@ -425,6 +429,14 @@ The user can stop after step 5 and have the village standing, empty.
   plan's inland land; rule 3 checks the landing Warft's own tiles for salt marsh instead of "11 by 9
   tiles"; a village across the river is refused before the search. The distances (205 to 643 tiles) are
   longer than the "about a minute" of section 1 for some seeds; the figures are in section 2.
+- **Step 3.** `VillageBuilder.build_land(world, site, plan)` (`game/world/village_builder.gd`), tests in
+  `tests/test_village_builder.gd`; `make world-map` takes `VILLAGE=1` (the tool's `--village`: the map shows the
+  seed's village, centred on it, 128 tiles at scale 8). It returns why it refused, or "": a building, a
+  changed object or tilled soil of the player on the land. It loads the land's chunks itself and
+  unloads those it loaded, so a new game's streaming is not disturbed. Changes from the plan: the
+  Sielzug starts at the row's own first land tile (the dyke wanders up to 8 tiles from `u` 0 and the
+  gap has to be where the dyke is), and everything inland of `u` 9 but the sea dyke is cleared, reeds
+  and wetland included. A lane is not laid in this step (step 6).
 
 ## 15. Screenshots
 
