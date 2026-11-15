@@ -38,6 +38,12 @@ barter: there is no money in the game yet, only what things are worth.
 | She sells | Price | Has at most | Comes back each day |
 |---|---|---|---|
 | Turnip seeds | 3 Pf | 40 | 10 |
+| Carrot, onion, rye, wheat, buckwheat and flax seeds | 3 Pf | 30 each | 8 each |
+| Cabbage seeds | 4 Pf | 30 | 8 |
+| Pea and bean seeds | 4 Pf | 20 each | 5 each |
+| Seed potatoes | 5 Pf | 25 | 6 |
+| Pumpkin seeds | 5 Pf | 12 | 3 |
+| Strawberry plants | 7 Pf | 12 | 3 |
 | Candle | 20 Pf | 6 | 1 |
 
 | She takes | Value | A day |
@@ -53,8 +59,10 @@ barter: there is no money in the game yet, only what things are worth.
 - Her stock fills up over the days, and what she takes in a day is back to its number the next
   day. A shop you leave alone for a long time is full again when you come back; one you empty
   stays empty for the day. It is saved with the game.
+- She sells the seeds of every crop all year round, in or out of season; one seed is one tile.
 - A lost harvest is not the end of the farm: a day's fibre and logs alone (20 and 10) pay for 20
-  seeds, wherever you found them, and one turnip pays for a seed.
+  seeds, wherever you found them, and one turnip pays for a seed. Eggs, berries, reeds, hay and
+  clay pay too, so what she has of any one seed is never out of reach.
 - She is a villager: you can talk to her as to the others (see [villagers.md](villagers.md)). She
   never names a price or moves an item in the chat: the screen does that.
 

@@ -27,7 +27,10 @@ func test_the_shop_is_kept_by_trienke() -> void:
 
 
 func test_what_she_sells_and_takes_is_listed_in_the_order_of_the_file() -> void:
-	assert_eq(_rules.sold(SHOP), [ItemTypes.TURNIP_SEEDS, ItemTypes.CANDLE] as Array[StringName])
+	var sold := _rules.sold(SHOP)
+	assert_eq(sold.size(), 14, "13 seeds and the candle")
+	assert_eq(sold[0], ItemTypes.TURNIP_SEEDS)
+	assert_eq(sold[-1], ItemTypes.CANDLE)
 	assert_eq(_rules.taken(SHOP).size(), 10)
 	assert_true(_rules.is_taken(SHOP, ItemTypes.EGG))
 	assert_false(_rules.is_taken(SHOP, ItemTypes.CANDLE))

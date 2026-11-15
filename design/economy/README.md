@@ -23,7 +23,7 @@ So there are three ways to turn what the player makes into something else:
   from a smith "in a settlement" ([inventory-and-character.md](../player/inventory-and-character.md)).
 - Seeds came from the console (`give`) and one seed comes back with each harvest
   ([crops.md](../farming/crops.md)). "Until a shop exists" was the standing promise: the first shop
-  exists now ([shop.md](shop.md), #10) and sells turnip seeds; the other seeds are #11.
+  exists now ([shop.md](shop.md), #10) and sells the seeds of every crop (#11).
 - The village sheet (`data/village.cfg`, the `[money]` topic) already tells every villager the
   prices of 1750: "People reckon in Mark and Schilling: 16 Schilling make a Mark, and 3 Mark a
   Reichstaler." A pound of butter is 4 Schilling, a dozen eggs 2, a loaf of rye bread 1, a measure
@@ -129,8 +129,9 @@ screen, saving; the handbook page is [../../handbook/shop.md](../../handbook/sho
 
 **Where seeds come from:**
 
-- The pedlar sells seeds of what the land grows, by season (turnip, cabbage, carrot and peas
-  in spring; rye and wheat in autumn), for 2 to 6 Schilling a bag (first values).
+- **Built (#11):** Trienke Lorenzen sells the seeds of every crop all year round, by barter, for
+  3 to 7 Pfennig a seed ([shop.md](shop.md)); one seed is one planting. A pedlar by season is no
+  longer needed for seeds.
 - Villagers give or swap seeds of their own crops by barter at the Neighbour level.
 - The harvest still gives one seed back, so a farm can keep going without buying.
 - The console's `give` stays for testing.

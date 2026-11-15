@@ -116,6 +116,8 @@ chest). E on the keeper **out of hours** opens the chat (below).
 | Turnip seeds | 2 | 3 | 40 | 10 |
 | Candle | 16 | 20 | 6 | 1 |
 
+  #11 adds the seeds of the other crops (below).
+
 | She takes | Worth | Value | Room a day |
 |---|---|---|---|
 | Egg | 2 | 1 | 12 |
@@ -171,8 +173,36 @@ worth=2
 room=12
 ```
 
-#11 adds the other crops' seeds as `sells` sections and changes no code (a seasonal range would be
-an optional `seasons=[...]` key, added there if wanted).
+#11 added the other crops' seeds as `sells` sections and changed no code (see "The seeds", below).
+
+## The seeds (#11)
+
+[#11](https://github.com/gentoomaniac/sandbox-game/issues/11) (task 235). **Built:** `data/shops.cfg`
+only, no code, no save change (a good new to a shop starts full: `Shops.load_dict` takes only the
+goods the save knows and `_worked_out` fills the rest). She sells the seeds of **every crop**:
+
+| Seed | Worth | Price | Stock (max) | Back each day |
+|---|---|---|---|---|
+| Turnip, carrot, onion, rye, wheat, buckwheat and flax seeds | 2 | 3 | 30 (turnip 40) | 8 (turnip 10) |
+| Cabbage seeds | 3 | 4 | 30 | 8 |
+| Pea and bean seeds | 3 | 4 | 20 | 5 |
+| Seed potatoes | 4 | 5 | 25 | 6 |
+| Pumpkin seeds | 4 | 5 | 12 | 3 |
+| Strawberry plants | 5 | 7 | 12 | 3 |
+
+- **Always, in or out of season** (decided here): the calendar does not gate planting (the weather
+  does, [../farming/crops.md](../farming/crops.md)), a seed keeps, and a seasonal stock would need a
+  `seasons` key and code for little: a player who buys wheat seeds in winter has lost nothing but
+  Pfennig. The worth follows the crop (the heavier and dearer to grow, the dearer), and the price
+  is the usual 125 %.
+- **It always works:** no friendship, no language model, no hours but the shop's. A seed is at
+  most 7 Pf and a day's room for what she takes without any harvest (eggs, berries, fibre,
+  reeds, hay, logs, clay: 144 Pf) pays for **all she has of any one seed** (the most is 25 seed
+  potatoes at 125 Pf). So a lost harvest never ends a farm: the tests run eight rounds of every
+  crop with the third round lost.
+- **One seed item plants one tile** (as before): the "bag" of the issue is one planting. The stock
+  is the number of tiles she can supply a day (`restock`), tuned in play.
+- The wild seeds, the other source, are in [../farming/crops.md](../farming/crops.md).
 
 ## The keeper's lines
 
@@ -279,4 +309,4 @@ Each has the default the work would go ahead with.
    Default: yes.
 6. **Old saves:** no keeper and no stall in worlds built before this? Default: yes.
 7. **The model's plan can't move her hours (`fixed`)?** Default: yes.
-8. **First range:** turnip seeds and candles, the rest of the seeds in #11? Default: yes.
+8. **First range:** turnip seeds and candles, the rest of the seeds in #11? Default: yes (done, see "The seeds").

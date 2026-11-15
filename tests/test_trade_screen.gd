@@ -38,11 +38,11 @@ func _open() -> void:
 
 func test_the_rows_are_what_she_sells_and_what_she_takes() -> void:
 	_open()
-	assert_eq(_screen._sell_rows.size(), 2)
+	assert_eq(_screen._sell_rows.size(), 14)
 	assert_eq(_screen._take_rows.size(), 10)
 	assert_eq(_screen._title_label.text, "Trienke Lorenzen, the Höker")
 	assert_eq(_screen._sell_rows[0]._detail_label.text, "3 Pf, 40 left")
-	assert_eq(_screen._sell_rows[1]._detail_label.text, "20 Pf, 6 left")
+	assert_eq(_screen._sell_rows[-1]._detail_label.text, "20 Pf, 6 left")
 
 
 func test_a_row_is_grey_when_there_is_nothing_to_trade() -> void:
@@ -142,7 +142,7 @@ func test_a_sold_out_good_is_grey_and_has_no_plus() -> void:
 	_screen.cover()
 	_screen.trade()
 	assert_eq(_state.shops.stock_of("trienke", ItemTypes.CANDLE), 0)
-	var row: TradeRow = _screen._sell_rows[1]
+	var row: TradeRow = _screen._sell_rows[-1]
 	assert_lt(row.modulate.a, 1.0)
 	assert_true(row._plus.disabled)
 	_screen.step_want(ItemTypes.CANDLE, 1)

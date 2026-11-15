@@ -141,7 +141,8 @@ func test_a_model_is_told_the_stall_is_open_and_what_she_sells_and_takes() -> vo
 	_at_the_stall(THURSDAY, 8)
 	var text := _last_prompt_text(_trienke)
 	assert_string_contains(text, "Trienke's stall on the town square is open.")
-	assert_string_contains(text, "sells turnip seeds and candle and takes egg, berries, turnip")
+	assert_string_contains(text, "sells turnip seeds, seed potatoes, carrot seeds,")
+	assert_string_contains(text, "pumpkin seeds and candle and takes egg, berries, turnip")
 	assert_string_contains(text, "the game sets them")
 
 
@@ -162,7 +163,8 @@ func test_what_is_sold_out_is_not_told() -> void:
 	var give := {ItemTypes.LOGS: 10, ItemTypes.CLAY: 10, ItemTypes.FLOUR: 6, ItemTypes.BREAD: 6}
 	assert_eq(_state.shops.trade("trienke", {ItemTypes.CANDLE: 6}, give, bag), "")
 	var text := _last_prompt_text(_trienke)
-	assert_string_contains(text, "sells turnip seeds and takes")
+	assert_string_contains(text, "sells turnip seeds, seed potatoes,")
+	assert_string_contains(text, "pumpkin seeds and takes")
 	assert_false(text.contains("candle"))
 	assert_false(text.contains("flour"), "her room for flour is used up")
 

@@ -64,6 +64,18 @@ func test_a_shop_the_game_no_longer_has_is_left_out() -> void:
 	assert_false(restored.shops.to_dict()[SHOP]["stock"].has("gold_bar"))
 
 
+func test_a_seed_added_to_the_shop_after_the_save_is_full() -> void:
+	var game := _current_game()
+	game["shops"][SHOP] = {"stock": {"turnip_seeds": 5}, "room": {"egg": 2}, "restocked_day": 1}
+	_write_save(SaveFile.VERSION, game)
+
+	var restored := SaveFile.read(SAVE_PATH)
+
+	assert_eq(restored.shops.stock_of(SHOP, SEEDS), 5)
+	assert_eq(restored.shops.stock_of(SHOP, &"wheat_seeds"), 30, "new to the save: starts full")
+	assert_eq(restored.shops.stock_of(SHOP, ItemTypes.CANDLE), 6)
+
+
 func test_a_damaged_shop_is_refused() -> void:
 	var game := _current_game()
 	game["shops"][SHOP] = {"stock": {"turnip_seeds": -3}, "room": "none"}

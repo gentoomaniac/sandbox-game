@@ -4,8 +4,8 @@ Till, sow, water and harvest thirteen crops; the weather decides how well they d
 
 ## Getting started
 
-- Till grass with the hoe, then sow seeds on the tilled soil. Turnip seeds are for sale at the
-  stall on the town square (see [shop.md](shop.md)).
+- Till grass with the hoe, then sow seeds on the tilled soil. Seeds of every crop are for sale at
+  the stall on the town square, for what the land gives (see [shop.md](shop.md)).
 - Water it with the watering can; rain waters it too.
 - The can holds 20 waterings, one per tile. Refill it with the use key at a draw well or at fresh
   water (river, pond or ditch, not the sea). An empty can says so and waters nothing.

@@ -82,9 +82,10 @@
     any time; a crop planted in the wrong season simply won't thrive.
   - Each crop has its own seeds (a seed bag item, seed potatoes for potatoes) and its
     produce item; produce can be eaten (food values in `data/energy.cfg`).
-  - Turnip seeds are bought at Trienke Lorenzen's stall ([../economy/shop.md](../economy/shop.md), #10;
-    the other seeds follow in #11); until then, and for the others, from the console (`give`). A
-    harvest sometimes gives one seed back.
+  - The seeds of every crop are bought at Trienke Lorenzen's stall ([../economy/shop.md](../economy/shop.md),
+    #10 and #11), all year round, by barter: a lost harvest can always be paid for with wood,
+    fibre, eggs and the like. The console's `give` stays for testing. A harvest sometimes gives
+    one seed back. One seed item plants one tile.
   - **Harvests vary** (the user, 2026-11-11, tasks 178 and 197: "carrots give mostly 2, rarely
     only 1 or 3"): each crop has a usual `yield`, and each harvest of a plant has the chance
     `poor_harvest_chance` of one less (never below 1, so a crop of 1 has only good harvests) and
