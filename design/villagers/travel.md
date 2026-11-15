@@ -450,6 +450,20 @@ other cost was found in a send: making the masks object on the first one is 0.4 
 on a worker). The one copy a day (the first snapshot after midnight) remains, 3 ms at 60,000 worn
 tiles; midnight's own `end_day` walks all of them anyway.
 
+**Walking** (`NpcTravel._walk`, `Npcs._update`): 155 villagers on trips cost 10.1 to 10.5 us a
+walker a frame (a throwaway loop of 1200 unpaced frames of `Npcs.update` over 154 walkers, from
+the start of their trips, two runs, five rounds; most walkers are on loaded ground in the first
+minutes, where every frame checks the step against the live world). Three repeated lookups left
+out: `walk_speed` and `personal_space` are read from the rules once (`NpcTravel` holds them), not
+as two dictionary reads and a conversion each frame; `Npcs.wear_step` asks for the wear rules only
+when the walker has entered a new tile; the Callable `_fits` is made once a frame, not once a
+villager. Result 9.0 to 9.4 us a walker in both runs (about 10 % less, 1.57 to 1.45 ms a frame).
+Not done, as it measured nothing: asking `_is_step_whole` per chunk of the body instead of per tile
+(9.1 to 9.4 us again). What is left is the interpreter's cost of the many small steps of a frame
+(the walk, the crowding check, the body's tiles against the loaded chunks, the fit check), spread
+too thin for one change to pay; fewer of them would mean a walker that skips frames, which is not
+done here.
+
 ## Time skips and sleep
 
 A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked

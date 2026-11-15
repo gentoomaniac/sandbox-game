@@ -20,9 +20,14 @@ const MAX_TILES_PER_UPDATE := 8
 var rules: NpcRules:
 	set(value):
 		rules = value
+		_walk_speed = value.behaviour("walk_speed")
+		_personal_space = value.behaviour("personal_space")
 		_pathfinder.max_tasks = int(value.travel("search_tasks"))
 		# Made again, so that new limits (`far_masks_kept`, `skip_masks_ahead`) apply to them.
 		_masks_world = null
+## Two numbers of `rules` that every walker asks for every frame.
+var _walk_speed: float
+var _personal_space: float
 var _pathfinder: Pathfinder
 ## What a search sees of the world (see TravelView): the masks, made when the first search over a
 ## world asks for them, and the snapshot of the buildings and the wear, made again when old.
@@ -332,7 +337,7 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable, is_far_
 		npc.activity = Npc.Activity.IDLE
 		return
 	var world := trip.map as World
-	var reach := rules.behaviour("walk_speed") * delta
+	var reach := _walk_speed * delta
 	for _tile in MAX_TILES_PER_UPDATE:
 		var next_tile := trip.path[trip.next_index]
 		var target := Vector2(next_tile) + Vector2(0.5, 0.5)
@@ -340,9 +345,7 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable, is_far_
 		var distance := to_target.length()
 		var is_arriving := distance <= reach
 		var feet := target if is_arriving else npc.position + to_target * (reach / distance)
-		if Npcs.is_crowding_player(
-			npc.position, feet, player_feet, rules.behaviour("personal_space")
-		):
+		if Npcs.is_crowding_player(npc.position, feet, player_feet, _personal_space):
 			trip.state = NpcTrip.State.WAITING
 			npc.activity = Npc.Activity.IDLE
 			return

@@ -166,9 +166,11 @@ static func is_crowding_player(
 ## A step onto `feet` from the tile `from_tile` wears the grass of the new tile towards a desire
 ## path (see PathRules `villager_step`).
 static func wear_step(map: GameMap, feet: Vector2, from_tile: Vector2i) -> void:
-	var step := PathRules.default_rules().villager_step()
 	var feet_tile := Vector2i(feet.floor())
-	if feet_tile != from_tile and map is World and step > 0.0:
+	if feet_tile == from_tile or not map is World:
+		return
+	var step := PathRules.default_rules().villager_step()
+	if step > 0.0:
 		(map as World).wear_tile(feet_tile, step)
 
 
@@ -277,6 +279,7 @@ func _update(
 	delta = minf(delta, MAX_STEP_SECONDS)
 	if may_search:
 		_travel.tick()
+	var fits := _fits
 	for npc in _npcs:
 		var is_loaded := _is_in_loaded_chunk(npc, map)
 		if not is_far_only and is_loaded and npc.free_body_tiles == Rect2i():
@@ -284,7 +287,7 @@ func _update(
 		# Where it was sent it goes, day and night, over chunks that are not loaded too: when to
 		# send it is for the routine to say.
 		if npc.trip != null:
-			_travel.update(npc, delta, player_feet, _fits, is_far_only)
+			_travel.update(npc, delta, player_feet, fits, is_far_only)
 			continue
 		if is_far_only or (only_loaded and not is_loaded):
 			continue
