@@ -55,6 +55,14 @@ func is_done(id: String) -> bool:
 	return _done.has(id)
 
 
+## The entry of the open quest `id`, or an empty dictionary.
+func entry_of(id: String) -> Dictionary:
+	for entry in _open:
+		if entry["id"] == id:
+			return entry
+	return {}
+
+
 ## The quest the villager gives, as its entry, or an empty dictionary when they give none.
 func entry_of_giver(giver: String) -> Dictionary:
 	for entry in _open:
@@ -82,6 +90,11 @@ func last_day_of(entry: Dictionary) -> int:
 	return entry["posted_day"] + rules.days_of(entry["id"]) - 1
 
 
+## The player, for the objectives that look at what they carry.
+func player() -> PlayerState:
+	return _player.call()
+
+
 ## What a condition asks of the world: the day, the season and the opinion and skill it needs.
 func day() -> int:
 	return _clock.day
@@ -98,7 +111,7 @@ func opinion_of(villager: String) -> int:
 
 
 func skill_points(skill: String) -> float:
-	return _player.call().skills.points(StringName(skill))
+	return player().skills.points(StringName(skill))
 
 
 ## Posts the quest of the first day of a new game: a starter, with a giver picked at random.

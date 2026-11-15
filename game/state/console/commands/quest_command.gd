@@ -11,8 +11,8 @@ func usage() -> String:
 
 func help() -> String:
 	return (
-		"List the quests that are posted or taken; post puts one up now with a giver (any quest, any"
-		+ " time), done marks one done, clear takes them all off the list."
+		"List the quests that are posted or taken. post puts one up now with a giver, whatever it"
+		+ " needs; done hands one in for you and gives you its reward; clear takes them all off."
 	)
 
 
@@ -30,11 +30,11 @@ func run(arguments: PackedStringArray) -> Array[String]:
 		var problem := quests.post(arguments[1], arguments[2] if arguments.size() == 3 else "")
 		return [problem] if problem != "" else ["Posted %s" % arguments[1]]
 	if is_done:
-		return (
-			["Done %s" % arguments[1]]
-			if quests.finish(arguments[1])
-			else ["%s is not open" % arguments[1]]
-		)
+		var entry := quests.entry_of(arguments[1])
+		if entry.is_empty():
+			return ["%s is not open" % arguments[1]]
+		QuestTalk.complete(context.state, entry)
+		return ["Done %s" % arguments[1]]
 	if arguments[0] == "clear" and arguments.size() == 1:
 		quests.clear()
 		return ["No quests are open now"]

@@ -107,3 +107,20 @@ it is.
 **Notices:** when a quest is posted the player is told "Antje Boysen has something for you." (the
 notice board of a later step changes that line), and when one goes away, taken or not, "Antje Boysen
 no longer needs the fibre."
+
+## Handing in
+
+**E on the giver with the item in hand** (the selected hotbar slot) for a `bring` quest: when the
+player has at least the count, the whole count leaves the bag and no more. Holding the item with
+too little says the `short` line (a default says it when the file has none), and holding something
+else gives the first line of the `dialogue` as a reminder; nothing is taken then. Done, the giver
+says the `turn_in` lines, the reward is the player's (what does not fit the bag falls at their
+feet) and the quest is marked done with its day: it is no longer open, and `quest_done`
+prerequisites and `repeat_after_days` count from it. The objective kinds do the checking
+(`progress`, `goal`, `is_offered`, `hand_over`), so a new kind decides what handing in is.
+
+**Rewards** are items that exist, mostly what the shop of #10 does not sell, so a quest is not a
+second barter: seeds on the first help only, **wax** (candle makings: its first source apart from
+the console), and a better tool grade for a big quest. The opinion reward comes in with the deed of
+the next step. No recipes as rewards in this task (the user, 2026-11-15; later, once recipes are
+learned).

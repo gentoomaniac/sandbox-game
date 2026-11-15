@@ -15,3 +15,20 @@ func problems(fields: Dictionary) -> Array[String]:
 
 func thing(fields: Dictionary) -> String:
 	return ItemTypes.TYPES[StringName(fields["item"])]["name"].to_lower()
+
+
+func progress(fields: Dictionary, _entry: Dictionary, quests: Quests) -> int:
+	return quests.player().inventory.count_of(StringName(fields["item"]))
+
+
+func goal(fields: Dictionary) -> int:
+	return fields["count"]
+
+
+## The item has to be in the hand, so that no one hands in what they carry by accident.
+func is_offered(fields: Dictionary, quests: Quests) -> bool:
+	return quests.player().inventory.held_item() == StringName(fields["item"])
+
+
+func hand_over(fields: Dictionary, quests: Quests) -> void:
+	quests.player().inventory.remove(StringName(fields["item"]), fields["count"])

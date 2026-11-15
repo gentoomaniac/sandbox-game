@@ -37,13 +37,15 @@ func test_post_names_what_is_wrong() -> void:
 	assert_eq(_console.run("quest post nothing"), ["No quest nothing"] as Array[String])
 
 
-func test_done_and_clear() -> void:
+func test_done_hands_the_quest_in_for_the_player_and_clear_empties_the_list() -> void:
 	_console.run("quest post fibre_for_beans")
+	var seeds_before := _state.player.inventory.count_of(ItemTypes.TURNIP_SEEDS)
 
 	assert_eq(_console.run("quest done fibre_for_beans"), ["Done fibre_for_beans"] as Array[String])
 	assert_eq(
 		_console.run("quest done fibre_for_beans"), ["fibre_for_beans is not open"] as Array[String]
 	)
+	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP_SEEDS), seeds_before + 10)
 	_console.run("quest post berries_for_the_pot")
 	assert_eq(_console.run("quest clear"), ["No quests are open now"] as Array[String])
 	assert_true(_state.quests.open_entries().is_empty())

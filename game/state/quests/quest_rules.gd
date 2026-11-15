@@ -117,6 +117,11 @@ func quest(id: String) -> Dictionary:
 	return _quests[id]
 
 
+## The kind of objective the quest has.
+func objective_of(id: String) -> QuestObjective:
+	return _objective_kinds[_quests[id]["objective"]["type"]]
+
+
 ## What the quest asks for, in words (see QuestObjective `thing`).
 func thing_of(id: String) -> String:
 	var objective: Dictionary = _quests[id]["objective"]
