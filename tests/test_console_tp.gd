@@ -28,7 +28,7 @@ func test_tp_moves_the_player_to_the_tile_centre() -> void:
 func test_tp_with_wrong_arguments_shows_the_usage() -> void:
 	var before := _state.player.position
 	for line in ["tp", "tp 1", "tp 1 2 3", "tp a b", "tp 1.5 2"]:
-		assert_eq(_console.run(line), ["Usage: tp <x> <y>"] as Array[String], line)
+		assert_eq(_console.run(line), ["Usage: tp <x> <y> | tp <villager>"] as Array[String], line)
 	assert_eq(_state.player.position, before)
 
 
@@ -101,3 +101,28 @@ func test_tp_to_an_unloaded_chunk_checks_it_and_leaves_it_unloaded() -> void:
 	var output := _console.run("tp %d %d" % [far.x, far.y])
 	assert_eq(output[0].begins_with("Teleported"), walkable and _world.object_at(far) == null)
 	assert_false(_world.is_chunk_loaded(coords))
+
+
+func test_tp_to_a_villager_lands_on_a_free_tile_next_to_them() -> void:
+	var npc := _state.npcs.spawn_villager("antje", _state.player.position + Vector2(20, 0), _world)
+	assert_not_null(npc)
+	var lines := _console.run("tp antje")
+	assert_eq(lines.size(), 1)
+	assert_string_starts_with(lines[0], "Teleported next to %s" % npc.name)
+	var tile := _state.player.tile()
+	assert_ne(tile, npc.tile(), "not on the villager")
+	assert_lte(absi(tile.x - npc.tile().x), 1)
+	assert_lte(absi(tile.y - npc.tile().y), 1)
+	assert_true(_world.is_walkable(tile))
+
+
+func test_tp_to_a_villager_takes_their_first_name_too() -> void:
+	var npc := _state.npcs.spawn_villager("antje", _state.player.position + Vector2(20, 0), _world)
+	_console.run("tp %s" % npc.name.get_slice(" ", 0).to_lower())
+	assert_lte(_state.player.tile().distance_to(npc.tile()), 1.5)
+
+
+func test_tp_to_an_unknown_villager_says_so_and_stays() -> void:
+	var before := _state.player.position
+	assert_eq(_console.run("tp nobody"), ["No villager nobody"] as Array[String])
+	assert_eq(_state.player.position, before)

@@ -12,7 +12,7 @@ Cheats and test commands, all of them.
 | Command | What it does |
 |---|---|
 | `help`, `help <command>` | List the commands (by name), or show what one takes (the names it accepts too). |
-| `tp <x> <y>` | Teleport to a world tile; from inside a house you step out there (F3 shows your coordinates). |
+| `tp <x> <y>` or `tp <villager>` | Teleport to a world tile, or to a free tile next to a villager (`tp antje`, or a first name); from inside a house you step out there (F3 shows your coordinates). |
 | `reset` | Put yourself in your bed, the one you wake in, inside or out. |
 | `give <item> [count]` | Put items in the inventory (e.g. `give bone` for a dog, `give wax` for candles, `give saddle` for a horse, `give steel_pickaxe` for a tool of the fourth grade: `rusty_iron_`, `iron_`, `brittle_steel_`, `steel_` or `sharp_steel_` and the tool). |
 | `god`, `nodrain`, `noweight`, `nocost`, `nolate` | Toggle invincibility, free actions, weight costing nothing, buildings and crafting needing no materials, and staying up past 01:00 passing no one out (no late warnings either). |

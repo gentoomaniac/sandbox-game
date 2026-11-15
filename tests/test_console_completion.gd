@@ -56,7 +56,7 @@ func test_complete_the_arguments_of_every_command() -> void:
 
 
 func test_numbers_and_extra_words_complete_nothing() -> void:
-	assert_eq(_console.complete("tp "), "tp ")
+	assert_eq(_console.complete("tp 1 "), "tp 1 ")
 	assert_eq(_console.complete("spawn deer "), "spawn deer ")
 	assert_eq(_console.complete("weather fog f"), "weather fog f")
 	assert_eq(_console.complete("god g"), "god g")
