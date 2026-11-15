@@ -75,6 +75,9 @@ var energy_drain := 1.0
 ## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
 ## not slept since: they pass out. Not saved.
 var is_up_too_late := false
+## The sprint key is held (set every frame by whoever reads the keys); it only counts on a horse
+## that is trotting and not winded (see `is_sprinting`). Not saved.
+var is_sprint_held := false
 ## Where the player is: the world, or the interior of the building they are inside.
 var current_map: GameMap:
 	get:
@@ -88,6 +91,9 @@ var _building_inside: Building:
 ## Seconds the player has kept moving: a horse trots after a while (see `is_trotting`). Not
 ## saved.
 var _moving_seconds := 0.0
+## The ridden horse used up its stamina and may not sprint until some has come back (see
+## `sprint_again_stamina` in data/livestock.cfg). Not saved: the horse's stamina is.
+var _is_horse_winded := false
 
 
 ## `game_clock` is the clock to follow: a loaded game brings the one it saved. Whoever builds
@@ -274,7 +280,11 @@ func is_door_ahead() -> bool:
 ## a debuff allow. On horseback it is the horse's pace, which nothing slows.
 func walk_speed_factor() -> float:
 	if player.horse != null:
-		var pace := "ride_trot_factor" if is_trotting() else "ride_walk_factor"
+		var pace := "ride_walk_factor"
+		if is_sprinting():
+			pace = "ride_sprint_factor"
+		elif is_trotting():
+			pace = "ride_trot_factor"
 		return livestock.rules.general(pace)
 	var factor := energy_rules.walk_factor(player.energy)
 	if player.is_debuffed:
@@ -286,6 +296,8 @@ func walk_speed_factor() -> float:
 ## Outdoors, each tile they step onto wears a little towards a desire path.
 func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	var tile_before := player.tile()
+	if player.horse != null:
+		_tire_or_rest_horse(direction != Vector2.ZERO, delta)
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
 	_moving_seconds = _moving_seconds + delta if direction != Vector2.ZERO else 0.0
 	# A noclip walk (through trees, rocks and walls) leaves no path.
@@ -330,6 +342,26 @@ func is_trotting() -> bool:
 	return player.horse != null and _moving_seconds >= livestock.rules.general("trot_after_seconds")
 
 
+## Whether the player sprints: the key is held on a horse that is trotting and has stamina.
+func is_sprinting() -> bool:
+	return is_sprint_held and not _is_horse_winded and is_trotting()
+
+
+## A sprint uses up the ridden horse's stamina; any other pace gives some back, a walk slower than
+## standing still. A horse that used it up is winded until a part of it has come back.
+func _tire_or_rest_horse(is_moving: bool, delta: float) -> void:
+	var rules := livestock.rules
+	var horse := player.horse
+	if is_sprinting():
+		horse.stamina = maxf(0.0, horse.stamina - delta / rules.general("sprint_stamina_seconds"))
+		_is_horse_winded = horse.stamina == 0.0
+		return
+	var regain_key := "stamina_walk_regain_seconds" if is_moving else "stamina_stand_regain_seconds"
+	horse.stamina = minf(1.0, horse.stamina + delta / rules.general(regain_key))
+	if horse.stamina >= rules.general("sprint_again_stamina"):
+		_is_horse_winded = false
+
+
 ## Rings the bell frame in reach, the one with the clicked tile (see Interaction). Returns whether
 ## there was one. Only heard and seen so far: it changes nothing in the game.
 func ring_bell_in_reach(clicked: Variant = null) -> bool:
@@ -349,6 +381,7 @@ func mount(horse: FarmAnimal) -> void:
 	player.position = horse.position
 	player.facing = Vector2i.RIGHT if horse.facing > 0.0 else Vector2i.LEFT
 	_moving_seconds = 0.0
+	_is_horse_winded = horse.stamina == 0.0
 
 
 ## Gets off the horse onto free ground beside it (see `_dismount_spot`); the horse stays where it is

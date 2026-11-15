@@ -34,6 +34,11 @@ const GENERAL_KEYS := [
 	"ride_walk_factor",
 	"ride_trot_factor",
 	"trot_after_seconds",
+	"ride_sprint_factor",
+	"sprint_stamina_seconds",
+	"stamina_walk_regain_seconds",
+	"stamina_stand_regain_seconds",
+	"sprint_again_stamina",
 ]
 const HUNTING_KEYS := [
 	"sight_tiles",

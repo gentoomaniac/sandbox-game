@@ -524,6 +524,7 @@ func _process(delta: float) -> void:
 		if not _is_any_screen_open():
 			var is_menu_up := _build_mode.is_active() and not _builder.is_taking_down()
 			direction = BuildMode.walk_direction(is_menu_up)
+		_state.is_sprint_held = Input.is_action_pressed("sprint")
 		_player_view.walk_speed = _state.walk_speed_factor()
 		_player_view.is_trotting = _state.is_trotting()
 		_state.walk(direction, delta, _player_view.walk_speed)

@@ -18,6 +18,7 @@ These are the default keys. Change any of them, mouse buttons too, under Setting
 | Mouse wheel | Next or previous hotbar slot. |
 | E | See the list below. |
 | T | Drop the held stack on the ground in front of you. |
+| Shift (held) | Sprint, on a horse that is trotting. See Animals, Riding. |
 | Escape | Pause menu. |
 
 What E does, in this order:

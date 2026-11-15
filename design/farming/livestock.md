@@ -90,8 +90,16 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   stays; the use key with an empty hand takes it off again into the inventory (the empty
   hand's slot always has room). E at a saddled horse in front gets on it (after a villager to
   talk to, before chests, stations and beds), E again gets off. The horse walks at the
-  player's walking speed and, once they have ridden on for 0.6 s, trots at 1.5 times it (the user, 2026-11-14: riding was too fast at twice,
-  [#66](https://github.com/gentoomaniac/sandbox-game/issues/66));
+  player's walking speed and, once they have ridden on for 0.6 s, trots at 1.5 times it (the
+  user, 2026-11-14: riding was too fast at twice,
+  [#66](https://github.com/gentoomaniac/sandbox-game/issues/66)). Held Shift (the `sprint` action,
+  rebindable like the others) makes a trotting horse sprint at 2.5 times and uses up its stamina, a
+  fraction from 0 to 1 saved with the horse (save version 42): a full one lasts 8 s, it comes back in
+  60 s while the horse is ridden at a walk or trot and in 20 s while it stands (ridden or not), and
+  a horse with none left can't sprint until 0.2 has come back. All of it is in `data/livestock.cfg`:
+  `ride_walk_factor`, `ride_trot_factor`, `trot_after_seconds`, `ride_sprint_factor`,
+  `sprint_stamina_seconds`, `stamina_walk_regain_seconds`, `stamina_stand_regain_seconds`,
+  `sprint_again_stamina`;
   riding costs no energy, and tiredness doesn't slow the horse (`data/livestock.cfg`). What collides
   is the rider's body, as on foot, and it also keeps off the tiles of buildings, so a horse is
   never ridden through a door (one that stood in a doorway is ridden out of it). On horseback

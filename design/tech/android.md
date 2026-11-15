@@ -63,6 +63,7 @@ there use physical keys. Settings can replace them. The dispatch sites follow th
 | skills | K | Character's skills tab | project.godot:238 | Occasional | P |
 | crafting | Shift+C | Hand crafting | project.godot:244 | Often | P |
 | drop_item | T | Drop held whole stack | project.godot:250 | Occasional | H |
+| sprint | Shift | Hold to sprint on a trotting horse (#66) | project.godot:256 today (a later row: the lines of the rows below are of 2026-11-13) | Often on horseback | J |
 | console | / | Open console | project.godot:256 | Debug | D |
 | pause | Escape | Cancel, close, pause | project.godot:262 | Often | M |
 | toggle_paths | F4 | Path of the nearest villager on a trip | project.godot:268 | Rare | D |
@@ -179,7 +180,8 @@ found. Ctrl is explicitly tested only for wheel zoom; Shift for crafting and qui
 bindings; the last three have no default gameplay action. They need no extra touch buttons.
 
 There is no live map action or map panel. `game/state/game_map.gd` is world state, not a map UI.
-There is no sprint, rotation, stack-split or double-click action to replace. Tab is not the bag
+There is no rotation, stack-split or double-click action to replace, and the one sprint is
+the horse's (touch: the J hold button). Tab is not the bag
 key. The old hotbar 9/10 and select-hammer actions are retired, not missing touch controls
 (`game/state/game_settings.gd:203`). `debug_runner.gd:176` injects actions for scripted tests;
 it adds no player binding. F2 and the hard-coded F6 are absent from the [handbook's controls table](../../handbook/controls.md).
@@ -195,6 +197,9 @@ ordinary menu to a radial menu. Rare actions need not take space on the play scr
   normal walking speed. Short travel gives slower movement. Release stops immediately.
 - Keep the last non-zero direction as the facing direction. The joystick also rides a horse
   and gets the player up from bed. It does not choose building styles.
+- Sprint (`sprint`, Shift on desktop) is a hold button beside the joystick, shown only on
+  horseback. It is live while the horse trots and has stamina, as on desktop; the horse's
+  stamina bar is already on screen, so the button needs no gauge.
 - Capture its finger until release, even outside the circle. Other fingers may use buttons.
   A finger that began on the world must not acquire the joystick by sliding over it.
 - Feed a movement vector to the existing walk path. Merely pressing synthetic movement actions
@@ -236,7 +241,7 @@ Use both facing and direct touch. Do not keep an invisible mouse cursor.
 - One tap or button press performs one use, as today. No automatic repeated eating, petting,
   tool swings or planting in the first port. Repeated taps still use the state rules.
 - Walking through a door and over ground items remains automatic. There is no separate pickup
-  button, sprint button or tap-to-walk mode.
+  button or tap-to-walk mode; the only sprint button is the horse's (J).
 
 ### B: building and taking down
 

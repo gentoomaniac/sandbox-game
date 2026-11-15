@@ -252,7 +252,12 @@ func update(
 	var sunset := _sun.sunset(clock.day)
 	account_clock(clock)
 	_searches_left = int(yard.needs("searches_per_update"))
+	var stamina_per_second := 1.0 / rules.general("stamina_stand_regain_seconds")
 	for animal in _animals:
+		# A ridden horse's stamina is GameState's (`walk`). The others get theirs back wherever
+		# they are, also in chunks that are not loaded: it is a sum, not a walk.
+		if not animal.is_ridden:
+			animal.stamina = minf(1.0, animal.stamina + delta * stamina_per_second)
 		if animal.is_ridden or (only_loaded and not _is_in_loaded_chunk(animal, map)):
 			continue
 		if not may_hunt:
