@@ -1,6 +1,6 @@
 extends SaveValidationCase
 ## The deed log and the stories of the villagers are saved; saves from before their later
-## changes (version 35 on) are upgraded.
+## changes (version 36 on) are upgraded.
 
 
 func _state_with_a_deed_seen_by_antje() -> GameState:
@@ -47,38 +47,6 @@ func test_a_story_heard_is_kept_with_who_told_it() -> void:
 
 	assert_eq(heard, momme.stories[0])
 	assert_eq([heard["how"], heard["told_by"], heard["hops"]], [GossipRules.HEARD, antje.name, 1])
-
-
-func test_a_version_35_save_loads_its_stories_with_an_origin_and_the_minute_learned() -> void:
-	var game := _current_game()
-	var saved: Dictionary = JSON.parse_string(
-		JSON.stringify(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict())
-	)
-	saved["stories"] = [
-		{
-			"day": 4,
-			"minute": 600,
-			"kind": "felled",
-			"count": 3,
-			"place": "by Antje's house",
-			"how": "heard",
-			"told_by": "Moiken Ketels",
-			"seen_by": "Antje Boysen",
-			"hops": 1,
-			"learned": 6,
-			"line": "",
-			"weight": "low",
-			"personal": false,
-		}
-	]
-	game["npcs"] = [saved]
-	_write_save(35, game)
-
-	var story := SaveFile.read(SAVE_PATH).npcs.all()[0].stories[0]
-
-	assert_eq(story["origin"], "4|felled|by Antje's house")
-	assert_eq(story["learned_at"], 5 * GameClock.MINUTES_PER_DAY + 600)
-	assert_false(story.has("learned"))
 
 
 func test_a_story_without_an_origin_or_a_minute_learned_is_refused() -> void:
