@@ -29,7 +29,8 @@ extends RefCounted
 ## struck note starts from silence while the note before fades out beside it, so a note change
 ## doesn't jump from wherever the old wave was (a click). In stereo the Amiga's channels 1 and 4
 ## are to the left and 2 and 3 to the right, each with a quarter of it on the other side, as hard
-## Amiga panning tires on headphones.
+## Amiga panning tires on headphones. `channel_levels` turns each channel down on its own, for a
+## quieter mix of a piece (the music indoors, task 171).
 
 ## Half the Amiga's PAL clock: a sample plays at this many samples a second over its period.
 const PAL_RATE := 3546894.6
@@ -103,6 +104,8 @@ var mix_rate := 44100
 var is_stereo := false
 ## How many rows a beat has.
 var rows_per_beat := ROWS_PER_BEAT
+## The share of its volume each of the four channels plays at, 0 (silent) to 1.
+var channel_levels := PackedFloat32Array([1.0, 1.0, 1.0, 1.0])
 ## The length of a beat in the last render, in seconds: `rows_per_beat` rows at the speed and tempo
 ## of its first row, in whole samples (see the ticks above).
 var beat_seconds := 0.0
@@ -133,10 +136,12 @@ func start(parts: Array[Vector2i], loops := false) -> void:
 	)
 
 
-## What `cache` keeps the render of `parts` under: it names the module, the mix settings, the beat
-## and the version of this renderer, so a render made otherwise is never found.
+## What `cache` keeps the render of `parts` under: it names the module, the mix settings, the beat,
+## the channels' levels and the version of this renderer, so a render made otherwise is never found.
 func cache_key(parts: Array[Vector2i], loops: bool) -> String:
-	var settings := [module.id, VERSION, mix_rate, is_stereo, rows_per_beat, parts, loops]
+	var settings := [
+		module.id, VERSION, mix_rate, is_stereo, rows_per_beat, parts, loops, channel_levels
+	]
 	return str(settings).sha256_text()
 
 
@@ -224,7 +229,7 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 				mix.resize((frames + tick_frames) * (2 if is_stereo else 1))
 				for index in TrackerModule.CHANNELS:
 					var channel := channels[index]
-					var gain := CHANNEL_GAIN * channel.volume / 64.0
+					var gain := CHANNEL_GAIN * channel_levels[index] * channel.volume / 64.0
 					if gain != channel.ramp_target:
 						_ramp(channel, gain)
 					_mix(channel, index, mix, frames, tick_frames)
