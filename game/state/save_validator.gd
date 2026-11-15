@@ -713,11 +713,24 @@ func _check_friendship(npc: Dictionary, path: String) -> void:
 		var value: Variant = _field(npc, key, Kind.WHOLE, path)
 		if value != null and value < 0:
 			_report(_join(path, key), "should not be negative")
-	_field(npc, "rating_moved_today", Kind.WHOLE, path)
 	var moved: Variant = _field(npc, "action_moved_today", Kind.WHOLE, path)
 	var cap := FriendshipRules.default_rules().action_daily_cap()
 	if moved != null and absi(moved) > cap:
 		_report(_join(path, "action_moved_today"), "should be within %d" % cap)
+	var requests: Variant = npc.get("ratings_today")
+	var request_cap := FriendshipRules.default_rules().rating_requests_per_day()
+	if _is_kind(requests, Kind.WHOLE) and requests > request_cap:
+		_report(_join(path, "ratings_today"), "should be within the requests of a day")
+	var rated: Variant = _field(npc, "rating_moved_today", Kind.WHOLE, path)
+	var friendship := FriendshipRules.default_rules()
+	if (
+		rated != null
+		and (
+			rated > friendship.rating_daily_cap(&"warm")
+			or -rated > friendship.rating_daily_cap(&"rude")
+		)
+	):
+		_report(_join(path, "rating_moved_today"), "should be within the caps of the ratings")
 	var bond: Variant = _field(npc, "bond", Kind.TEXT, path)
 	if bond != null and not FriendshipRules.BONDS.has(StringName(bond)):
 		_report(_join(path, "bond"), "unknown bond %s" % bond)

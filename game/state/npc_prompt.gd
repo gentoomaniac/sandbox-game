@@ -158,6 +158,28 @@ static func quest_lines_request(
 	}
 
 
+## The request that has the model rate the player's `message` to a villager (see data/npc_talk.cfg
+## [word_rating]): {messages, temperature, max_tokens}, with no history and no sheet.
+static func word_rating_request(message: String, rules: NpcTalkRules) -> Dictionary:
+	return {
+		"messages":
+		[
+			_message("system", rules.value("word_rating", "system")),
+			_message("user", rules.value("word_rating", "line").format({"message": message})),
+		],
+		"temperature": float(rules.value("word_rating", "temperature")),
+		"max_tokens": int(rules.value("word_rating", "max_tokens")),
+	}
+
+
+## The rating in the model's `answer` to `word_rating_request`: its first word if that is one of
+## [word_rating] `words` (in any case, without a full stop or quotes), else `neutral`.
+static func word_rating_from_answer(answer: String, rules: NpcTalkRules) -> StringName:
+	var first := answer.to_lower().strip_edges().replace("\n", " ").get_slice(" ", 0)
+	first = first.lstrip('"').rstrip('".,!')
+	return StringName(first) if rules.value("word_rating", "words").has(first) else &"neutral"
+
+
 ## The `count` lines in the model's `answer` to `quest_lines_request`, as the villager says them
 ## (see `trimmed_reply`; a leading number or dash of a list is taken off), or none if the answer
 ## has not exactly that many lines, or one of them is empty or longer than [quest_lines]

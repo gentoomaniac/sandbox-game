@@ -63,6 +63,7 @@ func test_the_endpoint_model_and_key_survive_a_restart() -> void:
 			"random_speech": true,
 			"day_plans": true,
 			"quest_lines": true,
+			"word_rating": true,
 		}
 	)
 

@@ -144,3 +144,19 @@ the model is asked, quietly, and the chat is told when the lines come. **The mod
 the game has decided what is asked, how much, the reward and whether it is done before the model is
 asked; an answer that fails, is empty or has the wrong number of lines means the fixed lines are
 said. With the switch off nothing is asked, as with no model.
+
+## Rating the player's words
+
+What the player says counts for friendship ([relationships.md](relationships.md)): the first line of
+a day gives a few points with no model (`TalkFriendship.count_chat`). With a language model set and
+the profile's "Word rating" switch on (Settings > Language model, on by default;
+`NpcDialogue.has_model_for(&"word_rating")`) a line is rated too, by a second small request of its
+own (`WordRating`, a node of Main like `StoryJudging`): after the villager's answer is shown it is
+asked quietly, with no chat history and no sheet, whether the line is `warm`, `neutral` or `rude`
+(`NpcPrompt.word_rating_request`, `[word_rating]` of `data/npc_talk.cfg`, a few tokens). The first
+word of the answer is taken; an answer that is none of the three, or does not come within
+`timeout_seconds`, counts as neutral. **The model only rates:** the game decides the points
+(`[rating]` of `data/friendship.cfg`: warm +5, rude -10) and caps them: at most +5 and -10 a day
+from ratings, at most 3 requests a villager and a day (a request counts whether or not it is
+answered), and all of it within the cap of the actions. The model is never asked for a level, so it
+cannot be talked into one. With no model, or the switch off, nothing is asked.

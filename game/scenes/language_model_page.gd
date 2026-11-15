@@ -140,6 +140,15 @@ const USES := {
 		"label": "Quest lines",
 		"tip": "Villagers voicing quest lines. Off: they use the plain lines.",
 	},
+	&"word_rating":
+	{
+		"label": "Word rating",
+		"tip":
+		(
+			"Rating whether what you say to a villager is kind or rude, by a short request a few"
+			+ " times a day. Off: only the first chat of the day counts for friendship."
+		),
+	},
 }
 const NOTE := "The key is stored as plain text in settings.cfg."
 const FIELD_WIDTH := 260

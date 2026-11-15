@@ -101,10 +101,10 @@ var action_moved_today := 0
 ## counts once a day.
 var last_gift_day := 0
 var chat_counted_day := 0
-## The day word ratings are counted for and how many were asked on it (see NpcDialogue).
+## The day word ratings are counted for, how many were asked on it and how far they have moved the
+## opinion since it began, up and down (see TalkFriendship).
 var rating_day := 0
 var ratings_today := 0
-## How far the ratings have moved the opinion on that day, up and down (see TalkFriendship).
 var rating_moved_today := 0
 ## What binds them to the player, one of FriendshipRules BONDS.
 var bond := FriendshipRules.BOND_NONE

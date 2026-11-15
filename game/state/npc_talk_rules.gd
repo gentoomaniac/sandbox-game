@@ -151,6 +151,15 @@ const KEYS := {
 		"max_tokens": TYPE_INT,
 		"max_length": TYPE_INT,
 	},
+	"word_rating":
+	{
+		"system": TYPE_STRING,
+		"line": TYPE_STRING,
+		"words": TYPE_ARRAY,
+		"temperature": TYPE_FLOAT,
+		"max_tokens": TYPE_INT,
+		"timeout_seconds": TYPE_FLOAT,
+	},
 	"bubble_lines":
 	{"weather": TYPE_DICTIONARY, "part_of_day": TYPE_DICTIONARY, "near_player": TYPE_DICTIONARY},
 	"judge":

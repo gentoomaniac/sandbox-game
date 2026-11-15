@@ -19,6 +19,9 @@ extends Node
 ## The exchange begun by a line said with `say` is over: the answer was committed to the chat of
 ## `npc`, or there was none and only the player's line is in it.
 signal answered(npc: Npc)
+## The player's `line` was said to `npc` and the exchange is over, as `answered` tells, for whoever
+## judges the line (see WordRating).
+signal exchanged(npc: Npc, line: String)
 
 ## `ask` with this timeout gives up as the chat does.
 const USE_CHAT_TIMEOUT := -1.0
@@ -111,6 +114,7 @@ func say(npc: Npc, line: String, state: GameState) -> void:
 		# Once per exchange, not per line: the two lines that drop out are one memory.
 		compact(npc, state)
 	answered.emit(npc)
+	exchanged.emit(npc, line)
 
 
 ## The villager's answer to `message`, said after the lines of `history` (the chat so far, as

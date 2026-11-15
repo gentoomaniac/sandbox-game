@@ -24,8 +24,8 @@ const TEXT_KEYS: Array[String] = ["endpoint", "model", "max_tokens", "temperatur
 
 ## What the model may be asked for besides chats and the story judge, each a switch of a
 ## profile that is on by default (see `uses_model_for`). "quest_lines" is read by the quest
-## lines of the villagers (#12).
-const USES: Array[StringName] = [&"random_speech", &"day_plans", &"quest_lines"]
+## lines of the villagers (#12), "word_rating" by the rating of the player's words (#48).
+const USES: Array[StringName] = [&"random_speech", &"day_plans", &"quest_lines", &"word_rating"]
 
 ## How many of the latest lines of a chat a villager keeps (and tells the model); the older ones
 ## are compacted into a memory (see NpcDialogue `compact`).
@@ -42,7 +42,8 @@ const MAX_MEMORIES_KEPT := 200
 const DEFAULT_MEMORIES_KEPT := 20
 
 ## The profile in use: {name, provider, endpoint, model, max_tokens, temperature,
-## chat_history_lines, stories_kept, memories_kept, random_speech, day_plans, quest_lines}.
+## chat_history_lines, stories_kept, memories_kept, random_speech, day_plans, quest_lines,
+## word_rating}.
 var active: Dictionary
 
 ## Every profile, with a name of its own each.
@@ -229,6 +230,7 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 		"random_speech": true,
 		"day_plans": true,
 		"quest_lines": true,
+		"word_rating": true,
 	}
 
 

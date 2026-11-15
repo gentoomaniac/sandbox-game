@@ -37,6 +37,16 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   by `first_chat_points` (5) of `[talk]` of `data/friendship.cfg`, with no model, within the cap of the
   actions: `TalkFriendship.count_chat`, called by `NpcDialogue.say`. Later lines of the day count
   nothing (`Npc.chat_counted_day`).
+- Step 7: rating the player's words. The use `word_rating` is in `LanguageModelProfiles.USES` (a
+  Settings checkbox, saved in the profile, on by default). `WordRating`, a node of Main, asks
+  quietly after an exchange when `has_model_for(&"word_rating")` and the villager has had fewer than
+  `requests_per_day` (3) requests today; `NpcPrompt.word_rating_request` and
+  `word_rating_from_answer` (`[word_rating]` of `data/npc_talk.cfg`; anything but `warm` and `rude`
+  is neutral). Points: warm +5, rude -10, at most +5 up and -10 down a day from ratings
+  (`[rating]` of `data/friendship.cfg`), then the cap of the actions: `TalkFriendship.apply_rating`.
+  To count that daily total the villager has one more saved field, `rating_moved_today`, part of save
+  version 53 from step 4 (the plan's table had none). See
+  [dialogue.md](dialogue.md), "Rating the player's words".
 
 ## The user's words
 
@@ -267,7 +277,7 @@ and the level that goes with it. New fields per villager:
 | `last_gift_day` | the day of the last gift | 0 |
 | `chat_counted_day` | the day the first chat counted | 0 |
 | `action_day`, `action_moved_today` | what the actions moved today, for their cap | 0, 0 |
-| `rating_day`, `ratings_today` | the day and how many word ratings asked, for their cap | 0, 0 |
+| `rating_day`, `ratings_today`, `rating_moved_today` | the day, how many word ratings asked and how far they moved the opinion, for their caps | 0, 0, 0 |
 | `bond` | `none` for now | `"none"` |
 
 The version goes from **52 to 53** by the rules at the top of `game/state/save_file.gd`: write the

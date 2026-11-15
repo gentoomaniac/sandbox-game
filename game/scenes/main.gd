@@ -299,6 +299,7 @@ func _connect_state_and_views() -> void:
 	_apply_villager_memory_settings()
 	_menu.closed.connect(_apply_villager_memory_settings)
 	add_child(StoryJudging.new(_chat_screen.dialogue, _state))
+	add_child(WordRating.new(_chat_screen.dialogue, _state))
 	var day_planner := DayPlanner.new(_chat_screen.dialogue, _state)
 	add_child(day_planner)
 	var speech := NpcSpeech.new()

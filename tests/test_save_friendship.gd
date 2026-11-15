@@ -64,6 +64,7 @@ func test_a_version_52_save_keeps_the_opinion_and_has_the_defaults() -> void:
 	assert_eq(FriendshipRules.default_rules().level_of(loaded.opinion), 5)
 	assert_eq([loaded.action_day, loaded.action_moved_today, loaded.last_gift_day], [0, 0, 0])
 	assert_eq([loaded.chat_counted_day, loaded.rating_day, loaded.ratings_today], [0, 0, 0])
+	assert_eq(loaded.rating_moved_today, 0)
 	assert_eq(loaded.bond, FriendshipRules.BOND_NONE)
 
 
@@ -75,6 +76,21 @@ func test_a_negative_day_or_count_is_refused() -> void:
 func test_what_actions_moved_beyond_the_cap_is_refused() -> void:
 	var cap := FriendshipRules.default_rules().action_daily_cap()
 	assert_eq(_problems_with("action_moved_today", -cap - 1).size(), 1)
+
+
+func test_what_ratings_moved_beyond_their_caps_is_refused() -> void:
+	var friendship := FriendshipRules.default_rules()
+	assert_eq(
+		_problems_with("rating_moved_today", friendship.rating_daily_cap(&"warm") + 1).size(), 1
+	)
+	assert_eq(
+		_problems_with("rating_moved_today", -friendship.rating_daily_cap(&"rude") - 1).size(), 1
+	)
+
+
+func test_more_rating_requests_than_a_day_allows_are_refused() -> void:
+	var requests := FriendshipRules.default_rules().rating_requests_per_day()
+	assert_eq(_problems_with("ratings_today", requests + 1).size(), 1)
 
 
 func test_an_unknown_bond_is_refused() -> void:

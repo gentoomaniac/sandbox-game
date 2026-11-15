@@ -65,6 +65,11 @@ func problems() -> Array[String]:
 		["gifts", "neutral_points"],
 		["gifts", "disliked_points"],
 		["talk", "first_chat_points"],
+		["rating", "warm_points"],
+		["rating", "rude_points"],
+		["rating", "warm_daily_cap_points"],
+		["rating", "rude_daily_cap_points"],
+		["rating", "requests_per_day"],
 	]:
 		if not _values.get(section_and_key[0], {}).get(section_and_key[1]) is int:
 			bad.append("[%s] %s must be a whole number" % section_and_key)
@@ -141,6 +146,23 @@ func gift_points(taste: StringName) -> int:
 ## What the first chat of a day moves the opinion by, in points.
 func first_chat_points() -> int:
 	return _values["talk"]["first_chat_points"]
+
+
+## What a rating of the player's words (`warm` or `rude`; `neutral` moves nothing) moves the
+## opinion by, in points.
+func rating_points(rating: StringName) -> int:
+	return 0 if rating == &"neutral" else _values["rating"]["%s_points" % rating]
+
+
+## The most that ratings move the opinion of a villager in a day, in points: up for `warm`, down
+## (as a positive number) for `rude`.
+func rating_daily_cap(rating: StringName) -> int:
+	return _values["rating"]["%s_daily_cap_points" % rating]
+
+
+## How many ratings of the player's words a villager is asked for in a day at most.
+func rating_requests_per_day() -> int:
+	return _values["rating"]["requests_per_day"]
 
 
 func _entry(level: int) -> Array:
