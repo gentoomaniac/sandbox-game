@@ -7,9 +7,12 @@ Felling and mining, building houses anywhere, crafting stations, skills and ches
 - Axe: trees. Pickaxe: stones and boulders. Scythe: tall grass (hay) and river reeds (they grow
   back in their season). Shovel: clay, but only where a faint patch on the ground hints at it.
 - What you gather hops onto the ground; walk over it to pick it up.
-- A felled tree leaves a stump and a trunk (a dead tree a grey one): cut both into logs.
+- A felled tree leaves a stump and a trunk: cut both into logs. A dead or half-dead tree leaves the
+  stump and the trunk of its kind, with fewer logs in the trunk (a dead oak 1, a half-dead one 2,
+  a living one 3).
 - A stump rots away in about two weeks and may sprout a sapling of its kind.
-- Trees now and then drop a seed (acorn, beechnut, catkin or cone) to plant on grassland.
+- Trees now and then drop a seed (acorn, beechnut, catkin or cone) to plant on grassland. A dead
+  tree drops none, a half-dead one less often.
 - Berry bushes bear again a few days after picking. Shrubs and ferns give fibre.
 - The shovel digs a berry bush, shrub or fern out whole; plant it on free grass with the use
   key and it is the same bush again.

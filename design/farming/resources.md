@@ -45,6 +45,14 @@
   - **Stumps don't regrow into trees.** A stump left alone rots away over about two weeks;
     when it is gone it has a chance (about 30 %) to leave a sapling of its tree's species
     in its place.
+  - **Dead and half-dead trees of every kind** (issue #102, 2026-11-15; the single dead tree
+    below is only in old saves): `dead_<kind>` and `half_dead_<kind>` for the seven kinds, in
+    `WorldObjectSnags`, derived from the living tree of the kind. Axe and harvest level of the
+    kind; hit points 2 fewer (dead) and 1 fewer (half-dead), at least 2; the trunk of the kind's
+    picture (types `dead_oak_trunk` and so on, same hit points) with 2 (dead) and 1 (half-dead)
+    logs fewer, at least 1 (oak 3 living, 2 half-dead, 1 dead; pine 4, 3, 2; birch, alder, willow
+    2, 1, 1). The stump is the kind's, and remembers the kind for a sapling. A dead tree has no
+    seed; a half-dead one the kind's seed at half the chance (12.5 %).
   - **The dead tree leaves a dead stump** (decided 2026-11-05): grey, weathered wood with a
     broken, splintered top and a dark rotten heart (2 looks, a snow look too), not the fresh
     brown stump of a living tree. Same numbers (2 hp, axe, 1 log, rots away after 14 days),
