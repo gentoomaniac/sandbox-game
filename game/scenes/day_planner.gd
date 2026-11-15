@@ -3,8 +3,11 @@ extends Node
 ## Has the language model plan the days of the villagers nearest the player, in the background (see
 ## design/villagers/routines.md, "Who is planned and when"). In the evening, at `plan_hour`, it
 ## queues the villagers within `plan_radius_tiles` of the player who have no plan for tomorrow,
-## nearest first, up to `max_per_night`. It asks the model one villager and one request at a time,
-## quietly, like the judge of the stories (see StoryJudging), and sets the plan that comes back
+## nearest first, up to `max_per_night`. Once a game minute it looks for villagers who have come
+## into the radius with no plan for today, and queues them for the rest of today, behind the
+## evening's, up to `max_per_day` a game day: the plan is there when they come into view, if the
+## model is quick enough. It asks the model one villager and one request at a time, quietly, like
+## the judge of the stories (see StoryJudging), and sets the plan that comes back
 ## (ActivityUpkeep `set_plan`), which takes over from that minute. The villager has the default
 ## day until then. No new query starts while a chat reply is awaited (one already out is not
 ## cancelled, so a reply may wait behind it on a one-slot model), and without a model nothing is
@@ -33,6 +36,11 @@ var _is_asking := false
 var _seconds_since_look := 0.0
 ## The game day the evening's queue was made on.
 var _evening_day := 0
+## The game minute of the last look for villagers come near (see `queue_newcomers`), and how many
+## it has queued on the game day `_newcomers_day`.
+var _newcomers_minute := -1
+var _newcomers_day := 0
+var _newcomers_queued := 0
 
 
 func _init(dialogue: NpcDialogue, state: GameState) -> void:
@@ -48,6 +56,7 @@ func _process(delta: float) -> void:
 	if _seconds_since_look >= LOOK_SECONDS:
 		_seconds_since_look = 0.0
 		queue_evening()
+		queue_newcomers()
 		ask_queue()
 
 
@@ -62,6 +71,26 @@ func queue_evening() -> void:
 	var most := int(rules.value("plan", "max_per_night"))
 	for npc in _nearest_without_plan(tomorrow).slice(0, most):
 		_enqueue(npc, tomorrow, Reason.EVENING)
+
+
+## Once a game minute, queues the villagers who have come into the radius and have no plan for
+## today, nearest first, as far as `max_per_day` allows for the day.
+func queue_newcomers() -> void:
+	var clock := _state.clock
+	var minute := clock.total_minutes()
+	if minute == _newcomers_minute or not _dialogue.has_model():
+		return
+	_newcomers_minute = minute
+	if clock.day != _newcomers_day:
+		_newcomers_day = clock.day
+		_newcomers_queued = 0
+	var has_time_left := clock.minute_of_day < DayPlanAnswer.LATEST_MINUTE
+	var room := int(rules.value("plan", "max_per_day")) - _newcomers_queued
+	if not has_time_left or room <= 0:
+		return
+	for npc in _nearest_without_plan(clock.day).slice(0, room):
+		_enqueue(npc, clock.day, Reason.DAY)
+		_newcomers_queued += 1
 
 
 ## Has the villager's rest of today planned at once, ahead of everything queued: the console's

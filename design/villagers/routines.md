@@ -283,7 +283,7 @@ routines' and off-screen travel is #68.
 Written 2026-11-15 after the user's clarification on #7, rewritten the same day with the answers of
 [#87](https://github.com/gentoomaniac/sandbox-game/issues/87),
 [#88](https://github.com/gentoomaniac/sandbox-game/issues/88) and
-[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 11 of "The steps" are built** (issue #7; each says **Done** there), the planner's radius check (12), saving (13) and the bench (14) are not. It
+[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 12 of "The steps" are built** (issue #7; each says **Done** there), saving (13) and the bench (14) are not. It
 says what will be built and in which steps. It replaces the first plan (fixed timetables for five
 kinds of work), whose parts that still fit are kept: leaving in time, skip and sleep, loading, the
 console, the place lookup. It builds on homes and workplaces (#69), the path search and trips (#6,
@@ -766,8 +766,11 @@ village: they run on the camp's villagers and on the test worlds of the road tes
     handbook's console page has `replan`. The queue's entries are for a reason (console, evening, day
     in step 12) which is how soon they are asked; `DayToPlan.of` makes what the prompt tells and
     `ActivityUpkeep.offers_of` the activities on offer.
-12. **`DayPlanner`, while the player moves:** the radius check each game minute, the queries for
-    the current day, `max_per_day`, the order looked at again. Tests.
+12. **`DayPlanner`, while the player moves:** **Done.** the radius check each game minute
+    (`queue_newcomers`, once for each minute), the queries for the current day, `max_per_day` (it
+    counts what is queued, so a villager dropped for leaving the radius and queued again counts
+    twice), the order looked at again. None is queued with no model, or after 23:30 (no entry
+    could be planned). Tests.
 13. **Saving the plans** and `resume` for loading and spawning. The save version is the next free
     one, a commit of its own with its upgrade step. Tests: saving. Doc line in travel.md
     ("Saving").
