@@ -27,7 +27,7 @@ func test_an_unknown_command_is_named() -> void:
 
 func test_help_lists_every_command() -> void:
 	var text := "\n".join(_console.run("help"))
-	for command: String in Console.COMMANDS:
+	for command: String in _console.candidates(&"command"):
 		assert_string_contains(text, command)
 
 

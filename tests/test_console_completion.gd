@@ -62,10 +62,14 @@ func test_numbers_and_extra_words_complete_nothing() -> void:
 	assert_eq(_console.complete("god g"), "god g")
 
 
-func test_the_argument_table_names_real_commands_and_kinds() -> void:
+func test_the_commands_name_real_kinds() -> void:
 	_console.context.music_tracks = func() -> Array[String]: return ["sketch_tide"]
-	for command: String in Console.ARGUMENTS:
-		assert_true(Console.COMMANDS.has(command), command)
-		for kind: StringName in Console.ARGUMENTS[command]:
+	for command in _console.context.commands:
+		for kind in command.argument_kinds_for(PackedStringArray()):
 			var has_candidates := not _console.candidates(kind).is_empty()
-			assert_eq(has_candidates, kind != &"number", "%s %s" % [command, kind])
+			assert_eq(has_candidates, kind != &"number", "%s %s" % [command.name(), kind])
+		if command.takes_villager_ids():
+			for kind in command.argument_kinds_for(PackedStringArray(["npc"])):
+				assert_false(
+					_console.candidates(kind).is_empty(), "%s npc %s" % [command.name(), kind]
+				)

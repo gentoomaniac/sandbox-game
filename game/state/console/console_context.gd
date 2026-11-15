@@ -28,3 +28,11 @@ var replanner := Callable()
 
 func _init(game_state: GameState) -> void:
 	state = game_state
+
+
+## The command this word runs, or null.
+func command_named(word: String) -> ConsoleCommand:
+	for command in commands:
+		if command.name() == word:
+			return command
+	return null

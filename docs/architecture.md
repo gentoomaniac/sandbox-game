@@ -367,6 +367,26 @@ There is no base class: each rules class is plain, so copy one that is shaped li
 5. Test it: the real file is valid, a file with keys missing reports them (the test counts
    the `push_error`s with `assert_push_error_count`), and so does a missing file.
 
+### Adding a console command
+
+The console (`game/state/console.gd`) knows no command by name: at start-up `ConsoleLoader` loads
+every script in `game/state/console/commands/`, so a new command is one new file there, and
+`help` and Tab completion pick it up.
+
+1. Write `game/state/console/commands/<name>_command.gd` that `extends ConsoleCommand` (no
+   `class_name`): `name()`, `usage()` and `help()`, `run(arguments) -> Array[String]` with the
+   lines to show, and `argument_kinds()` for Tab when it takes arguments (the kinds are the ones of
+   `ConsoleHelper.candidates`; a new kind is a `match` arm there). `argument_kinds_for(arguments)` and
+   `takes_villager_ids()` are optional.
+2. A command works on `context` (a `ConsoleContext`: the `GameState`, and the hooks the game scene
+   sets, such as `music_player`) and never reaches into the `Console`. What several commands share
+   goes in `ConsoleHelper`, or in a class beside the loader (`HomePlaces`, for `home` and `work`):
+   everything in `commands/` is loaded as a command.
+3. The console reports a script that does not extend `ConsoleCommand`, that does not load, or has no name or one that is
+   taken, with a `push_error`; `test_console_commands.gd` checks that every file loads and has its
+   texts. Add a test for the command beside `test_console_*.gd`, and a row to
+   [handbook/console.md](../handbook/console.md).
+
 ## Saving
 
 `SaveFile` writes a new JSON file for every save (`user://saves/world.000001.json` and so on;
