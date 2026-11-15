@@ -7,7 +7,8 @@ extends SimulationSystem
 ## somewhere its time of day could have led it (their `catch_up`), by dice thrown from the world
 ## seed and the time, so that the same game skipped the same way ends the same. Only those in
 ## loaded chunks stroll, as in play: the others stay as they are. A villager on a trip walks it
-## over all of the skip's minutes, wherever it is.
+## over all of the skip's minutes, wherever it is. Where the day has a villager be at the end is
+## ActivityUpkeep's to say.
 
 var _world: World
 var _livestock: Livestock
@@ -15,13 +16,22 @@ var _npcs: Npcs
 ## Where the player is, or Vector2.INF when indoors, for the animals that run from them or
 ## follow them.
 var _player_feet: Callable
+## Where the day has a villager be at the end of a skip (see Npcs `catch_up`).
+var _day_catch_up: Callable
 
 
-func _init(world: World, livestock: Livestock, npcs: Npcs, player_feet: Callable) -> void:
+func _init(
+	world: World,
+	livestock: Livestock,
+	npcs: Npcs,
+	player_feet: Callable,
+	day_catch_up := Callable()
+) -> void:
 	_world = world
 	_livestock = livestock
 	_npcs = npcs
 	_player_feet = player_feet
+	_day_catch_up = day_catch_up
 
 
 ## No hunts: a skip's walked minutes keep the cats from looking for a mouse of a view that is
@@ -40,14 +50,14 @@ func walked_minute(clock: GameClock) -> void:
 
 func skipped(minutes: int, clock: GameClock) -> void:
 	_livestock.catch_up(_world, clock, _player_feet.call(), _seed_of(clock, 2), minutes)
-	_npcs.catch_up(_world, _seed_of(clock, 3), minutes)
+	_npcs.catch_up(_world, _seed_of(clock, 3), minutes, _day_catch_up)
 
 
 func skipped_over_frames(minutes: int, clock: GameClock, next_frame: Callable) -> void:
 	await _livestock.catch_up_over_frames(
 		_world, clock, _player_feet.call(), _seed_of(clock, 2), minutes, next_frame
 	)
-	await _npcs.catch_up_over_frames(_world, _seed_of(clock, 3), minutes, next_frame)
+	await _npcs.catch_up_over_frames(_world, _seed_of(clock, 3), minutes, next_frame, _day_catch_up)
 
 
 ## The dice of `purpose` at the time of `clock` in this world.

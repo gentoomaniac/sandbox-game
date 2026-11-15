@@ -12,6 +12,8 @@ extends SimulationSystem
 ## wet. A way that stays blocked is given up after `blocked_give_up_minutes`. A villager with no
 ## house is not sent anywhere: the anchor rule of Npcs keeps them where they are.
 
+## Those who stand still keep to a circle of this many tiles round their spot.
+const STAND_TILES := 1.0
 ## A villager this near the spot of a step that is for standing is there already.
 const ARRIVED_TILES := 1.5
 
@@ -111,11 +113,81 @@ func shelter_of(npc: Npc, activity: String) -> String:
 	return ""
 
 
+## Puts a villager where their day has them be at the end of a skip (see `Npcs.catch_up`): at the
+## place of the entry that is on, or of the next one if they have left for it already; on the way
+## (at the place of the entry before, sent on, the search after the skip) if they left less long
+## ago than the walk takes. Returns true when it has put them on their way, false when they are at
+## their place, which then is their anchor for the stroll that `catch_up` throws dice for.
+func catch_up(npc: Npc) -> bool:
+	if npc.house == null:
+		return false
+	var total := _clock.total_minutes()
+	var timeline := _timeline_of(npc)
+	var next_index := _first_after(timeline, total)
+	var step := _step_for_skip_end(npc, timeline, next_index, total)
+	step.shelter = shelter_of(npc, step.activity)
+	if step.shelter != "":
+		_stay_home(npc, step)
+	npc.current_step = step
+	# An entry that has not started yet is the next one, whose leaving time was worked out from
+	# where they were; the one after an entry that is on is worked out when it is asked for.
+	if step.starts_at > total:
+		_next_step_of_npc[npc] = step
+	else:
+		_next_step_of_npc.erase(npc)
+	if not step.has_place():
+		return false
+	var is_on_the_way := step.shelter == "" and total - step.leaves_at < ceili(step.walk_minutes)
+	if is_on_the_way:
+		_npcs.place(npc, Vector2i(step.from_spot.floor()), _world)
+		_npcs.walk_to(npc, step.tile(), _world)
+		return true
+	_npcs.place(npc, step.tile(), _world)
+	_arrive(npc, step)
+	return false
+
+
 ## Forgets what is kept of a villager: their days and their next step. `Households` changing, or a
 ## plan arriving, is the cause.
 func forget(npc: Npc) -> void:
 	_days_of_npc.erase(npc)
 	_next_step_of_npc.erase(npc)
+
+
+## What the villager is to be doing at game minute `total`, the end of a skip: the next entry
+## (index `next_index` of the timeline) if they have left for it, else the one that is on, else
+## keeping to the yard of their home.
+func _step_for_skip_end(
+	npc: Npc, timeline: Array[Dictionary], next_index: int, total: int
+) -> ActivityStep:
+	if next_index < timeline.size():
+		var next := _planned_step(
+			npc, timeline, next_index, _spot_before(npc, timeline, next_index)
+		)
+		if total >= next.leaves_at:
+			return next
+	var on_index := next_index - 1
+	if on_index >= 0:
+		var entry: DayEntry = timeline[on_index]["entry"]
+		var is_over: bool = (
+			entry.minutes > 0 and total >= timeline[on_index]["starts_at"] + entry.minutes
+		)
+		if not is_over:
+			return _planned_step(npc, timeline, on_index, _spot_before(npc, timeline, on_index))
+	var home := ActivityStep.new()
+	_resolve(npc, home, _clock.day)
+	return home
+
+
+## Where the villager is when the entry `index` of the timeline begins: the place of the entry
+## before, or where they stand if there is none or it has no place for them.
+func _spot_before(npc: Npc, timeline: Array[Dictionary], index: int) -> Vector2:
+	if index == 0:
+		return npc.position
+	var before: DayEntry = timeline[index - 1]["entry"]
+	var step := ActivityStep.new(before.activity, before.minute)
+	_resolve(npc, step, GameClock.day_of(timeline[index - 1]["starts_at"]))
+	return step.spot if step.has_place() else npc.position
 
 
 ## Sends the villager where their day has them be now, if that is not where they were sent last.
@@ -169,21 +241,10 @@ func _next_step_of(npc: Npc) -> ActivityStep:
 	if kept != null and kept.starts_at > total:
 		return kept
 	var timeline := _timeline_of(npc)
-	var index := 0
-	while index < timeline.size() and timeline[index]["starts_at"] <= total:
-		index += 1
+	var index := _first_after(timeline, total)
 	if index == timeline.size():
 		return null
-	var next: DayEntry = timeline[index]["entry"]
-	var starts_at: int = timeline[index]["starts_at"]
-	var step := ActivityStep.new(next.activity, next.minute)
-	step.starts_at = starts_at
-	_resolve(npc, step, GameClock.day_of(starts_at))
-	var walk := _rules.walk_minutes(_place_before(npc), step.spot, _tiles_per_minute())
-	step.leaves_at = _rules.leaving_minute(starts_at, walk)
-	# Not before the entry before starts: a way longer than it lasts is walked all of it.
-	if index > 0:
-		step.leaves_at = maxi(step.leaves_at, timeline[index - 1]["starts_at"])
+	var step := _planned_step(npc, timeline, index, _place_before(npc))
 	_next_step_of_npc[npc] = step
 	return step
 
@@ -199,6 +260,35 @@ func _timeline_of(npc: Npc) -> Array[Dictionary]:
 	return timeline
 
 
+## The step of entry `index` of the timeline, with the minute to leave for it from `from`: the
+## entry's start less the walk and the margin, but not before the entry before starts (a way longer
+## than that entry lasts is walked all of it).
+func _planned_step(
+	npc: Npc, timeline: Array[Dictionary], index: int, from: Vector2
+) -> ActivityStep:
+	var entry: DayEntry = timeline[index]["entry"]
+	var starts_at: int = timeline[index]["starts_at"]
+	var step := ActivityStep.new(entry.activity, entry.minute)
+	step.starts_at = starts_at
+	step.leaves_at = starts_at
+	_resolve(npc, step, GameClock.day_of(starts_at))
+	if step.has_place():
+		step.from_spot = from
+		step.walk_minutes = _rules.walk_minutes(from, step.spot, _tiles_per_minute())
+		step.leaves_at = _rules.leaving_minute(starts_at, step.walk_minutes)
+		if index > 0:
+			step.leaves_at = maxi(step.leaves_at, timeline[index - 1]["starts_at"])
+	return step
+
+
+## The index of the first entry of the timeline that starts after game minute `total`.
+func _first_after(timeline: Array[Dictionary], total: int) -> int:
+	var index := 0
+	while index < timeline.size() and timeline[index]["starts_at"] <= total:
+		index += 1
+	return index
+
+
 ## Fills in where the step is done and how, for the villager on game day `day`.
 func _resolve(npc: Npc, step: ActivityStep, day: int) -> void:
 	if step.activity == "":
@@ -207,13 +297,14 @@ func _resolve(npc: Npc, step: ActivityStep, day: int) -> void:
 	var data := _rules.activity(step.activity)
 	step.spot = places.spot_of(npc, data["target"], day)
 	step.doing = data["doing"]
-	step.radius = data.get("radius", 0.0)
+	step.radius = data.get("radius", STAND_TILES if step.doing == "stand" else 0.0)
 
 
 func _stay_home(npc: Npc, step: ActivityStep) -> void:
 	step.spot = npc.house.yard()
-	step.doing = "stand" if step.shelter != "" or step.is_given_up else "walk_about"
-	step.radius = 0.0
+	var is_waiting := step.shelter != "" or step.is_given_up
+	step.doing = "stand" if is_waiting else "walk_about"
+	step.radius = STAND_TILES if is_waiting else 0.0
 
 
 ## Sends the villager to the step's spot, or just makes it their anchor if they are there.

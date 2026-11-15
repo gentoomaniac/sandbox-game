@@ -62,3 +62,11 @@ func _entry_of(npc: Npc, day: int, activity: String) -> DayEntry:
 			return entry
 	fail_test("no %s in the day" % activity)
 	return null
+
+
+## The minute of the day a villager leaves for the first work of `day`, from the yard of their
+## house to their workplace: the walk and the margin before it starts, but not before breakfast.
+func _leaving_minute_for_work(npc: Npc, day: int) -> int:
+	var walk := ActivityRules.default_rules().walk_minutes(_house.yard(), npc.workplace.spot(), 1.0)
+	var work := _entry_of(npc, day, "work")
+	return maxi(_entry_of(npc, day, "breakfast").minute, work.minute - ceili(walk) - 3)

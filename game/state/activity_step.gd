@@ -23,6 +23,9 @@ var radius := 0.0
 ## to leave for it, for a step that is still to come.
 var starts_at := 0
 var leaves_at := 0
+## Where they leave from and how long the walk is estimated to take, in game minutes.
+var from_spot := Vector2.ZERO
+var walk_minutes := 0.0
 ## The game minute at which the way was found blocked, or -1.
 var blocked_since := -1
 ## Whether they are there: the anchor is the spot.
@@ -52,6 +55,8 @@ func copy() -> ActivityStep:
 	step.radius = radius
 	step.starts_at = starts_at
 	step.leaves_at = leaves_at
+	step.from_spot = from_spot
+	step.walk_minutes = walk_minutes
 	return step
 
 

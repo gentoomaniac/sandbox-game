@@ -17,9 +17,7 @@ func test_a_villager_leaves_in_time_and_is_there_when_the_entry_starts() -> void
 	var npc := _farmer_working_at(SPOT_TILE_X)
 	var work := _entry_of(npc, DAY, "work")
 	var spot := npc.workplace.spot()
-	var walk := ActivityRules.default_rules().walk_minutes(_house.yard(), spot, 1.0)
-	var breakfast := _entry_of(npc, DAY, "breakfast")
-	var leaves_at := maxi(breakfast.minute, work.minute - ceili(walk) - 3)
+	var leaves_at := _leaving_minute_for_work(npc, DAY)
 	_set_time(DAY, 5)
 
 	var has_left := func() -> bool: return npc.trip != null

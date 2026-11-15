@@ -520,6 +520,12 @@ the skip's end: at the place of its current step, or on its way when the step be
 than the walk takes (`place`, then `walk_to`). #68 only keeps the trips going and allows `place`
 in a skip. The routine hours inside a skip are 239's, not replayed one by one.
 
+**Built** (issue #7, `ActivityUpkeep.catch_up`, which `ActorsUpkeep.skipped` hands to `Npcs.catch_up`):
+a villager with no trip is put at the place of the entry that is on at the skip's end, or of the next
+one if the time to leave for it has passed; one who left less long ago than the walk takes is put at
+the place of the entry before and sent on (`walk_to`, its search after the skip). One who is on a trip
+is walked by the skip as before, and the next minute's tick sends them where the day has them be.
+
 ## Saving
 
 Nothing new is saved and the save version stays: the position of every villager is saved already,

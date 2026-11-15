@@ -306,15 +306,16 @@ func _update(
 ## as in play and at its pace (see NpcTravel `advance_skip`), waiting for the masks it needs; each
 ## one else in a loaded chunk is on a tile of the circle it keeps to around its anchor that it
 ## could have walked to (see ReachableTiles), standing, as `update` has them at that hour. Where
-## the day will put a villager (a schedule) is decided here, not in `update`. The dice are thrown
-## from `seed_value`. No path is searched: whoever has none yet, or is stopped, searches after
-## the skip.
-func catch_up(map: GameMap, seed_value: int, minutes: int) -> void:
+## the day will put a villager is for `day_catch_up` (a Callable that takes the villager, see
+## ActivityUpkeep `catch_up`): it puts them at their place, which the circle is then of, or sends
+## them on and returns true. The dice are thrown from `seed_value`. No path is searched: whoever
+## has none yet, or is stopped, searches after the skip.
+func catch_up(map: GameMap, seed_value: int, minutes: int, day_catch_up := Callable()) -> void:
 	rng.seed = seed_value
 	is_skipping = true
 	for npc in _npcs:
 		if npc.trip == null:
-			_catch_up_one(npc, map)
+			_catch_up_one(npc, map, day_catch_up)
 			continue
 		var skip := _travel.begin_skip(npc, minutes)
 		while skip != null and not _travel.advance_skip(skip):
@@ -327,7 +328,7 @@ func catch_up(map: GameMap, seed_value: int, minutes: int) -> void:
 ## moving the villagers meanwhile, so that they end up as in one go. `next_frame` is a Callable
 ## that gives the signal of the next frame.
 func catch_up_over_frames(
-	map: GameMap, seed_value: int, minutes: int, next_frame: Callable
+	map: GameMap, seed_value: int, minutes: int, next_frame: Callable, day_catch_up := Callable()
 ) -> void:
 	rng.seed = seed_value
 	is_skipping = true
@@ -337,7 +338,7 @@ func catch_up_over_frames(
 			await next_frame.call()
 			frame_started = Time.get_ticks_usec()
 		if npc.trip == null:
-			_catch_up_one(npc, map)
+			_catch_up_one(npc, map, day_catch_up)
 			continue
 		var skip := _travel.begin_skip(npc, minutes)
 		while skip != null and not _travel.advance_skip(skip):
@@ -356,7 +357,10 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 		npc.trip.pause_seconds = npc.seconds_left
 
 
-func _catch_up_one(npc: Npc, map: GameMap) -> void:
+func _catch_up_one(npc: Npc, map: GameMap, day_catch_up: Callable) -> void:
+	# The day puts the villager at their place first; one it sends on its way is no one's to stroll.
+	if day_catch_up.is_valid() and day_catch_up.call(npc):
+		return
 	if not _is_in_loaded_chunk(npc, map):
 		return
 	_step_off_buildings(npc, map)

@@ -861,7 +861,9 @@ func _start_simulation() -> void:
 	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
 	activities = ActivityUpkeep.new(world, npcs, homes, sun, weather, clock)
 	simulation.add_system(activities)
-	simulation.add_system(ActorsUpkeep.new(world, livestock, npcs, _player_feet))
+	simulation.add_system(
+		ActorsUpkeep.new(world, livestock, npcs, _player_feet, activities.catch_up)
+	)
 	simulation.add_system(GossipSpread.new(npcs, deeds))
 	simulation.add_system(LanternUpkeep.new(_the_player))
 	simulation.add_system(CampfireUpkeep.new(world))

@@ -611,8 +611,10 @@ A skip is not watched, so each villager is where the day says at the skip's end,
 by one. `ActivityUpkeep` ignores the `advance` of a skip's rest (it is set by `skip_begins`), and
 `ActorsUpkeep.skipped` gives `Npcs.catch_up` the entry that is on as a Callable, which
 `_catch_up_one` asks before it puts a villager on a circle (`place` is allowed in a skip). A
-villager on a trip is first walked by the skip's minutes (#68). Then, for the entry that is on at
-the end, which starts at `T`:
+villager on a trip is first walked by the skip's minutes (#68), and then left to the next minute's
+tick, which sends them where the day has them be (built so: the others get the following).
+For the entry that is on at the end, or the next one if the time to leave for it has passed, which
+starts at `T`:
 
 - one who should have left by `T - walk - offset - margin` and has had the walk's time since is
   **at the place** (`place`, the anchor set);
