@@ -77,3 +77,14 @@ func test_pressing_load_it_confirms_the_load() -> void:
 	await get_tree().process_frame
 
 	assert_true(is_confirmed)
+
+
+func test_a_new_game_is_asked_for_with_cancel_as_the_safe_button() -> void:
+	_dialog.opened.connect(
+		func() -> void: _dialog._buttons.get_child(1).pressed.emit.call_deferred(), CONNECT_ONE_SHOT
+	)
+	var questions := SaveQuestions.new(_dialog)
+
+	assert_false(await questions.is_new_game_confirmed(), "Cancel")
+	assert_string_contains(_dialog._text.text, "stays under Load")
+	assert_eq(_dialog._buttons.get_child(0).text, "Start a new game")

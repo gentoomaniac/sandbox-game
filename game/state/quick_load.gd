@@ -9,6 +9,8 @@ enum Outcome { NO_SAVE, UNREADABLE, MISSING_CONTENT, READY }
 
 ## Where `prepare` moved a save it can't load to ("" if it could not).
 static var moved_to := ""
+## Whether the game `take` hands over is a new one (`start_new`), not one read from a save.
+static var is_new_game := false
 
 static var _waiting: GameState
 static var _asking: LoadResult
@@ -21,6 +23,7 @@ static func prepare(path: String) -> Outcome:
 	_waiting = null
 	_asking = null
 	moved_to = ""
+	is_new_game = false
 	var result := SaveFile.load_game(path)
 	match result.outcome:
 		LoadResult.Outcome.NO_SAVE:
@@ -59,7 +62,15 @@ static func cancel() -> void:
 	_asking = null
 
 
-## The game that `prepare` kept, or null; it is given only once.
+## Keeps a new game for `take`, as the pause menu's New game starts it.
+static func start_new(game: GameState) -> void:
+	_waiting = game
+	_asking = null
+	moved_to = ""
+	is_new_game = true
+
+
+## The game that `prepare` or `start_new` kept, or null; it is given only once.
 static func take() -> GameState:
 	var game := _waiting
 	_waiting = null

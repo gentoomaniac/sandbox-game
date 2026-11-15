@@ -114,3 +114,16 @@ func test_the_load_button_asks_for_the_list_of_saves() -> void:
 	load_button.pressed.emit()
 
 	assert_signal_emitted(_menu, "load_requested")
+
+
+func test_the_new_game_button_asks_for_a_new_game() -> void:
+	watch_signals(_menu)
+	_menu.open()
+	var buttons: Array[Node] = _menu._pages[PauseMenu.Page.PAUSE].find_children(
+		"*", "Button", false, false
+	)
+	var new_game: Button = buttons.filter(func(b: Button) -> bool: return b.text == "New game")[0]
+
+	new_game.pressed.emit()
+
+	assert_signal_emitted(_menu, "new_game_requested")

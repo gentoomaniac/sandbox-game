@@ -55,4 +55,6 @@ When and where the game saves, and what happens if a save goes wrong.
 - Saves go to `user://saves/` as `world.000001.json`, `world.000002.json` and so on, each with a
   small `.info` file beside it. A `world.json` from before the game kept ten saves is its oldest
   save. Settings go to `user://settings.cfg`. Both are in Godot's user folder.
-- To start a fresh world, run `godot --path . -- --new-game`.
+- To start a fresh world, pick **New game** in the pause menu (Escape): the game you are in is saved
+  first and stays under Load, and the new world is saved as it starts. Every new game is the same
+  world for now. Or run `godot --path . -- --new-game`.

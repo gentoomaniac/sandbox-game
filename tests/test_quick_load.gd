@@ -121,3 +121,14 @@ func test_cancelling_keeps_nothing_and_the_file_stays() -> void:
 
 	assert_null(QuickLoad.take())
 	assert_true(FileAccess.file_exists(PATH))
+
+
+func test_a_new_game_is_kept_for_the_new_scene_and_said_to_be_new() -> void:
+	var game := GameState.new_game(7)
+	QuickLoad.start_new(game)
+	assert_true(QuickLoad.is_new_game)
+	assert_same(QuickLoad.take(), game)
+	assert_null(QuickLoad.take())
+	SaveFile.write(GameState.new_game(7), PATH)
+	QuickLoad.prepare(SaveList.newest_path(PATH))
+	assert_false(QuickLoad.is_new_game, "a load is no new game")

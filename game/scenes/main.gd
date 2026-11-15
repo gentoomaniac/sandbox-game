@@ -106,6 +106,7 @@ var _residency: ChunkResidency
 
 func _ready() -> void:
 	_resumed_state = QuickLoad.take()
+	var is_new_game := QuickLoad.is_new_game
 	if _resumed_state != null:
 		# The game is the save's: no flag may change it or open a window again.
 		_options = _options.kept_for_quick_load()
@@ -142,7 +143,10 @@ func _ready() -> void:
 	_start_sounds()
 	_show_clock()
 	if _resumed_state != null:
-		_notifications.post(QuickLoadFlow.LOAD_NOTE, "Loaded")
+		_notifications.post(QuickLoadFlow.LOAD_NOTE, "New game" if is_new_game else "Loaded")
+	if is_new_game:
+		# Saved at once, so F8 or a crash comes back to the new world, not to the game before it.
+		_saves.save_and_wait(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE)
 	_shown_map = _state.current_map
 	if _state.is_inside():
 		_show_current_map()
@@ -317,6 +321,7 @@ func _connect_state_and_views() -> void:
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 	_menu.load_requested.connect(_load_dialog.open_saves.bind(_options.save_path))
+	_menu.new_game_requested.connect(_start_new_game)
 	_load_dialog.load_requested.connect(_load_picked)
 	_menu.volume_tested.connect(_audio.play_volume_test)
 	_saves.started.connect(
@@ -867,6 +872,24 @@ func _load_picked(entry: SaveEntry) -> void:
 		await _quick_load_flow().run(entry.path)
 	else:
 		_load_dialog.open_saves(_options.save_path)
+
+
+## The pause menu's New game: after a question, the game is saved and a new world starts, the whole
+## scene again as for a load. A save that fails keeps the game as it is.
+func _start_new_game() -> void:
+	if not await _save_questions.is_new_game_confirmed():
+		return
+	while _blackout.is_making_up_time:
+		await get_tree().process_frame
+	if not _saves.save_and_wait(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE):
+		var note := "Not saved, so no new game: %s" % _saves.last_error
+		_notifications.post(QuickLoadFlow.LOAD_NOTE, note, NotificationHud.Tone.ERROR)
+		return
+	QuickLoad.start_new(GameState.new_game(WORLD_SEED, true))
+	if get_tree().reload_current_scene() != OK:
+		QuickLoad.take()
+		var error := "Can't restart the game"
+		_notifications.post(QuickLoadFlow.LOAD_NOTE, error, NotificationHud.Tone.ERROR)
 
 
 func _quick_load_flow() -> QuickLoadFlow:

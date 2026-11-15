@@ -10,6 +10,10 @@ const LOAD_TEXT := (
 	"The save of %s (%s) will be loaded.\n\n"
 	+ "What you have done since the game last saved is lost."
 )
+const NEW_GAME_TEXT := (
+	"A new world starts. The game you are in is saved first and stays under Load, so you can go"
+	+ " back to it."
+)
 const THEN_OLDER_SAVE := "The save before it is loaded instead."
 const THEN_NEW_GAME := "A new game starts."
 const MISSING_CONTENT_TEXT := (
@@ -64,6 +68,16 @@ func is_load_confirmed(header: SaveHeader) -> bool:
 		LOAD_TEXT % [header.game_text(), header.how_text()],
 		["Load it", "Cancel"] as Array[String],
 		1
+	)
+	var choice: int = await _dialog.answered
+	return choice == 0
+
+
+## Asks whether to start a new game, and returns whether the player said yes. Cancel is the safe
+## button.
+func is_new_game_confirmed() -> bool:
+	_dialog.ask(
+		"Start a new game?", NEW_GAME_TEXT, ["Start a new game", "Cancel"] as Array[String], 1
 	)
 	var choice: int = await _dialog.answered
 	return choice == 0
