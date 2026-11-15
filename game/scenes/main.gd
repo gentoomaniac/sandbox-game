@@ -8,9 +8,6 @@ extends Node2D
 ## quit (see SaveFile). The debug flags after `--` on the Godot command line are documented in
 ## StartupOptions.
 
-## Debug speed-up, toggled with F2: a game day in 16 real seconds.
-const FAST_FORWARD_FACTOR := 60.0
-
 var _state: GameState
 ## The game F8 loaded, if it started this scene (see QuickLoad); told once the HUD is up.
 var _resumed_state: GameState
@@ -69,15 +66,14 @@ var _wildlife := WildlifeView.new()
 var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
-var _fast_forward := false
 var _fade_screen := FadeScreen.new()
 var _blackout: BlackoutFlow
 var _screen_keys: ScreenKeys
 var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
+var _clock_ticker: GameClockTicker
 var _interact: InteractFlow
 var _debug: DebugRunner
-var _pending_minutes := 0.0
 ## The game hour the wetness of the soil was last shown for.
 var _soil_shown_hour := -1
 ## The map the views show: the world or the interior of a house.
@@ -283,6 +279,9 @@ func _connect_state_and_views() -> void:
 	_interact.fire_screen = _fire_screen
 	_interact.crafting_screen = _crafting_screen
 	_trade_screen.talk_requested.connect(_interact.open_chat)
+	_clock_ticker = GameClockTicker.new(_state, _weather_view, _show_clock)
+	_clock_ticker.is_held = func() -> bool:
+		return _debug.is_clock_stopped() or _fade_screen.is_black()
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -483,7 +482,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("toggle_paths"):
 		_paths_hud.toggle()
 	elif event.is_action_pressed("toggle_fast_forward"):
-		_fast_forward = not _fast_forward
+		_clock_ticker.is_fast_forward = not _clock_ticker.is_fast_forward
 	elif _hotbar_keys.take(event):
 		pass
 	elif event.is_action_pressed("drop_item") and can_use:
@@ -506,7 +505,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	_tick_clock(delta)
+	_clock_ticker.tick(delta)
 	var hour := _state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
 	if hour != _soil_shown_hour:
 		_soil_shown_hour = hour
@@ -671,25 +670,6 @@ func _autosave_on_time(delta: float) -> void:
 	var is_free := not _blackout.is_in_transition and not _is_any_screen_open()
 	if is_free and _autosave_timer.is_due(_settings.autosave_minutes):
 		_saves.save_in_background(_state, _options.save_path, SaveHeader.Kind.AUTOSAVE)
-
-
-## Real time to whole game minutes; the fraction carries over to the next frame.
-func _tick_clock(delta: float) -> void:
-	# A screenshot with TIME=... must show exactly that time, unless it is told to wait. Time
-	# stands still while the screen is black (a message there may wait long for a key), and
-	# while the console's freeze is on.
-	if _debug.is_clock_stopped() or _fade_screen.is_black() or _state.cheats.is_time_stopped:
-		return
-	var rate := (
-		GameClock.GAME_MINUTES_PER_REAL_SECOND * (FAST_FORWARD_FACTOR if _fast_forward else 1.0)
-	)
-	_pending_minutes += delta * rate
-	var whole_minutes := int(_pending_minutes)
-	if whole_minutes > 0:
-		_pending_minutes -= whole_minutes
-		_state.pass_awake_time(whole_minutes)
-		_weather_view.minutes_passed(whole_minutes)
-		_show_clock()
 
 
 ## Switches between the classic and the new art (see ArtSet) on its key; whether it was that key.
