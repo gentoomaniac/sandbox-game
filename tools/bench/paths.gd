@@ -36,7 +36,7 @@ const SLOW_FRAME_MS := 16.7
 const REACH := Vector2i(100, 300)
 const GOAL_TRIES := 60
 const BASELINE_SECONDS := 30.0
-const SKIP_WALK_SECONDS := 20.0
+const SKIP_WALK_SECONDS := 45.0
 const PROBE_TILES := 512
 const PROBE_LOOKUPS := 4000
 const HOUR := 10
@@ -72,9 +72,11 @@ var _first_leg_waits: Array[float] = []
 var _sent := 0
 var _arrived := 0
 var _blocked_by_reason := {}
-## For each trip, what it has made of searches and tiles looked at so far, to add up the difference.
-var _trip_searches: Dictionary[NpcTrip, int] = {}
-var _trip_nodes: Dictionary[NpcTrip, int] = {}
+## The trip of each villager that was counted last, and what it had made of searches and tiles
+## looked at then, to add up the difference. (Not a record of all trips: they hold their searches.)
+var _counted_trip: Dictionary[Npc, NpcTrip] = {}
+var _counted_searches: Dictionary[Npc, int] = {}
+var _counted_nodes: Dictionary[Npc, int] = {}
 var _searches := 0
 var _nodes := 0
 var _snapshots := 0
@@ -293,8 +295,7 @@ func _end_run() -> void:
 		_state.npcs.cancel_trip(npc)
 	_sent_at.clear()
 	_searching_since.clear()
-	_trip_searches.clear()
-	_trip_nodes.clear()
+	_counted_trip.clear()
 	while travel._pathfinder.running() > 0 or travel._pathfinder.waiting() > 0:
 		travel.tick()
 		OS.delay_usec(1000)
@@ -383,10 +384,14 @@ func _note_trips() -> void:
 		if _searching_since.has(npc) and trip.state != NpcTrip.State.SEARCHING:
 			_first_leg_waits.append(_now - _searching_since[npc])
 			_searching_since.erase(npc)
-		_searches += trip.searches - _trip_searches.get(trip, 0)
-		_nodes += trip.nodes_looked_at - _trip_nodes.get(trip, 0)
-		_trip_searches[trip] = trip.searches
-		_trip_nodes[trip] = trip.nodes_looked_at
+		if _counted_trip.get(npc) != trip:
+			_counted_trip[npc] = trip
+			_counted_searches[npc] = 0
+			_counted_nodes[npc] = 0
+		_searches += trip.searches - _counted_searches[npc]
+		_nodes += trip.nodes_looked_at - _counted_nodes[npc]
+		_counted_searches[npc] = trip.searches
+		_counted_nodes[npc] = trip.nodes_looked_at
 	var snapshot: TravelSnapshot = _state.npcs._travel._snapshot
 	if snapshot != _last_snapshot:
 		_snapshots += 1
