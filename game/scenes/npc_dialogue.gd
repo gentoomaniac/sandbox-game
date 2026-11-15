@@ -96,9 +96,10 @@ func request_at_chat_temperature(request: Dictionary) -> Dictionary:
 ## when it comes, also when the player has left meanwhile: it is there when they come back. If the
 ## villager has no answer (see `reply`) the player's line stays, and the player may write again.
 ## The wait is the villager's (Npc `is_answering`), so it ends only here. Not for a villager who
-## still owes an answer.
+## still owes an answer. The first line of the day counts for their opinion (see TalkFriendship).
 func say(npc: Npc, line: String, state: GameState) -> void:
 	var clock := state.clock
+	TalkFriendship.count_chat(state, npc)
 	# The chat so far: the model only follows a conversation it is told.
 	var history := npc.chat_history.duplicate()
 	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)

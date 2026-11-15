@@ -64,6 +64,7 @@ func problems() -> Array[String]:
 		["gifts", "liked_points"],
 		["gifts", "neutral_points"],
 		["gifts", "disliked_points"],
+		["talk", "first_chat_points"],
 	]:
 		if not _values.get(section_and_key[0], {}).get(section_and_key[1]) is int:
 			bad.append("[%s] %s must be a whole number" % section_and_key)
@@ -135,6 +136,11 @@ func action_daily_cap() -> int:
 ## What a gift of this taste (`liked`, `neutral` or `disliked`) moves the opinion by, in points.
 func gift_points(taste: StringName) -> int:
 	return _values["gifts"]["%s_points" % taste]
+
+
+## What the first chat of a day moves the opinion by, in points.
+func first_chat_points() -> int:
+	return _values["talk"]["first_chat_points"]
 
 
 func _entry(level: int) -> Array:

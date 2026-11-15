@@ -33,6 +33,10 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   activities of their trade (`[gifts]` of `data/npcs.cfg`, not saved). The deed `gave_gift` (change 0)
   is logged and told as gossip. In the chat window a **Give** button offers the held item. It is
   `Gifts`, not a method of `GameState`, which is near its size limit.
+- Step 6: talking counts. The first line the player says to a villager on a day moves their opinion
+  by `first_chat_points` (5) of `[talk]` of `data/friendship.cfg`, with no model, within the cap of the
+  actions: `TalkFriendship.count_chat`, called by `NpcDialogue.say`. Later lines of the day count
+  nothing (`Npc.chat_counted_day`).
 
 ## The user's words
 
