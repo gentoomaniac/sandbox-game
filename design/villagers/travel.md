@@ -443,11 +443,16 @@ before and 0.3 ms after):
 | before | 0.066-0.070 / 0.18-0.22 / 5.5 (cold, 4.0 warm) | 3.1-3.2 ms | 1.6 / 2.4 |
 | after | 0.050-0.053 / 0.17-0.22 / 0.3 | 0.01 ms | 1.6 / 2.4-2.5 |
 
-That is also what "the first send after the masks are made costs 7 to 22 ms" of step 6 was in the
-runs that wore many tiles: the frame of a send that made a snapshot (and, in `once`, the frame
-that sends all 155 trips at once: 4.3 to 6.5 ms, 28 to 42 us a trip, which a game does not do). No
-other cost was found in a send: making the masks object on the first one is 0.4 ms (a generator is made
-on a worker). The one copy a day (the first snapshot after midnight) remains, 3 ms at 60,000 worn
+"The first send after the masks are made costs 7 to 22 ms" (step 6) were two things, neither a cost
+of sending. In the runs that wore many tiles it was the frame of a send that made a snapshot (above).
+In a cold run of the bench it is the first send of the run: `paths.gd` makes the masks anew by
+setting the rules again, and the old `TravelMasks` with the last run's 380 masks and 32 raw chunks
+is freed in that frame (5.3 ms for 32 raw chunks and 48 masks in a test; 23.8 ms in the day run that follows a run
+with 380 masks, which was not taken apart). The game drops a raw chunk at a time, a fraction of
+that, and a whole cache only when it loads another world. The frame that sends all 155 trips
+at once in `once` (4.3 to 7.3 ms, 28 to 47 us a trip) is the bench's, not a game's. Nothing of
+this was changed, as nothing in the game's frames is slow. Making the masks object on the first
+send is 0.4 ms (a generator is made on a worker). The one copy a day (the first snapshot after midnight) remains, 3 ms at 60,000 worn
 tiles; midnight's own `end_day` walks all of them anyway.
 
 **Walking** (`NpcTravel._walk`, `Npcs._update`): 155 villagers on trips cost 10.1 to 10.5 us a
@@ -463,6 +468,23 @@ Not done, as it measured nothing: asking `_is_step_whole` per chunk of the body 
 (the walk, the crowding check, the body's tiles against the loaded chunks, the fit check), spread
 too thin for one change to pay; fewer of them would mean a walker that skips frames, which is not
 done here.
+
+**All of #70 together** (`paths.gd send=155`, default scenarios, once, 11 cores; before is the
+table of step 6 as tuned, `far_masks_kept=1024`):
+
+| Run | Before | After |
+|---|---|---|
+| once, cold: first leg wait mean / last | 25.8 / 32.7 s | 22.5 / 27.8 s |
+| once, cold: frame mean / p99 / longest | 1.63-1.65 / 2.7-2.8 / 5.2 ms | 1.61 / 3.06 / 8.1 ms (a mask or search task finishing at once) |
+| once, warm: first leg wait | 2.1 / 4.1 s | 2.15 / 4.3 s |
+| once, warm: walking mean / p99 | 1.75-1.96 / 2.5-4.1 ms | 1.65 / 2.38 ms |
+| day, cold: first leg wait mean / last | 0.33 / 1.4 s | 0.12 / 1.23 s |
+| day: frame mean / p99 | 1.6-1.9 / 3.7-4.9 ms | 1.44-1.46 / 3.1-3.6 ms |
+| skip of 240 minutes, cold; warm | 0.3 s | 0.43 s; 0.36 s |
+
+(The runs have no worn tiles, so the snapshot's part of #70 is not in them; see above.) The
+frame's mean falls some 10 % with the walking; the wait for the first leg of the cold masks is the
+rest of what a village's first morning costs, set by the one search at a time (above).
 
 ## Time skips and sleep
 
