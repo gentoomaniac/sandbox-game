@@ -155,4 +155,4 @@ building, and they run from villagers as from you.
 - Common terns fish over the tideways in summer, hovering and plunging.
 - When the tide comes in, the waders leave the mud and the gulls swim where they stood.
 
-![Oystercatchers, dunlin, gulls and terns at the mud and the sea](../docs/screenshots/sea-birds.png)
+![Oystercatchers, dunlin and gulls at the mud and the sea](../docs/screenshots/sea-birds.png)
