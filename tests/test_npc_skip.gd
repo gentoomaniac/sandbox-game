@@ -149,3 +149,17 @@ func test_a_villager_in_the_loaded_yard_may_be_placed_in_a_skip_but_not_otherwis
 	assert_true(placed[0], "in a skip it may")
 	assert_eq(seen.tile(), _road_tile(ROAD_LENGTH))
 	assert_false(_npcs.is_skipping)
+
+
+func test_a_trip_taken_away_between_two_calls_ends_the_skip_and_lets_go_of_its_masks() -> void:
+	var masks: TravelMasks = _npcs._travel._masks_of(_world)
+	for coords in masks.mask_coords():
+		_world.edited.emit(coords)
+	var npc := _walker_on_road(ROAD_LENGTH, HOME_X)
+	var skip := _npcs._travel.begin_skip(npc, 80)
+	assert_false(_npcs._travel.advance_skip(skip), "it waits for a mask")
+	assert_gt(skip.pinned.size(), 0, "and holds the masks ahead")
+	_npcs.cancel_trip(npc)
+	assert_true(_npcs._travel.advance_skip(skip), "over")
+	assert_eq(skip.pinned.size(), 0)
+	assert_eq(masks._pinned.size(), 0, "none is held")

@@ -18,7 +18,7 @@ var rules: NpcRules:
 	set(value):
 		rules = value
 		_pathfinder.max_tasks = int(value.travel("search_tasks"))
-		# The masks are kept as many as the rules say.
+		# Made again, so that new limits (`far_masks_kept`, `skip_masks_ahead`) apply to them.
 		_masks_world = null
 var _pathfinder: Pathfinder
 ## What a search sees of the world (see TravelView): the masks, made when the first search over a
@@ -87,6 +87,13 @@ func begin_skip(npc: Npc, minutes: int) -> NpcSkip:
 func advance_skip(skip: NpcSkip) -> bool:
 	var npc := skip.npc
 	var trip := npc.trip
+	# Its trip was taken from it between two calls (over frames): the skip is over.
+	if trip == null:
+		if _masks != null:
+			for coords in skip.pinned:
+				_masks.unpin(coords)
+		skip.pinned.clear()
+		return true
 	var world := trip.map as World
 	var masks := _masks_of(world)
 	var tiles_per_minute := rules.behaviour("walk_speed") / GameClock.GAME_MINUTES_PER_REAL_SECOND
