@@ -67,6 +67,39 @@ func trade(shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots) -> 
 	return ""
 
 
+## What the player may give to pay for `want`: the cheapest of what they carry that she takes, one
+## after the other, until it is paid or there is no more she takes of it (the room of the day and
+## the bag's count are the limit). A help for the trade screen, which the player may change.
+func cover(shop: String, want: Dictionary, bag: ItemSlots) -> Dictionary:
+	var price := quote(shop, want, {}, bag).price
+	var in_file_order := _rules.taken(shop)
+	var takable := in_file_order.filter(
+		func(item: StringName) -> bool: return _rules.value(shop, item) > 0
+	)
+	# Sorting is not stable: what is worth the same keeps the order of the file by itself.
+	takable.sort_custom(
+		func(first: StringName, second: StringName) -> bool:
+			var first_value := _rules.value(shop, first)
+			var second_value := _rules.value(shop, second)
+			if first_value != second_value:
+				return first_value < second_value
+			return in_file_order.find(first) < in_file_order.find(second)
+	)
+	var give := {}
+	var covered := 0
+	for item: StringName in takable:
+		var most := mini(bag.count_of(item), room_of(shop, item))
+		while covered < price and give.get(item, 0) < most:
+			give[item] = give.get(item, 0) + 1
+			covered += _rules.value(shop, item)
+	return give
+
+
+## Has the shop sell everything and take as much as on its best day: for the console.
+func fill(shop: String) -> void:
+	_shops.erase(shop)
+
+
 func _problem(
 	shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots, deal: ShopQuote
 ) -> String:

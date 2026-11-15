@@ -157,3 +157,30 @@ func test_a_skip_of_time_gives_the_same_stock_as_the_days_one_by_one() -> void:
 	assert_eq(_shops.stock_of(SHOP, SEEDS), 30)
 	_clock.day += 30
 	assert_eq(_shops.stock_of(SHOP, SEEDS), 40, "never above the most she has")
+
+
+func test_cover_gives_the_cheapest_of_the_bag_until_the_goods_are_paid() -> void:
+	_carry(ItemTypes.EGG, 10)
+	_carry(ItemTypes.FIBRE, 10)
+	_carry(ItemTypes.LOGS, 10)
+	var give := _shops.cover(SHOP, {SEEDS: 5}, _bag)
+	assert_eq(
+		give, {ItemTypes.EGG: 10, ItemTypes.FIBRE: 5}, "15 Pf, a Pfennig each, the file's order"
+	)
+	assert_eq(_shops.trade(SHOP, {SEEDS: 5}, give, _bag), "")
+	assert_eq(_bag.totals(), {SEEDS: 5, ItemTypes.FIBRE: 5, ItemTypes.LOGS: 10})
+
+
+func test_cover_stops_at_what_the_bag_and_the_room_hold() -> void:
+	_carry(ItemTypes.EGG, 20)
+	var give := _shops.cover(SHOP, {SEEDS: 40}, _bag)
+	assert_eq(give, {ItemTypes.EGG: 12}, "the room of a day, though 120 Pf is wanted")
+	assert_eq(_shops.cover(SHOP, {}, _bag), {}, "nothing wanted, nothing to cover")
+
+
+func test_fill_gives_back_the_whole_stock_and_room() -> void:
+	_carry(ItemTypes.EGG, 12)
+	assert_eq(_shops.trade(SHOP, {SEEDS: 4}, {ItemTypes.EGG: 12}, _bag), "")
+	_shops.fill(SHOP)
+	assert_eq(_shops.stock_of(SHOP, SEEDS), 40)
+	assert_eq(_shops.room_of(SHOP, ItemTypes.EGG), 12)

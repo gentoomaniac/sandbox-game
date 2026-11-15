@@ -26,6 +26,9 @@ var music_stopper := Callable()
 ## scene, which has the map screen.
 var map_toggler := Callable()
 
+## Opens the trade screen with a shopkeeper: takes them (set by main).
+var shop_opener := Callable()
+
 ## Has the model plan a villager's rest of the day: takes them, returns what to say (set by main).
 var replanner := Callable()
 

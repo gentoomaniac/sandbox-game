@@ -81,14 +81,16 @@ func _fit_height() -> void:
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
 ## them away for `killall` (see Console). `music` is what `play` and `stop` drive, and the log says
 ## when a piece, rendered after the command ran, begins. `replanner` has the model plan a villager's
-## day for `replan`, and `map_toggler` opens and closes the world map for `map`.
+## day for `replan`, `map_toggler` opens and closes the world map for `map` and
+## `shop_opener` opens the trade screen for `shop`.
 func show_state(
 	state: GameState,
 	wildlife_spawner := Callable(),
 	wildlife_clearer := Callable(),
 	music: MusicPlayer = null,
 	replanner := Callable(),
-	map_toggler := Callable()
+	map_toggler := Callable(),
+	shop_opener := Callable()
 ) -> void:
 	_console = Console.new(state)
 	if music != null:
@@ -98,6 +100,7 @@ func show_state(
 		music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
 	_console.context.replanner = replanner
 	_console.context.map_toggler = map_toggler
+	_console.context.shop_opener = shop_opener
 	_console.context.wildlife_spawner = wildlife_spawner
 	_console.context.wildlife_clearer = wildlife_clearer
 

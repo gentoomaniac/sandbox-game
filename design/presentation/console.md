@@ -16,7 +16,7 @@ Decided 2026-11-05. A text console for testing and cheats.
   it on). Later commands: `spawn` (villagers: `npc`; farm
   animals: `cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`; wild ones: `bird`,
   `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork`,
-  `geese`, `flying_geese`, `mouse`, `frog`), `killall <kind>` (task 193: removes every animal of a
+  `geese`, `flying_geese`, `mouse`, `frog`), `shop` (#10: the trade with the shopkeeper, in or out of hours; `shop restock` fills her stock), `killall <kind>` (task 193: removes every animal of a
   kind `spawn` knows, from the running game and from the saved state, and says how many;
   `killall npc <id>`, or just `killall <id>`, removes that one villager of data/villagers.cfg with
   their chat and memories; a bare `killall npc` removes every villager without an id (those made

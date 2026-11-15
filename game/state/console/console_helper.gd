@@ -64,6 +64,8 @@ static func candidates(kind: StringName, context: ConsoleContext) -> Array[Strin
 			values.append("auto")
 		&"snow":
 			values.assign(SNOW_CANDIDATES)
+		&"shop_action":
+			values.append("restock")
 		&"skill":
 			for skill in context.state.player.skills.rules.skill_ids():
 				values.append(String(skill))

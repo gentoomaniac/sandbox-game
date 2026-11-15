@@ -72,6 +72,8 @@ var homes := Households.new(npcs)
 ## Sends the villagers where their day has them be. Built with the simulation; nothing of it is
 ## saved.
 var activities: ActivityUpkeep
+## What the shops have left to sell and take today.
+var shops: Shops
 ## What the player did within sight of villagers.
 var deeds: DeedLog
 ## What the villagers make of the stories they know (StoryJudging asks the language model).
@@ -108,6 +110,7 @@ var _is_horse_winded := false
 func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
+	shops = Shops.new(ShopRules.default_rules(), clock)
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
 	action_done.connect(deeds.record)

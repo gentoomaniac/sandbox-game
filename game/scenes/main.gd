@@ -70,6 +70,7 @@ var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new(_hotbar)
+var _trade_screen := TradeScreen.new()
 var _process_screen := ProcessScreen.new(_hotbar)
 var _fire_screen := CampfireScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
@@ -229,6 +230,7 @@ func _make_views() -> void:
 	add_child(_crafting_screen)
 	add_child(_map_screen)
 	add_child(_storage_screen)
+	add_child(_trade_screen)
 	add_child(_process_screen)
 	add_child(_fire_screen)
 	add_child(_cheat_hud)
@@ -326,7 +328,8 @@ func _connect_state_and_views() -> void:
 		_wildlife.remove_kind,
 		_music,
 		day_planner.replan,
-		_map_screen.toggled
+		_map_screen.toggled,
+		_open_shop
 	)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
@@ -778,6 +781,13 @@ func _interact() -> void:
 			_blackout.try_sleep()
 
 
+## Opens the trade with a shopkeeper, who turns to the player (the trade pauses the game).
+func _open_shop(keeper: Npc) -> void:
+	_console_view.close()
+	_state.npcs.talk_to(keeper, _state.player.position)
+	_trade_screen.open_shop(keeper, _state)
+
+
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game).
 func _open_chat(npc: Npc) -> void:
 	_state.npcs.talk_to(npc, _state.player.position)
@@ -817,7 +827,13 @@ func _start_sounds() -> void:
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_hotbar)
 	for panel: Node in [
-		_menu, _console_view, _chat_screen, _bag_screen, _character_screen, _crafting_screen
+		_menu,
+		_console_view,
+		_chat_screen,
+		_bag_screen,
+		_character_screen,
+		_crafting_screen,
+		_trade_screen
 	]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
