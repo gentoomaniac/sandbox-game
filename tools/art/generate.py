@@ -105,6 +105,7 @@ import crop_icons
 import crops
 import fire
 import flowers
+import footprints
 import interior
 import items
 import landing
@@ -342,6 +343,7 @@ def write_character():
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
+    save(footprints.sheet(GAME_TILE), "effects/footprints.png", GAME_TILE)
 
 
 def write_interior():

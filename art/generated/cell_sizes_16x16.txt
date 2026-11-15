@@ -169,6 +169,7 @@ decorations/soil_16x16.png 16 16
 decorations/warft_16x16.png 16 16
 decorations/water_16x16.png 16 16
 decorations/wetland_16x16.png 16 16
+effects/footprints_16x16.png 16 16
 fire/fireplace_16x16.png 16 20
 fire/hearth_16x16.png 16 22
 interior_16x16.png 16 16

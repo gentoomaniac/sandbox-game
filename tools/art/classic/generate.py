@@ -38,6 +38,7 @@ import crop_icons  # noqa: E402
 import crops  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
+import footprints  # noqa: E402
 import graves  # noqa: E402
 import ground_looks  # noqa: E402
 import ground_overlays  # noqa: E402
@@ -83,6 +84,8 @@ def write_character():
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
+    # The prints are drawn by the new art's module, at this tile size (see footprints.py).
+    save(footprints.sheet(TILE), "effects/footprints.png", TILE)
 
 
 def write_bubbles():
