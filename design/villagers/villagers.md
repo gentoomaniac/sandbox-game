@@ -36,7 +36,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   to say, the user's "Aye." in a German talk), sample lines in their voice (they show the manner,
   not the language), people (family and close friends, each a villager by id with the kind and
   what they think of them), likes, wants (this year), day (where they are when), habits, avoids
-  (what they don't know or won't talk about) and secrets (only hinted at). Nine are written by
+  (what they don't know or won't talk about), secrets (only hinted at) and `gifts_liked` and
+  `gifts_disliked` (lists of item ids the game can read, for gifts: see
+  [relationships.md](relationships.md); a made-up villager has those of the activity set of their
+  trade, `[gifts]` of `data/npcs.cfg`, not saved). Nine are written by
   hand in `data/villagers.cfg` with a fixed look, spawned by id and once each: `antje` (Antje
   Boysen, a farmer's wife: the user's prompt example), her husband `hinrich` and their son `boy`;
   `momme` (Momme Ketels, a fisherman) and his daughter `inken`, Boy's sweetheart; `ocke` (Ocke

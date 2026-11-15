@@ -103,11 +103,23 @@ func record(outcome: ActionOutcome) -> void:
 ## `GossipRules.help_kind`), seen by the giver and by whoever else was outdoors within reach of
 ## `spot`, where the player stood. The place is the giver's house, whose family weigh it high.
 func record_help(giver: Npc, steps: int, spot: Vector2) -> void:
+	_record_with(giver, rules.help_kind(steps), spot)
+
+
+## Writes down that the player gave `receiver` a gift, seen by the receiver and by whoever else was
+## outdoors within reach of `spot`, as `record_help` does.
+func record_gift(receiver: Npc, spot: Vector2) -> void:
+	_record_with(receiver, GossipRules.GAVE_GIFT, spot)
+
+
+## Writes down a deed of `kind` done to `neighbour` at `spot`: seen by them whether or not they are
+## outdoors, and by whoever else is. The place is their house, whose family weigh it high.
+func _record_with(neighbour: Npc, kind: StringName, spot: Vector2) -> void:
 	var witnesses := _witnesses_at(spot)
-	if not witnesses.has(giver):
-		witnesses.append(giver)
-	var place := rules.house_place(giver.name.get_slice(" ", 0))
-	_write_down(rules.help_kind(steps), place, witnesses, giver)
+	if not witnesses.has(neighbour):
+		witnesses.append(neighbour)
+	var place := rules.house_place(neighbour.name.get_slice(" ", 0))
+	_write_down(kind, place, witnesses, neighbour)
 
 
 ## The villagers outdoors within sight of `spot`.

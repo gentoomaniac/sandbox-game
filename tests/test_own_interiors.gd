@@ -68,6 +68,8 @@ func _sheet(home_building: String, home_interior: String) -> Dictionary:
 		"habits": "Hums.",
 		"avoids": "Talk.",
 		"secrets": "None.",
+		"gifts_liked": [],
+		"gifts_disliked": [],
 		"samples": ["One.", "Two."],
 		"people": {},
 		"look": {"body": "fair"},

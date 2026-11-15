@@ -112,6 +112,11 @@ func problems() -> Array[String]:
 		var people: Variant = villager.get("people")
 		if not people is Dictionary or not people.values().all(_is_kind_and_text):
 			found.append("[%s] people is not a dictionary of [kind, what they think]" % id)
+		found.append_array(
+			FriendshipRules.gift_taste_problems(
+				"[%s]" % id, villager.get("gifts_liked"), villager.get("gifts_disliked")
+			)
+		)
 		found.append_array(_place_problems(id, villager))
 		found.append_array(_activity_problems(id, villager))
 		found.append_array(_interior_problems(id, villager))
@@ -146,7 +151,8 @@ func has(id: String) -> bool:
 
 
 ## The villager of that id as written: {name, sex, age, trade, look, personality, background,
-## home, speech, samples, people, likes, wants, day, habits, avoids, secrets}.
+## home, speech, samples, people, likes, wants, day, habits, avoids, secrets, gifts_liked,
+## gifts_disliked}.
 func villager(id: String) -> Dictionary:
 	return _values[id]
 

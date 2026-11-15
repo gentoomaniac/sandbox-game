@@ -59,8 +59,14 @@ func problems() -> Array[String]:
 			bad.append("[levels] %s must be [name, first point, mood]" % _level_key(level))
 	if not bad.is_empty():
 		return bad
-	if not _values.get("caps", {}).get("action_daily_cap_points") is int:
-		bad.append("[caps] action_daily_cap_points must be a whole number")
+	for section_and_key in [
+		["caps", "action_daily_cap_points"],
+		["gifts", "liked_points"],
+		["gifts", "neutral_points"],
+		["gifts", "disliked_points"],
+	]:
+		if not _values.get(section_and_key[0], {}).get(section_and_key[1]) is int:
+			bad.append("[%s] %s must be a whole number" % section_and_key)
 	if not bad.is_empty():
 		return bad
 	if levels.size() != LEVEL_COUNT:
@@ -75,6 +81,23 @@ func problems() -> Array[String]:
 
 func is_valid() -> bool:
 	return problems().is_empty()
+
+
+## What is wrong with the lists of the items that `where` (a villager or a set of trades) is glad
+## and sorry to be given: each a list of items of the game, and no item in both.
+static func gift_taste_problems(where: String, liked: Variant, disliked: Variant) -> Array[String]:
+	var bad: Array[String] = []
+	for entry in [["gifts_liked", liked], ["gifts_disliked", disliked]]:
+		var list: Variant = entry[1]
+		if not (list is Array and list.all(_is_item)):
+			bad.append("%s %s is not a list of items of the game" % [where, entry[0]])
+	if bad.is_empty() and liked.any(func(item: String) -> bool: return item in disliked):
+		bad.append("%s likes and dislikes the same gift" % where)
+	return bad
+
+
+static func _is_item(value: Variant) -> bool:
+	return value is String and ItemTypes.TYPES.has(StringName(value))
 
 
 ## The level (1 to 10) of an opinion in points; one below the first level's start is level 1.
@@ -107,6 +130,11 @@ func first_point_of(level: int) -> int:
 ## The most points the player's actions move a villager's opinion in a day, up or down.
 func action_daily_cap() -> int:
 	return _values["caps"]["action_daily_cap_points"]
+
+
+## What a gift of this taste (`liked`, `neutral` or `disliked`) moves the opinion by, in points.
+func gift_points(taste: StringName) -> int:
+	return _values["gifts"]["%s_points" % taste]
 
 
 func _entry(level: int) -> Array:

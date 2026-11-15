@@ -48,12 +48,17 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
 - **First kinds:** felled a tree, built a building, took down a building, placed a fence or
   wall, tilled, sowed, harvested, dug clay, mowed, and **helped** (not an action: handing in a quest
   tells it, see [quests.md](quests.md)). The list, its words and the fixed opinion changes are in
-  `data/gossip.cfg`. Gifts, theft and damage come with [relationships](relationships.md), as new deed kinds.
+  `data/gossip.cfg`. Theft and damage come with [relationships](relationships.md), as new deed kinds;
+  its **gave_gift** is built.
 - **Helped:** `helped` (fixed change +1) for a quest whose reward has one step of opinion and
   `helped_much` (+2) for two, the most a deed is worth (`GossipRules.MAX_CHANGE`). It is
   seen by the giver and by the villagers outdoors within the usual witness radius of where the player
   stood, in the place of the giver's house, so their family weigh it high; the stories are then
   judged like any: by the model, else the fixed change, within the day's cap of 20 points.
+- **Gave a gift:** `gave_gift` (fixed change 0: the gift's worth to the receiver is its own points, see
+  [relationships.md](relationships.md)) is written down by `DeedLog.record_gift`, seen by the receiver
+  (indoors or out) and by the villagers outdoors within reach, so the others hear of it as gossip.
+  It whispers into `helped`.
 - **The place** in words: the house of the villager whose home is nearest within 20 tiles ("by
   Antje's house"), else "out on the marsh" (a word per biome in the data file). A deed on the
   village's own land (the record `World.village`, [../world/wehlsbuell.md](../world/wehlsbuell.md))

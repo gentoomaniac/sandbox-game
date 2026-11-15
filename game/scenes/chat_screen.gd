@@ -6,7 +6,8 @@ extends Modal
 ## the game time in its corner, and above each day's lines that day ("Today", "Yesterday" or the
 ## date), so a line of an earlier day doesn't look newer than the one after it. The window
 ## scrolls to the newest line, back with the mouse wheel or Page Up and Page Down, and a line to
-## type into is below. Enter sends, Escape leaves. The log is LOG_SIZE, or smaller where the
+## type into is below, and a button that gives the villager the item in the player's hand (see
+## Gifts). Enter sends, Escape leaves. The log is LOG_SIZE, or smaller where the
 ## window at the current UI scale leaves less room (see `_fit_log`), and the bubbles' widths
 ## follow it.
 ##
@@ -83,6 +84,7 @@ var _scroll := ScrollContainer.new()
 var _is_following := true
 var _log_size := LOG_SIZE
 var _line_edit := LineEdit.new()
+var _give_button := Button.new()
 
 
 func _init() -> void:
@@ -118,6 +120,9 @@ func _init() -> void:
 	_line_edit.gui_input.connect(_on_input_gui_input)
 	_line_edit.focus_exited.connect(_on_input_focus_exited)
 	chat.add_child(_line_edit)
+	_give_button.focus_mode = Control.FOCUS_NONE
+	_give_button.pressed.connect(_on_give_pressed)
+	chat.add_child(_give_button)
 	row.add_child(chat)
 	var player_name := Label.new()
 	player_name.text = PLAYER_NAME
@@ -151,6 +156,7 @@ func _on_open() -> void:
 	_line_edit.clear()
 	_notice = ""
 	_show_lines()
+	_update_give_button()
 	_is_opening_key_held = Input.is_action_pressed("interact")
 	_line_edit.grab_focus()
 	_line_edit.edit()
@@ -201,6 +207,24 @@ func say(text: String) -> void:
 	# The dialogue finishes the exchange, whether this window is still there or not.
 	dialogue.say(npc, line, _state)
 	_show_lines()
+
+
+func _on_give_pressed() -> void:
+	Gifts.give(_state, _npc)
+	_notice = ""
+	_show_lines()
+	_update_give_button()
+
+
+## The button offers the item in the player's hand, or says there is none.
+func _update_give_button() -> void:
+	var item := _state.player.inventory.held_item()
+	_give_button.disabled = item == ItemTypes.NONE
+	_give_button.text = (
+		"Give %s" % ItemTypes.TYPES[item]["name"]
+		if not _give_button.disabled
+		else "Hold a gift to give it"
+	)
 
 
 ## An exchange with `npc` ended: shown if that is the villager of the open chat, the dots of an

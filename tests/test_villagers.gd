@@ -242,4 +242,6 @@ func _villager(sex: String, age: int, home: String, people: Dictionary) -> Dicti
 		villager[key] = "Some words."
 	villager["home"] = home
 	villager["people"] = people
+	villager["gifts_liked"] = []
+	villager["gifts_disliked"] = []
 	return villager

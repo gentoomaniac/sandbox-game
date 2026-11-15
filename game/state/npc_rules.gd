@@ -123,6 +123,9 @@ func problems() -> Array[String]:
 	for sex in SEXES:
 		if not _values[str(sex)]["trades"].all(_is_trade_day_and_set):
 			found.append("[%s] trades is not a list of [trade, day, set of activities]" % sex)
+			continue
+		for entry: Array in _values[str(sex)]["trades"]:
+			found.append_array(_gift_problems(entry[2]))
 	if not _values["background"]["speeches"].all(_is_manner_and_samples):
 		found.append(
 			(
@@ -133,8 +136,24 @@ func problems() -> Array[String]:
 	return found
 
 
+## What is wrong with what the set of a trade is glad and sorry to be given.
+func _gift_problems(work_set: String) -> Array[String]:
+	var taste: Variant = _values.get("gifts", {}).get(work_set)
+	if not taste is Dictionary:
+		return ["[gifts] %s is not {liked, disliked}" % work_set]
+	return FriendshipRules.gift_taste_problems(
+		"[gifts] %s:" % work_set, taste.get("liked"), taste.get("disliked")
+	)
+
+
 func is_valid() -> bool:
 	return problems().is_empty()
+
+
+## What the villagers of a set of activities (see `work_set_of_trade`) like and dislike to be given:
+## {liked: [item ids], disliked: [item ids]}.
+func gift_tastes_of_set(work_set: String) -> Dictionary:
+	return _values["gifts"][work_set]
 
 
 ## A number of [behaviour].

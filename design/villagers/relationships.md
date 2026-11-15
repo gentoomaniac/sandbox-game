@@ -23,6 +23,16 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   defaults (days 0, counts 0, `bond` none) and leaves the points as they are. `SaveValidator`
   checks days and counts are not negative, what the actions moved today is within the cap and the
   bond is known. Step 4b: the upgrade from version 42 is dropped (oldest read: 43).
+- Step 5: gifts. `Gifts.give(state, villager)` gives the item in the player's hand: liked +40, neutral
+  +10, disliked -20 (`[gifts]` of `data/friendship.cfg`, through `Npc.change_friendship`, so within the
+  cap of the actions), once a day per villager (`Npc.last_gift_day`); the item leaves the inventory,
+  a second gift of the day is refused and kept, and the villager answers with a line of `[gift]` of
+  `data/npc_talk.cfg`. The taste is the sheet's `gifts_liked` and `gifts_disliked`
+  (`data/villagers.cfg`, items of the game: Antje likes berry tart and eggs, Momme pottage and
+  bread; butter and smoked eel come with the items) or, for a made-up villager, those of the set of
+  activities of their trade (`[gifts]` of `data/npcs.cfg`, not saved). The deed `gave_gift` (change 0)
+  is logged and told as gossip. In the chat window a **Give** button offers the held item. It is
+  `Gifts`, not a method of `GameState`, which is near its size limit.
 
 ## The user's words
 

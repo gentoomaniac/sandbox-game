@@ -104,6 +104,13 @@ const KEYS := {
 		"open": TYPE_STRING,
 	},
 	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY},
+	"gift":
+	{
+		"liked": TYPE_STRING,
+		"neutral": TYPE_STRING,
+		"disliked": TYPE_STRING,
+		"already_today": TYPE_STRING,
+	},
 	"shop":
 	{
 		"opens": TYPE_STRING,
