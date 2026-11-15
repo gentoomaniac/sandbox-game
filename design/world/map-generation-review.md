@@ -1,8 +1,8 @@
 # Map generation review
 
-[#60](https://github.com/gentoomaniac/sandbox-game/issues/60). **Plan first: nothing here is built.**
-This page says what the generator does now, how the region looks, and in which steps to get from
-one to the other. It waits for the user's approval (the open questions are at the end).
+[#60](https://github.com/gentoomaniac/sandbox-game/issues/60). This page says what the generator
+did before, how the region looks, what the user decided (#71 to #74) and the steps that were
+built from it.
 
 The maps below come from `tools/world_map.gd` (headless, no save is touched):
 
@@ -14,7 +14,7 @@ One block is one tile. Ground: light green grass, blue river and ditches, teal w
 floodplain, beige mud, dark blue sea. On it: dark green trees, light green bushes, **orange Knicks,
 white stone walls, yellow wattle fences**, brown dykes, yellow-green reeds.
 
-## 1. What the generator does now
+## 1. What the generator did before
 
 `game/world/world_generator.gd` is a pure function of the seed and the tile position. It has these
 layers, in this order. Each layer looks at the tile and its neighbours only. None knows about the
@@ -127,170 +127,74 @@ The pages above load (checked), but only their titles and my knowledge of them w
 page: the facts about Knicks, Redder and the drainage are the usual ones and should be read there
 once before the numbers are tuned. The wiki rate limit stopped further checks.
 
-## 3. The plan
+## 3. Decisions
 
-Each step is one commit, passes `make test` and `make lint` on its own, and ends with new
-"after" maps of the three seeds. The generator stays a pure function of seed and position.
-Numbers go into `data/landscape.cfg`. Order: first the safe base, then the layers from the
-natural land towards the worked land.
+The user's answers (issues #71 to #74) settle what the plan builds:
+
+- **The open land is bare, with nature only.** No generated farms, yards, fields, lanes, walls,
+  fences, hedges (Knicks) or ditches anywhere in the open land. Fields come only around the
+  generated villages, and lanes only in and around villages and between them: that is the village
+  task ([#9](https://github.com/gentoomaniac/sandbox-game/issues/9)), not this one. The player
+  digs ditches to water fields later ([#86](https://github.com/gentoomaniac/sandbox-game/issues/86)),
+  so the generator makes no ditch. What the review found wrong with the field grid, the loose
+  boundaries and the ditch grid therefore goes away with the grid itself.
+- **Natural creeks, few, winding, with fords.** A creek is natural water: it starts at a wetland
+  patch, winds and reaches the river. Fords let a walker cross it.
+- **Woods: the plan's defaults.** About 15 % of the Geest is wood, none in the marsh. The pine
+  and spruce clumps stay, as patches inside the woods of the Geest. The groves at the farms and
+  the Knick along a wood's edge wait for the villages: with no village, there is none yet.
+- **The map tool stays,** as `make world-map`, and the steps keep the planned order.
+- **Saves.** Today's saves are test saves, so a breaking change is fine; it goes into the release
+  notes. Old saves keep loading, and the land they have not edited comes from the new generator
+  (the seam between old edits and new land may look odd). No land freeze, no second generator,
+  no village for old saves. The save version goes up by one (the next free number).
 
 ### Saves and determinism
 
-A save holds the seed and the edits (`World.to_dict`: terrain edits, object edits with `null`
-for a removed generated object, buildings). **Chunks are not saved**: they are generated again
-from the seed with the edits replayed on top. So every change of the generator changes every
-tile of an old save that has no edit, visited or not. Two more places read the generator and not
-the save: `CampSite.spawn_of_seed` and `sleeping_bag_of_seed` (the wake-up point of a player
-with no bed, found by searching the generated land) would move, and `World.object_at` of an
-unloaded chunk asks the generator.
+A save holds the seed and the edits (`World.to_dict`); chunks are not saved but generated again
+from the seed with the edits replayed. So a change of the generator changes every tile of an old
+save that has no edit. `CampSite.spawn_of_seed` and `sleeping_bag_of_seed` read the generator
+too, so the wake-up point of a player with no bed moves. All new layers are pure functions of the
+seed and the tile position, with their own noise instances, so chunks still come out the same in
+any order.
 
-Handling (open question 1): step 1 is a save upgrade that **freezes the known land** before the
-first generator change. It writes the old generator's terrain and objects as edits (`null`
-where it had nothing) in an area around everything the player did, and stores the old start
-point. Everything after that may change the generator. This is the way version 10 did it ("further
-out an old world gets the new land"), but exact instead of clearing. The cost is a bigger save
-(about 1 000 tiles for a radius of 16 around the work) and some edits that are not the
-player's. The unvisited land of old saves changes. A new game with the same seed also looks
-different from before.
+## 4. What was built
 
-### Steps
+Each step is one commit (or two) that passes `make test` and `make lint` on its own.
 
-1. **Save: freeze the land the player knows.** Save version 43. The upgrade step takes the old
-   generator (this step still has it) and, within R tiles of the buildings, edits, camp and the
-   player, writes a terrain edit and an object edit (`null` for none) for every tile; and
-   `player.home_bed` for a save without a bed. Files: `save_file.gd`, a helper next to it, `save_validator.gd`, `tests/test_save_upgrade*.gd`
-   (an old save loads, its home area is as before after a generator change simulated by another
-   seed). Drop the oldest upgrade step in a commit of its own, as the save rules say.
-2. **Map tool and `make map`.** `tools/world_map.gd` (made in this review) goes into the Makefile
-   as `make world-map SEED=.. AT=.. SIZE=..` and into `docs/development.md`, so every later step can
-   produce its after-pictures. No test needed beyond lint; it is a tool.
-3. **Woods.** Replace the per-tile roll in `_rolled_type_at` by a wood shape:
-   - a *wood mask* from the forest noise, warped by a second noise so the outline is not a
-     contour of one frequency, thresholded higher than now (woods are about 12 to 15 % of the
-     land, not 35 %), and a minimum size: small blobs are dropped (a coarse noise cell decides);
-   - the *depth* inside the mask (distance to the edge, by a few probes or by the noise slope)
-     gives the zones: an **edge** of 2 to 3 tiles with shrubs and a few young trees; a **core**
-     with trees at about 25 %, spaced (the roll is per 2 x 2 cell with a jittered tile, so no
-     two trunks stack and no big gap stays);
-   - **clearings**: a high-frequency noise above a threshold inside the core carves holes of 4
-     to 10 tiles, with grass and bushes and nothing taller;
-   - outside the wood: no lone trees, but for `CLEARING_TREE_CHANCE` cut to about 0.03 %, an oak
-     in a Knick row and trees at a farm (steps 5 and 6 add these).
-   Files: `world_generator.gd` (this may be the moment to move the tree layer to its own
-   `WoodLayout` class like `FieldLayout`; the file is 745 lines), `data/landscape.cfg`
-   (`[woods]`), `design/world/generation.md`. Tests: same seed, same woods; the share of the
-   land that is wood; trees outside woods less than 0.1 % of the tiles; the largest wood is a
-   connected area of at least 200 tiles and the smallest at least 40; clearings exist and are
-   free of trees; the species shares stay as in design (28 % beech and so on, within tolerance);
-   the camp is still found.
-4. **Land use cells.** Keep the grid, but make each cell of it (field of `FieldLayout`) *something*:
-   by a noise per cell: arable, pasture, wood, common (heath, no boundary). A cell with a wood
-   mask over most of its area is wood. `FieldLayout` answers a boundary tile only where one of
-   its two sides is arable or pasture, and the kind belongs to the field, not the stretch: Knick
-   by default, wall where the boulder noise is high, fence for the pastures next to a farm.
-   The random "80 % of the stretches" goes away: a boundary is there or it is not because of the
-   cells beside it. Fields on the Geest get a jitter on the boundary lines so they are not
-   a rectangular grid (a line wobbles by one tile per 6 by a noise, which the Knick follows).
-   Files: `field_layout.gd`, `world_generator.gd` (`_is_geest_field`), `landscape.cfg`,
-   `tests/test_field_layout.gd`, `test_world_generator.gd`, `test_landscape_data.gd`, design docs.
-   Tests: **no boundary tile has a non-field cell on both its sides** (the rule of the issue);
-   no boundary in a wood; one kind along one field; every field still has a gap (no field shut
-   in, as now); same seed same result.
-5. **Farms and lanes.** In some arable cells (about one in eight) stands a *farm site*: a yard
-   of about 7 x 7 tiles in the middle of its cell, kept free, with a ring of trees (the farm
-   grove: oak, ash, elder), a pond (Fething) at times, and a gap in the boundary beside it. A
-   **lane** (Redder) runs along the grid lines from every farm site to the next crossing, then
-   along a main line to the dyke or the river: 1 tile of path between two Knicks. The lanes are
-   the only boundaries that exist for their own sake, so a wall is never loose. A lane is walkable,
-   a gap at every crossing. Whether the farm site holds buildings is open question 4. Files: a new
-   `farm_layout.gd`, `field_layout.gd`, `world_generator.gd`, `landscape.cfg`, tests (each farm
-   has a lane that ends at a dyke or lane network; the yard is free and walkable; lanes never
-   shut a field in). Check how a lane is shown: a path is a ground cover now (`path_rules.gd`),
-   so either a lane is a worn path from the start or a new terrain: to be settled at this step.
-6. **The marsh: parcels and ditches that drain.** In the marsh (and no longer on the same grid)
-   the layout is in the coordinates of the water: *along* the dyke or river and *across* it.
-   - Parcels are long strips across the dyke (about 12 to 20 tiles wide, 60 to 120 long), bounded
-     by ditches along their long sides (the field edges) and one cross ditch at the far end;
-   - every 4th to 6th ditch is a **Sielzug**, 2 tiles wide, that leads to the river or to the
-     sea dyke and ends in a **Siel** (a gap in the dyke with water through it) and never ends
-     anywhere else; the other ditches end in a Sielzug or the river, never loose;
-   - a ditch is only where it has a field beside it: none on a Warft, none in a farm yard;
-   - a crossing (gap) beside each farm and at least one every 40 tiles, so nothing is shut in;
-   - no Knicks in the marsh; trees only at farms (the grove) and the pollard willows by the ditches
-     as now; the Marsch is open.
-   The old `_is_marsh` reach of 36 tiles stays as the zone, with the edge softened by noise so
-   marsh and Geest meet in a wavy line, and with a Geest-side Knick where they meet. Files: a new
-   `marsh_layout.gd`, `world_generator.gd` (`_is_ditch`, `_is_marsh`), `landscape.cfg`
-   (`[marsh]`, `[sielzug]`), `design/world/generation.md`, `coast.md`. Tests: every ditch tile
-   connects through water to a river, a sea dyke Siel or the coast, by flood fill on a sample
-   area; no ditch tile at a Warft or yard; same seed same result.
-7. **Creeks and a river that winds.** Add octaves to the river centre line so it has small
-   bends (2 noises: the big one as now, a second at frequency ~0.02, amplitude ~6 tiles) and a
-   width that changes (3 to 5 tiles half width, by a slow noise). Add **creeks** (Bäche): 1
-   to 2 tiles wide, from a source (a wetland patch or a spring in a wood) to the river, as a
-   centre line with noise bends, found by a rule that does not need a search: a creek per
-   band of x (like the tideways do per band of y), flowing from its source towards the river
-   along the slope of the river-distance with noise added, so it always reaches the river.
-   Wetland patches get a creek out and sit at the sources. Files: `world_generator.gd` (or a new
-   `creek_layout.gd`), `landscape.cfg`, docs. Tests: a creek reaches the river by flood fill,
-   it is not straight (turns at least N times per 100 tiles), it is crossable (fords: a gap in
-   the water, or the field gaps are still reachable; check with the existing "no field shut in"
-   test over seeds). Fords are open question 6.
-8. **Tuning and docs.** Compare "before" and "after" maps of the three seeds and a few
-   screenshots in the game at zoom, adjust the numbers in `landscape.cfg` (wood share, field
-   size, farm density, creek density), update `design/world/generation.md`,
-   `coast.md`, `design/building/fences-and-walls.md`, the handbook and `docs/screenshots` that
-   show the land. Put the after-pictures here, beside the before-pictures.
+1. **`make world-map`.** `tools/world_map.gd` (made in this review) goes into the Makefile and
+   `docs/development.md`, so every step can make its after-pictures.
+2. **Bare open land.** The generator stops laying the field grid, its boundaries, the ditches,
+   and the willows and reeds beside ditches. `FieldLayout` and `[fields]`, `[kinds]`, `[ditches]`
+   of `data/landscape.cfg` are deleted: the villages will lay their own fields. The dykes stay.
+   The marsh keeps its reach (`[marsh]`), which still decides which trees stand on wet ground.
+3. **Woods.** The per-tile roll becomes a wood shape (`game/world/wood_layout.gd`, numbers in
+   `[woods]`):
+   - a wood mask from the forest noise warped by a second noise, thresholded so the woods are
+     about 15 % of the Geest, with no wood in the marsh;
+   - the depth inside the mask gives an edge of shrubs and young trees and a core of trees spaced
+     by a jittered tile in every 2 x 2 cell;
+   - clearings carved into the core by a high-frequency noise, with grass and bushes only;
+   - no lone trees outside a wood;
+   - pine and spruce stay as patches in the woods of the Geest.
+4. **A river that winds, and creeks.** The river's centre line gets a second, finer bend and a
+   width that changes. Creeks (Bäche) are 1 to 2 tiles wide, run from a wetland patch to the
+   river, wind, and are few. A ford is a tile of the creek that a walker can cross.
+5. **Docs, save version and release note.** `design/world/generation.md`, `coast.md`, the
+   handbook and the after-pictures; the save version goes up and the release note says the land
+   of old saves is new.
 
-Each of steps 3 to 7 can be dropped or reordered without breaking the others, but 4 has to come
-before 5 and 6 (they use its cells). The user can stop after any step and have a better
-land than now.
+## 5. Not built here
 
-### Other concerns
+Farms, farm yards, lanes (Redder), land-use cells, the marsh parcels with their Sielzüge and
+Sielen, and groves at farms. They need a village to belong to ([#9](https://github.com/gentoomaniac/sandbox-game/issues/9)).
+The marsh stays open grass behind the dyke, with the river's reeds and the wetland patches.
 
-- **Speed.** The generator already probes neighbours a lot (`_is_beside_ditch` calls `is_ditch` on
-  4 tiles, each of which asks the field layout). New layers must answer per chunk, not per tile,
-  as `FieldLayout.cover` does: compute the cell data of a chunk and its rim once. Check with
-  `make bench`.
-- **Walking.** The travel masks and the pathfinder read the same terrain and objects, so a new
-  layer needs no change there. #68 (travel in unloaded chunks) must call the same generator
-  functions: nothing here should add a second source of the land.
-- **No field shut in** is an invariant of the tests today; each step keeps it (gates and crossings
-  are made by the same layout that makes the boundary).
-- **Art.** A Knick, wall, fence and ditch have art. Lanes (step 5) may want a path look and a
-  gate; the Siel may want a small object. They can use the current ones first.
+The generator keeps asking the terrain per tile, so a new layer must answer cheaply (see
+`make bench`); the travel masks and the pathfinder read the same terrain and objects and need no
+change.
 
-## 4. Open questions
+## 6. Before and after
 
-1. **Old saves.** The generator change changes the unvisited and the not-edited land of every
-   old save. Step 1 freezes an area around everything the player did and stores the old start
-   point. Or keep the old generator for old saves (a "generator version" in the save; two
-   generators in the code), or accept the change with no protection. Default: freeze the land
-   within 24 tiles of all buildings, edits, the camp and the player; the rest gets the new land.
-2. **How much wood?** The woods are about 35 % of the land now (noise above 0.1). The region
-   has less: about one tile in five or six on the Geest and almost none in the marsh. Default:
-   about 15 % wood on the Geest, none in the marsh but groves at the farms.
-3. **Conifers.** Keep the pine and spruce clumps (7 % of the trees, answer to #57 question 3 was
-   "keep")? In the new woods they would stand in their own patches inside a wood. Default: keep, as
-   patches inside woods on the Geest only.
-4. **Farms.** Should the generator make farms, that is, yards with a grove and a lane (step 5),
-   but no buildings, or also generated farm houses and barns that someone lives in? Default:
-   yards, groves, ponds and lanes only; no generated buildings (the buildings are the player's
-   and the villagers' work, and a generated house needs interiors and owners).
-5. **Lanes.** Lanes (Redder) are a path between two Knicks from each farm to the net of lanes
-   and the dyke. Wanted, as a real path on the ground from the start? Default: yes, a worn path
-   look, 1 tile wide, with Knicks on both sides, and a Deichweg on top of the river and sea dykes
-   as a path too.
-6. **Creeks and crossings.** Creeks block walking like the river. Should they have **fords**
-   (shallow places that can be walked, say one every 30 to 50 tiles), or only the gaps of the
-   boundaries where one crosses? Default: fords, 1 tile, shown as a stone bed, so no land is cut
-   in two by a creek.
-7. **A Knick as the border of a wood.** In reality a wood is fenced by a Knick or bank towards the
-   field. Default: yes, where a field touches a wood, the boundary runs along the edge of the
-   wood (the wood side has the shrub mantle of the edge).
-8. **The map tool.** It is committed in this review (`tools/world_map.gd`) so that the "before"
-   pictures can be made again. Default: keep it, add `make world-map` in step 2, and use it for
-   the "after" pictures.
-9. **Order.** Default as above: save freeze, woods, land use, farms and lanes, marsh, creeks,
-   tuning. Do you want a different first step (for example the marsh ditches, which are the
-   ugliest)?
+Before (the generator as it was) and after maps of the same seeds are in
+`docs/screenshots/map-generation/`, made by `make world-map`.
