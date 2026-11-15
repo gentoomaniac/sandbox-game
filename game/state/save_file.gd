@@ -21,10 +21,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 41
-## The oldest version we still upgrade. Nine steps back, for the next version (#66) makes its
-## step the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 42
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -206,6 +205,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_39(game)
 	if version <= 40:
 		_upgrade_from_version_40(game)
+	if version <= 41:
+		_upgrade_from_version_41(game)
 
 
 ## Version 32 had one grade of each tool (task 207): they are the rusty iron ones now, wherever
@@ -315,6 +316,12 @@ static func _upgrade_from_version_40(game: Dictionary) -> void:
 			object["storage"] = [wood_slot.duplicate()]
 			object["state"]["lit"] = true
 			object["state"]["log_left"] = log_minutes
+
+
+## Version 41 had horses that never tired (#66): every animal has stamina, a horse a full one.
+static func _upgrade_from_version_41(game: Dictionary) -> void:
+	for animal: Dictionary in game["livestock"]:
+		animal["stamina"] = 1.0
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:

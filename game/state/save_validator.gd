@@ -445,6 +445,7 @@ func _check_livestock(animals: Array) -> void:
 		_field(animal, "position", Kind.POINT, path)
 		_field(animal, "follow_until_minute", Kind.WHOLE, path)
 		_field(animal, "is_saddled", Kind.BOOL, path)
+		_check_between(_field(animal, "stamina", Kind.NUMBER, path), 0.0, 1.0, path, "stamina")
 		for need in ["hunger", "thirst"]:
 			_check_between(_field(animal, need, Kind.NUMBER, path), 0.0, 1.0, path, need)
 		_check_between(

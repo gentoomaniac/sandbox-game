@@ -23,8 +23,8 @@ func test_a_negative_or_part_litre_of_water_is_refused() -> void:
 	assert_string_contains(_refusal_of(game).reason, "can_water")
 
 
-func test_a_need_outside_zero_to_one_is_refused() -> void:
-	for need in ["hunger", "thirst"]:
+func test_a_need_or_the_stamina_outside_zero_to_one_is_refused() -> void:
+	for need in ["hunger", "thirst", "stamina"]:
 		for bad in [-0.1, 1.5]:
 			var game := _current_game()
 			var cow := FarmAnimal.new(LivestockRules.COW, &"angler", Vector2(2.5, 3.5)).to_dict()

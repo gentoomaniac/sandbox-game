@@ -73,6 +73,9 @@ var missed_roost := false
 var search_seconds := 0.0
 ## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.
 var is_saddled := false
+## How much a horse has left to sprint with, from 0 (none) to 1 (full); see GameState `walk`.
+## Saved with the horse, so one ridden hard is still tired after a load.
+var stamina := 1.0
 ## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its
 ## own accord. Not saved, as the riding isn't.
 var is_ridden := false
@@ -121,6 +124,7 @@ func to_dict() -> Dictionary:
 		"position": SaveCodec.float_vector_to_json(position),
 		"follow_until_minute": follow_until_minute,
 		"is_saddled": is_saddled,
+		"stamina": stamina,
 		"hunger": hunger,
 		"thirst": thirst,
 		"friendship": friendship,
@@ -141,6 +145,7 @@ static func from_dict(data: Dictionary, rules: LivestockRules) -> FarmAnimal:
 	animal.tint = Color.html(data["tint"])
 	animal.follow_until_minute = int(data["follow_until_minute"])
 	animal.is_saddled = data["is_saddled"]
+	animal.stamina = data["stamina"]
 	animal.hunger = data["hunger"]
 	animal.thirst = data["thirst"]
 	animal.friendship = int(data["friendship"])
