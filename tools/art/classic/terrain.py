@@ -268,6 +268,8 @@ def mud():
         "mwwlwm",
         ".mmmm.",
     )
+    # A small pool left in a hollow: the water under its shaded north bank, the rest lighter.
+    pool = sprite({"m": "mud_dark", "w": "water", "l": "water_light"}, "mm.", "wll")
     mussels = sprite(
         {"i": "ink", "d": "stone_dark", "l": "water_light", "m": "mud_dark"},
         ".dd.d.",
@@ -290,10 +292,13 @@ def mud():
                 for dx in range(length):
                     if x + dx < TILE and _is_trough(x + dx, y):
                         tile[y][x + dx] = "mud_dark"
+                        # Here and there the tide's water still stands in the trough.
+                        if rng.random() < 0.2:
+                            tile[y][x + dx] = "water_light" if rng.random() < 0.3 else "water"
                         if y > 0 and rng.random() < 0.5:
                             tile[y - 1][x + dx] = "bare_light"
                 x += length + rng.randrange(6, 16)
-        sprinkle(tile, rng, [hole, hole, coil, glint], spacing=8, chance=0.3)
+        sprinkle(tile, rng, [hole, hole, coil, glint, pool], spacing=8, chance=0.35)
         return tile
 
     fulls = [
@@ -306,7 +311,7 @@ def mud():
         details(texture, 117, mussels),
         details(texture, 118, shells[2], cast),
         details(texture, 119, wrack),
-        details(texture, 120),
+        details(texture, 120, puddle),
         details(texture, 121),
         details(texture, 122),
         details(texture, 123),

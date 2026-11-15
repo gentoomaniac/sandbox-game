@@ -158,7 +158,8 @@ alone (`soil_beds.spot_on_bed`). The path is packed earth worn pale in patches, 
 under the turf at its edge with blades leaning in; in the rain trodden grass and the path are wet
 `soil` with puddles standing on it (`terrain.wet`): flat and wide, `soil_dark` soaked earth and a
 shaded north bank, `water` under it, `water_light` sheen and a `foam` glint, and soaked patches; the tidal mud has wavy ripple marks with
-dark troughs, which the tide fills first. The grass itself stays grass all year and only
+dark troughs, which the tide fills first; at low water `water` and `water_light` still stand in the
+deepest stretches of the troughs and in small pools (issue #90). The grass itself stays grass all year and only
 goes darker green: its lighter greens move a step down in autumn and every green one more in
 winter (`seasons.AUTUMN_GROUND`, `seasons.BARE_GROUND`); the dry
 grass of the Geest keeps a little straw in autumn (`dry_light` becomes `reed`), subtle and even.

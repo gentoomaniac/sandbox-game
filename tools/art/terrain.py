@@ -399,6 +399,14 @@ def mud():
         column = [y for y in range(6) if puddle[y][x]]
         if column:
             puddle[column[0]][x] = "mud_dark"
+    # Small pools left in the hollows, like the puddle but of a few pixels: the water under the
+    # shaded north bank darker, the rest lighter with the sky, and a glint.
+    pool_keys = {"d": "mud_dark", "w": "water", "l": "water_light", "f": "foam"}
+    pools = [
+        sprite(pool_keys, ".ddd..", "dwwllf", ".llll."),
+        sprite(pool_keys, ".dd.", "dwlf", ".ll."),
+        sprite(pool_keys, "dddd..", ".wllld", "..ll.."),
+    ]
     mussels = sprite(
         {"i": "ink", "d": "stone_dark", "l": "water_light", "m": "mud_dark"},
         "..dd..d...",
@@ -428,9 +436,13 @@ def mud():
                 if smooth(x, y) < -0.35:
                     continue
                 tile[y][x] = "mud_dark" if deep(x, y) > -0.2 else "mud"
+                # Where the trough is deepest the tide's water still stands in it.
+                if deep(x, y) > 0.5 and rng.random() < 0.6:
+                    tile[y][x] = "water_light" if rng.random() < 0.3 else "water"
                 if rng.random() < 0.2:
                     tile[y - 1][x] = "bare_light"
         scatter(tile, rng, [hole, hole, coil], 4)
+        scatter(tile, rng, pools, rng.randrange(3))
         return tile
 
     fulls = [
@@ -439,13 +451,13 @@ def mud():
         details(texture, 113, shells[0], hole),
         details(texture, 114, puddle),
         details(texture, 115, cast, shells[1]),
-        details(texture, 116),
+        details(texture, 116, puddle),
         details(texture, 117, mussels),
         details(texture, 118, shells[2], cast),
         details(texture, 119, wrack),
         details(texture, 120),
         details(texture, 121, coil),
-        details(texture, 122),
+        details(texture, 122, puddle, hole),
         details(texture, 123, hole),
         details(texture, 124),
     ]
