@@ -8,8 +8,8 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
 
 - **Who:** each villager draws a sex, a name and a look from a seed. Names are period North
   Frisian and Low German first names by sex (Hinrich, Jens, Boy, Momme, Ocke, Tete; Antje,
-  Elke, Inken, Kerrin, Wiebke) and surnames (Jensen, Petersen, Lorenzen, Nissen, Carstensen;
-  the hand-written families are the Boysens, Ketels, Hansens and Paulsens). The look is layers
+  Elke, Inken, Kerrin, Wiebke) and surnames (Jensen, Petersen, Thiessen, Nissen, Carstensen;
+  the hand-written families are the Boysens, Ketels, Hansens, Paulsens and Lorenzens). The look is layers
   like the player's: a skin, a hair style and colour (short, long or tied for men; a bun or
   plaits for women), and period clothes (men: shirt or
   waistcoat, knee breeches, sometimes a jacket, a red or white stocking cap, a straw or felt
@@ -36,12 +36,12 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   to say, the user's "Aye." in a German talk), sample lines in their voice (they show the manner,
   not the language), people (family and close friends, each a villager by id with the kind and
   what they think of them), likes, wants (this year), day (where they are when), habits, avoids
-  (what they don't know or won't talk about) and secrets (only hinted at). Eight are written by
+  (what they don't know or won't talk about) and secrets (only hinted at). Nine are written by
   hand in `data/villagers.cfg` with a fixed look, spawned by id and once each: `antje` (Antje
   Boysen, a farmer's wife: the user's prompt example), her husband `hinrich` and their son `boy`;
   `momme` (Momme Ketels, a fisherman) and his daughter `inken`, Boy's sweetheart; `ocke` (Ocke
   Hansen, the miller) and his wife `gesche`, Antje's friend; and `kerrin` (Kerrin Paulsen, the
-  late Deichvogt's widow), Gesche's aunt. Everyone a sheet names as kin or close friend is a
+  late Deichvogt's widow), Gesche's aunt; and `trienke` (Trienke Lorenzen, the Höker, issue #10). Everyone a sheet names as kin or close friend is a
   villager of the file, and `VillagerRules` checks that the sheets agree: each names the other
   back with a matching kind (husband and wife, father or mother and son or daughter, aunt or uncle
   and niece or nephew, brother or sister, sweetheart, friend) of the right sex, a parent is 15 or
@@ -52,6 +52,31 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   outlying farms), a speech with its sample lines, likes, wants, a habit, what they avoid and a
   secret; no people, and no surname of the village sheet, so they are kin to none of its
   families.
+- **Trienke Lorenzen, the Höker (issue #10):** the ninth sheet and the keeper of the shop
+  ([../economy/shop.md](../economy/shop.md)). The user's note was a story that fits the village, so
+  she is an outsider who stayed, like Antje, and a widow, like Kerrin, with a trade that none of
+  the eight has. **Born Trienke Matthiesen in Husum, 1709, a chandler's daughter** who grew up
+  behind her father's counter among rope, tallow candles, salt and pins. At 25 she married **Nis
+  Lorenzen, a carter of Wehlsbüll** who hauled the parish's butter, eggs and hides to the Husum
+  market and brought back salt, iron, thread and tar: for fifteen years the village's shop in all
+  but name. **Six winters ago Nis went through the ice of a ditch on the Husum road at night**,
+  with his horse and cart. She had no land and a debt for the horse, and her brother Hark, who keeps
+  their father's shop in Husum, offered her a room as his housekeeper. **She stayed** and put Nis's
+  last load of salt, candles and thread on a board on the town square. That is why she keeps the
+  stall: it is the only trade she knows, the village has no other shop, and going back to Husum as
+  her brother's housekeeper is what she will not do. Her wish is a little shop with a door and a
+  bell. Her secrets are the debt to her brother for the first stock, and a slate of salt and
+  candles for the poorest that she does not mean to collect in full.
+  **Ties to the eight.** **Kerrin Paulsen** spoke for her to the pastor and the parish so that she
+  may keep a stall on the square, never mentioned it again, and orders the church's candles from her
+  every Saturday: Trienke is a little afraid of her sharp eye and would do anything for her.
+  **Antje Boysen**, a bride from the Geest herself, was the first to be kind to the Husum bride, four
+  years after Antje's own arrival, and taught her hens and cows; Antje sells her eggs and butter at
+  the stall, which is also why Antje has a second outlet than the Husum dealers. Both name her back
+  as a `friend`, so **the `people` of Kerrin and Antje each got one line** (the format makes the
+  sheets agree, see below); no other sheet changed. Her surname is now a family of the village
+  sheet, so `Lorenzen` left the surnames of the made-up villagers in `data/npcs.cfg` (Thiessen is
+  the new one).
 - **Where:** each keeps near its anchor: the yard in front of the door of its home (below) if it
   has one, else of the nearest building or the nearest fireplace within 16 tiles of where it
   came, else that spot. It never walks further than 6 tiles from it (one outside the circle
@@ -78,7 +103,7 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   family of theirs lives, else the nearest one of the type with room, and as workplace their own
   house if it is of the type, else the nearest building of it they may work in, within `home_search`
   tiles (`data/npcs.cfg`). Where none stands they have none until given, and a spot has no place in the world until
-  given. Wehlsbüll's eight are spawned at their doors when a new game builds the village, with the
+  given. Wehlsbüll's nine are spawned at their doors when a new game builds the village, with the
   houses and spots of `data/village_plan.cfg` (`VillagePeople`; the mill house is no building type,
   so the plan names it as Ocke's and Gesche's house).
   Made-up villagers have neither at first. A sheet may also name `home_interior`, the map of the

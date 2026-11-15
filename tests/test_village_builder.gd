@@ -22,6 +22,10 @@ func test_the_warften_are_dry_ground() -> void:
 
 
 func test_the_square_the_meeting_spot_and_the_mills_spot_are_free_dry_land() -> void:
+	var stall_tiles: Array[Vector2i] = []
+	for group in _plan.objects:
+		if group["type"] == WorldObjectTypes.MARKET_STALL:
+			stall_tiles.append_array(_plan.object_tiles(group["type"], group["tiles"][0]))
 	for world_seed: int in SEEDS:
 		var tiles: Array[Vector2i] = [_plan.meeting_spot]
 		tiles.append_array(_plan.workplace_spots.values())
@@ -32,8 +36,11 @@ func test_the_square_the_meeting_spot_and_the_mills_spot_are_free_dry_land() -> 
 		for tile in tiles:
 			var terrain := _terrain_at(world_seed, tile)
 			assert_true(terrain == Tile.Terrain.GRASS or terrain == Tile.Terrain.WARFT, "%s" % tile)
-			var object := _object_at(world_seed, tile)
-			assert_true(object == null or object.type == WorldObjectTypes.STONE_PATH, "%s" % tile)
+			if not stall_tiles.has(tile):
+				var object := _object_at(world_seed, tile)
+				assert_true(
+					object == null or object.type == WorldObjectTypes.STONE_PATH, "%s" % tile
+				)
 
 
 func test_the_pond_the_sielzug_and_the_field_ditches_are_the_only_new_water() -> void:

@@ -1,5 +1,5 @@
 extends VillageCase
-## The eight villagers live in Wehlsbüll from the start of a new game, each with the home and the
+## The nine villagers live in Wehlsbüll from the start of a new game, each with the home and the
 ## workplace of design/world/wehlsbuell.md, section 10.
 
 var _state: GameState
@@ -42,8 +42,8 @@ func test_every_spot_a_sheet_works_at_has_its_tile_in_the_plan() -> void:
 			assert_true(_plan.workplace_spots.has(sheet[VillagerRules.WORKPLACE_SPOT_KEY]), id)
 
 
-func test_the_eight_are_in_the_world_and_the_village_is_populated() -> void:
-	assert_eq(_state.npcs.all().size(), 8)
+func test_the_nine_are_in_the_world_and_the_village_is_populated() -> void:
+	assert_eq(_state.npcs.all().size(), 9)
 	assert_true(_state.world.village.is_populated)
 
 
@@ -70,6 +70,36 @@ func test_the_boysens_work_in_the_hall_house_and_the_barn_the_others_at_their_sp
 		assert_null(_villager(id).workplace, id)
 
 
+func test_trienke_works_at_the_stall_on_the_square() -> void:
+	var trienke := _villager("trienke")
+	var spot := "the market stall"
+	assert_eq(trienke.workplace.spot_name, spot)
+	assert_eq(trienke.workplace.spot_tile, _spot_tile(spot))
+	assert_eq(trienke.house, _building_of("cottage_3"))
+	var counter := _spot_tile(spot) + Vector2i.DOWN
+	var stalls := _state.world.edited_objects().filter(
+		func(object: WorldObject) -> bool: return object.type == WorldObjectTypes.MARKET_STALL
+	)
+	assert_eq(stalls.size(), 1)
+	assert_eq(stalls[0].pos, counter, "the counter is in front of the spot")
+	assert_true(_state.world.village.square.has_point(counter))
+
+
+func test_trienke_keeps_the_stall_on_a_weekday_and_is_at_church_on_sunday() -> void:
+	var trienke := _villager("trienke")
+	var monday := _state.activities.entries_of(trienke, 1)
+	var sunday := _state.activities.entries_of(trienke, 7)
+	var no_day: Array[DayEntry] = []
+	assert_eq(DayEntry.on(monday, no_day, 8 * 60).activity, "keep_shop")
+	assert_eq(DayEntry.on(monday, no_day, 15 * 60).activity, "keep_shop")
+	assert_eq(DayEntry.on(sunday, no_day, 10 * 60).activity, "go_to_church")
+	var places := ActivityPlaces.new(_state.world, _state.npcs)
+	assert_eq(
+		places.spot_of(trienke, "workplace", 1),
+		Vector2(_spot_tile("the market stall")) + Vector2(0.5, 0.5)
+	)
+
+
 func test_they_stand_at_the_door_of_their_house() -> void:
 	for npc in _state.npcs.all():
 		assert_lte(npc.position.distance_to(npc.house.yard()), Npcs.SPAWN_DISTANCE.y + 1.0, npc.id)
@@ -77,13 +107,13 @@ func test_they_stand_at_the_door_of_their_house() -> void:
 
 func test_they_move_in_once_and_a_save_holds_them_without_spawning_more() -> void:
 	assert_eq(VillagePeople.move_in(_state, _site(1), _plan), "")
-	assert_eq(_state.npcs.all().size(), 8)
+	assert_eq(_state.npcs.all().size(), 9)
 	DirAccess.make_dir_recursive_absolute(SAVE_DIR)
 	assert_true(SaveFile.write(_state, SAVE_PATH))
 
 	var restored := SaveFile.read(SAVE_PATH)
 
-	assert_eq(restored.npcs.all().size(), 8)
+	assert_eq(restored.npcs.all().size(), 9)
 	assert_true(restored.world.village.is_populated)
 	assert_eq(restored.npcs.find("ocke").house.origin, _building_of("mill_house").origin)
 

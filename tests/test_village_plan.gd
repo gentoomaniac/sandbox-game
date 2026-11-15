@@ -105,6 +105,19 @@ func test_a_square_with_a_wall_across_it_is_reported() -> void:
 	assert_push_error_count(plan.problems().size())
 
 
+func test_the_market_stall_stands_on_the_square_but_a_well_does_not() -> void:
+	var default_plan := VillagePlan.default_plan()
+	assert_true(default_plan.square.has_point(Vector2i(45, 7)), "the stall is on the square")
+	assert_eq(default_plan.problems(), [] as Array[String])
+	var text := _default_text().replace(
+		'[objects.square_well]\ntype="draw_well"\ntiles=[Vector2i(42, 9)]',
+		'[objects.square_well]\ntype="draw_well"\ntiles=[Vector2i(47, 9)]'
+	)
+	var plan := _write(text)
+	assert_true(plan.problems().any(func(problem: String) -> bool: return "not free" in problem))
+	assert_push_error_count(plan.problems().size())
+
+
 func test_a_warft_is_an_oval_of_the_tiles_whose_middle_it_holds() -> void:
 	var plan := VillagePlan.default_plan()
 	var landing: Dictionary = plan.warften[0]

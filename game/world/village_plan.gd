@@ -397,10 +397,16 @@ func _reach_problems(blocked: Dictionary[Vector2i, bool]) -> Array[String]:
 	return found
 
 
+## The square and the mill's spot are free, but for the market stall that stands on the square.
 func _square_problems(blocked: Dictionary[Vector2i, bool]) -> Array[String]:
 	var found: Array[String] = []
+	var stalls: Array[Vector2i] = []
+	for group in objects:
+		if group["type"] == WorldObjectTypes.MARKET_STALL:
+			for origin: Vector2i in group["tiles"]:
+				stalls.append_array(object_tiles(group["type"], origin))
 	for tile in _tiles_of(square) + _tiles_of(mill_spot):
-		if blocked.has(tile):
+		if blocked.has(tile) and not stalls.has(tile):
 			found.append("the square or the mill's spot is not free at %s" % tile)
 	for spot: Vector2i in [meeting_spot] + workplace_spots.values():
 		if blocked.has(spot):

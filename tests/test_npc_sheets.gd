@@ -34,7 +34,10 @@ func test_the_cut_down_sheets_keep_the_essentials_and_are_much_shorter() -> void
 	assert_string_contains(cut_down, sheet.text(false, sheet.topic_names()))
 	assert_string_contains(
 		cut_down,
-		"Family and friends: Hinrich Boysen (husband), Boy Boysen (son), Gesche Hansen (friend)\n"
+		(
+			"Family and friends: Hinrich Boysen (husband), Boy Boysen (son), "
+			+ "Gesche Hansen (friend), Trienke Lorenzen (friend)\n"
+		)
 	)
 	assert_string_contains(cut_down, "How Antje talks: Talks quickly and warmly")
 	assert_string_contains(

@@ -121,7 +121,7 @@ Decided 2026-11-14 (the user, from the
 farm, replant, meet the village, make something useful and work towards something, with no
 console commands.
 
-- **The village:** Wehlsbüll stands in the world near the start with its eight hand-written
+- **The village:** Wehlsbüll stands in the world near the start with its nine hand-written
   villagers in their homes, not one farm alone.
 - **Villagers' lives:** each has a home and a workplace, their house can have its own interior,
   and generic routines send them where their own places are, by pathfinding

@@ -24,7 +24,7 @@ river) and fits the routines plan (#7, [../villagers/routines.md](../villagers/r
   landing, a free spot for the post mill, a **town square kept free for a future market**, lanes,
   walls and fences. 19 buildings, all of types that exist; where none fits, a stand-in.
 - **A worn track** from the camp to the village is laid at the start (section 7).
-- **Who:** the eight villagers of `data/villagers.cfg` are spawned once, at their doors, with their
+- **Who:** the nine villagers of `data/villagers.cfg` (the eight, and Trienke Lorenzen from #10) are spawned once, at their doors, with their
   homes and workplaces (built, step 8). The other houses stay empty.
 - **The village is not the player's:** its land is a record in the world. Building there costs
   goodwill, its houses can't be taken down, and build mode shows the land's edge.
@@ -181,7 +181,8 @@ The sexton's house with the school is left out (no villager, no type).
 | Building | Type | Lives there |
 |---|---|---|
 | Kerrin's house | `kate`, style `brick` | Kerrin (task 120 made the style for her) |
-| Five cottages along the Deichweg | `shack` x3, `kate` (style `geest`), `kate` | nobody; empty |
+| Trienke's cottage | `kate` (style `geest`), the one at (10, 4) | Trienke Lorenzen, the Höker (#10) |
+| Four cottages along the Deichweg | `shack` x3, `kate` | nobody; empty |
 | Landing: Ketels hut | `fisher_hut` on a small Warft **outside** the dyke, on the salt marsh | Momme, Inken |
 | Landing: jetty, rowing boat, net frame, eel traps | the objects of task 103 | the jetty runs over the mud |
 | Sluice (Siel) | **stand-in:** a two-tile gap in the dyke with the Sielzug (a 2-tile ditch behind it, 28 tiles long) running through, water ending two tiles beyond | |
@@ -213,10 +214,10 @@ The sexton's house with the school is left out (no villager, no type).
 ## 5. The town square
 
 A free open square of 13 by 6 tiles between the Krug, the churchyard and the Sielweg (the picture's
-cream area), kept free for a future market (#76).
+cream area), kept free for a market (#76): its first stall is Trienke Lorenzen's (#10).
 
 - **Free:** the village puts nothing on it but a draw well beside it (the benches of the first draft are
-  gone: a bench is furniture that only stands indoors), and the record keeps it as `square`. A later market task puts its stalls there; until then it is empty ground.
+  gone: a bench is furniture that only stands indoors), and the record keeps it as `square`. The one thing on it is **the market stall** (`market_stall`, 2x1 tiles, solid; the shop of [../economy/shop.md](../economy/shop.md), #10), on the Krug's side at (45, 7), clear of the meeting spot. Its keeper's workplace is the spot "the market stall" behind the counter, at (45, 6). `VillagePlan.problems` lets the stall stand on the square and nothing else.
   The player is not stopped from building on it (it is the village's land, with the goodwill cost of
   section 9).
 - **Ground:** cobbles like the lanes (section 8), but for the well and anything else that stands there.
@@ -300,7 +301,7 @@ villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
 - **`village` console command** says where it is ("about 232 tiles west, 120 south") and what it holds,
   as does the handbook (#75).
 
-## 10. The eight villagers
+## 10. The nine villagers
 
 Spawned once, in `GameState.new_game`, after the village is built, each at its door with
 `Npcs.spawn_villager` (`VillagePeople.move_in`). `Households.settle` then finds the house of their
@@ -318,6 +319,7 @@ workplace is the nearest of its type. The plan says who lives where: each buildi
 | Kerrin Paulsen | `kate`, style `brick` | none | the type's room |
 | Ocke Hansen | `kate`, style `geest` (**stand-in mill house**) | spot "the post mill" (at the free spot) | the type's room |
 | Gesche Hansen | the same | the same spot | the type's room |
+| Trienke Lorenzen (#10) | `kate`, style `geest`, Trienke's cottage | spot "the market stall" (behind the stall's counter on the square) | the type's room |
 
 - **Sheet changes:** Ocke and Gesche get `workplace_spot="the post mill"`. The plan gives each spot
   its tile (`workplace_spots` of `[village]`, which replaced the landing's `landing_spot`): the jetty's
@@ -329,7 +331,8 @@ workplace is the nearest of its type. The plan says who lives where: each buildi
 - **Once:** the spawn is in `new_game` only. A save holds the villagers, so a load never spawns them
   again. The record's flag `is_populated` guards against a second spawn.
 - **Home search:** `home_search` is 40 tiles. The villagers spawn at their own doors.
-- **The empty houses** (six cottages, two farms) stay empty (#76). The made-up villagers and `spawn npc N`
+- **Trienke Lorenzen** (#10) is the ninth: a carter's widow from Husum who keeps the stall of the square (her story is in [../villagers/villagers.md](../villagers/villagers.md)). Her sheet names `work_set="shopkeeper"` and `workplace_spot="the market stall"`, and the plan gives the spot its tile and her the cottage nearest the square that the plan left empty. A village built before her has no stall and no Höker, and keeps none (old saves, see section 12).
+- **The empty houses** (five cottages, two farms) stay empty (#76). The made-up villagers and `spawn npc N`
   are not part of this task.
 
 ## 11. What depends on what
@@ -367,6 +370,8 @@ may stand on.
   `null`; the upgrade sets `null`). The commit that drops the oldest upgrade is its own, as the save
   rules say. The validator checks the record: the area, that the buildings it names stand, that the
   meeting spot and the square are inside the area.
+- **Trienke and her stall (#10)** are part of the build of a new game only: a village built before has no
+  stall and no Höker, and `spawn npc trienke` gives her sheet but no stall to stand at.
 - A console command to add the village to an old save where the rectangle is untouched is possible later
   and is not planned.
 
