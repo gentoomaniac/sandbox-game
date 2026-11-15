@@ -5,12 +5,14 @@ extends RefCounted
 ##
 ## A mask is stamped from the generated chunks of its own chunk and the three before it (W, N and
 ## NW), with the world's edits replayed on copies of them. Generating is the dear part (about 9 ms
-## a chunk): it goes on a worker thread, one chunk at a time, with a generator of its own. Those raw
-## chunks are kept in a cache of their own and never get the edits, so an edit can not make one
-## stale: only the masks go. Stamping a mask takes about 3 ms and is done on the worker too, on
-## copies of the raw chunks and a copy of the world's edits made on the main thread when it starts
-## (`World.edits_snapshot`). An edit that comes meanwhile bumps the version of its chunk, and a mask
-## made from a chunk of another version is not published but made again: no mask is stale.
+## a chunk): it goes on worker threads, a chunk to a job, each with a generator of its own. Those
+## raw chunks are kept in a cache of their own and never get the edits, so an edit can not make one
+## stale: only the masks go. Stamping a mask takes about 3 ms and is a job too, on copies of the raw
+## chunks and a copy of the world's edits made on the main thread when it starts
+## (`World.edits_snapshot`). Several jobs are in flight at once (`jobs_at_once`): a job is started
+## and taken in a frame at the soonest, so one at a time would make 60 masks' worth of work a second
+## at most. An edit that comes meanwhile bumps the version of its chunk, and a mask made from a
+## chunk of another version is not published but made again: no mask is stale.
 ##
 ## How it all works: design/tech/pathfinding.md.
 
@@ -22,7 +24,8 @@ var _world: World
 ## What the worker takes of the world, kept here so that it reads nothing of the live World.
 var _vegetation: Vegetation
 var _world_seed: int
-var _generator: WorldGenerator
+## The generators that are not in a job: a job takes one and gives it back when it is taken.
+var _idle_generators: Array[WorldGenerator] = []
 ## Both caches hold the one used last at the end: a dictionary keeps the order its keys came in.
 var _masks: Dictionary[Vector2i, TravelMask] = {}
 var _raw_chunks: Dictionary[Vector2i, Chunk] = {}
@@ -31,23 +34,39 @@ var _raw_chunks: Dictionary[Vector2i, Chunk] = {}
 var _requested: Dictionary[Vector2i, bool] = {}
 var _masks_kept: int
 var _raw_chunks_kept: int
+var _jobs_at_once: int
 ## The chunks whose masks a time skip is about to use, which the limit does not drop (see `pin`).
 var _pinned: Dictionary[Vector2i, bool] = {}
-## The worker's task (-1 while it has none) and what it makes: a chunk, or the mask of `_stamping`
-## (null when it generates) made from chunks of the edit versions in `_stamping_versions`.
-var _task_id := -1
-var _generated: Chunk
-var _stamping: Variant
-var _stamped: TravelMask
-var _stamping_versions: Dictionary = {}
+## The jobs on the workers, the oldest first.
+var _jobs: Array[Job] = []
 ## How many edits each chunk has had since the masks were made, to tell a mask made from chunks that
 ## were edited meanwhile.
 var _edit_versions: Dictionary[Vector2i, int] = {}
 
 
+## One piece of work on a worker: a chunk generated, or a mask stamped. The worker writes only to
+## its own job, which the main thread takes the result of once the task is done. The task is given
+## a WeakRef to it: a job bound directly crashed the exit of the engine (the pool keeps the Callable
+## of a finished task).
+class Job:
+	extends RefCounted
+	var task_id: int
+	## The chunk it generates, or the chunk whose mask it stamps.
+	var coords: Vector2i
+	var is_stamping: bool
+	## Of a generating job: the generator it uses alone (null until the worker makes one), and the
+	## chunk it made.
+	var generator: WorldGenerator
+	var chunk: Chunk
+	## Of a stamping job: the edit versions of the chunks it is made from, and the mask.
+	var versions: Dictionary[Vector2i, int] = {}
+	var mask: TravelMask
+
+
 ## `masks_kept` and `raw_chunks_kept` are how many masks and generated chunks are kept (the least
-## recently used go first); see `for_world`.
-func _init(world: World, masks_kept: int, raw_chunks_kept: int) -> void:
+## recently used go first), `jobs_at_once` how many jobs the workers have in flight; see
+## `for_world`.
+func _init(world: World, masks_kept: int, raw_chunks_kept: int, jobs_at_once := 1) -> void:
 	# A mask needs four raw chunks, which must stay until it is stamped.
 	assert(raw_chunks_kept >= 4, "Too few raw chunks kept for a mask")
 	_world = world
@@ -55,7 +74,7 @@ func _init(world: World, masks_kept: int, raw_chunks_kept: int) -> void:
 	_world_seed = world.world_seed
 	_masks_kept = masks_kept
 	_raw_chunks_kept = raw_chunks_kept
-	_generator = WorldGenerator.new(world.world_seed)
+	_jobs_at_once = jobs_at_once
 	# The worker only reads what the generator needs from the rules, so they are loaded here.
 	StationRules.default_rules()
 	LandscapeRules.default_rules()
@@ -66,14 +85,18 @@ func _init(world: World, masks_kept: int, raw_chunks_kept: int) -> void:
 ## The masks of `world`, as many kept as the rules say ([travel] of data/npcs.cfg).
 static func for_world(world: World, rules := NpcRules.default_rules()) -> TravelMasks:
 	return TravelMasks.new(
-		world, int(rules.travel("far_masks_kept")), int(rules.travel("far_chunks_kept"))
+		world,
+		int(rules.travel("far_masks_kept")),
+		int(rules.travel("far_chunks_kept")),
+		int(rules.travel("far_mask_jobs"))
 	)
 
 
 func _notification(what: int) -> void:
-	# The worker writes to this object, which must outlive it.
-	if what == NOTIFICATION_PREDELETE and _task_id >= 0:
-		WorkerThreadPool.wait_for_task_completion(_task_id)
+	# The workers write to their jobs, which must outlive them.
+	if what == NOTIFICATION_PREDELETE:
+		for job in _jobs:
+			WorkerThreadPool.wait_for_task_completion(job.task_id)
 
 
 ## The mask of a chunk, or null if it is not stamped yet: it is then asked for, and `update` makes
@@ -106,24 +129,34 @@ func made_mask(coords: Vector2i) -> TravelMask:
 	return _masks.get(coords)
 
 
-## Takes in what the worker has done: a generated chunk, or a mask, which is published if no edit
-## has come to the chunks it was made from meanwhile, and else made again. Then sets the worker to
-## its next job: stamping the oldest asked-for mask whose chunks are all there, or else generating
-## the chunk the oldest still lacks. Once a frame. With `is_waiting` it first waits for the worker
-## to finish, for whoever has nothing else to do.
+## Takes in what the workers have done: generated chunks, and masks, which are published if no edit
+## has come to the chunks they were made from meanwhile, and else made again. Then sets the workers
+## to new jobs, up to `jobs_at_once`: stamping the asked-for masks whose chunks are all there, the
+## oldest first, and then generating the chunks the oldest still lack. Once a frame. With
+## `is_waiting` it first waits for the oldest job to finish, for whoever has nothing else to do.
 func update(is_waiting := false) -> void:
-	_take_result(is_waiting)
-	if _task_id >= 0:
-		return
+	if is_waiting and not _jobs.is_empty():
+		_take(_jobs[0])
+	# Backwards, as `_take` takes the job out of the array.
+	for index in range(_jobs.size() - 1, -1, -1):
+		if WorkerThreadPool.is_task_completed(_jobs[index].task_id):
+			_take(_jobs[index])
 	for coords in _requested:
-		if _first_missing_raw_chunk(coords) == null:
+		if _jobs.size() == _jobs_at_once:
+			return
+		if _first_missing_raw_chunk(coords) == null and not _has_job(coords, true):
 			_start_stamping(coords)
-			return
 	for coords in _requested:
-		var missing: Variant = _first_missing_raw_chunk(coords)
-		if missing != null:
-			_task_id = WorkerThreadPool.add_task(_generate.bind(missing))
-			return
+		for step in SOURCE_STEPS:
+			var needed := coords + step
+			if _jobs.size() == _jobs_at_once:
+				return
+			if (
+				World.is_chunk_in_bounds(needed)
+				and not _raw_chunks.has(needed)
+				and not _has_job(needed, false)
+			):
+				_start_generating(needed)
 
 
 ## The mask of a chunk once the worker has made what it needs, or null for a chunk outside the
@@ -176,63 +209,90 @@ func _first_missing_raw_chunk(coords: Vector2i) -> Variant:
 	return null
 
 
-## Runs on the worker.
-func _generate(coords: Vector2i) -> void:
-	_generated = _generator.generate_chunk(coords)
+## Whether a job is stamping the mask of `coords` (`is_stamping`) or generating the chunk.
+func _has_job(coords: Vector2i, is_stamping: bool) -> bool:
+	for job in _jobs:
+		if job.coords == coords and job.is_stamping == is_stamping:
+			return true
+	return false
 
 
-## Runs on the worker: the mask of `coords` from copies of its raw chunks (own first) with the
-## edits of the snapshot replayed on them. It touches nothing the main thread writes: the raw chunks
-## are never changed, and the snapshot is its own.
-func _stamp(coords: Vector2i, raw: Array[Chunk], snapshots: Array[Dictionary]) -> void:
+## Runs on the worker, which also makes a generator when there was none idle: that is the main
+## thread's few milliseconds spared.
+func _generate(job_ref: WeakRef) -> void:
+	var job: Job = job_ref.get_ref()
+	if job.generator == null:
+		job.generator = WorldGenerator.new(_world_seed)
+	job.chunk = job.generator.generate_chunk(job.coords)
+
+
+## Runs on the worker: the mask of the job's chunk from copies of its raw chunks (own first) with
+## the edits of the snapshot replayed on them. It touches nothing the main thread writes: the raw
+## chunks are never changed, and the snapshot is its own.
+func _stamp(job_ref: WeakRef, raw: Array[Chunk], snapshots: Array[Dictionary]) -> void:
+	var job: Job = job_ref.get_ref()
 	var own: Chunk
 	var neighbours: Array[Chunk] = []
 	for index in raw.size():
 		var chunk := raw[index].copy()
 		World.replay_snapshot(chunk, snapshots[index])
-		if chunk.coords == coords:
+		if chunk.coords == job.coords:
 			own = chunk
 		else:
 			neighbours.append(chunk)
-	_stamped = TravelMask.new(own, neighbours, _vegetation, _world_seed)
+	job.mask = TravelMask.new(own, neighbours, _vegetation, _world_seed)
 
 
-## Starts the worker on the mask of `coords`, whose raw chunks are all there. The edits are copied
-## here, on the main thread, with the versions they are of.
+func _start_generating(coords: Vector2i) -> void:
+	var job := Job.new()
+	job.coords = coords
+	if not _idle_generators.is_empty():
+		job.generator = _idle_generators.pop_back()
+	job.task_id = WorkerThreadPool.add_task(_generate.bind(weakref(job)))
+	_jobs.append(job)
+
+
+## Starts a job on the mask of `coords`, whose raw chunks are all there. The edits are copied here,
+## on the main thread, with the versions they are of.
 func _start_stamping(coords: Vector2i) -> void:
+	var job := Job.new()
+	job.coords = coords
+	job.is_stamping = true
 	var raw: Array[Chunk] = []
 	var snapshots: Array[Dictionary] = []
-	_stamping_versions = {}
 	for needed in chunks_for(coords):
 		var chunk := _raw_chunks[needed]
 		_raw_chunks.erase(needed)
 		_raw_chunks[needed] = chunk
 		raw.append(chunk)
 		snapshots.append(_world.edits_snapshot(needed))
-		_stamping_versions[needed] = _edit_versions.get(needed, 0)
-	_stamping = coords
-	_task_id = WorkerThreadPool.add_task(_stamp.bind(coords, raw, snapshots))
+		job.versions[needed] = _edit_versions.get(needed, 0)
+	job.task_id = WorkerThreadPool.add_task(_stamp.bind(weakref(job), raw, snapshots))
+	_jobs.append(job)
 
 
-## Whether the worker is making a mask (for the tests of an edit meanwhile).
+## How many jobs are in flight (for the tests).
+func job_count() -> int:
+	return _jobs.size()
+
+
+## Whether a worker is making a mask (for the tests of an edit meanwhile).
 func is_stamping() -> bool:
-	return _task_id >= 0 and _stamping != null
+	return _jobs.any(func(job: Job) -> bool: return job.is_stamping)
 
 
-func _take_result(is_waiting: bool) -> void:
-	if _task_id < 0 or not (is_waiting or WorkerThreadPool.is_task_completed(_task_id)):
-		return
-	WorkerThreadPool.wait_for_task_completion(_task_id)
-	_task_id = -1
-	if _stamping != null:
-		_publish_stamped()
+func _take(job: Job) -> void:
+	WorkerThreadPool.wait_for_task_completion(job.task_id)
+	_jobs.erase(job)
+	if job.is_stamping:
+		_publish_stamped(job)
 	else:
-		_keep_generated()
+		_keep_generated(job)
 
 
-func _keep_generated() -> void:
-	_raw_chunks[_generated.coords] = _generated
-	_generated = null
+func _keep_generated(job: Job) -> void:
+	_raw_chunks[job.coords] = job.chunk
+	_idle_generators.append(job.generator)
 	# What an asked-for mask still needs is kept, whatever the limit.
 	var needed := {}
 	for coords in _requested:
@@ -246,18 +306,12 @@ func _keep_generated() -> void:
 
 
 ## A mask made from chunks that were edited meanwhile is dropped, and its chunk is still asked for.
-func _publish_stamped() -> void:
-	var coords: Vector2i = _stamping
-	var mask := _stamped
-	var is_stale := false
-	for needed: Vector2i in _stamping_versions:
-		is_stale = is_stale or _edit_versions.get(needed, 0) != _stamping_versions[needed]
-	_stamping = null
-	_stamped = null
-	if is_stale:
-		return
-	_requested.erase(coords)
-	_masks[coords] = mask
+func _publish_stamped(job: Job) -> void:
+	for needed in job.versions:
+		if _edit_versions.get(needed, 0) != job.versions[needed]:
+			return
+	_requested.erase(job.coords)
+	_masks[job.coords] = job.mask
 	for kept in _masks.keys():
 		if _masks.size() <= _masks_kept:
 			break

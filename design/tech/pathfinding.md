@@ -38,7 +38,7 @@ flowchart LR
 |---|---|---|---|
 | `World` | `world.gd` | the edits, the buildings, the wear (`WorldWear`); raises `edited(chunk)` | main |
 | `TravelMask` | `travel_mask.gd` | the flags of one chunk | built on a worker, read-only after |
-| `TravelMasks` | `travel_masks.gd` | the caches of masks and raw chunks, the worker jobs | main, with one worker task |
+| `TravelMasks` | `travel_masks.gd` | the caches of masks and raw chunks, the worker jobs | main, with `far_mask_jobs` worker tasks |
 | `TravelSnapshot` | `travel_snapshot.gd` | copies of the building tiles and the wear | made on main, read-only after |
 | `TravelView` | `travel_view.gd` | the answers a search reads (`is_known`, `is_free`, `cost_of`) | worker (search), main (`provide`) |
 | `PathSearch` | `path_search.gd` | one A\* and its state | a worker while it runs |
@@ -76,10 +76,15 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
 - **Two LRUs**: masks (`far_masks_kept`, 1024, about 1.6 KB each) and raw chunks
   (`far_chunks_kept`, 32, about 300 KB each). A raw chunk is what `WorldGenerator` makes, with no
   edit ever applied, so it never goes stale.
-- **One worker job at a time**: generating and stamping share the one worker task of `TravelMasks`, from `update()` (once a frame, from `NpcTravel.tick`): a stamp job
-  for the oldest request whose four raw chunks are all there, else a generation job for the first
-  chunk the oldest request lacks. Generating (9 to 13 ms a chunk) and stamping (3 ms) are both off
-  the main thread.
+- **Several worker jobs at once** (`far_mask_jobs`, 3): generating and stamping are jobs, up to that
+  many in flight, started from `update()` (once a frame, from `NpcTravel.tick`): a stamp job for
+  each of the oldest requests whose four raw chunks are all there, then a generation job for each
+  chunk the oldest requests lack and nobody generates yet. A job owns what it writes (its chunk or
+  its mask, and a `WorldGenerator` to itself, made by the worker the first time), and `update`
+  takes its result once the task is done; the task is given a `WeakRef` to the job (bound
+  directly, a job crashed the exit of the engine, as the pool keeps the Callable of a finished
+  task). A job is started and taken in a frame at the soonest, so one at a time made 60 jobs a
+  second at most. Generating (9 to 13 ms a chunk) and stamping (3 ms) are both off the main thread.
 - **Stamping** works on copies of the raw chunks and a **snapshot of the edits** of those four
   chunks (`World.edits_snapshot`: terrain by position, object type by position), copied on the
   main thread when the job starts (0.3 ms at most).
@@ -306,7 +311,7 @@ stamping of a mask and the generating of a raw chunk (one task at a time in `Tra
   `WorldObjectTypes.TYPES`, `PathRules` are warmed by the main thread) or behind a mutex
   (`Tide.flood_height`'s kept heights behind the static `Tide._flood_lock`, `Vegetation.density`'s last answers behind its own `_lock`).
 - Every task is reaped with `wait_for_task_completion`; the destructors of `TravelMasks` and
-  `Pathfinder` wait for the task that runs.
+  `Pathfinder` wait for the tasks that run. The jobs of `TravelMasks` write only to their own job.
 
 **Never off the main thread:** reading `World`, a `Node`, a `Resource` or the scene tree; changing
 anything the main thread reads; calling `mask_of` (it changes the LRU and the requests); waiting
@@ -344,6 +349,7 @@ for something inside a pool task (a task that waits for a mask can block every w
 | `blocked_give_up_seconds` (0.5), `retries` (2) | how fast a villager with a blocked step thinks again, and how often before it gives up |
 | `blocked_min_seconds`, `blocked_fallback_seconds` | when a blocked villager looks again |
 | `skip_masks_ahead` (8) | how many chunks ahead of a trip a skip asks the masks of and pins: more waits less for the worker, and keeps more masks past `far_masks_kept` at once. 2, 8 and 32 gave the same skip (0.25 to 0.33 s for 155 trips), since the masks of a trip's leg are there from its search; it matters only when they have been dropped |
+| `far_mask_jobs` (3) | how many chunks are generated and masks stamped at once: 155 villagers sent far cold wait 22 s for the first leg against 26 s with 1 (30 villagers: 4.1 s against 7.6 s), with the main thread's frames unchanged (#70). Beyond 3 nothing more (6: the same); the searches limit then, see `search_tasks` |
 | `far_masks_kept` (1024), `far_chunks_kept` (32) | memory (1.6 KB a mask, 300 KB a raw chunk) against making masks again. The masks must hold what all trips touch at once: 155 villagers sent 100 to 300 tiles touch about 380, and with 256 kept a skip waited 6 s and the searches 7 to 10 s (measured, step 6); beyond 1024 nothing was gained. The raw chunks should hold the chunks round the player, as an edit drops four masks that are made again from them; 128 instead of 32 gained nothing and cost 20 MB |
 
 ## Debugging and measuring

@@ -76,15 +76,21 @@ func test_an_edit_made_while_a_mask_waits_for_its_chunks_is_in_the_mask() -> voi
 	assert_parity(COAST)
 
 
-func test_one_mask_is_published_in_an_update() -> void:
-	load_chunk_and_neighbours(COAST + Vector2i.RIGHT)
-	for x in 3:
+func test_jobs_are_in_flight_up_to_the_number_asked_for_and_the_masks_are_the_same() -> void:
+	masks = TravelMasks.new(world, 8, 32, 3)
+	var needed := {}
+	for x in 4:
 		masks.mask_of(COAST + Vector2i(x, 0))
-	var published := 0
-	while masks.mask_coords().size() < 3:
-		masks.update(true)
-		assert_lte(masks.mask_coords().size(), published + 1)
-		published = masks.mask_coords().size()
+		load_chunk_and_neighbours(COAST + Vector2i(x, 0))
+		for coords in TravelMasks.chunks_for(COAST + Vector2i(x, 0)):
+			needed[coords] = true
+	masks.update()
+	assert_eq(masks.job_count(), 3)
+	for x in 4:
+		masks.wait_for_mask(COAST + Vector2i(x, 0))
+		assert_parity(COAST + Vector2i(x, 0))
+	assert_eq(masks.job_count(), 0, "nothing is left running once all are made")
+	assert_eq(masks.raw_chunk_coords().size(), needed.size(), "each chunk was generated once")
 
 
 func test_a_mask_whose_chunks_were_edited_meanwhile_is_not_published_but_made_again() -> void:

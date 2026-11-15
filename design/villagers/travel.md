@@ -77,7 +77,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   and gets the edit's, if any; an edited terrain replaces the generated one). `mask_of(coords)`
   returns the mask or null and asks for it; `update()` runs once a frame; `wait_for_mask(coords)`
   waits for the worker, for a time skip (step 4) and for tests.
-- **Raw chunks are generated on a worker thread**, one at a time, by a `WorldGenerator` of its own.
+- **Raw chunks are generated on worker threads** (several at once from #70, `far_mask_jobs`), each job by a `WorldGenerator` of its own.
   `generate_chunk` reads only the seed, its own noise objects and its own `FieldLayout.cover`, and
   the rules' statics (`LandscapeRules`, `StationRules`, `WorldObjectTypes.TYPES`). `TravelMasks`
   asks for each of them on the main thread before it starts the worker, so the worker only reads
@@ -90,8 +90,8 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   when the job starts, 0.3 ms for four chunks of which one is tilled all over; the worker makes the
   objects new from the types, `World.replay_snapshot`). It touches nothing the main thread writes:
   the raw chunks are never changed and the snapshot is its own. The main thread takes the result in
-  `update`, which is 0.08 ms at the median and 0.5 ms at most. One job at a time, a stamp before a
-  generation. The raw chunks a pending request needs are never evicted, whatever the limit.
+  `update`, which is 0.08 ms at the median and 0.5 ms at most. Up to `far_mask_jobs` (3) jobs at a
+  time (one before #70), the stamps before the generations. The raw chunks a pending request needs are never evicted, whatever the limit.
   (Pausing `generate_chunk` across frames would mean rewriting the generator; on the main thread
   one call is 9 to 13 ms, too much at 60 fps.) The destructor waits for the worker.
 - **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `_edit_terrain` and
@@ -326,8 +326,7 @@ As built before the tuning (`far_masks_kept=256`):
   cold. The cold wait is one worker job a frame (`TravelMasks.update` starts one and takes its result
   the next frame, 60 a second): the 380 masks of 155 such trips are some 760 jobs (a stamp each and
   about as many generated chunks), 13 s at the least, and the LRU of raw chunks (32) makes some of
-  them twice. More raw chunks (128) changed nothing (25.6 s again). A second job in flight, or
-  generating and stamping in one task, would shorten it; not done here.
+  them twice. More raw chunks (128) changed nothing (25.6 s again). Several jobs in flight shorten it some (#70, below).
 - **The main thread is cheap.** All the Npcs do is 0.7 ms (10 villagers), 0.9 (30) and 1.6 to 1.9
   (155) in a frame at the mean, 1.2, 1.5 and 2.5 to 4.9 ms at the 99th percentile, no frame over
   16.7 ms; 0.6 ms of the 155's is the strolling of those who are not on a trip. The longest frames
@@ -399,6 +398,37 @@ a wear step). Dispatch and reaping are a few percent of it; masks and snapshot a
 of 55,000 worn tiles is 6 to 9 ms in one frame). So #70 starts with the walking (tile entry), the
 copy of the wear for a snapshot, and the first send of a cold run (7 to 22 ms); the workers' share
 of memory and cache is not seen by the probe.
+
+## Measured, #70
+
+`paths.gd` as above (the runs are deterministic in the waits: two runs gave the same to 0.1 s; the
+frames differ by a few percent). Main thread in ms a frame (mean / p99 / longest), 155 villagers
+sent once, cold masks, `walking` as in the table above.
+
+**Several mask jobs** (`far_mask_jobs`, `TravelMasks`): the cold wait was not only the one job a
+frame: the searches stop at each mask they lack and one search runs at a time, so the two together
+set the pace.
+
+| Villagers, config | First leg wait mean / last (s) | Walking mean / p99 / longest (ms) |
+|---|---|---|
+| 155, 1 job, 1 search task (before) | 26.1 / 31.8 | 1.23 / 2.26 / 4.1 |
+| 155, 3 jobs, 1 search task | 22.2 / 27.5 | 1.39 / 2.33 / 3.5 |
+| 155, 6 jobs, 1 search task | 22.3 / 27.5 | |
+| 155, 1 job, 3 search tasks | 14.6 / 19.7 | 1.53 / 2.65 / 6.2 |
+| 155, 3 jobs, 2 search tasks | 11.9 / 14.7 | 1.65 / 3.18 / 9.2 |
+| 155, 3 jobs, 3 search tasks | 8.9-9.1 / 10.8-11.2 | 1.83 / 5.0-8.5 / 11-15 |
+| 155, 4 jobs, 6 search tasks | 6.3 / 8.7 | 2.76 / 19.9 / 28 |
+| 30, 1 job, 1 search task (before) | 7.6 / 10.2 | 0.82 / 1.29 / 1.6 |
+| 30, 3 jobs, 1 search task | 4.1 / 5.3 | 0.89 / 1.77 / 3.4 |
+| 30, 3 jobs, 2 search tasks | 2.8 / 3.7 | 0.86 / 1.42 / 3.3 |
+
+Warm waits (the masks are there): 2.15 / 4.25 s for 155 with one search task, 1.1 / 2.2 with two,
+0.8 / 1.6 with three. `far_mask_jobs=3` is the default: the wait for 30 villagers is nearly halved at
+no cost to the main thread, and 155 wait 4 s less. More search tasks wait less still and cost the
+main thread: with the walkers' frames slowing as more workers run at once on the 11 cores of the
+bench (walking p99 2.3 ms with one search task, 3.2 with two, 5 to 8.5 with three, 20 with six
+tasks and four jobs), so `search_tasks` stays 1, as the user asked for the per-frame work to stay
+small. The user's answer (30 villagers on their way within 10 s, 155 within 60 s) holds.
 
 ## Time skips and sleep
 

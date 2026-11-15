@@ -40,6 +40,7 @@ const TRAVEL_KEYS: Array[String] = [
 	"blocked_fallback_seconds",
 	"far_masks_kept",
 	"far_chunks_kept",
+	"far_mask_jobs",
 	"skip_masks_ahead",
 ]
 ## The lists every villager draws from, and those drawn by sex.
