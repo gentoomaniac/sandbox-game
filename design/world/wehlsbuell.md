@@ -1,7 +1,7 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6
-and 8 of section 14 are built** (each step's note says what changed from this plan); the rest is
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6,
+8 and 9 of section 14 are built** (each step's note says what changed from this plan); the rest is
 plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
@@ -285,8 +285,9 @@ villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
   spot, the lanes and the buildings the village put there. `World.is_village_land(tile)` answers.
 - **Deeds in the land weigh otherwise.** A new section `[village_land]` in `data/gossip.cfg` has a
   `change` for `built` (-2), `fenced` (-1) and `felled` (-1) done inside the land, used instead of the
-  section's own. The witnesses are as ever. The story the language model judges says "on the
-  village's own land". The one-hop spread through friends and enemies is the reputation task's.
+  section's own. The witnesses are as ever. The deed's place is "on the village's own land" (instead
+  of the house or the ground), which is what the model reads and what picks the change. The one-hop
+  spread through friends and enemies is the reputation task's.
 - **Its houses are not the player's.** The hammer's take-down refuses a building of the record ("That
   is the village's."). Walls and fences are not protected (no deed kind for them yet).
 - **Shown before building.** With the hammer in hand the land's edge is drawn as a line over the terrain
@@ -472,7 +473,6 @@ The user can stop after step 5 and have the village standing, empty.
   version. `world.gd` reached the 1 000 lines the lint allows, so the making of its save data moved to
   `WorldSave` (step 9). The map tool draws the buildings and the worn ground. Tests:
   `tests/test_village_lanes.gd`.
-
 - **Step 8.** `VillagePeople.move_in` (`game/state/village_people.gd`), called by `GameState.new_game` after
   the build: each resident of the plan is spawned at the door of their building, `Households.settle`
   does the rest by their sheets, and what the sheets cannot say the plan does (the mill house, the
@@ -484,6 +484,17 @@ The user can stop after step 5 and have the village standing, empty.
   (the plan had "with none"; routines.md has the new words). `meeting` is the record's `meeting_spot`,
   within `search_tiles.meeting` of home, and the church yard only in a world with no village. Tests:
   `tests/test_village_people.gd`, `tests/test_activity_places.gd`.
+- **Step 9.** `World.is_village_land(tile)` and `is_village_building(building)` (on `Village.is_land` and
+  `has_building`); the hammer's take-down says "That is the village's." (`GameState.why_not_take_down`);
+  build mode draws the land's edge while the hammer is held and says "Wehlsbüll's land: the villagers
+  will not like it." while the ghost stands on it; `GossipRules.opinion_change(kind, place)`;
+  console `village`. **Changed from the plan:** the place of a deed on the land is its own words
+  instead of a flag on the deed. A flag would be a new field of every saved deed and story (a save
+  version and an upgrade, and many test fixtures), while the place is already part of each, merges
+  deeds by it and goes to the model. A story whose place a whisper has moved to a neighbour's house
+  has the usual change: the rumour got it wrong. `World.dict_of` moved to `WorldSave` first (a commit of
+  its own: world.gd was at 1 000 lines). Tests: `tests/test_village_deeds.gd`, `tests/test_village_land.gd`,
+  `tests/test_village_record.gd`, `tests/test_gossip_rules.gd`.
 
 ## 15. Screenshots
 

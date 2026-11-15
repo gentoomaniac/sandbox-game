@@ -50,7 +50,12 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   changes are in `data/gossip.cfg`. Gifts, theft and helping come with
   [relationships](relationships.md).
 - **The place** in words: the house of the villager whose home is nearest within 20 tiles ("by
-  Antje's house"), else "out on the marsh" (a word per biome in the data file).
+  Antje's house"), else "out on the marsh" (a word per biome in the data file). A deed on the
+  village's own land (the record `World.village`, [../world/wehlsbuell.md](../world/wehlsbuell.md))
+  has the place "on the village's own land" instead, and the section `[village_land]` of the
+  data file has its own fixed change for built (-2), fenced (-1) and felled (-1) there
+  (`GossipRules.opinion_change(kind, place)`); the model reads the place in the story. The place
+  is what tells a deed apart: no saved field was added.
 - **Witnesses:** every villager within 20 tiles (6 at night, when they stand still) sees it, not
   only the nearest. Each gets the deed as a story they **saw**, at once. No line of sight for
   now.

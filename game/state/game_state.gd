@@ -605,11 +605,14 @@ func refund_of_building(building: Building) -> Dictionary:
 	return refund
 
 
-## Why a building can't be taken down now, or "" if it can: the player is inside, or something
-## the player put in it is still there (a thing they placed, or what a chest or station holds).
+## Why a building can't be taken down now, or "" if it can: it is the village's, the player is
+## inside, or something the player put in it is still there (a thing they placed, or what a chest or
+## station holds).
 ## The furniture the house came with (the default's or a villager's own room's), empty, goes
 ## with it.
 func why_not_take_down(building: Building) -> String:
+	if world.is_village_building(building):
+		return "That is the village's."
 	if is_inside():
 		return "You can't take a house down from inside."
 	if building.interior == null:

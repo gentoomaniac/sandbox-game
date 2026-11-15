@@ -626,6 +626,16 @@ func is_free_on(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 # --- Buildings ---
 
 
+## Whether a tile is on the land of the village (see Village), which is not the player's.
+func is_village_land(world_pos: Vector2i) -> bool:
+	return village != null and village.is_land(world_pos)
+
+
+## Whether a building is one the village put up.
+func is_village_building(building: Building) -> bool:
+	return village != null and village.has_building(building)
+
+
 func buildings() -> Array[Building]:
 	return _buildings.duplicate()
 

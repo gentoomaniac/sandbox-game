@@ -188,9 +188,11 @@ func _is_close_to(npc: Npc, owner: Npc) -> bool:
 	return npc == owner or (owner.id != "" and npc.people.has(owner.id))
 
 
-## "by Antje's house" for the villager whose home is nearest (`house_owner`), else the word of
-## the ground there.
+## The village's land if the deed was done on it, else "by Antje's house" for the villager whose
+## home is nearest (`house_owner`), else the word of the ground there.
 func _place_of(outcome: ActionOutcome, house_owner: Npc) -> String:
+	if (outcome.map as World).is_village_land(outcome.tile):
+		return rules.village_land_place()
 	if house_owner != null:
 		return rules.house_place(house_owner.name.get_slice(" ", 0))
 	return rules.ground_place(outcome.map.tile_at(outcome.tile).terrain)

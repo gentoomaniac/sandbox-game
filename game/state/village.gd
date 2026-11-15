@@ -25,6 +25,48 @@ var building_origins: Array[Vector2i] = []
 var is_populated := false
 
 
+## Whether the tile is on the village's land.
+func is_land(tile: Vector2i) -> bool:
+	return area.has_point(tile)
+
+
+## Whether the village put up the building.
+func has_building(building: Building) -> bool:
+	return building_origins.has(building.origin)
+
+
+## What the console says of the village to someone standing on `tile`: where it lies, the way to
+## its meeting place and what it holds.
+func describe_from(tile: Vector2i) -> Array[String]:
+	var offset := area.get_center() - tile
+	var where := "You are on its land"
+	if not is_land(tile):
+		where = (
+			"It lies about %d tiles %s, %d %s"
+			% [
+				absi(offset.x),
+				"east" if offset.x > 0 else "west",
+				absi(offset.y),
+				"south" if offset.y > 0 else "north",
+			]
+		)
+	return [
+		"%s. %s." % [village_name, where],
+		(
+			"Its land is %d by %d tiles with %d buildings; the town square is at %d, %d (tp %d %d)."
+			% [
+				area.size.x,
+				area.size.y,
+				building_origins.size(),
+				meeting_spot.x,
+				meeting_spot.y,
+				meeting_spot.x,
+				meeting_spot.y,
+			]
+		),
+	]
+
+
 func to_dict() -> Dictionary:
 	return {
 		"name": village_name,

@@ -69,6 +69,20 @@ func test_a_night_radius_above_the_day_radius_is_a_problem() -> void:
 	assert_eq(rules.problems().size(), 1)
 
 
+func test_a_village_land_change_for_no_kind_or_beyond_two_is_a_problem() -> void:
+	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
+	values["village_land"]["stole"] = -1
+	values["village_land"]["built"] = -3
+	assert_eq(GossipRules.new(values).problems().size(), 2)
+
+
+func test_the_village_land_changes_stand_where_they_are_asked_for_by_place() -> void:
+	var place := _rules.village_land_place()
+	assert_eq(_rules.opinion_change(GossipRules.BUILT, place), -2)
+	assert_eq(_rules.opinion_change(GossipRules.BUILT, "by Antje's house"), 1)
+	assert_eq(_rules.opinion_change(GossipRules.TOOK_DOWN, place), -2, "left out: the usual")
+
+
 func test_a_change_beyond_two_is_a_problem() -> void:
 	var values := DataFile.read_sections(GossipRules.DEFAULT_PATH)
 	values["built"]["change"] = 3

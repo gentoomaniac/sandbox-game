@@ -114,3 +114,26 @@ func test_field_spots_that_are_not_tiles_are_named() -> void:
 	game["world"]["village"]["field_spots"] = [[1, 2], "far"]
 
 	assert_string_contains(_refusal_of(game).reason, "field_spots should be a list of [x, y]")
+
+
+func test_the_land_includes_its_edge_tiles_and_stops_there() -> void:
+	var world := _state_with_a_village().world
+	var area := world.village.area
+	assert_true(world.is_village_land(area.position))
+	assert_true(world.is_village_land(area.end - Vector2i.ONE))
+	assert_false(world.is_village_land(area.end))
+	assert_false(world.is_village_land(area.position - Vector2i.ONE))
+	assert_false(GameState.new_game(7).world.is_village_land(Vector2i.ZERO), "no village, no land")
+
+
+func test_the_villages_buildings_are_the_ones_the_record_names() -> void:
+	var world := _state_with_a_village().world
+	var village_shack := world.building_at(world.village.building_origins[0])
+	assert_true(world.is_village_building(village_shack))
+	var own: Building
+	for x in range(-40, 40, 6):
+		own = world.place_building(BuildingTypes.SHACK, Vector2i(x, -20))
+		if own != null:
+			break
+	assert_not_null(own)
+	assert_false(world.is_village_building(own))

@@ -39,7 +39,8 @@ const REQUIRED_KEYS := {
 		"cold_below",
 		"warm_from",
 	],
-	"places": ["house"],
+	"places": ["house", "village_land"],
+	"village_land": [],
 	"counts": ["words"],
 	"story":
 	[
@@ -110,6 +111,11 @@ func problems() -> Array[String]:
 	for kind in KINDS:
 		if absi(opinion_change(kind)) > MAX_CHANGE:
 			bad.append("[%s] change must be from -%d to %d" % [kind, MAX_CHANGE, MAX_CHANGE])
+	for kind: String in _values["village_land"]:
+		if not KINDS.has(StringName(kind)):
+			bad.append("[village_land] %s is no kind of deed" % kind)
+		elif absi(opinion_change(StringName(kind), village_land_place())) > MAX_CHANGE:
+			bad.append("[village_land] %s must be from -%d to %d" % [kind, MAX_CHANGE, MAX_CHANGE])
 	return bad
 
 
@@ -165,8 +171,13 @@ func opinion_word(points: int) -> StringName:
 	return &"warm" if points >= opinion_warm_from() else &"neutral"
 
 
-## What the villagers who saw a deed of this kind think more (or less) of the player.
-func opinion_change(kind: StringName) -> int:
+## What the villagers who saw a deed of this kind think more (or less) of the player; for a deed
+## on the village's own land (its `place` is `village_land_place`) what [village_land] says, if it
+## says.
+func opinion_change(kind: StringName, place := "") -> int:
+	var on_village_land: Dictionary = _values["village_land"]
+	if place == village_land_place() and on_village_land.has(str(kind)):
+		return int(on_village_land[str(kind)])
 	return int(_values[str(kind)]["change"])
 
 
@@ -179,6 +190,11 @@ func deed_words(kind: StringName, count: int) -> String:
 ## "by Antje's house", for the villager with this first name.
 func house_place(first_name: String) -> String:
 	return str(_values["places"]["house"]).format({"name": first_name})
+
+
+## The place of a deed done on the village's own land, which names no house.
+func village_land_place() -> String:
+	return _values["places"]["village_land"]
 
 
 ## "out on the marsh": where there is no house in reach, by the ground.

@@ -9,6 +9,9 @@ extends Node2D
 ## The middle button on a building opens its menu (who lives there, and giving it to a villager
 ## as a home or a workplace, see HouseMenu).
 ##
+## The edge of the village's land is drawn while the hammer is held, and the message says when the
+## ghost stands on it (the villagers mind; see design/world/wehlsbuell.md, section 9).
+##
 ## X switches to taking down: the building or placed thing under the mouse is marked red, the
 ## message says what taking it down gives, and holding Use for a second does it.
 ##
@@ -25,6 +28,8 @@ signal building_menu_requested(building: Building)
 const UNSAFE_LAND_MESSAGE := "This land doesn't look safe to build on."
 const OCCUPIED_MESSAGE := "Something is in the way."
 const MISSING_MESSAGE := "You lack the materials."
+## The hint while the ghost is on the village's land: the village's name goes first.
+const VILLAGE_LAND_MESSAGE := "%s's land: the villagers will not like it."
 const TAKING_DOWN_MESSAGE := "Taking down. Point at a building or something you placed."
 ## How long the use button is held to take something down.
 const TAKE_DOWN_SECONDS := 1.0
@@ -35,6 +40,7 @@ const BLOCKED_TINT := Color("a8402e", 0.7)
 const GHOST_MODULATE := Color(1, 1, 1, 0.7)
 const TAKE_DOWN_TINT := Color("a8402e", 0.55)
 const TAKE_DOWN_OUTLINE := Color("a8402e")
+const VILLAGE_EDGE_COLOR := Color("dc7a37")
 const PROGRESS_BACKGROUND := Color(0, 0, 0, 0.6)
 const PROGRESS_COLOR := Color("dc7a37")
 const PROGRESS_HEIGHT := 4.0 * TerrainTileset.ART_16_SCALE
@@ -218,6 +224,16 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	if is_active() and world.village != null:
+		draw_rect(
+			Rect2(
+				Vector2(world.village.area.position * TerrainTileset.TILE_SIZE),
+				Vector2(world.village.area.size * TerrainTileset.TILE_SIZE)
+			),
+			VILLAGE_EDGE_COLOR,
+			false,
+			OUTLINE_WIDTH
+		)
 	if builder != null and builder.is_taking_down():
 		_draw_take_down_target()
 		return
@@ -377,6 +393,8 @@ func _show_message() -> void:
 		message_changed.emit(UNSAFE_LAND_MESSAGE if is_unsafe_land else OCCUPIED_MESSAGE)
 	elif not builder.shortfalls().is_empty():
 		message_changed.emit(MISSING_MESSAGE)
+	elif Building.footprint_tiles(builder.choice, _origin).any(world.is_village_land):
+		message_changed.emit(VILLAGE_LAND_MESSAGE % world.village.village_name)
 	else:
 		message_changed.emit("")
 

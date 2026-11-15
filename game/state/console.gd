@@ -75,6 +75,7 @@ const COMMANDS := {
 		),
 	],
 	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
+	"village": ["village", "Say where the village Wehlsbüll lies, and what it holds."],
 	"gossip":
 	[
 		"gossip <villager>",
@@ -296,6 +297,13 @@ func run(line: String) -> Array[String]:
 			output = _friendship(arguments)
 		"deeds":
 			output = _deeds()
+		"village":
+			var village := _state.world.village
+			output = (
+				["This world has no village"] as Array[String]
+				if village == null
+				else village.describe_from(_state.player.tile())
+			)
 		"gossip":
 			output = _gossip(arguments)
 		"opinion":

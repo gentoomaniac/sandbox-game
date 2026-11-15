@@ -33,7 +33,9 @@ func next_in_queue() -> Dictionary:
 ## The verdict when there is no model's: no line (the template is told), the fixed change of the
 ## deed and not personal.
 func fixed_verdict(story: Dictionary) -> Dictionary:
-	return {"line": "", "change": rules.opinion_change(story["kind"]), "personal": false}
+	return {
+		"line": "", "change": rules.opinion_change(story["kind"], story["place"]), "personal": false
+	}
 
 
 ## The verdict in a model's `reply`, which is JSON (maybe with words around it, or in a code
