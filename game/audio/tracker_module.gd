@@ -1,9 +1,14 @@
 class_name TrackerModule
 extends RefCounted
-## A 4-channel ProTracker module ("M.K."), as tools/music/generate.py writes them: its samples,
-## order list and patterns, read from the file's bytes. ModuleRenderer plays it.
+## A ProTracker module as tools/music/generate.py writes them, its samples, order list and
+## patterns, read from the file's bytes: the classic 4 channels ("M.K."), or 5 to 8 in the format
+## FastTracker and the trackers after it read ("5CHN" to "8CHN"), for the fuller versions of the
+## pieces (#15). ModuleRenderer plays it.
 
+## The channels of a classic module.
 const CHANNELS := 4
+## The tag after the order list, and the channels it stands for.
+const CHANNELS_OF_TAG := {"M.K.": 4, "5CHN": 5, "6CHN": 6, "7CHN": 7, "8CHN": 8}
 const PATTERN_ROWS := 64
 const SAMPLE_SLOTS := 31
 ## The bytes of a cell, and so the ints of a cell in `patterns`: period, sample, effect, parameter.
@@ -27,6 +32,8 @@ class Sample:
 
 ## A hash of the module's bytes: what a render of it is kept under.
 var id := ""
+## How many channels each row has (see CHANNELS_OF_TAG).
+var channels := CHANNELS
 var samples: Array[Sample] = []
 ## The patterns to play, in order.
 var order := PackedInt32Array()
@@ -46,11 +53,12 @@ static func from_bytes(bytes: PackedByteArray) -> TrackerModule:
 	return module
 
 
-## Why `bytes` are refused, or "" when they are a module ModuleRenderer can play: a 4-channel "M.K."
-## module, whole (every pattern the order list names and every sample there), with an order list
-## of 1 to 128 patterns, samples of finetune 0 whose loops lie within them, and only the effects
-## ModuleRenderer plays, without ProTracker's effect memory (see tools/music/generate.py), pattern
-## breaks to rows 0 to 63 included, samples 1 to 31 and notes from C-1 to B-3.
+## Why `bytes` are refused, or "" when they are a module ModuleRenderer can play: an "M.K.",
+## "5CHN" to "8CHN" module, whole (every pattern the order list names and every sample there),
+## with an order list of 1 to 128 patterns, samples of finetune 0 whose loops lie within them, and
+## only the effects ModuleRenderer plays, without ProTracker's effect memory (see
+## tools/music/generate.py), pattern breaks to rows 0 to 63 included, samples 1 to 31 and notes
+## from C-1 to B-3.
 static func refusal_of(bytes: PackedByteArray) -> String:
 	return TrackerModule.new()._read(bytes)
 
@@ -68,8 +76,10 @@ func _read(bytes: PackedByteArray) -> String:
 func _read_order(bytes: PackedByteArray) -> String:
 	if bytes.size() < PATTERNS_START:
 		return "too short for a module header"
-	if bytes.slice(PATTERNS_START - 4, PATTERNS_START).get_string_from_ascii() != "M.K.":
-		return "no M.K. module"
+	var tag := bytes.slice(PATTERNS_START - 4, PATTERNS_START).get_string_from_ascii()
+	if not CHANNELS_OF_TAG.has(tag):
+		return "no M.K. or 5CHN to 8CHN module"
+	channels = CHANNELS_OF_TAG[tag]
 	var order_length := bytes[HEADER_SIZE]
 	if order_length < 1 or order_length > 128:
 		return "an order list of %d patterns" % order_length
@@ -109,18 +119,18 @@ func _read_samples(bytes: PackedByteArray) -> String:
 
 
 func _read_patterns(bytes: PackedByteArray) -> String:
-	var pattern_size := PATTERN_ROWS * CHANNELS * CELL_SIZE
+	var pattern_size := PATTERN_ROWS * channels * CELL_SIZE
 	for pattern in _pattern_count():
 		var cells := PackedInt32Array()
-		cells.resize(PATTERN_ROWS * CHANNELS * CELL_SIZE)
+		cells.resize(PATTERN_ROWS * channels * CELL_SIZE)
 		var start := PATTERNS_START + pattern * pattern_size
-		for cell in PATTERN_ROWS * CHANNELS:
+		for cell in PATTERN_ROWS * channels:
 			var at := start + cell * CELL_SIZE
 			var effect := bytes[at + 2] & 0x0F
 			var parameter := bytes[at + 3]
 			var period := (bytes[at] & 0x0F) << 8 | bytes[at + 1]
 			var sample := (bytes[at] & 0xF0) | bytes[at + 2] >> 4
-			var place := "in pattern %d, row %d" % [pattern, cell / CHANNELS]
+			var place := "in pattern %d, row %d" % [pattern, cell / channels]
 			if not _is_played(effect, parameter):
 				return "effect %X%02X %s" % [effect, parameter, place]
 			if sample > SAMPLE_SLOTS:
@@ -140,8 +150,8 @@ func _pattern_count() -> int:
 	return Array(order).max() + 1
 
 
-static func _samples_start(pattern_count: int) -> int:
-	return PATTERNS_START + pattern_count * PATTERN_ROWS * CHANNELS * CELL_SIZE
+func _samples_start(pattern_count: int) -> int:
+	return PATTERNS_START + pattern_count * PATTERN_ROWS * channels * CELL_SIZE
 
 
 ## Whether ModuleRenderer plays an effect as ProTracker does: the effect set of the generator.

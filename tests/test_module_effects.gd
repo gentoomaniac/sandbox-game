@@ -16,6 +16,8 @@ const A_2 := 254
 const C_3 := 214
 const E_3 := 170
 const B_3 := 113
+## What a channel of a classic module at full volume mixes at.
+const CHANNEL_GAIN := 0.25
 
 var _renderer: ModuleRenderer
 var _channel: ModuleRenderer.Channel
@@ -26,10 +28,11 @@ func before_each() -> void:
 	_channel = ModuleRenderer.Channel.new()
 
 
-## A module of one looped 32-sample saw and two patterns played in order. `cells` holds cells by
-## Vector3i(pattern, row, channel), each [period, sample, effect, parameter].
-func _module(cells: Dictionary) -> TrackerModule:
+## A module of one looped 32-sample saw and two patterns played in order, with `channels` channels.
+## `cells` holds cells by Vector3i(pattern, row, channel), each [period, sample, effect, parameter].
+func _module(cells: Dictionary, channels := TrackerModule.CHANNELS) -> TrackerModule:
 	var module := TrackerModule.new()
+	module.channels = channels
 	var saw := TrackerModule.Sample.new()
 	for index in 32:
 		saw.data.append(index / 16.0 - 1.0)
@@ -39,12 +42,10 @@ func _module(cells: Dictionary) -> TrackerModule:
 	module.order = PackedInt32Array([0, 1])
 	for pattern in 2:
 		var pattern_cells := PackedInt32Array()
-		pattern_cells.resize(
-			TrackerModule.PATTERN_ROWS * TrackerModule.CHANNELS * TrackerModule.CELL_SIZE
-		)
+		pattern_cells.resize(TrackerModule.PATTERN_ROWS * channels * TrackerModule.CELL_SIZE)
 		module.patterns.append(pattern_cells)
 	for place: Vector3i in cells:
-		var at := (place.y * TrackerModule.CHANNELS + place.z) * TrackerModule.CELL_SIZE
+		var at := (place.y * channels + place.z) * TrackerModule.CELL_SIZE
 		for index in TrackerModule.CELL_SIZE:
 			module.patterns[place.x][at + index] = cells[place][index]
 	return module
@@ -139,16 +140,37 @@ func test_a_pattern_break_goes_on_at_its_row_of_the_next_pattern() -> void:
 
 func test_channels_1_and_4_lean_left_2_and_3_right() -> void:
 	for channel in TrackerModule.CHANNELS:
-		var module := _module({Vector3i(0, 0, channel): [C_2, 1, 0, 0]})
-		var data := ModuleRenderer.new(module, RATE, true).render([Vector2i(0, 1)]).data
-		var sides := Vector2.ZERO
-		for frame in range(0, data.size(), 4):
-			sides += Vector2(absf(data.decode_s16(frame)), absf(data.decode_s16(frame + 2)))
+		var sides := _sides(_module({Vector3i(0, 0, channel): [C_2, 1, 0, 0]}))
 		var louder := sides.x if channel in [0, 3] else sides.y
 		var softer := sides.y if channel in [0, 3] else sides.x
 		assert_almost_eq(
 			louder / softer, 3.0, 0.02, "channel %d: three quarters on its side" % channel
 		)
+
+
+func test_eight_channels_lean_as_two_fours_at_half_the_gain() -> void:
+	var classic := _sides(_module({Vector3i(0, 0, 0): [C_2, 1, 0, 0]}))
+	for channel in 8:
+		var sides := _sides(_module({Vector3i(0, 0, channel): [C_2, 1, 0, 0]}, 8))
+		var is_left := channel in [0, 3, 4, 7]
+		assert_almost_eq(
+			(sides.x if is_left else sides.y) / (sides.y if is_left else sides.x),
+			3.0,
+			0.02,
+			"channel %d: three quarters on its side" % channel
+		)
+		assert_almost_eq(
+			sides.x + sides.y, (classic.x + classic.y) / 2.0, classic.x * 0.01, "an eighth each"
+		)
+
+
+## How loud the left and right sides of a module's first row are in stereo (sums of the samples).
+func _sides(module: TrackerModule) -> Vector2:
+	var data := ModuleRenderer.new(module, RATE, true).render([Vector2i(0, 1)]).data
+	var sides := Vector2.ZERO
+	for frame in range(0, data.size(), 4):
+		sides += Vector2(absf(data.decode_s16(frame)), absf(data.decode_s16(frame + 2)))
+	return sides
 
 
 func test_a_short_loop_stepped_past_more_than_once_a_sample_stays_in_it() -> void:
@@ -174,7 +196,7 @@ func test_a_note_plays_between_its_samples_and_its_loop_end_leads_into_the_loop_
 		var position := fmod(frame * step, 4.0)
 		var index := int(position)
 		var expected := lerpf(wave[index], wave[(index + 1) % 4], position - index)
-		var played := data.decode_s16(frame * 2) / 32767.0 / ModuleRenderer.CHANNEL_GAIN
+		var played := data.decode_s16(frame * 2) / 32767.0 / CHANNEL_GAIN
 		assert_almost_eq(played, expected, 0.001, "frame %d" % frame)
 
 
@@ -221,7 +243,7 @@ func _sine_rows(cells: Array) -> PackedByteArray:
 ## How far a ramp of a full channel over 1 ms (at least) moves a 16-bit sample in a frame: a step
 ## may be the wave's own and this.
 func _ramp_step() -> int:
-	return ceili(32767 * ModuleRenderer.CHANNEL_GAIN / (RATE * 0.001))
+	return ceili(32767 * CHANNEL_GAIN / (RATE * 0.001))
 
 
 ## The largest change from one sample to the next in frames `from` to `to` of mono 16-bit data.

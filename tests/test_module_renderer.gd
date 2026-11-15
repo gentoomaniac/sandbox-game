@@ -42,6 +42,30 @@ func test_refuses_bytes_that_are_no_module() -> void:
 	assert_null(TrackerModule.from_bytes(bytes), "no M.K.")
 
 
+func test_reads_modules_of_five_to_eight_channels() -> void:
+	for tag: String in ["5CHN", "6CHN", "7CHN", "8CHN"]:
+		var channels: int = TrackerModule.CHANNELS_OF_TAG[tag]
+		var bytes := PackedByteArray()
+		bytes.resize(TrackerModule.PATTERNS_START + TrackerModule.PATTERN_ROWS * channels * 4)
+		bytes[TrackerModule.HEADER_SIZE] = 1
+		var magic := tag.to_ascii_buffer()
+		for index in 4:
+			bytes[TrackerModule.PATTERNS_START - 4 + index] = magic[index]
+		# Row 1, the last channel: C-2 (period 428), no sample, effect C20.
+		var at := TrackerModule.PATTERNS_START + (channels + channels - 1) * 4
+		bytes[at] = 428 >> 8
+		bytes[at + 1] = 428 & 0xFF
+		bytes[at + 2] = 0xC
+		bytes[at + 3] = 0x20
+		var module := TrackerModule.from_bytes(bytes)
+		assert_not_null(module, tag)
+		assert_eq(module.channels, channels, tag)
+		var cell := module.patterns[0].slice((channels + channels - 1) * 4, (2 * channels) * 4)
+		assert_eq(cell, PackedInt32Array([428, 0, 0xC, 0x20]), "%s: the cell in its place" % tag)
+		bytes.resize(bytes.size() - 1)
+		assert_null(TrackerModule.from_bytes(bytes), "%s: a pattern of its channels" % tag)
+
+
 func test_renders_a_section_to_its_rows_and_tells_its_beat() -> void:
 	var renderer := ModuleRenderer.new(_module, RATE)
 	var stream := renderer.render([LOOP])

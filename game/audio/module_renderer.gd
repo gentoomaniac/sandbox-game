@@ -28,9 +28,12 @@ extends RefCounted
 ## Volumes ramp, as in libmodplug: a channel's gain moves to a new volume over RAMP_SECONDS, and a
 ## struck note starts from silence while the note before fades out beside it, so a note change
 ## doesn't jump from wherever the old wave was (a click). In stereo the Amiga's channels 1 and 4
-## are to the left and 2 and 3 to the right, each with a quarter of it on the other side, as hard
-## Amiga panning tires on headphones. `channel_levels` turns each channel down on its own, for a
-## quieter mix of a piece (the music indoors, task 171).
+## are to the left and 2 and 3 to the right (and so on in fours: 5 and 8 left, 6 and 7 right, as
+## the trackers after it pan more channels), each with a quarter of it on the other side, as hard
+## Amiga panning tires on headphones. Every channel at full volume sums to 1, whatever plays, so
+## each of a module's channels mixes at 1 / its channels (a quarter in a classic module).
+## `channel_levels` turns each channel down on its own, for a quieter mix of a piece (the music
+## indoors, task 171).
 
 ## Half the Amiga's PAL clock: a sample plays at this many samples a second over its period.
 const PAL_RATE := 3546894.6
@@ -43,10 +46,9 @@ const PERIOD_TABLE := (
 )
 ## The vibrato's sine at its peak: a depth of 1 moves the period by up to this / 128.
 const VIBRATO_PEAK := 255.0
-## Four channels at full volume sum to 1: no clipping, whatever plays.
-const CHANNEL_GAIN := 0.25
 ## In stereo, the share of a channel on its own side.
 const OWN_SIDE := 0.75
+## The channels of each four that are to the left.
 const LEFT_CHANNELS: Array[int] = [0, 3]
 ## Raise it when a change to the renderer makes its renders sound different: the renders kept by
 ## MusicCache are then rendered again.
@@ -104,8 +106,9 @@ var mix_rate := 44100
 var is_stereo := false
 ## How many rows a beat has.
 var rows_per_beat := ROWS_PER_BEAT
-## The share of its volume each of the four channels plays at, 0 (silent) to 1.
-var channel_levels := PackedFloat32Array([1.0, 1.0, 1.0, 1.0])
+## The share of its volume each of the module's channels plays at, 0 (silent) to 1: all at 1 at
+## first.
+var channel_levels := PackedFloat32Array()
 ## The length of a beat in the last render, in seconds: `rows_per_beat` rows at the speed and tempo
 ## of its first row, in whole samples (see the ticks above).
 var beat_seconds := 0.0
@@ -117,12 +120,17 @@ var was_cached := false
 var _task_id := -1
 var _rendered: AudioStreamWAV
 var _ramp_length := 1
+## What a channel at full volume mixes at: 1 / the module's channels.
+var _channel_gain := 0.25
 
 
 func _init(tracker_module: TrackerModule, rate := 44100, stereo := false) -> void:
 	module = tracker_module
 	mix_rate = rate
 	is_stereo = stereo
+	channel_levels.resize(module.channels)
+	channel_levels.fill(1.0)
+	_channel_gain = 1.0 / module.channels
 	_ramp_length = maxi(1, roundi(mix_rate * RAMP_SECONDS))
 
 
@@ -169,7 +177,7 @@ func rows_once_through() -> int:
 	for pattern in module.order:
 		var played := TrackerModule.PATTERN_ROWS
 		for row in TrackerModule.PATTERN_ROWS:
-			if _breaks(module.patterns[pattern], row):
+			if _breaks(module.patterns[pattern], row, module.channels):
 				played = row + 1
 				break
 		rows += played
@@ -191,7 +199,7 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 		played.append_array(parts)
 	var second_start := 0
 	var channels: Array[Channel] = []
-	for index in TrackerModule.CHANNELS:
+	for index in module.channels:
 		channels.append(Channel.new())
 	var speed := 6
 	var tempo := 125
@@ -207,8 +215,8 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 		for row_number in part.y:
 			var cells := module.patterns[module.order[order]]
 			var break_row := -1
-			for index in TrackerModule.CHANNELS:
-				var at := (row * TrackerModule.CHANNELS + index) * TrackerModule.CELL_SIZE
+			for index in module.channels:
+				var at := (row * module.channels + index) * TrackerModule.CELL_SIZE
 				var effect := cells[at + 2]
 				var parameter := cells[at + 3]
 				_start_row(channels[index], cells[at], cells[at + 1], effect, parameter)
@@ -227,9 +235,9 @@ func render(parts: Array[Vector2i], loops := false) -> AudioStreamWAV:
 					for channel in channels:
 						_play_tick(channel, tick)
 				mix.resize((frames + tick_frames) * (2 if is_stereo else 1))
-				for index in TrackerModule.CHANNELS:
+				for index in module.channels:
 					var channel := channels[index]
-					var gain := CHANNEL_GAIN * channel_levels[index] * channel.volume / 64.0
+					var gain := _channel_gain * channel_levels[index] * channel.volume / 64.0
 					if gain != channel.ramp_target:
 						_ramp(channel, gain)
 					_mix(channel, index, mix, frames, tick_frames)
@@ -380,7 +388,7 @@ func _mix(
 	var frame := first
 	var last := first + frame_count
 	if is_stereo:
-		var left := OWN_SIDE if LEFT_CHANNELS.has(index) else 1.0 - OWN_SIDE
+		var left := OWN_SIDE if LEFT_CHANNELS.has(index % 4) else 1.0 - OWN_SIDE
 		var right := 1.0 - left
 		while frame < last:
 			if position >= end:
@@ -438,9 +446,9 @@ func _stream(mix: PackedFloat32Array, loops: bool) -> AudioStreamWAV:
 	return stream
 
 
-static func _breaks(cells: PackedInt32Array, row: int) -> bool:
-	for channel in TrackerModule.CHANNELS:
-		var at := (row * TrackerModule.CHANNELS + channel) * TrackerModule.CELL_SIZE
+static func _breaks(cells: PackedInt32Array, row: int, channel_count: int) -> bool:
+	for channel in channel_count:
+		var at := (row * channel_count + channel) * TrackerModule.CELL_SIZE
 		if cells[at + 2] == EFFECT_BREAK:
 			return true
 	return false
