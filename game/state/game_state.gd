@@ -795,6 +795,8 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.livestock.load_array(data["livestock"])
 	state.npcs.load_array(data["npcs"], state.world)
+	for npc in state.npcs.all():
+		state.activities.resume(npc)
 	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who

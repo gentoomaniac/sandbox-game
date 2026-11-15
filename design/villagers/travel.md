@@ -528,10 +528,12 @@ is walked by the skip as before, and the next minute's tick sends them where the
 
 ## Saving
 
-Nothing new is saved and the save version stays: the position of every villager is saved already,
-far ones included, and the masks are made again. A trip is not saved: on load, task 239 sends each
-villager where its routine says at that hour, from where it stands, which costs one search each (a
-moment's stand for a visible one). Until 239, a console `goto` is lost over a save.
+The position of every villager is saved, far ones included, and the masks are made again. A trip is
+not saved. On load each villager is sent where its day says at that hour (`ActivityUpkeep.resume`),
+from where it stands, which costs one search each (a moment's stand for a visible one). The model's
+plans for the days are saved with the villagers (save version 47, [routines.md](routines.md) "Loading a
+save, saving"), so the day that is on is the planned one, and a plan of a day gone by is dropped on
+load. A console `goto` is lost over a save.
 
 ## The village (#9, task 234)
 

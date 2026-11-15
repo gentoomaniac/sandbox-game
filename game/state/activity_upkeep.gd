@@ -126,6 +126,15 @@ func set_plan(npc: Npc, plan: DayPlan) -> void:
 	_follow_day(npc)
 
 
+## A villager of a loaded game, with their plans but not yet sent by the day. They are sent to the
+## entry that is on, from where they stand (a search, no trip for one who is there already); the
+## plans of days gone by are dropped, as at a new day. The model is not asked again for a day they
+## have a plan for.
+func resume(npc: Npc) -> void:
+	_drop_old_plans(npc)
+	_follow_day(npc)
+
+
 ## The entry of the villager's day that is on now, or null.
 func entry_on(npc: Npc) -> DayEntry:
 	var yesterday: Array[DayEntry] = []

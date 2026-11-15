@@ -644,16 +644,20 @@ minute it came, for the console, and `whole_day` is false for a plan of the rest
 change), and the console and the late rule need to know the day came from the model. A default
 day is never saved: it is made again, the same. A trip and the current entry are not saved.
 
-- **Save version:** the next free one at build time (44 on main, 45 once the map rework #60 and the
-  village #9 have taken theirs), with an upgrade from the version before (it has no plans, so every
-  villager has the default day until the planner asks), and the oldest upgrade dropped as the save
-  file's header says. A commit of its own. Saves rotate (#16): each file carries its plans, nothing
+- **Save version:** **built** as 47 (after the map rework #60 and the village #9), with an upgrade
+  from 46 (it has no plans, so every villager has the default day until the planner asks), and the
+  oldest upgrade (36) dropped as the save file's header says, each a commit of its own. The entries
+  are saved as `[activity, minute, why]` (a planned entry has no length) and the plan's `whole_day`
+  is the key of `DayPlan.is_whole_day`; the failed and waiting marks of `asked_plans` are not saved,
+  so a villager whose answer was lost is asked once more after a load. Saves rotate (#16): each file carries its plans, nothing
   to do.
-- **After a load** `ActivityUpkeep.resume` runs once: each villager gets the entry that is on and
-  is sent from where they stand (`walk_to`): one search each, no trip for one that is there. A
-  visible one stands a moment while its search runs; nobody jumps. A villager who comes into the
-  world (`spawn npc`, after `Households.settle`) is sent the same way, and the planner queues
-  the current day for them when they are in the radius.
+- **After a load** `ActivityUpkeep.resume` runs once for each villager (`GameState.from_dict`): it
+  drops the plans of days gone by, and the villager gets the entry that is on and is sent from
+  where they stand (`walk_to`): one search each, no trip for one that is there. A visible one stands
+  a moment while its search runs; nobody jumps. A villager who comes into the world (`spawn npc`,
+  after `Households.settle`) is sent the same way by `Households.changed`, which `settle` causes
+  with the house it gives (so no hook of its own is needed, and a new villager has no plan), and
+  the planner queues the current day for them when they are in the radius.
 - Plans of days gone by are dropped at each new day (`GameClock.new_day`).
 
 ### Console
@@ -719,9 +723,10 @@ One file for each part, each short:
   the anchor rule and rests at night as today; `Households.changed`.
 - **The skip** (`test_activity_skip.gd`): at the place, on the way, not yet left; over frames and
   in one go end the same; the same seed ends the same; a villager on a trip is walked first.
-- **Saving** (`test_day_plan_save.gd`): model plans round-trip; a default day is not saved; a save
-  during a walk and a load send each villager where the clock says, one search each, nobody at
-  two places; the plan is not asked for again after a load; a save of version 43 loads.
+- **Saving** (`test_day_plan_save.gd`, `test_day_plan_resume.gd`): model plans round-trip; a
+  default day is not saved; a save during a walk and a load send each villager where the clock
+  says, one search each, nobody at two places; the plan is not asked for again after a load; a
+  plan of a day gone by is dropped on load; a save of version 46 loads with no plans.
 - **The sleep screen** (an addition to the blackout tests): a sleep ends on the waiting message,
   goes on by a key or a click and not before; the planner's queue goes on during the wait.
 - **Console** (`test_routine_console.gd`): the answer with a plan, with the default, blocked, no
@@ -771,9 +776,9 @@ village: they run on the camp's villagers and on the test worlds of the road tes
     counts what is queued, so a villager dropped for leaving the radius and queued again counts
     twice), the order looked at again. None is queued with no model, or after 23:30 (no entry
     could be planned). Tests.
-13. **Saving the plans** and `resume` for loading and spawning. The save version is the next free
-    one, a commit of its own with its upgrade step. Tests: saving. Doc line in travel.md
-    ("Saving").
+13. **Saving the plans** and `resume` for loading and spawning. **Done.** Save version 47, a commit
+    of its own with its upgrade step (and the drop of the upgrade from 36 before it). Tests:
+    saving. Doc line in travel.md ("Saving").
 14. **The bench** for the minute's tick and the radius check over 155 villagers (`tools/bench/`),
     the numbers written here; this plan marked as built.
 
