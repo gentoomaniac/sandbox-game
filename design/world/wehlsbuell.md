@@ -1,73 +1,115 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Plan first: nothing here
-is built.** This page says where the village stands, which buildings it has, how it gets into the
-world, and in which steps. It waits for the user's approval (the open questions are at the end).
-It was written to fit two plans that wait for answers too: the
-[map generation review](map-generation-review.md) (#60) and the routines plan (#7, "Routines: the
-plan" in [../villagers/routines.md](../villagers/routines.md)).
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Plan: nothing here is
+built.** This page says what will be built: where the village stands, its buildings, fields and
+people, how it gets into the world, and in which steps. The user's answers
+([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
+[#75](https://github.com/gentoomaniac/sandbox-game/issues/75),
+[#76](https://github.com/gentoomaniac/sandbox-game/issues/76)) are folded in. It builds on the
+new map of [#60](map-generation-review.md) (bare open land, woods, creeks with fords, a winding
+river) and fits the routines plan (#7, [../villagers/routines.md](../villagers/routines.md)).
 
-## 1. The proposal in short
+## 1. What will be built
 
 - **Where:** at the coast, west of the camp, on the first row north or south of it where the land
-  fits. The church is about 230 tiles from the camp in x, so a walk of about a minute (the player
-  walks 5 tiles a second).
-- **How:** the village is **not part of the generator**. A `VillageBuilder` writes it into the
-  world when a new game starts: terrain edits, object edits and placed buildings, saved like
-  anything else the player does. The place is found from the seed, the same every time.
-- **What:** three farms on Warften in the Koog, the church with its churchyard and bell frame, the
-  parsonage, the Krug, six cottages by the dyke and the sluice, the landing, a free spot for the post
-  mill, lanes, walls and fences. 19 buildings, all of types that exist; where none fits, a placeholder.
-- **Who:** the eight villagers of `data/villagers.cfg` are spawned once, at their doors, and get
-  their homes and workplaces. The other houses stand empty.
+  fits. The church is a few hundred tiles from the camp: a walk of about a minute (the player walks
+  5 tiles a second). **Any site is accepted**: there is no limit on the distance.
+- **How:** the village is **not part of the generator**. A `VillageBuilder` writes it into the world
+  once, when a new game starts: terrain edits, object edits and placed buildings, saved like
+  anything else the player does. The site is found from the seed, the same every time.
+- **What:** three farms on Warften in the Koog, each with fields beside it, the church with its
+  churchyard and bell frame, the parsonage, the Krug, six cottages by the dyke and the sluice, the
+  landing, a free spot for the post mill, a **town square kept free for a future market**, lanes,
+  walls and fences. 19 buildings, all of types that exist; where none fits, a stand-in.
+- **A worn track** from the camp to the village is laid at the start (section 7).
+- **Who:** the eight villagers of `data/villagers.cfg` are spawned once, at their doors, with their
+  homes and workplaces. The other houses stay empty.
 - **The village is not the player's:** its land is a record in the world. Building there costs
   goodwill, its houses can't be taken down, and build mode shows the land's edge.
-- **Meeting place:** the village green by the Krug (weekday evenings, Saturday) and the churchyard
-  (Sunday). The world record names the spot; #7's routines read it.
-- **Old saves** keep their world as it is. A console command may add the village later (step 9).
+- **Finding it:** the handbook and a console command `village` say where it is.
+- **Old saves** keep their world as it is, with no village.
 
-![The proposed layout, one block a tile](wehlsbuell-layout.png)
+### The decisions
+
+| Question | Decision | From |
+|---|---|---|
+| Placed or generated | placed once at the start of a new game | #75 |
+| Size | about 60 tiles wide, as drawn | #75 |
+| The site | any site is accepted | #75 |
+| Finding it | handbook and console `village`, and a worn track from the camp | #75 |
+| Farms and fields | none in the open land; fields only around the generated villages | #73 |
+| Lanes | in and around villages, linking houses and fields; between villages once there is more than one; none across the open land | #73 |
+| Ditches | the player digs them (#86); the village has its own around its fields | #73 |
+| Empty houses | stay empty | #76 |
+| Reputation | building in the village costs goodwill; build mode shows its edge | #76 |
+| Taking down its houses | refused | #76 |
+| Stand-in buildings | as listed in section 4 | #76 |
+| Town square | a free square for a future market | #76 |
+
+Defaults not asked about (no objection was raised): old saves keep their world as it is; the
+village's lane tiles do not regrow; the save version is taken at build time (section 12).
+
+![The layout, one block a tile](wehlsbuell-layout.png)
 
 The picture is drawn by [wehlsbuell-layout.py](wehlsbuell-layout.py), which also checks the layout:
-no two buildings overlap, every door has its free tile in front, and from every door one can walk to
-the main lane round the fences. Brown on the left is the sea dyke, green-grey the salt marsh, tan the
-mud. White is wall and fence, tan lanes, blue water, the red dot the meeting place.
+no two buildings overlap, every door has its free tile in front and a walk to the main lane, no
+field is shut in (every one has a gap to a lane), and the town square is free. Brown on the left is
+the sea dyke, green-grey the salt marsh, tan the mud. White is wall and fence, tan lanes, blue water
+(a ditch in the marsh), orange a Knick (on the Geest), the cream square the town square, the red dot
+the meeting place.
 
 ## 2. Where
 
 ### How far from the camp
 
 The player walks 5 tiles a second (`PlayerState.SPEED`), so a minute is 300 tiles. The coast line runs
-about 260 tiles west of the centre (`line_x=-260`, wandering 40 either way), and the camp is at the
-centre. A village at the coast is a walk of 45 to 60 seconds. The Koog is behind the sea dyke and the
-Geest edge is 36 tiles from it, so the whole village is within 60 tiles of the dyke.
+about 260 tiles west of the centre (`line_x=-260`, wandering 40 either way) and the camp is at the
+centre. The Koog is behind the sea dyke and the Geest edge is 36 tiles from it, so the whole village is
+within 60 tiles of the dyke.
 
 ### Finding the site (`VillageSite`, a pure function of the seed)
 
 Starting at the camp's row and going north and south in steps of 4 rows, the first row `y0` where the
-layout fits. The layout fits when, with `dyke_x` the first land tile east of the salt marsh in a row:
+layout fits. With `dyke_x` the first land tile east of the salt marsh in a row:
 
 1. **The coast is straight enough:** `dyke_x` in every second row from -30 to +36 is within 8 tiles of
    that of `y0`. The inland part is laid out 9 or more tiles behind the dyke of `y0`, so the wandering
    coast never reaches it.
-2. **The inland land is dry:** every tile from 9 to 58 east of the dyke, rows -26 to +32, is grass,
-   Warft, wetland (the village drains it) or a ditch of the generated grid (the village fills it).
-   No river, floodplain, mud or sea.
+2. **The inland land is dry and clear of water:** every tile from 9 to 58 east of the dyke, rows -26
+   to +32, is grass, Warft or wetland (the village drains it). No river, floodplain, creek, ford, mud
+   or sea. Trees and stones are no reason to refuse: the builder fells them (woods stand on the
+   Geest only, so they touch the village's eastern part).
 3. **The landing has salt marsh:** the 11 by 9 tiles seaward of the dyke at the landing's rows.
-4. **The camp can walk there:** no river on the straight line from the camp (32 samples). Step 2 checks
-   it with a real path search, not only the line.
+4. **The camp can walk there:** the villagers' path search (see
+   [../tech/pathfinding.md](../tech/pathfinding.md)) finds a way over the generated land from the camp
+   to the east end of the Sielweg. It is the only rule that needs a search, so it runs last, on rows
+   that passed the others. It replaces the first draft's "no river on the straight line": the river
+   and the creeks may lie between, and a ford must then carry the way.
 
-It needs nothing from the world's edits, so the same function answers for a new game of any seed.
-The search stops at the first fit, so its cost is a few hundred thousand `terrain_at` calls at most
-(to be measured in step 2).
+The first draft's rule about the generated ditch grid is gone with the grid (#60 made the open land
+bare). No rule needs the world's edits, so the same function answers for a new game of any seed. The
+search stops at the first fit. Its cost and the distance for seeds 1 to 20 are measured in step 2
+(with `make world-map`) and written here; the figures of the first draft were for the old generator.
 
-**Checked on the current generator** with a scratch script (rules 1 to 3, in rows of 4, over seeds 1
-to 20): a site exists for all 20. The offset from the camp's row is 24 to 448 rows, the median 122.
-So the church is 230 to 510 tiles from the camp: a median of 52 seconds, 17 of 20 seeds within 70
-seconds, the worst 100 seconds. With a coast slack of 4 instead of 8 only 18 of 20 seeds fit and
-the offsets were far larger (up to 750 rows), which is why the layout stays 9 tiles from the dyke.
+## 3. Generated or placed: placed, at new-game time
 
-## 3. The buildings
+- **Buildings can't be generated.** A building is an entity of the world with an interior, residents
+  and a save entry, not a tile; the generator makes terrain and objects only.
+- **It sits on top of the generator.** The generator is changing (#60 now, more later). A village of
+  edits stays as it is while the layers under it change.
+- **Edits are saved already.** Terrain edits, object edits (`null` for removed) and buildings are in
+  `World.to_dict`; the far view (#68) sees them, as [../villagers/travel.md](../villagers/travel.md)
+  asks.
+- **It is deterministic.** `VillageSite` and `VillageBuilder` read only the seed and the generator's
+  public functions. Every random choice is a hash of the seed and a tile, never the global random
+  generator. A test builds twice and compares the edits.
+- **The cost:** the edits and buildings make the save bigger and the new game builds a dozen chunks
+  more than today. Both are measured in steps 3 and 5 and written here.
+- **Later changes of the generator** change the land inside the village's rectangle that the village
+  did not edit, as they change every other unedited tile of a save. #71 decided against a freeze, so
+  the village takes no special care.
+
+## 4. The buildings
 
 All on the layout above. `u` is tiles east of the dyke's nominal line, `v` rows south of `y0`. The
 plan lives in `data/village_plan.cfg` (step 1), one section per thing, so the layout is data and not
@@ -87,15 +129,28 @@ Each farm yard has a wattle fence with a gap at its gate, trees (alder, willow, 
 on the Boysen yard. The Warften are `WARFT` terrain edits in an oval, the same terrain as the
 generated Warften of the salt marsh. A pond (Fething) is a `WATER` edit, 2x2.
 
+### The fields
+
+#73: fields only around generated villages. Wehlsbüll has four, beside its farms: two north of the
+Boysen and Farm 2 yards, one south of Farm 3, and one Koppel by the mill road.
+
+- A field is a ring of boundary with one 2-tile gap, as the old generator made them. **Where the
+  ground is marsh the boundary is a ditch** (one tile of water), **on the Geest a Knick** (`knick`
+  object). That rule is the one the generator had before #60; it now lives in the builder.
+- **No field is shut in:** every gap is reached from a lane (a test; the picture script checks it too).
+- The ditches stand as a ring and are not joined to the Sielzug: they are water for the cattle.
+  Draining and watering are the player's work (#86).
+- Nothing is planted in the fields and they are not tilled soil.
+
 ### The church, the churchyard and what is by it
 
 | Building | Type | Notes |
 |---|---|---|
 | Church | `church` (6x4) | on the highest Warft, 24x16 tiles, middle of the village |
-| Churchyard | stone wall, 19x13 tiles | one gate on the south side, graves (`grave`) inside |
+| Churchyard | stone wall, 19x13 tiles | one gate on the south side, graves (`grave_marker`) inside |
 | Bell frame | `bell_frame` | inside the yard, east of the church (task 102) |
-| Parsonage | `kate`, style `brick` | **placeholder:** the pastor has no house type; nobody lives there |
-| Krug | `longhouse` | **placeholder:** an inn is not a type; nobody lives there. By the green |
+| Parsonage | `kate`, style `brick` | **stand-in:** the pastor has no house type; nobody lives there |
+| Krug | `longhouse` | **stand-in:** an inn is not a type; nobody lives there. By the square |
 
 The sexton's house with the school is left out (no villager, no type).
 
@@ -103,65 +158,121 @@ The sexton's house with the school is left out (no villager, no type).
 
 | Building | Type | Lives there |
 |---|---|---|
-| Kerrin's house | `kate`, style `brick` | Kerrin ("a small brick and thatch house at the foot of the dyke, by the sluice road": task 120 made the style for her) |
-| Five cottages along the Deichweg | `shack` x3, `kate` (style `geest`), `kate` | nobody; for the made-up cottagers and day labourers later |
+| Kerrin's house | `kate`, style `brick` | Kerrin (task 120 made the style for her) |
+| Five cottages along the Deichweg | `shack` x3, `kate` (style `geest`), `kate` | nobody; empty |
 | Landing: Ketels hut | `fisher_hut` on a small Warft **outside** the dyke, on the salt marsh | Momme, Inken |
 | Landing: jetty, rowing boat, net frame, eel traps | the objects of task 103 | the jetty runs over the mud |
-| Sluice (Siel) | **placeholder:** a two-tile gap in the dyke with the Sielzug (a 2-tile ditch behind it, 28 tiles long) running through, water ending two tiles beyond | |
+| Sluice (Siel) | **stand-in:** a two-tile gap in the dyke with the Sielzug (a 2-tile ditch behind it, 28 tiles long) running through, water ending two tiles beyond | |
 
 ### The mill
 
 - The post mill does not exist as a type. Its spot is a free 7x7 square at the Geest edge, in the
-  record (`mill_spot`), kept clear. Nothing is built on it by the village. The player may build on
-  it (it is the village's land; see section 6).
-- The mill house at its foot is a **placeholder**: `kate`, style `geest`, with room for two. Ocke
-  and Gesche live in it. When the mill house is a type of its own (the sheets say "not a building
-  yet"), the plan changes the type and nothing else.
+  record (`mill_spot`), kept clear. The village builds nothing on it; the player may.
+- The mill house at its foot is a **stand-in**: `kate`, style `geest`, with room for two. Ocke and
+  Gesche live in it. When the mill house is a type of its own, the plan changes the type and
+  nothing else.
 
 ### Lanes, fences and walls
 
-- **Lanes**, one tile wide, laid as worn path: the **Sielweg** from the landing through the dyke gap
-  across the whole village to the Geest, the **Deichweg** along the dyke (north to south), and a
-  lane from each farm gate and from the churchyard gate to them. A lane over the Sielzug is a
-  culvert: the lane tile stays land. Section 8 says how they stay.
-- **Walls and fences:** the churchyard is a `stone_wall` ring, the farm yards `wattle_fence`. Each
-  has a gap at its gate, and the door of every house has its free tile in front. Nothing shuts anyone
-  in (a test, like the rule for the fields).
-- **Placed from the generator's land:** the grid of boundaries, ditches, reeds, willows, trees and
-  stones inside the village's rectangle are removed first (object edits `null`, drained wetland and
-  filled ditches as terrain edits), so the village stands on clean ground. About 1 500 edits are
-  expected (to be measured in step 3); the village itself adds about 800.
+- **Lanes**, one tile wide, laid as worn path (section 8): the **Sielweg** from the landing through
+  the dyke gap across the whole village to the Geest, the **Deichweg** along the dyke, a lane from each
+  farm gate and the churchyard gate, a lane along the north fields and one to each of the other
+  fields. A lane over the Sielzug is a culvert: the lane tile stays land. #73: lanes stay in and
+  around the village. None leaves it across the open land (the worn track of section 7 is a desire
+  path, not a lane). Lanes between villages wait until the world has a second village.
+- **Walls and fences:** the churchyard is a `stone_wall` ring, the farm yards `wattle_fence`. Each has
+  a gap at its gate and the door of every house has its free tile in front. Nothing shuts anyone in.
+- **Clean ground:** the builder fells the trees and removes the bushes, stones and tall grass inside
+  the rectangle (object edits `null`) and drains wetland (terrain edits), so the village stands on
+  clean ground. The open land is bare now, so there are no generated boundaries or ditches to clear,
+  and far fewer edits than the first draft expected (it said 1 500). The count is measured in step 3.
 
-## 4. Generated or placed: placed, at new-game time
+## 5. The town square
 
-Two ways: a layer of the generator (`generate_chunk`) or edits and buildings written once.
-**Proposed: written once, when a new game starts.**
+A free open square of 13 by 6 tiles between the Krug, the churchyard and the Sielweg (the picture's
+cream area), kept free for a future market (#76).
 
-- **Buildings can't be generated.** A building is an entity of the world with an interior, residents
-  and a save entry, not a tile. The generator makes terrain and objects only. A village in the
-  generator would still need a second step for its buildings; written once, one mechanism does it all.
-- **It keeps the generator free for #60.** #60 changes the layers of the generator, one step at a
-  time. A village built into them would have to be rewritten each time. A village of edits sits on
-  top of whatever the generator makes, and the old village of a save stays as it was.
-- **Edits are saved already.** Terrain edits, object edits (`null` for removed) and buildings are in
-  `World.to_dict`; the far view (#68) sees them, as [../villagers/travel.md](../villagers/travel.md)
-  asks ("from `generate_chunk` or an edit or a building of `World`").
-- **It is deterministic.** `VillageSite` and `VillageBuilder` read only the seed and the generator's
-  public functions (`terrain_at`, `is_ditch`, the object roll of a tile). Every random choice is a
-  hash of the seed and a tile, never the global random generator, and the search goes row by row so a
-  tie is always broken the same way. A test builds twice and compares the edits.
-- **The cost:** the village's edits and buildings make the save bigger (a few hundred KB of JSON at
-  most, to be measured), and the new game builds 12 chunks more than today. Both are measured in step 3.
-- **What stays outside:** the *land* of the village is not generated, so a new game with the same
-  seed and a newer generator gets a village on the newer land. That is right: it is built when the game
-  starts, not remembered.
+- **Free:** the village puts nothing on it but a draw well and four benches on its rim, and the record
+  keeps it as `square`. A later market task puts its stalls there; until then it is empty ground.
+  The player is not stopped from building on it (it is the village's land, with the goodwill cost of
+  section 9).
+- **Ground:** trodden earth like the lanes, kept (section 8).
+- **It is the meeting place.** Its middle is `meeting_spot` in the record, which #7's routines read
+  (section 6). It is open air, so it is "in the open" for the rain rule of the routines.
 
-## 5. The eight villagers
+## 6. The meeting place and the routines
+
+The issue wants a place where villagers come together now and then, so gossip has meetings.
+
+- **When:** the routines of #7 say it: the `meeting` step (weekday 19:00, Saturday evening at the
+  Krug, Sunday afternoon) goes to the square, the `church` step (Sunday 9:30) to the churchyard.
+  "Which places are where" in the routines plan takes `meeting` from "the place the village names for
+  it": that is this spot. Until #9 lands, #7's fallback (the church yard) stays.
+- **Order of the two plans:** both orders work. If #9 comes first, the record has `meeting_spot` and
+  nothing reads it (the villagers still stroll about their yards). If #7 comes first, one line of
+  `RoutinePlaces` and its test change to read the record.
+- **Distances:** a tile is a game minute. The longest daily walk is the landing to the Krug (about 65
+  tiles, an hour of game time, 43 seconds of play); the mill house to the church is about 32. The
+  routine's "leave early" estimate covers both.
+- **`church`, `home`, `work`:** the church nearest to the home, and the homes and workplaces of
+  section 10 (`Households`, `Workplace.spot()`). A spot as workplace (the landing, the post mill) is a
+  tile (`Workplace.of_spot`). Nothing else in #7 changes.
+
+## 7. The worn track from the camp (#75)
+
+The player finds the village by a trodden way from the camp to it, as well as by the handbook and the
+`village` command. It is a **desire path** ([desire-paths.md](desire-paths.md), #61), laid at the start.
+
+- **Laid:** after the village stands, the builder asks the path search for a way from the camp to the
+  east end of the Sielweg (the search of site rule 4) and gives each tile of it that can wear (grass and
+  floodplain; fords are floodplain, so they carry it) the wear of a path: `WorldWear.set_days` with
+  `most_days` (12). Tiles that cannot wear (a Warft, wetland) stay as they are. It is plain wear, saved
+  in `world.wear` already: no new save field, no record. About 300 to 500 tiles.
+- **It keeps itself worn by use, like any desire path:** the rules are not changed. A tile needs 10
+  steps in a day to count as busy, so one walk a day over it is not enough: **a track no one walks
+  fades to grass in about ten days** (12 days of wear, one lost each quiet day), and a track walked once
+  a day fades too. It stays only where the player (or later a villager on an errand) crosses it
+  often. The mud rule applies: the track is muddy in the rain, so a player who walks it often has a
+  reason to lay a way (#62). See "Check with the user" at the end.
+- **Not a lane:** it is not in the record and is not kept. The village's own lanes are (section 8).
+
+## 8. Lanes that stay
+
+A lane is a path on the ground only while it is walked: desire paths grow back in two weeks
+([../../data/paths.cfg](../../data/paths.cfg)). The village sets its lane tiles and the square to full
+wear at build time (the wear map is saved) and the nightly regrowth skips the tiles of the record's
+lanes and square. So they stay without walking. This is the smallest way: it changes one place in
+`WorldWear.end_day`. The player's ways (a plank walk or a stone path, #62) may be laid over a lane: a
+way never wears, and taking it up leaves the lane's wear as it was. Lanes are muddy in the rain like
+other worn ground. #60 built no lanes, so nothing else is waiting on their form.
+
+## 9. Reputation and showing the village's land
+
+[reputation.md](../villagers/reputation.md) says "building inside a settlement's territory costs
+reputation with its NPCs". Reputation itself is not in the code yet
+([../villagers/relationships.md](../villagers/relationships.md)). What is there: the deed log and the
+villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
+
+- **The land is a record.** `World.village` holds the name, `area` (a rectangle, here from `u` -16 to
+  60 and `v` -28 to 34, about 76 x 62 tiles, clipped to the land), the meeting spot, the square, the mill
+  spot, the lanes and the buildings the village put there. `World.is_village_land(tile)` answers.
+- **Deeds in the land weigh otherwise.** A new section `[village_land]` in `data/gossip.cfg` has a
+  `change` for `built` (-2), `fenced` (-1) and `felled` (-1) done inside the land, used instead of the
+  section's own. The witnesses are as ever. The story the language model judges says "on the
+  village's own land". The one-hop spread through friends and enemies is the reputation task's.
+- **Its houses are not the player's.** The hammer's take-down refuses a building of the record ("That
+  is the village's."). Walls and fences are not protected (no deed kind for them yet).
+- **Shown before building.** With the hammer in hand the land's edge is drawn as a line over the terrain
+  (like the build ghost), and while the ghost is inside the land the hint line says "Wehlsbüll's land:
+  the villagers will not like it".
+- **`village` console command** says where it is ("about 232 tiles west, 120 south") and what it holds,
+  as does the handbook (#75).
+
+## 10. The eight villagers
 
 Spawned once, in `GameState.new_game`, after the village is built, each at its door with
-`Npcs.spawn_villager`. `Households.settle` (the signal of the spawn) then finds the house of their
-sheet's type nearest to where they stand, so Boy and Antje join Hinrich's hall house and each
-workplace is the nearest of its type. Where the sheets say nothing the plan does it by name.
+`Npcs.spawn_villager`. `Households.settle` then finds the house of their sheet's type nearest to where
+they stand, so Boy and Antje join Hinrich's hall house and each workplace is the nearest of its type.
 
 | Villager | Home (building type) | Workplace | Interior |
 |---|---|---|---|
@@ -171,252 +282,146 @@ workplace is the nearest of its type. Where the sheets say nothing the plan does
 | Momme Ketels | `fisher_hut` at the landing | spot "the landing at the sluice" (the jetty's root) | the type's room |
 | Inken Ketels | the same | none | the type's room |
 | Kerrin Paulsen | `kate`, style `brick` | none | the type's room |
-| Ocke Hansen | `kate`, style `geest` (**placeholder mill house**) | spot "the post mill" (at the free spot) | the type's room |
+| Ocke Hansen | `kate`, style `geest` (**stand-in mill house**) | spot "the post mill" (at the free spot) | the type's room |
 | Gesche Hansen | the same | the same spot | the type's room |
 
 - **Sheet changes:** Ocke and Gesche get `workplace_spot="the post mill"` (the plan gives the spot its
-  tile, as it does for the landing). Their `home_building` stays empty: `spawn npc ocke` must not
-  put them into Kerrin's kate. The village plan names their house instead.
-- **Interiors (task 237):** only the Boysens have their own map. The others use the room of their
-  house type. More maps are Tiled work, not this task.
+  tile, as it does for the landing). Their `home_building` stays empty: `spawn npc ocke` must not put
+  them into Kerrin's kate. The village plan names their house instead.
+- **Interiors (task 237):** only the Boysens have their own map; the others use the room of their house
+  type. More maps are Tiled work, not this task.
 - **Once:** the spawn is in `new_game` only. A save holds the villagers, so a load never spawns them
-  again. A flag in the village record (`populated`) keeps the old-save command (step 9) from doing it
-  twice.
-- **Tests:** every villager has a home that is a building of the village, the Boysens share one, the
-  workplaces are as the table says, and the door of every home leads by path to the church gate and
-  to the green (a real search over the generated land).
-- **Home search:** `home_search` is 40 tiles. The villagers spawn at their own doors, so the longest
-  search is a few tiles.
-- **The made-up villagers:** `spawn npc N` and the crowd are not part of this task. The six cottages and
-  two farms are for them. Question 4.
+  again. The record's flag `populated` guards against a second spawn.
+- **Home search:** `home_search` is 40 tiles. The villagers spawn at their own doors.
+- **The empty houses** (six cottages, two farms) stay empty (#76). The made-up villagers and `spawn npc N`
+  are not part of this task.
 
-## 6. Reputation and showing the village's land
+## 11. What depends on what
 
-[reputation.md](../villagers/reputation.md) says "building inside a settlement's territory costs
-reputation with its NPCs" and "the world generator marks territory". Reputation itself is not in
-the code yet ([../villagers/relationships.md](../villagers/relationships.md)). What is there: the
-deed log and the villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
+### #60, the map generation (about to merge)
 
-**Proposed first version:**
+- **Built there, used here:** `make world-map` (it gets a `--village` option in step 3 here, to draw a
+  seed's village on the generated land); the bare open land (the village lays its own fields, section 4);
+  the creeks, the river and the floodplain, which site rules 2 and 4 read and which the path search and the
+  track cross by fords; the woods, which the builder fells inside the rectangle.
+- **The village is built after #60 has merged** (#75: it waits in the queue). Step 1 (the plan as data)
+  and the checks of the picture script need nothing from #60; the site and the rest do, because the site
+  rules are about its land and its numbers are measured on it.
+- **No freeze.** #60 did not build its save freeze (#71): old saves load with the new land. The village
+  asks nothing of it.
+- **No generated farms.** #60 built none (#73): the first draft's question about generated farms becoming
+  the village's is gone. The village's farms are its own.
 
-- **The land is a record.** `World.village` holds the name, `area` (a rectangle, here from `u` -16 to 60
-  and `v` -28 to 34, about 76 x 62 tiles, clipped to the land), the meeting spot, the mill spot, the
-  lanes and the buildings the village put there. `World.is_village_land(tile)` answers. It is the
-  territory of reputation.md, written by the builder and not by the generator, because the village is
-  made at the start of a game.
-- **Deeds in the land weigh otherwise.** A new section `[village_land]` in `data/gossip.cfg` has a
-  `change` for `built` (-2), `fenced` (-1) and `felled` (-1) done inside the land, used instead of
-  the section's own. The witnesses are as ever (who saw it). The story the language model judges says
-  "on the village's own land". The one-hop spread through friends and enemies is the reputation task's
-  and not this one's.
-- **Its houses are not the player's.** The hammer's take-down refuses a building of the record
-  ("That is the village's."). Walls and fences are not protected (no deed kind for them yet).
-- **Shown before building.** With the hammer in hand the land's edge is drawn as a line over the
-  terrain (like the build ghost), and while the ghost is inside the land the hint line says
-  "Wehlsbüll's land: the villagers will not like it". A console command `village` says where it is
-  ("about 232 tiles west, 120 south") and what it holds.
-- **The land of the post mill's spot** is inside the line. A player who builds the mill there does
-  it on the village's land and pays in goodwill like anyone.
+### Other changes since the first draft
 
-## 7. The meeting place
+- **The calendar** has 35-day seasons (#85): nothing here counts days; the track's fading is in days of
+  wear (section 7).
+- **Ways connect** (#84): lanes are worn ground, not ways; the player's ways lie over them (section 8).
+- **Saves rotate** (#16): the record is part of the world, so every rotated file holds it. Nothing to do.
+- **The save version** is 44 on main and 45 once #60 merges. The village takes the next free one when
+  its step 4 is built, not a number written here.
 
-The issue wants a place where villagers come together now and then, so gossip has meetings.
+## 12. Old saves and the save version
 
-- **The place:** the green, a 13 x 6 tile grass patch between the Krug, the churchyard and the Sielweg,
-  with a draw well in the middle and four benches. Its centre is `meeting_spot` in the record. It
-  is open, so it is "in the open" for the rain rule of the routines.
-- **When:** the routines of #7 say it: the `meeting` step (weekday 19:00, Saturday evening at the
-  Krug, Sunday afternoon) goes to the green, the `church` step (Sunday 9:30) to the churchyard.
-  Section "Which places are where" of the routines plan takes `meeting` from "the place the village
-  names for it": that is this spot. Until #9 lands, #7's fallback (the church yard) stays.
-- **Order of the two plans:** both orders work. If #9 comes first, the record has `meeting_spot` and
-  nothing reads it, so nobody comes together until #7 (the villagers still stroll about their yards,
-  and gossip needs no more than two of them to be near). If #7 comes first, one line of
-  `RoutinePlaces` and its test change to read the record.
-- **Distances:** a tile is a game minute. The longest daily walk is the landing to the Krug (about 65
-  tiles, an hour of game time, 43 seconds of play); the mill house to the church is about 32. The
-  routine's "leave early" estimate covers both. If the village feels too wide, the Krug moves west,
-  next to the church (question 5).
+**An old save keeps its world as it is.** Its record `village` is empty and the world works as before.
+The village would change ground the player has perhaps worked on and that the old save's own villagers
+may stand on.
 
-## 8. Lanes that stay
+- **Save version:** one bump, to the next free version at build time (`World.village`: the record or
+  `null`; the upgrade sets `null`). The commit that drops the oldest upgrade is its own, as the save
+  rules say. The validator checks the record: the area, that the buildings it names stand, that the
+  meeting spot and the square are inside the area.
+- A console command to add the village to an old save where the rectangle is untouched is possible later
+  and is not planned.
 
-A lane is a path on the ground today only if it is walked: desire paths wear in and grow back in two
-weeks ([../../data/paths.cfg](../../data/paths.cfg)). The village sets its lane tiles to full wear at
-build time (the wear map is saved) and the nightly regrowth skips tiles of the record's lanes. So a
-lane stays a lane without walking. This is the smallest way. #60 (question 5) may give lanes a terrain
-or an object of their own; then the village uses that and the skip goes. Step 5.
-
-## 9. How it fits the other plans
-
-### #60, the map generation review
-
-- **The village needs from #60:** the map tool, step 2 (`make world-map`), first. It draws what the
-  generator makes, and with a `--village` option (added in step 3 here) it would build the village
-  into a scratch world and draw that too, so the site and its seams can be looked at for any seed
-  before the village is built.
-- **Not needed first:** step 1 (the freeze of the known land). A new game builds the village on the
-  generator as it is then, and nothing in it depends on later layers.
-- **The freeze must include the village.** Old saves with a village (new games from this task on)
-  have edits that sit on today's land. When #60 changes the generator, the unedited tiles of the
-  village's rectangle would change under it (a new ditch grid across the green). So #60's step 1
-  freezes the **whole `area`** of `World.village`, not 24 tiles around each edit. Cheap to add: one
-  more region.
-- **Generated farms and the village's farms** (the proposal in the brief: generated farms near the start
-  become the village's farms). **Proposed instead: they stay separate.** Reasons: the village's farms
-  need exact things (the Boysen yard with a pond, the barn that Hinrich works in, a door that lies on a
-  lane), and #60's farms are yards without buildings (its question 4). The village is in the queue now
-  and #60's step 5 and 6 are far. Where they meet, the generated farm sites outside the village's
-  rectangle are the **outlying farms** of the Geest (village.cfg: "Cottagers and day labourers live on
-  the outlying farms of the Geest"), and the village's rectangle, cleared by edits, shows no generated
-  farm, lane or ditch grid inside it. If the user prefers the brief's way, the village would wait for
-  #60's step 6 and take its farm sites (question 2).
-- **Lanes and Sielzug at the seams:** #60's lanes (Redder, Deichweg on the dykes) end at the dyke or at
-  a lane. The village's Deichweg and Sielweg are paths on the same ground, so a generated lane that
-  reaches them meets them. The ditches of #60's step 6 end loose at the border of the cleared
-  rectangle, unless the village's Sielzug and the culverts are made for them: not planned, to be
-  looked at in the after-maps.
-- **Woods (step 3), land use (step 4):** no effect on the marsh part. The mill spot is at the Geest
-  edge and cleared by edits, so a wood that #60 plants later does not grow on it in an old save.
-
-### #7, routines
-
-- **`meeting`:** `World.village.meeting_spot`, section 7.
-- **`church`:** the church building of the village, found by the routines as "the church nearest to
-  their home".
-- **`home`, `work`:** the homes and workplaces of section 5 (`Households`, `Workplace.spot()`).
-- **A spot as workplace** (the landing, the post mill) is a tile: `Workplace.of_spot`.
-- **Nothing in #7 changes** for this task but the one `meeting` line when #7 comes first.
-
-## 10. Old saves and the save version
-
-**Proposed: an old save keeps its world as it is.** Its record `village` is empty, and the world
-works as before. Reasons: the village changes ground that the player has perhaps worked on and that
-the old save's own villagers (`spawn npc antje`) may already stand on; the generator is going to
-change under it (#60), and a village put in at load would be the first edit to freeze.
-
-- **Save version:** one bump, to 43 (`World.village`: the record, or `null`; the upgrade sets `null`).
-  #60's step 1 also names 43; whichever is merged first takes it and the other 44. The commit that
-  drops the oldest upgrade is its own, as the save rules say. The validator checks the record: the
-  area, the buildings it names stand, the meeting spot is inside the area.
-- **Where the land is still untouched:** step 9, optional, a console command `village build` in an old
-  save finds the site by the same function, builds only if no edit, object edit or building lies in
-  the rectangle, and handles villagers that exist already (it moves them to their homes instead
-  of spawning them again). Not in the first version (question 3).
-
-## 11. Tests
+## 13. Tests
 
 One file for each part, short, in `tests/`:
 
 - `test_village_plan.gd`: `data/village_plan.cfg` parses; every building type exists; no overlaps; every
-  door has its free tile; lanes join; no fence or wall shuts a door in (the checks of the mock script);
-  a bad file is reported, not a crash.
-- `test_village_site.gd`: a site is found for 20 seeds; the same seed gives the same site (and a different
-  seed a different one); the site is inside the world and within 330 tiles of the camp for the seeds
-  of the test list; the camp is where it was (the village is outside its search radius).
-- `test_village_builder.gd`:
-  - **same for a seed:** build twice, compare the terrain edits, object edits and buildings;
-  - **never on water:** every tile of a building, lane, wall, Warft and the meeting spot is dry land
-    (or the Warft, or the jetty over the mud) in the built world; the pond and the Sielzug are the
-    only water inside the rectangle that was not there;
-  - **never on the player's buildings or edits:** a world with a player's shack inside the
-    rectangle is refused (nothing built, a reason returned);
-  - a Warft ring of salt marsh stays round the landing; the dyke has only the Siel's gap;
-  - every door has its free tile; the lanes join; the churchyard has its gate.
+  door has its free tile; lanes join; no fence or wall shuts a door in; no field is shut in; the square is
+  free; a bad file is reported, not a crash.
+- `test_village_site.gd`: a site is found for 20 seeds; the same seed gives the same site (a different seed
+  a different one); the site clears the river and the creeks; the camp reaches it by the path search.
+- `test_village_builder.gd`: same for a seed (build twice, compare the edits and buildings); every tile of
+  a building, lane, wall, Warft, the square and the meeting spot is dry land; the pond, the Sielzug and the
+  field ditches are the only water that was not there; a world with a player's shack in the rectangle is
+  refused with a reason; the dyke has only the Siel's gap; every door has its free tile; the churchyard
+  has its gate; each field has a ditch in the marsh and a Knick on the Geest, with a gap.
+- `test_village_track.gd`: the track runs from the camp to the Sielweg's end over wearable tiles at the
+  laid days; it crosses a creek by a ford; it is grass again after the days of section 7 when not walked.
 - `test_village_people.gd`: each of the eight has a home and the workplace of the table; the Boysens share
   one house; spawned once (a save and a load spawns none); a villager's door reaches the church gate by a
-  real path search for 5 seeds (`NpcRoadCase`'s helpers over the generated land).
+  real path search for 5 seeds.
 - `test_village_record.gd`: the record's save round trip; a save of the version before loads with none;
-  the validator names a bad area; `is_village_land` on the edge; the lanes skip the regrowth; the
-  take-down is refused for the village's buildings and allowed for the player's.
-- `test_village_deeds.gd`: a `built` deed inside the land has the village's change, one outside the
-  usual.
-- The far-view parity case of travel.md ("The parity test gets a village case"): the masks over the
-  village equal the loaded chunks'.
+  the validator names a bad area; `is_village_land` on the edge; the lanes and the square skip the
+  regrowth; the take-down is refused for the village's buildings and allowed for the player's.
+- `test_village_deeds.gd`: a `built` deed inside the land has the village's change, one outside the usual.
+- The far-view parity case of travel.md: the masks over the village equal the loaded chunks'.
 - A bench (`tools/bench/`): the new game's build time and the save's size, numbers written here.
-
-## 12. Screenshots
-
-Both arts, taken with `make screenshot` (the classic 16 px art with `ARGS=--classic-art`), saved to
-`docs/screenshots/`, as `wehlsbuell-<what>.png` and `wehlsbuell-<what>-classic.png`:
-
-- the village from above (zoomed out, `ZOOM`), the church and the green by the Krug at dawn, the Boysen
-  farm yard with the villagers, the landing and the sluice at low water, and build mode with the land's
-  edge.
-- Checked by eye for both arts: a Warft, the wall, the fence, the jetty, the buildings in each. No new
-  art is drawn: every building type and object exists in both arts. Where the classic art misses
-  something (the Warft or the jetty), the picture says so and it becomes an art task.
-
-## 13. Handbook and design pages
-
-- **Handbook:** [villagers.md](../../handbook/villagers.md) ("Who lives here": they live in Wehlsbüll from
-  the start; "Homes and workplaces"; the village's land and the hammer), [world-and-seasons.md](../../handbook/world-and-seasons.md)
-  (a section on the village and the Koog Warften), [building-and-crafting.md](../../handbook/building-and-crafting.md)
-  (the land's edge and the refused take-down), [console.md](../../handbook/console.md) (`village`),
-  [saving.md](../../handbook/saving.md) (old saves have no village).
-- **Design:** [coast.md](coast.md) (the village's Warften), [generation.md](generation.md) (the village is
-  not generated; the site search), [../villagers/reputation.md](../villagers/reputation.md) (the territory
-  is the record; the first rule), [../villagers/villagers.md](../villagers/villagers.md) ("Where none stands
-  (there is no village yet, task 234...)"), [../villagers/travel.md](../villagers/travel.md) ("The village" is
-  done), [../tech/saving.md](../tech/saving.md), and the comments of `data/villagers.cfg` that say "until the
-  village does (task 234)". This page is marked as built, step by step.
 
 ## 14. The steps
 
 Each is a commit that passes `make test` and `make lint` on its own, with its tests and doc lines.
+The village is built after #60 has merged.
 
-1. **The plan as data.** `data/village_plan.cfg` and `VillagePlan`: the buildings, Warften, lanes, fences,
-   the green and the spots, in the `u`/`v` frame, with the checks of the mock script (`problems`). No
-   world change. Tests: `test_village_plan.gd`. Doc: the file's header.
-2. **The site.** `VillageSite.find(seed)`: the row search of section 2. Tests: `test_village_site.gd`.
-   Needs #60's step 2 for pictures, not for code. The search cost is measured and written here.
-3. **The ground.** `VillageBuilder.build_land`: clears the rectangle, drains, writes the Warften, the pond,
-   the Sielzug, the dyke gap, walls, fences, trees, graves, the well and the landing objects. The map tool
-   gets `--village`. Tests: the land part of `test_village_builder.gd`. Edit count and time written here.
-4. **The buildings and the record.** `World.village`, `VillageBuilder.build`, buildings placed, save
-   version 43 with the upgrade and the validator, `GameState.new_game` builds it. Tests: the rest of
-   `test_village_builder.gd`, `test_village_record.gd`. Doc: [../tech/saving.md](../tech/saving.md).
-5. **Lanes that stay.** The lane tiles worn to a path and kept. Tests: the regrowth skip.
-6. **The people.** The eight spawned in `new_game`, the sheets' spots (`workplace_spot` for Ocke and Gesche),
+1. **The plan as data.** `data/village_plan.cfg` and `VillagePlan`: the buildings, Warften, fields, lanes,
+   fences, the square and the spots, in the `u`/`v` frame, with the checks of the picture script
+   (`problems`). No world change. Tests: `test_village_plan.gd`.
+2. **The site.** `VillageSite.find(seed)`: the row search of section 2, with the path search as its last
+   rule. Tests: `test_village_site.gd`. The search cost and the distances for 20 seeds are written here.
+3. **The ground.** `VillageBuilder.build_land`: fells and clears the rectangle, drains, writes the Warften, the
+   pond, the Sielzug, the dyke gap, the fields' ditches and Knicks, walls, fences, trees, graves, the well and
+   the landing objects. The map tool gets `--village`. Tests: the land part of `test_village_builder.gd`.
+   Edit count and time written here.
+4. **The record and the save.** `World.village` with its save, the upgrade, the validator, the next free save
+   version, and the drop of the oldest upgrade in a commit of its own. No builder yet: the record is `null`.
+   Tests: `test_village_record.gd` (round trip, old save, validator). Doc: [../tech/saving.md](../tech/saving.md).
+5. **The buildings.** `VillageBuilder.build` places the buildings and fills the record; `GameState.new_game` builds
+   the village. Tests: the rest of `test_village_builder.gd`. Save size and time written here.
+6. **Lanes and the square that stay.** The lane tiles and the square worn to a path and kept. Tests: the
+   regrowth skip.
+7. **The worn track.** `VillageBuilder.lay_track`: the path search from the camp, the wear laid, in `new_game`
+   after the village. Tests: `test_village_track.gd`. Doc: desire-paths.md (a track laid at the start).
+8. **The people.** The eight spawned in `new_game`, the sheets' spots (`workplace_spot` for Ocke and Gesche),
    `populated`. Tests: `test_village_people.gd`. Doc: villagers.md, `data/villagers.cfg`'s comment.
-7. **The land and the reputation rule.** `is_village_land`, the edge in build mode, the hint, the refused
-   take-down, `[village_land]` in `data/gossip.cfg`, console `village`. Tests: `test_village_deeds.gd` and the
-   record test. Doc: reputation.md, the handbook.
-8. **The meeting place and the handbook.** The routines read `meeting_spot` (if #7 is merged, else only the
-   accessor and its test), the screenshots in both arts, the handbook pages, the design pages of section
-   13, this page marked as built. The bench numbers.
-9. **Optional: `village build` in an old save** (question 3).
+9. **The land and the reputation rule.** `is_village_land`, the edge in build mode, the hint, the refused
+   take-down, `[village_land]` in `data/gossip.cfg`, console `village`. Tests: `test_village_deeds.gd` and
+   the record test. Doc: reputation.md, console.md.
+10. **The meeting place and the handbook.** The routines read `meeting_spot` (if #7 is merged, else only the
+    accessor and its test), the screenshots in both arts (section 15), the handbook pages and design pages
+    of section 16, this page marked as built, the bench numbers.
 
-Steps 3 and 4 may be dropped into one if the first is too small to stand alone. The user can stop after
-step 4 and have the village standing, empty.
+The user can stop after step 5 and have the village standing, empty.
 
-## 15. Open questions
+## 15. Screenshots
 
-1. **Placed at new-game time, not generated** (section 4). Default: placed. Or a layer of the generator,
-   with the buildings put in at the first load: more coupling with #60, no gain.
-2. **Generated farms as the village's farms** (the brief's proposal). Default: the village's farms are its
-   own, the generated farms outside are the outlying farms. Or the village waits for #60's step 6 and takes
-   its farm sites.
-3. **Old saves.** Default: they keep their world as it is, no village. Or step 9, the console command, where
-   the rectangle is untouched. Or a village at the first load of every old save where it is untouched.
-4. **Are the empty houses to be filled?** Six cottages and two farms stand empty. Default: empty (the
-   issue asks for the eight). Or a made-up villager in each at the start (they come with no sheet, a
-   house to themselves).
-5. **The size.** The village is about 60 tiles wide and the longest daily walk is an hour of game time.
-   Default: as drawn. Or the Krug and the green move next to the church, the farms closer (a smaller
-   village, shorter walks, less to build).
-6. **The reputation rule.** Default: the first version of section 6 (a `[village_land]` change on `built`,
-   `fenced` and `felled`, houses protected, the edge shown). Or only the edge and the hint, no cost until
-   the reputation task exists.
-7. **Taking down the village's houses.** Default: refused. Or allowed, with a big cost in goodwill.
-8. **Lanes that stay** (section 8). Default: the village's lane tiles do not regrow. Or wait for #60's lane
-   decision and ship the village with the lanes it has.
-9. **The placeholders.** Default: the Krug is a `longhouse`, the parsonage and the mill house a `kate`, the
-   sluice a gap in the dyke, the post mill a free spot. Or new types first (a mill house, an inn, a
-   Siel), which are art and Tiled work of their own.
-10. **Finding the village.** Default: the player walks west to the sea dyke; the console's `village` and the
-    handbook say where. Or a worn track from the camp to the village (the wear map, 230 tiles), or the
-    church bell heard from afar.
-11. **The minute.** The player walks 5 tiles a second, so a minute is 300 tiles and the village is 230 to 510 tiles away
-    (median 52 seconds). Default: accept, the search already takes the row nearest the camp. Or take only
-    sites within 350 tiles (3 of the 20 seeds would then have no village, or a smaller one).
-12. **Save version.** Default: 43 for the village; #60's freeze takes 44 if it comes second.
+Both arts, taken with `make screenshot` (the classic 16 px art with `ARGS=--classic-art`), saved to
+`docs/screenshots/` as `wehlsbuell-<what>.png` and `wehlsbuell-<what>-classic.png`: the village from above
+(zoomed out), the church and the town square by the Krug at dawn, the Boysen yard with a field beside it, the
+landing and the sluice at low water, the worn track near the village, and build mode with the land's edge.
+Checked by eye for both arts: a Warft, the wall, the fence, the Knick, the jetty. No new art is drawn: every
+building type and object exists in both arts. Where the classic art misses something (the Warft or the
+jetty), the picture says so and it becomes an art task.
+
+## 16. Handbook and design pages
+
+- **Handbook:** [villagers.md](../../handbook/villagers.md) (they live in Wehlsbüll from the start; homes
+  and workplaces; the village's land and the hammer), [world-and-seasons.md](../../handbook/world-and-seasons.md)
+  (the village, its fields, the Koog Warften, the worn track, where to find it),
+  [building-and-crafting.md](../../handbook/building-and-crafting.md) (the land's edge and the refused
+  take-down), [console.md](../../handbook/console.md) (`village`), [saving.md](../../handbook/saving.md)
+  (old saves have no village).
+- **Design:** [coast.md](coast.md) (the village's Warften), [generation.md](generation.md) (fields come
+  only with the village, which is not generated; the site search), [desire-paths.md](desire-paths.md) (the
+  track), [../villagers/reputation.md](../villagers/reputation.md) (the territory is the record),
+  [../villagers/villagers.md](../villagers/villagers.md) and [../villagers/travel.md](../villagers/travel.md)
+  (the village is done), [../tech/saving.md](../tech/saving.md), and the comments of `data/villagers.cfg`
+  that say "until the village does (task 234)".
+
+## Check with the user
+
+- **The track fades without use** (section 7). With the rules of #61 a track that is walked once a day
+  becomes grass in under two weeks, because a tile needs 10 steps a day to stay worn. "Keeps itself worn by
+  use" is kept as written, with no change of the rules. If the track should last (a track the villagers
+  keep up, or a slower fade for it), that is a rule change for the desire paths, not for this plan.
