@@ -250,5 +250,11 @@ fords, two rows of floodplain, drawn in the floodplain's colour):
 
 ![A creek](../../docs/screenshots/map-generation/after-seed1-creek.png)
 
+Seed 1, a ford where the creek runs east to west, at (82, -1) (#99), in both arts: a patch about
+3 tiles long across the creek, not a band along it:
+
+![A ford, new art](../../docs/screenshots/ford-east-west.png)
+![A ford, classic art](../../docs/screenshots/ford-east-west-classic.png)
+
 The maps show trunks only, as dark green dots; the crowns are about 3 tiles wide in the game, so a
 wood reads denser there. Tall grass is not drawn.
