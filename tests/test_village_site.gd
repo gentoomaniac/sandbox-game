@@ -3,6 +3,8 @@ extends GutTest
 ## can walk there (design/world/wehlsbuell.md, section 2).
 
 const SEEDS := [1, 4, 8, 13]
+## The camp has this many tiles around its spawn tile that must be clear of the village.
+const CAMP_CLEARANCE := 6
 
 
 func test_a_site_is_found_and_is_the_same_every_time() -> void:
@@ -83,3 +85,11 @@ func test_no_dyke_stands_in_the_land_inland_of_the_dyke() -> void:
 				assert_ne(
 					type, WorldObjectTypes.DYKE, "seed %d, tile %s" % [world_seed, Vector2i(u, v)]
 				)
+
+
+func test_the_camp_does_not_stand_on_the_villages_land() -> void:
+	var plan := VillagePlan.default_plan()
+	for world_seed: int in SEEDS:
+		var camp := CampSite.spawn_of_seed(world_seed)
+		var site := VillageSite.find(world_seed)
+		assert_false(site.land(plan).grow(CAMP_CLEARANCE).has_point(camp), "seed %d" % world_seed)
