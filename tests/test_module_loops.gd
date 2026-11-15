@@ -36,7 +36,8 @@ func _module(cells: Dictionary) -> TrackerModule:
 ## second time through is the third: so the stream wraps as the music repeats, sample for sample.
 func _assert_loops_as_it_repeats(cells: Dictionary, parts: Array[Vector2i], why: String) -> void:
 	var renderer := ModuleRenderer.new(_module(cells), RATE)
-	var looping := renderer.render(parts, true).data
+	var stream := renderer.render(parts, true)
+	var looping := stream.data.slice(0, stream.loop_end * 2)
 	var thrice: Array[Vector2i] = parts + parts + parts
 	var played := renderer.render(thrice).data
 	var size := looping.size()

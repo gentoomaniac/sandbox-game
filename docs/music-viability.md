@@ -181,6 +181,15 @@ first version of the bench.
   note, a tone portamento without a note): the tests render three times through and compare. With
   the generator's sections, which start every voice with a struck note or a cut and use no effect
   memory, the looping stream is from 2 ms on the loop rendered once.
+  **Godot's wrap** (#15): Godot 4.7.2 reads a few frames past a looping stream's loop end as it
+  wraps, and what it finds there is not the stream's data but what memory held: click tracks
+  mixed offline one after the other played a stray frame two frames after the wrap, up to 0.6 of
+  full scale (the cause of a flaky crossfade test, where it fell a frame off the clicks). A
+  looping render now carries its first 8 frames again after its loop's end
+  (`ModuleRenderer.WRAP_FRAMES`; the loop ends where it did, `MusicCrossfade.loop_seconds`), and
+  so do the tests' click tracks, which GUT mixes across their wrap. Renders of the test reel
+  mixed the same way wrapped cleanly even without the frames (their memory was fresh), so how
+  often the music hit it is not known; the frames cost nothing.
 - **Fill, then the loop on the bar** (GUT, `test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar`):
   playing the order list from the start (loop, fill, and round again) gives, sample for sample, the
   loop, the fill and the loop rendered as parts one after the other: the fill exactly one bar long

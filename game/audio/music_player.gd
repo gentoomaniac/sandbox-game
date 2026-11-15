@@ -78,7 +78,7 @@ func _process(_delta: float) -> void:
 		if render.track == _wanted and stream != null:
 			_mixes[render.is_indoors] = stream
 			_bar_seconds = render.renderer.beat_seconds * render.bar_beats
-			loop_seconds = stream.get_length()
+			loop_seconds = MusicCrossfade.loop_seconds(stream)
 			_follow()
 
 

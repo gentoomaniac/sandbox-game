@@ -90,7 +90,7 @@ func test_renders_stereo_as_two_samples_a_frame() -> void:
 
 
 func test_the_loop_wraps_into_its_own_start_without_a_seam() -> void:
-	var looping := ModuleRenderer.new(_module, RATE).render([LOOP], true).data
+	var looping := _loop_data(ModuleRenderer.new(_module, RATE).render([LOOP], true))
 	var twice := _render([LOOP, LOOP]).data
 	# A looping stream is the loop's second time through, sample for sample: so wrapping from its
 	# last sample to its first plays what the music would, the end's notes fading into the start.
@@ -105,8 +105,21 @@ func test_the_loop_wraps_into_its_own_start_without_a_seam() -> void:
 func test_a_looping_stream_is_flagged_to_loop_over_all_of_it() -> void:
 	var looping := ModuleRenderer.new(_module, RATE, true).render([LOOP], true)
 	assert_eq(looping.loop_mode, AudioStreamWAV.LOOP_FORWARD)
-	assert_eq(looping.loop_end, looping.data.size() / 4, "16-bit stereo: 4 bytes a frame")
+	var frames := looping.data.size() / 4
+	assert_eq(
+		looping.loop_end, frames - ModuleRenderer.WRAP_FRAMES, "16-bit stereo: 4 bytes a frame"
+	)
+	var wrap_bytes := ModuleRenderer.WRAP_FRAMES * 4
+	assert_true(
+		looping.data.slice(looping.data.size() - wrap_bytes) == looping.data.slice(0, wrap_bytes),
+		"its start again after its loop"
+	)
 	assert_eq(_render([LOOP]).loop_mode, AudioStreamWAV.LOOP_DISABLED)
+
+
+## The frames of a looping stream's loop, without the start it carries again after it.
+func _loop_data(stream: AudioStreamWAV) -> PackedByteArray:
+	return stream.data.slice(0, stream.loop_end * (4 if stream.stereo else 2))
 
 
 func test_the_fill_breaks_after_a_bar_and_the_loop_resumes_on_the_bar() -> void:

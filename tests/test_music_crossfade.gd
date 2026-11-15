@@ -41,11 +41,15 @@ func before_each() -> void:
 
 
 ## A looped bar of silence with a click of `level` on every beat, or `offset_frames` after it.
+## Its first frames come again after the loop, as in ModuleRenderer's streams (WRAP_FRAMES: Godot
+## reads past a loop's end as it wraps, and plays a stray frame without them).
 func _clicks(level: float, offset_frames := 0) -> AudioStreamWAV:
 	var data := PackedByteArray()
-	data.resize(_beat_frames * BEATS * 2)
+	data.resize((_beat_frames * BEATS + ModuleRenderer.WRAP_FRAMES) * 2)
 	for beat in BEATS:
 		data.encode_s16((beat * _beat_frames + offset_frames) * 2, roundi(level * 32767))
+	for frame in ModuleRenderer.WRAP_FRAMES:
+		data.encode_s16((_beat_frames * BEATS + frame) * 2, data.decode_s16(frame * 2))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = _mix_rate
@@ -53,6 +57,26 @@ func _clicks(level: float, offset_frames := 0) -> AudioStreamWAV:
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_end = _beat_frames * BEATS
 	return stream
+
+
+func test_a_click_track_wraps_cleanly_with_its_start_after_its_loop() -> void:
+	# Mixed offline at the mix rate, in blocks of odd sizes so the wrap falls inside one: without
+	# its first frames after the loop's end, Godot played a stray frame two frames after the wrap
+	# (up to 0.6 of full scale), which the tests below heard as a click out of place.
+	# Several streams one after the other, each where a freed one lay (what lay past the end was
+	# what memory held), started at a beat and between two.
+	for attempt in 12:
+		var block: int = [333, 512, 1024][attempt % 3]
+		var playback := _clicks(-CLICK, _beat_frames / 2).instantiate_playback()
+		playback.start(BEAT_SECONDS * (attempt % 4) / 2.0)
+		var mixed := PackedVector2Array()
+		while mixed.size() < 2 * _beat_frames * BEATS:
+			mixed.append_array(playback.mix_audio(1.0, block))
+		# The clicks go down: anything up is out of place.
+		var stray := 0.0
+		for frame in mixed.size():
+			stray = maxf(stray, mixed[frame].x)
+		assert_lt(stray, 0.001, "stream %d: nothing but its clicks" % attempt)
 
 
 ## What the bus mixed from now until `is_done` holds and then `beats` more beats: the left side.

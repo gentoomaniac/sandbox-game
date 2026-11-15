@@ -52,7 +52,13 @@ const OWN_SIDE := 0.75
 const LEFT_CHANNELS: Array[int] = [0, 3]
 ## Raise it when a change to the renderer makes its renders sound different: the renders kept by
 ## MusicCache are then rendered again.
-const VERSION := 1
+const VERSION := 2
+## Godot 4.7.2's playback of a looping AudioStreamWAV reads a few frames past the loop's end as it
+## wraps, and what lies there is no data of the stream but what memory held (measured with click
+## tracks: a stray frame two frames after the wrap, up to 0.6 of full scale). So a looping stream
+## carries this many of its first frames again after its loop's end, which leaves the wrap clean
+## (#15).
+const WRAP_FRAMES := 8
 ## The generator's default beat: four rows (a piece may say another, see MusicPiece).
 const ROWS_PER_BEAT := 4
 ## How long a volume change, a note's start and the fade of the note before take.
@@ -428,13 +434,18 @@ func _mix(
 	channel.ramp_frames = ramp_frames
 
 
-## The mix as a 16-bit AudioStreamWAV, looping over all of it when `loops`. Reading the stream's
-## data back copies it, so what a player needs to know of it is set here, on the worker.
+## The mix as a 16-bit AudioStreamWAV, looping over all of it when `loops` (WRAP_FRAMES of its
+## start after the loop's end). Reading the stream's data back copies it, so what a player needs to
+## know of it is set here, on the worker.
 func _stream(mix: PackedFloat32Array, loops: bool) -> AudioStreamWAV:
+	var channels := 2 if is_stereo else 1
+	var wrap := mini(WRAP_FRAMES * channels, mix.size()) if loops else 0
 	var data := PackedByteArray()
-	data.resize(mix.size() * 2)
+	data.resize((mix.size() + wrap) * 2)
 	for index in mix.size():
 		data.encode_s16(index * 2, int(mix[index] * 32767.0))
+	for index in wrap:
+		data.encode_s16((mix.size() + index) * 2, int(mix[index] * 32767.0))
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = mix_rate
@@ -442,7 +453,7 @@ func _stream(mix: PackedFloat32Array, loops: bool) -> AudioStreamWAV:
 	stream.data = data
 	if loops:
 		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		stream.loop_end = mix.size() / (2 if is_stereo else 1)
+		stream.loop_end = mix.size() / channels
 	return stream
 
 

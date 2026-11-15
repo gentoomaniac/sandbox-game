@@ -122,7 +122,7 @@ func crossfade(stream: AudioStreamWAV, beat_seconds: float, fade_seconds: float)
 	if _switch_seconds <= position:
 		_switch_seconds += _beat_seconds
 	# A loop's last beat ends on its start.
-	_switch_seconds = fmod(_switch_seconds, player.stream.get_length())
+	_switch_seconds = fmod(_switch_seconds, loop_seconds(player.stream))
 	_last_position = position
 
 
@@ -167,8 +167,8 @@ func _start_on_the_beat() -> void:
 	if not is_past and not _is_in_step:
 		AudioServer.unlock()
 		return
-	lateness = 0.0 if _is_in_step else fposmod(position - _switch_seconds, old.stream.get_length())
-	var start := _on_a_frame(fposmod(position, _next.get_length()) if _is_in_step else lateness)
+	lateness = 0.0 if _is_in_step else fposmod(position - _switch_seconds, loop_seconds(old.stream))
+	var start := _on_a_frame(fposmod(position, loop_seconds(_next)) if _is_in_step else lateness)
 	new.stream = _next
 	new.volume_db = linear_to_db(0.0)
 	new.play(start)
@@ -191,7 +191,7 @@ func _fade() -> void:
 	# (Two looks at the same mix may differ by a microsecond or so: a mix is far longer than 1 ms.)
 	if mix_seconds > _last_mix_seconds + 0.001:
 		var position := _mixed_position(new)
-		var length := new.stream.get_length()
+		var length := loop_seconds(new.stream)
 		_fade_played += played_seconds(
 			_last_position, position, length, mix_seconds - _last_mix_seconds
 		)
@@ -241,8 +241,16 @@ func _on_a_frame(seconds: float) -> float:
 	return (roundf(seconds * rate) + 0.001) / rate
 
 
+## How long `stream` plays before it starts again, in seconds: its loop, which ends before its data
+## does (see ModuleRenderer.WRAP_FRAMES), or all of it.
+static func loop_seconds(stream: AudioStreamWAV) -> float:
+	if stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and stream.loop_end > 0:
+		return (stream.loop_end - stream.loop_begin) / float(stream.mix_rate)
+	return stream.get_length()
+
+
 ## How far `player` has been mixed, in seconds of its stream (a loop's wrap included).
 static func _mixed_position(player: AudioStreamPlayer) -> float:
 	var stream := player.stream as AudioStreamWAV
 	var ahead := READ_AHEAD_FRAMES / float(stream.mix_rate)
-	return fposmod(player.get_playback_position() - ahead, stream.get_length())
+	return fposmod(player.get_playback_position() - ahead, loop_seconds(stream))
