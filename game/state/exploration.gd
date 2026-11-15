@@ -9,10 +9,16 @@ extends RefCounted
 
 ## How far the player sees, in tiles: the land about them is explored.
 const SIGHT_RADIUS := 12
-const BYTES_PER_CHUNK := Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE / 8
+const TILES_PER_CHUNK := Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE
+const BYTES_PER_CHUNK := TILES_PER_CHUNK / 8
+
+## Counts every tile newly explored: whoever shows the explored land knows by it that it changed.
+var revision := 0
 
 ## The bits of each chunk, a tile to a bit: index `local.y * CHUNK_SIZE + local.x`.
 var _seen_by_chunk: Dictionary[Vector2i, PackedByteArray] = {}
+## The `revision` at which each chunk last had a tile newly explored.
+var _revision_by_chunk: Dictionary[Vector2i, int] = {}
 ## What `see` saw last, so that standing still costs nothing.
 var _last_tile := Vector2i(World.MAX_SIZE_CHUNKS * Chunk.CHUNK_SIZE, 0)
 
@@ -40,6 +46,32 @@ func is_explored(tile: Vector2i) -> bool:
 ## Whether the player has seen anything of a chunk.
 func is_chunk_touched(coords: Vector2i) -> bool:
 	return _seen_by_chunk.has(coords)
+
+
+## Whether the player has seen every tile of a chunk.
+func is_chunk_full(coords: Vector2i) -> bool:
+	return _seen_by_chunk.has(coords) and _seen_by_chunk[coords].count(0xFF) == BYTES_PER_CHUNK
+
+
+## The tiles of a chunk, a byte each in the order of the bits: 1 for an explored tile, else 0.
+func mask_of(coords: Vector2i) -> PackedByteArray:
+	var mask := PackedByteArray()
+	mask.resize(TILES_PER_CHUNK)
+	var seen: PackedByteArray = _seen_by_chunk.get(coords, PackedByteArray())
+	if not seen.is_empty():
+		for bit in TILES_PER_CHUNK:
+			mask[bit] = (seen[bit >> 3] >> (bit & 7)) & 1
+	return mask
+
+
+## The `revision` of the last change to a chunk or one of the eight around it: whoever shows the
+## fog of the chunk, which is soft at its edge (see MapFog), shows it anew when this changes.
+func revision_around(coords: Vector2i) -> int:
+	var latest := 0
+	for step_y in range(-1, 2):
+		for step_x in range(-1, 2):
+			latest = maxi(latest, _revision_by_chunk.get(coords + Vector2i(step_x, step_y), 0))
+	return latest
 
 
 ## A copy of the bits of every chunk, for `array_of` (see GameState `snapshot`).
@@ -75,7 +107,11 @@ func _mark(tile: Vector2i) -> void:
 		empty.resize(BYTES_PER_CHUNK)
 		_seen_by_chunk[coords] = empty
 	var bit := _bit_of(Chunk.local_pos(tile))
-	_seen_by_chunk[coords][bit >> 3] |= 1 << (bit & 7)
+	var tiles_seen: int = _seen_by_chunk[coords][bit >> 3]
+	if tiles_seen & (1 << (bit & 7)) == 0:
+		_seen_by_chunk[coords][bit >> 3] = tiles_seen | (1 << (bit & 7))
+		revision += 1
+		_revision_by_chunk[coords] = revision
 
 
 static func _bit_of(local: Vector2i) -> int:

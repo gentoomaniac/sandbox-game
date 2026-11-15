@@ -1,7 +1,7 @@
 class_name MapColors
 extends RefCounted
 ## The colours of the top-down maps of the land, one block a tile: the world map of the console
-## (see MapPainter) and tools/world_map.gd. The terrain is the ground colour and what stands on it
+## (see MapBuilder) and tools/world_map.gd. The terrain is the ground colour and what stands on it
 ## (trees, dykes, buildings, a worn path) is drawn over it. See
 ## design/world/map-generation-review.md for the picture they make.
 
@@ -79,3 +79,14 @@ static func ground_of(world_seed: int, chunk: Chunk, local: Vector2i) -> Color:
 		and Fords.is_ford_bed(world_seed, Chunk.to_world(chunk.coords, local))
 	)
 	return FORD if is_ford else TERRAIN_COLORS.get(terrain, UNKNOWN)
+
+
+## The picture of a chunk for the world map: CHUNK_SIZE pixels square, a pixel a tile, in RGBA8. The
+## map scales it up, so a tile is a crisp block. The chunk need not be loaded in `world`.
+static func image_of_chunk(world: World, chunk: Chunk) -> Image:
+	var image := Image.create_empty(Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, false, Image.FORMAT_RGBA8)
+	for local_y in Chunk.CHUNK_SIZE:
+		for local_x in Chunk.CHUNK_SIZE:
+			var local := Vector2i(local_x, local_y)
+			image.set_pixel(local_x, local_y, of_tile(world, chunk, local))
+	return image

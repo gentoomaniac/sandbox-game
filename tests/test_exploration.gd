@@ -35,6 +35,42 @@ func test_a_chunk_is_touched_when_its_edge_is_within_sight() -> void:
 	assert_false(explored.is_chunk_touched(Vector2i(2, 2)))
 
 
+func test_a_chunk_is_full_when_every_tile_of_it_is_seen() -> void:
+	var explored := Exploration.new()
+	for y in range(-8, 40, 8):
+		for x in range(-8, 40, 8):
+			explored.see(Vector2i(x, y))
+
+	assert_true(explored.is_chunk_full(Vector2i.ZERO))
+	assert_false(explored.is_chunk_full(Vector2i(-1, -1)), "seen in part")
+	assert_false(explored.is_chunk_full(Vector2i(5, 5)))
+
+
+func test_the_mask_of_a_chunk_has_a_byte_a_tile() -> void:
+	var explored := Exploration.new()
+	explored.see(Vector2i(16, 16))
+
+	var mask := explored.mask_of(Vector2i.ZERO)
+
+	assert_eq(mask.size(), Exploration.TILES_PER_CHUNK)
+	assert_eq(mask[16 * Chunk.CHUNK_SIZE + 16], 1)
+	assert_eq(mask[0], 0)
+	assert_eq(explored.mask_of(Vector2i(9, 9)).count(1), 0)
+
+
+func test_the_revision_around_a_chunk_changes_when_land_beside_it_is_explored() -> void:
+	var explored := Exploration.new()
+	var before := explored.revision_around(Vector2i(1, 0))
+
+	explored.see(Vector2i(2, 2))
+	var after := explored.revision_around(Vector2i(1, 0))
+	explored.see(Vector2i(2, 2))
+
+	assert_ne(after, before)
+	assert_eq(explored.revision_around(Vector2i(1, 0)), after, "nothing new seen")
+	assert_eq(explored.revision_around(Vector2i(9, 9)), 0, "far off")
+
+
 func test_the_explored_land_is_saved_and_loaded() -> void:
 	var state := GameState.new_game(7)
 	var far := state.player.tile() + Vector2i(-80, 45)
