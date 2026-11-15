@@ -284,8 +284,10 @@ func _do_use(target: Vector2i) -> Use:
 			# A transplanted berry bush bears again only after its regrowth days.
 			if placed.type_data().has("regrow_days"):
 				placed.pick()
-			# The day it stands from: the crows get used to a scarecrow as the days pass.
-			if placed.type == WorldObjectTypes.SCARECROW:
+			# The day it stands from: the crows get used to a scarecrow as the days pass, and a quest
+			# counts what was put up since it was posted.
+			var is_asked_for := QuestRules.default_rules().placed_objects().has(placed.type)
+			if placed.type == WorldObjectTypes.SCARECROW or is_asked_for:
 				placed.state["placed_day"] = _state.clock.day
 			_state.current_map.add_object(placed)
 			_state.player.inventory.consume_held()

@@ -22,7 +22,7 @@ var _clock: GameClock
 var _npcs: Npcs
 ## Gives the player, who is a new one in a loaded game.
 var _player: Callable
-var _world_seed: int
+var _world: World
 ## The posted and the taken quests, the oldest first, each `{id, giver, posted_day, is_taken}`.
 var _open: Array[Dictionary] = []
 ## {quest id: the day it was done}.
@@ -32,13 +32,13 @@ var _ended := {}
 
 
 func _init(
-	quest_rules: QuestRules, clock: GameClock, npcs: Npcs, player: Callable, world_seed: int
+	quest_rules: QuestRules, clock: GameClock, npcs: Npcs, player: Callable, world: World
 ) -> void:
 	rules = quest_rules
 	_clock = clock
 	_npcs = npcs
 	_player = player
-	_world_seed = world_seed
+	_world = world
 	clock.new_day.connect(_on_new_day)
 
 
@@ -71,13 +71,8 @@ func entry_of_giver(giver: String) -> Dictionary:
 	return {}
 
 
-## How many quests the player has taken, whoever gave them.
-func taken_count() -> int:
-	return _open.filter(func(entry: Dictionary) -> bool: return entry["is_taken"]).size()
-
-
 func is_log_full() -> bool:
-	return taken_count() >= rules.quest_log_size()
+	return _taken_count() >= rules.quest_log_size()
 
 
 ## The player takes the posted quest of `entry`: it is in their list now.
@@ -93,6 +88,23 @@ func last_day_of(entry: Dictionary) -> int:
 ## The player, for the objectives that look at what they carry.
 func player() -> PlayerState:
 	return _player.call()
+
+
+## How many pieces of `object` the player put down on or after `since_day` still stand within
+## `radius` tiles of the home of the villager `giver` (their anchor when they have no house). The
+## day a piece was put down is in its state, put there for the objects that quests ask for (see
+## QuestRules `placed_objects`).
+func count_placed_near_home(giver: String, object: StringName, since_day: int, radius: int) -> int:
+	var npc := _npcs.find(giver)
+	if npc == null:
+		return 0
+	var home := npc.anchor if npc.house == null else Vector2(npc.house.door_tile())
+	var count := 0
+	for piece in _world.edited_objects():
+		var is_recent: bool = piece.state.get("placed_day", 0) >= since_day
+		if piece.type == object and is_recent and Vector2(piece.pos).distance_to(home) <= radius:
+			count += 1
+	return count
 
 
 ## What a condition asks of the world: the day, the season and the opinion and skill it needs.
@@ -176,8 +188,13 @@ func clear() -> void:
 	_ended.clear()
 
 
+## How many quests the player has taken, whoever gave them.
+func _taken_count() -> int:
+	return _open.filter(func(entry: Dictionary) -> bool: return entry["is_taken"]).size()
+
+
 ## Lets the quests whose days are up go away.
-func expire(today: int) -> void:
+func _expire(today: int) -> void:
 	for entry in _open.duplicate():
 		if last_day_of(entry) < today:
 			_open.erase(entry)
@@ -191,7 +208,7 @@ func _name_of(villager: String) -> String:
 
 
 func _on_new_day(today: int) -> void:
-	expire(today)
+	_expire(today)
 	post_today()
 
 
@@ -201,7 +218,7 @@ func _post_picked(today: int, only_starters: bool) -> String:
 	if _open.size() >= rules.max_open():
 		return ""
 	var dice := RandomNumberGenerator.new()
-	dice.seed = hash([_world_seed, today])
+	dice.seed = hash([_world.world_seed, today])
 	var givers_by_quest := {}
 	for id in rules.ids():
 		if (only_starters and not rules.is_starter(id)) or is_open(id) or _is_resting(id, today):

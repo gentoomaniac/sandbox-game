@@ -26,3 +26,8 @@ villages will lay their field boundaries.
   (`boundaries.icons()`).
 - Wild animals still stand on no building tile (task 201); a fence is not a building, so nothing
   changes for them.
+- **Quests count the player's pieces** (#12, [../villagers/quests.md](../villagers/quests.md)): a
+  build quest such as the wattle fence by a villager's garden counts the fence pieces the player put
+  down since it was posted. The game stamps `placed_day` into the state of every object a quest asks
+  for as it is put down (like the scarecrow), so a piece the village built or the generator made has no
+  day and never counts, and one taken down is gone from the count.

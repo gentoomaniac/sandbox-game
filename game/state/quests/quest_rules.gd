@@ -129,6 +129,17 @@ func thing_of(id: String) -> String:
 	return _objective_kinds[objective["type"]].thing(objective)
 
 
+## The world objects that quests ask the player to put down: what the game stamps with the day it
+## is put down, for `BuildObjective` to count.
+func placed_objects() -> Array[StringName]:
+	var found: Array[StringName] = []
+	for id in ids():
+		var object := objective_of(id).placed_object(_quests[id]["objective"])
+		if object != &"" and not found.has(object):
+			found.append(object)
+	return found
+
+
 ## The kind of prerequisite the file names by `type`.
 func condition_kind(type: String) -> QuestCondition:
 	return _condition_kinds[type]

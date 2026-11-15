@@ -39,3 +39,9 @@ func is_offered(_fields: Dictionary, _quests: Quests) -> bool:
 ## Takes what the quest asks for from the player, once `progress` has reached `goal`.
 func hand_over(_fields: Dictionary, _quests: Quests) -> void:
 	pass
+
+
+## The world object the player has to put down, or &"" when the quest asks for none: those are
+## stamped with the day they are put down (see ToolUse).
+func placed_object(_fields: Dictionary) -> StringName:
+	return &""

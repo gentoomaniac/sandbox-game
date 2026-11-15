@@ -38,7 +38,7 @@ func test_the_data_folder_is_clean() -> void:
 
 
 func test_every_file_but_the_limits_is_a_quest_named_by_its_file() -> void:
-	assert_eq(_rules.ids().size(), 4)
+	assert_eq(_rules.ids().size(), 5)
 	assert_has(_rules.ids(), FIBRE)
 	assert_false(_rules.has("_limits"))
 	assert_eq(_rules.quest(FIBRE)["objective"], {"type": "bring", "item": "fibre", "count": 5})
@@ -176,7 +176,7 @@ func test_the_kinds_of_the_game_are_found_by_name() -> void:
 	var objectives := QuestKinds.in_folder(QuestKinds.OBJECTIVES_DIR, QuestObjective, problems)
 	var conditions := QuestKinds.in_folder(QuestKinds.CONDITIONS_DIR, QuestCondition, problems)
 	assert_eq(problems, [] as Array[String])
-	assert_eq(objectives.keys(), ["bring"])
+	assert_eq(objectives.keys(), ["bring", "build"])
 	var names := conditions.keys()
 	names.sort()
 	assert_eq(names, ["day", "opinion", "quest_done", "season", "skill"])

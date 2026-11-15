@@ -12,7 +12,8 @@ taken or not finished in time goes away and nothing is lost.
 ## What a quest is
 
 A villager wants one small thing. The **objective** is of a kind: `bring` an item, a count ("five
-fibre for the bean rows"). More kinds are one new file each, see below. A quest has a **time limit
+fibre for the bean rows") or `build` a placed object, a count, near the giver's home ("a wattle
+fence by my garden, six pieces"). More kinds are one new file each, see below. A quest has a **time limit
 in days**, **prerequisites**, **dialogue** (what the giver says to give it, and to take it in), a
 **reward** and a **giver**: a named villager or, by default, any villager, picked at random when
 the quest is posted.
@@ -57,9 +58,10 @@ scanning its folder (`QuestKinds`); a script that is no kind, or has no name or 
 has, is reported. A kind says what its fields are (`problems`, so a quest file is checked), and later
 what it does at play.
 
-| Objective | Fields |
-|---|---|
-| `bring` | `item`, `count` |
+| Objective | Fields | Done when |
+|---|---|---|
+| `bring` | `item`, `count` | the player holds the count of the item in hand and hands it in |
+| `build` | `object`, `count`, `near` ("home"), `radius` | that many pieces **put down after the quest was posted** stand within `radius` tiles of the giver's home door |
 
 | Prerequisite | Fields |
 |---|---|
@@ -118,6 +120,13 @@ says the `turn_in` lines, the reward is the player's (what does not fit the bag 
 feet) and the quest is marked done with its day: it is no longer open, and `quest_done`
 prerequisites and `repeat_after_days` count from it. The objective kinds do the checking
 (`progress`, `goal`, `is_offered`, `hand_over`), so a new kind decides what handing in is.
+
+**E on the giver** for a `build` quest counts the world: the pieces put down on or after the day the
+quest was posted (the `placed_day` the game stamps on the objects quests ask for,
+`QuestRules.placed_objects`), standing, within `radius` of the giver's home door (their anchor when
+they have no house). A piece taken down does not count, and one that stood before the quest does
+not, so an old fence is no cheat. Enough: done, nothing taken (the fence stays, the player's to
+keep), the `turn_in` lines and the reward. Too few: the `short` line.
 
 **Rewards** are items that exist, mostly what the shop of #10 does not sell, so a quest is not a
 second barter: seeds on the first help only, **wax** (candle makings: its first source apart from
