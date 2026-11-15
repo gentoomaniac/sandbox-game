@@ -693,9 +693,62 @@ def worn_earth(base, specks, speck_chance=SPECK_CHANCE):
     return texture
 
 
-def trodden_tiles(texture):
-    """The atlas row of trodden grass of the earth `texture` (see `worn_earth`)."""
-    fulls = [texture(90 + n) for n in range(4)]
+def pools_in(tile, rng, pictures, count, inside):
+    """Stamps up to `count` of `pictures` (puddles, wet patches) at random spots of the tile where
+    every pixel of the picture is `inside(x, y)` and a pixel clear of any other pool, so a pool is
+    never cut by the edge of the tile or of the ground it lies on."""
+    taken = set()
+    for _ in range(count):
+        picture = rng.choice(pictures)
+        rows = picture["rows"]
+        width, height = max(len(row) for row in rows), len(rows)
+        for _attempt in range(12):
+            left, top = rng.randrange(TILE - width + 1), rng.randrange(TILE - height + 1)
+            spots = [(left + dx, top + dy) for dy, row in enumerate(rows) for dx, char in enumerate(row) if char != "."]
+            if all(inside(x, y) for x, y in spots) and not any(
+                (x + dx, y + dy) in taken for x, y in spots for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+            ):
+                stamp(tile, picture, left, top)
+                taken.update(spots)
+                break
+
+
+def away_from_border(margin):
+    """`inside` for `pools_in`: at least `margin` pixels from the border of the tile."""
+    return lambda x, y: margin <= x < TILE - margin and margin <= y < TILE - margin
+
+
+# Puddles standing on worn earth in the rain, as at 32 px: flat and wide, the water under the
+# shaded north bank darker, the rest lighter with the sky and a bright glint, soaked dark earth
+# round them. d is soaked earth, w the water in shade, l its sheen and f the glint.
+_PUDDLE_KEYS = {"d": "soil_dark", "w": "water", "l": "water_light", "f": "foam"}
+_PUDDLES = [
+    sprite(_PUDDLE_KEYS, ".ddd.", "dwllf", ".lll."),
+    sprite(_PUDDLE_KEYS, ".dd.", "dlfd"),
+    sprite(_PUDDLE_KEYS, "dddd.", ".wlfl"),
+    sprite(_PUDDLE_KEYS, ".dd.dd", "dlfdld", ".l..l."),
+]
+# Wet patches: earth soaked dark and shining, too shallow for a puddle.
+_WET_PATCHES = [
+    sprite(_PUDDLE_KEYS, ".d.d", "ddld", ".dd."),
+    sprite(_PUDDLE_KEYS, "dd.", ".ld", "d.d"),
+]
+
+
+def wet(pictures, count):
+    """The pools of muddy worn earth (see `pools_in`), for `trodden_tiles` and `path_tiles`: up to
+    `count` of `pictures` per tile, and none on some tiles, so a wet yard has bare stretches too."""
+
+    def pools(tile, rng, inside):
+        pools_in(tile, rng, pictures, rng.randrange(count + 1), inside)
+
+    return pools
+
+
+def trodden_tiles(texture, pools=None, full_count=4):
+    """The atlas row of trodden grass of the earth `texture` (see `worn_earth`), with `pools`
+    (see `wet`) on muddy ground and `full_count` full tiles."""
+    fulls = [texture(90 + n) for n in range(full_count)]
     shapes = edge_shapes(90, [(2, 1.0), (3, 0.7), (5, 0.3)], 0.22)
 
     def decorate(tile, covered, rng):
@@ -706,6 +759,12 @@ def trodden_tiles(texture):
                     distance = edge_distance(covered, x, y, 4)
                     if distance == 1 or (distance < 4 and rng.random() < 0.6 / distance):
                         tile[y][x] = None
+        if pools:
+            pools(tile, rng, lambda x, y: covered(x, y) and edge_distance(covered, x, y, 5) == 5)
+
+    if pools:
+        for n, tile in enumerate(fulls):
+            pools(tile, random.Random(190 + n), away_from_border(1))
 
     # A worn tile has no decorations: its flowers and tufts were trodden down.
     return edge_tiles(texture, shapes, 90, decorate) + fulls, []
@@ -717,15 +776,21 @@ def trodden():
 
 
 def muddy_trodden():
-    """Trodden grass in the rain: wet earth with darker flecks and glints of standing water. It is drawn over
-    the trodden grass of a tile (see World.is_muddy), so it is the same shapes."""
-    return trodden_tiles(worn_earth("soil", ("soil_dark", "soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE))
+    """Trodden grass in the rain: wet earth with darker flecks and glints of standing water, a
+    puddle or a soaked patch here and there. It is drawn over the trodden grass of a tile (see
+    World.is_muddy), so it is the same shapes; it has more full tiles, so its puddles do not
+    repeat in a pattern."""
+    texture = worn_earth("soil", ("soil_dark", "soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE)
+    return trodden_tiles(texture, wet(_PUDDLES + _WET_PATCHES, 2), 10)
 
 
-def path_tiles(texture):
-    """The atlas row of a path of the earth `texture` (see `worn_earth`); grass creeps in at the
-    edges."""
-    fulls = [texture(101 + n) for n in range(6)]
+def path_tiles(texture, pools=None, full_count=6):
+    """The atlas row of a path of the earth `texture` (see `worn_earth`), with `pools` (see `wet`)
+    on muddy ground and `full_count` full tiles; grass creeps in at the edges."""
+    fulls = [texture(101 + n) for n in range(full_count)]
+    if pools:
+        for n, tile in enumerate(fulls):
+            pools(tile, random.Random(201 + n), away_from_border(1))
     shapes = edge_shapes(100, [(2, 1.0), (3, 0.6), (4, 0.3)], 0.2)
 
     def decorate(tile, covered, rng):
@@ -741,6 +806,8 @@ def path_tiles(texture):
                     tile[y][x] = rng.choice(("green_dark", "green", None))
                 elif distance == 3 and rng.random() < 0.12:
                     tile[y][x] = "green_dark"
+        if pools:
+            pools(tile, rng, lambda x, y: covered(x, y) and edge_distance(covered, x, y, 4) == 4)
 
     return edge_tiles(texture, shapes, 100, decorate) + fulls, []
 
@@ -751,8 +818,11 @@ def path():
 
 
 def muddy_path():
-    """A path in the rain: wet earth, darker and redder, with glints of standing water."""
-    return path_tiles(worn_earth("soil", ("soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE))
+    """A path in the rain: wet earth, darker and redder, with glints of standing water and puddles
+    in its hollows, more of them than on trodden grass, with more full tiles so they do not
+    repeat in a pattern."""
+    texture = worn_earth("soil", ("soil_dark", "water", "water_light"), MUDDY_SPECK_CHANCE)
+    return path_tiles(texture, wet(_PUDDLES * 2 + _WET_PATCHES, 2), 12)
 
 
 def soil_pixel_of(ramp):

@@ -54,7 +54,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   (`World.is_muddy_at`) when it is worn and the flag is on, so no per-tile state, no scan.
 - **Drawn:** `TerrainTileset.Layer.MUDDY_TRODDEN` and `MUDDY_PATH`, two more terrain layers
   of the same shapes as the dry ones, over them (dark wet earth with glints of standing
-  water, both art sets; the same in every season). When the flag changes, `World` emits
+  water, small puddles and soaked patches, both art sets; the same in every season). When the flag changes, `World` emits
   `tile_changed` for every worn tile of the loaded chunks, once per change of weather, and a
   chunk that loads is drawn with the flag as it is.
 - **Slower:** the player walks at `walk_factor` (0.7) of their speed on a muddy tile
@@ -98,5 +98,7 @@ today.
 Trodden grass and the path, and their muddy looks, are dual-grid layers over the grass with soft dithered edges, in
 every season's look and the frost (`tools/art/terrain.py` and `tools/art/classic/terrain.py`). Their
 full tiles are an even colour with single specks and no stamps
-(`tools/art/test_worn_ground.py`), so a worn yard reads as one joined patch. Snow covers paths,
+(`tools/art/test_worn_ground.py`), so a worn yard reads as one joined patch. The muddy looks add
+small puddles (a shaded north bank, water lighter with the sky, a glint) and soaked patches,
+up to two or three a tile and never cut by its edge, over ten and twelve full tiles (issue #90). Snow covers paths,
 with a faint trodden track over them; in a bare winter the earth lies dark.

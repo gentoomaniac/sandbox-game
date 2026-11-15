@@ -66,5 +66,7 @@
   specks of 3 percent and no stamps (`tools/art/test_worn_ground.py`, both art sets), so a worn
   yard reads as one joined patch and not as a grid of per-tile shapes (task 155); snow covers
   paths, with a faint trodden track over them; in a bare winter the earth lies dark.
+  Their muddy looks in the rain have small puddles and soaked patches on that earth (issue #90),
+  with more full tiles so the puddles do not repeat as a grid, always clear of a tile's edge.
 - **Floodplain looks fertile:** lush, damp meadow, with a narrow muddy bank right at the
   water. It must not read as barren sand.

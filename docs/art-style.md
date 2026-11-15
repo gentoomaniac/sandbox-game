@@ -155,7 +155,9 @@ decorations of the soil row, which the game shows only on fallow soil): four or 
 to a tile, low weed rosettes and chickweed seedlings with a pixel of `soil` shadow, and the grass
 tufts of the turf, all in the grass ramp, placed where they stay on the bed even of a tile tilled
 alone (`soil_beds.spot_on_bed`). The path is packed earth worn pale in patches, dark
-under the turf at its edge with blades leaning in; the tidal mud has wavy ripple marks with
+under the turf at its edge with blades leaning in; in the rain trodden grass and the path are wet
+`soil` with puddles standing on it (`terrain.wet`): flat and wide, `soil_dark` soaked earth and a
+shaded north bank, `water` under it, `water_light` sheen and a `foam` glint, and soaked patches; the tidal mud has wavy ripple marks with
 dark troughs, which the tide fills first. The grass itself stays grass all year and only
 goes darker green: its lighter greens move a step down in autumn and every green one more in
 winter (`seasons.AUTUMN_GROUND`, `seasons.BARE_GROUND`); the dry
