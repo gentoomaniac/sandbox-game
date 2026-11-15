@@ -4,6 +4,8 @@ extends Modal
 ## Escape (or the pause key) goes back one page, and closes the menu from the first one.
 
 signal save_and_quit_requested
+## The Load button was pressed (see LoadDialog).
+signal load_requested
 ## A volume slider moved (see AudioPage).
 signal volume_tested(channel: StringName, percent: float)
 
@@ -84,6 +86,7 @@ func _init(settings: GameSettings) -> void:
 	_add_button(
 		pause, "Settings", _go_to.bind(Page.SETTINGS), "Keys, audio, display and game options."
 	)
+	_add_button(pause, "Load", load_requested.emit, "Pick one of the saves and go back to it.")
 	_add_button(pause, "Save and quit", save_and_quit_requested.emit, "Save the game and close it.")
 
 	var settings_page := _add_page(pages, Page.SETTINGS, "Settings")

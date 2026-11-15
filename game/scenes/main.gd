@@ -42,6 +42,7 @@ var _menu: PauseMenu
 ## save that is refused, a save that failed before quitting.
 var _choice_dialog := ChoiceDialog.new()
 var _save_questions := SaveQuestions.new(_choice_dialog)
+var _load_dialog := LoadDialog.new()
 ## The hammer's menu on a building has a dialog of its own: nobody else is to hear its answer.
 var _house_dialog := ChoiceDialog.new()
 var _house_menu: HouseMenu
@@ -225,6 +226,7 @@ func _make_views() -> void:
 	_hotbar.crafting_requested.connect(_on_crafting_requested)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
+	add_child(_load_dialog)
 	add_child(_tooltip_view)
 	add_child(_fade_screen)
 	_interior_view.hide()
@@ -304,6 +306,8 @@ func _connect_state_and_views() -> void:
 			_show_clock()
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
+	_menu.load_requested.connect(_load_dialog.open_saves.bind(_options.save_path))
+	_load_dialog.load_requested.connect(_load_picked)
 	_menu.volume_tested.connect(_audio.play_volume_test)
 	_saves.started.connect(
 		func() -> void:
@@ -372,6 +376,7 @@ func _apply_start_options() -> void:
 	_debug.try_sleep = _blackout.try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _menu.open_page
+	_debug.open_load_dialog = _load_dialog.open_saves.bind(_options.save_path)
 	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
 
 
@@ -840,9 +845,20 @@ func _quick_save_or_load(event: InputEvent) -> bool:
 
 ## F8: puts the player into the newest save (see QuickLoadFlow).
 func _quick_load() -> void:
-	await QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree()).run_newest(
-		_options.save_path
-	)
+	await _quick_load_flow().run_newest(_options.save_path)
+
+
+## The save picked in the load dialog: after a question about the game now being played, the
+## player goes into it. Cancel goes back to the list.
+func _load_picked(entry: SaveEntry) -> void:
+	if await _save_questions.is_load_confirmed(entry.header):
+		await _quick_load_flow().run(entry.path)
+	else:
+		_load_dialog.open_saves(_options.save_path)
+
+
+func _quick_load_flow() -> QuickLoadFlow:
+	return QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree())
 
 
 ## The message of build mode: in the build menu while it picks, as under its row the HUD's

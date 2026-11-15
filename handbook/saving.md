@@ -17,6 +17,18 @@ When and where the game saves, and what happens if a save goes wrong.
 - Each save notes the game's date and time, the real date and time, and what made it (autosave,
   quick save, sleep, save and quit).
 
+## Loading an older save
+
+- Pause menu, Load: the saves are listed newest first. Each shows the game's date and time, what
+  made it (autosave, quick save, sleep, save and quit) and the real date and time.
+- Pick one with the mouse, or with the arrow keys and Enter, then press Load (Enter again).
+  Cancel or Escape closes the list.
+- The game asks before it loads: what you did since the game last saved is lost. Cancel there goes
+  back to the list.
+- A save that can't be loaded (damaged, or from a version too old or new) is listed as such, with
+  the reason, and can't be picked.
+- Starting the game continues from the newest save that can be loaded.
+
 ## Quitting
 
 - Quitting waits for a save that is running.

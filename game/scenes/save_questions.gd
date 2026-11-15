@@ -1,10 +1,15 @@
 class_name SaveQuestions
 extends RefCounted
 ## What the player is told and asked about a save they load, in a ChoiceDialog: that a save is
-## refused, and whether to load one without the content the game no longer has.
+## refused, whether to load one without the content the game no longer has, and whether to load
+## one over the game being played.
 
 const REFUSED_TEXT := "%s\n\nThe file was moved to %s and is not changed. %s"
 const REFUSED_NOT_MOVED_TEXT := "%s\n\nThe file could not be moved away and stays where it is. %s"
+const LOAD_TEXT := (
+	"The save of %s (%s) will be loaded.\n\n"
+	+ "What you have done since the game last saved is lost."
+)
 const THEN_OLDER_SAVE := "The save before it is loaded instead."
 const THEN_NEW_GAME := "A new game starts."
 const MISSING_CONTENT_TEXT := (
@@ -45,6 +50,19 @@ func is_missing_content_loaded(
 		"The save has things the game no longer has",
 		MISSING_CONTENT_TEXT % [LoadResult.lines(missing), backup_path.get_file()],
 		["Load anyway, dropping what is missing", cancel_text] as Array[String],
+		1
+	)
+	var choice: int = await _dialog.answered
+	return choice == 0
+
+
+## Asks whether to load the save of `header` and drop what has been played since the game was last
+## saved, and returns whether the player said yes. Cancel is the safe button.
+func is_load_confirmed(header: SaveHeader) -> bool:
+	_dialog.ask(
+		"Load this save?",
+		LOAD_TEXT % [header.game_text(), header.how_text()],
+		["Load it", "Cancel"] as Array[String],
 		1
 	)
 	var choice: int = await _dialog.answered

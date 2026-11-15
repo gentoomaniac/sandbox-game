@@ -43,6 +43,18 @@
   would otherwise run again over the loaded game. No save file: a note says "No save to load".
   They work with a window open, not in the pause menu or a chat (the game is paused there) nor
   during a fade.
+- **The load dialog** (#16, `LoadDialog`): the pause menu's Load button opens it. It lists
+  `SaveList.entries` newest first, each row with `SaveHeader.game_text` and `how_text`, as toggle
+  buttons of one group, so the mouse and the arrow keys and Enter all pick; the newest save that
+  can be loaded is picked and focused when it opens, and a picked row hands the focus on to Load.
+  A save that can't be loaded (`SaveEntry.problem`: no header and none can be made, or a version
+  this game does not read) is a disabled row that says why. The list holds only what the headers
+  say: a file that turns out to be refused when loaded is moved aside like at the start
+  (`QuickLoadFlow`, with its note), and is gone from the list the next time it opens. Load closes
+  the list and `Main` asks "Load this save?" (`SaveQuestions.is_load_confirmed`; always, as
+  unsaved play can't be told from saved; Cancel is the safe button and reopens the list), then
+  loads through `QuickLoadFlow.run`, the way F8 does. There is no title menu yet, so the pause
+  menu is the only way in. `--load-dialog` opens it for a screenshot.
 - **Saving does not freeze the game** (tasks 145, 147, 158). A save takes a snapshot of the game
   at once on the main thread (`SaveFile.snapshot`: the big maps, such as the tilled soil, the
   soil moisture and the piles, are copied as they are, which takes about a fifth of what making

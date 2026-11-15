@@ -101,6 +101,8 @@ func test_flags_without_a_value() -> void:
 	assert_eq(options.inside_building, &"", "the first house")
 	assert_true(options.sleep)
 	assert_false(options.crafting)
+	assert_false(options.load_dialog)
+	assert_true(StartupOptions.new(PackedStringArray(["--load-dialog"])).load_dialog)
 	assert_false(options.skills)
 	assert_false(options.character)
 	var screens := StartupOptions.new(PackedStringArray(["--skills", "--station", "--character"]))

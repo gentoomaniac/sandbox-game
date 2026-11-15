@@ -87,6 +87,7 @@ extends RefCounted
 ##   --character              open the character window at start
 ##   --skills                 open the character window at start, on the skills tab
 ##   --crafting               open the crafting menu at start
+##   --load-dialog            open the list of saves to load from at start
 ##   --station                open the crafting menu (or a process station's window) of the
 ##                            nearest station in reach, once the map is drawn (with --inside, in
 ##                            the house)
@@ -247,6 +248,7 @@ var inventory := false
 var character := false
 var skills := false
 var crafting := false
+var load_dialog := false
 var station := false
 var storage := false
 ## "kiln,loaded" (see DebugProcess), or "".
@@ -422,6 +424,8 @@ func _init(args := PackedStringArray()) -> void:
 				skills = true
 			"--crafting":
 				crafting = true
+			"--load-dialog":
+				load_dialog = true
 			"--station":
 				station = true
 			"--storage":

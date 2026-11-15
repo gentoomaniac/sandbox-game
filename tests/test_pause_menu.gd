@@ -101,3 +101,16 @@ func test_the_frame_rate_slider_stops_at_no_limit() -> void:
 	menu._show_game_settings()
 	assert_eq(menu._max_fps_slider.value, PauseMenu.NO_LIMIT_STOP)
 	assert_eq(menu._max_fps_label.text, "Frame rate: no limit")
+
+
+func test_the_load_button_asks_for_the_list_of_saves() -> void:
+	watch_signals(_menu)
+	_menu.open()
+	var buttons: Array[Node] = _menu._pages[PauseMenu.Page.PAUSE].find_children(
+		"*", "Button", false, false
+	)
+	var load_button: Button = buttons.filter(func(b: Button) -> bool: return b.text == "Load")[0]
+
+	load_button.pressed.emit()
+
+	assert_signal_emitted(_menu, "load_requested")

@@ -42,6 +42,7 @@ var chat_screen: ChatScreen
 var try_sleep: Callable
 var pass_door: Callable
 var open_menu: Callable  # func(page: PauseMenu.Page)
+var open_load_dialog: Callable
 var open_chat: Callable  # func(npc: Npc)
 var save_screenshot_and_quit: Callable
 
@@ -68,6 +69,7 @@ var _chat_script: PackedStringArray
 var _hit_tile: Vector2i
 var _harvest_tile: Vector2i
 var _menu_page: int
+var _is_load_dialog_to_open: bool
 var _is_art_to_switch: bool
 var _opened_chest: WorldObject
 var _settled_frames := 0
@@ -96,6 +98,7 @@ func _init(options: StartupOptions) -> void:
 	_hit_tile = options.hit
 	_harvest_tile = options.harvest
 	_menu_page = options.menu
+	_is_load_dialog_to_open = options.load_dialog
 	_is_art_to_switch = options.switch_art
 	_screenshot_delay = options.screenshot_delay
 
@@ -178,10 +181,14 @@ func update(delta: float) -> void:
 		press.pressed = true
 		Input.parse_input_event(press)
 		return
-	if _menu_page >= 0:
+	if _menu_page >= 0 or _is_load_dialog_to_open:
 		# The game is paused by then, so a timer that ignores the pause does the waiting.
-		open_menu.call(_menu_page as PauseMenu.Page)
+		if _is_load_dialog_to_open:
+			open_load_dialog.call()
+		else:
+			open_menu.call(_menu_page as PauseMenu.Page)
 		_menu_page = -1
+		_is_load_dialog_to_open = false
 		view.get_tree().create_timer(0.2, true).timeout.connect(save_screenshot_and_quit)
 		return
 	_screenshot_delay -= delta
