@@ -140,5 +140,16 @@
     field is ripe and will wither tonight: harvest it" when a ripe crop has `warn_wither_nights` (2)
     nights or fewer left. Not saved: after a load a field in trouble is warned about once more.
 - Wild crops can be foraged.
+- **Wild seeds** (#11, task 235; `data/wild_seeds.cfg`, `WildSeeds`): picking a bush by hand sometimes
+  also drops the seeds of a crop, by season, one seed item (one tile) a find. The same plant on
+  the same day always gives the same, like the seeds of felled trees; each seed of a plant rolls
+  for itself. Only plants that are there to pick are listed, so a season without the plant needs
+  no entry. First values: the shrub gives turnip seeds (spring, autumn), flax seeds (spring) and
+  rye seeds (autumn), the fern bush pea seeds (spring), carrot seeds (spring, summer) and bean
+  seeds (summer), the berry bush strawberry plants (summer, 15 in 100), buckwheat seeds (summer,
+  autumn) and onion seeds (autumn), all others 10 in 100. The bred garden crops (potato, cabbage,
+  wheat, pumpkin) are not found wild. A pick is thus one find in about ten, so wild seeds are a
+  help and not a supply: the stall is ([../economy/shop.md](../economy/shop.md)). Tall grass, which
+  the scythe mows, and saplings (an acorn) give none.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).

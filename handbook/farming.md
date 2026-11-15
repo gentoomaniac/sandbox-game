@@ -57,6 +57,11 @@ perfect weather; expect longer.
   7 in 10 for the grains and pumpkin, 5 in 10 for potato and onion, only 2 in 10 for peas, beans
   and strawberries (which fruit again). Replant only your own seeds and the field shrinks, so
   keep spares.
+- Some seeds can be found: picking a shrub, a fern bush or a berry bush by hand now and then also
+  gives the seeds of a crop of the season, about one pick in ten (one in seven for strawberry
+  plants on a berry bush in summer). The shrub gives turnip, flax and rye seeds, the fern bush pea,
+  carrot and bean seeds, the berry bush strawberry plants and buckwheat and onion seeds. Potatoes,
+  cabbage, wheat and pumpkin are not found wild; buy them.
 - Crows peck at crops (see [animals](animals.md)); a scarecrow keeps them off.
 
 ## Watering and weather

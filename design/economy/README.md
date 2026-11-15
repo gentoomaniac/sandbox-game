@@ -133,6 +133,8 @@ screen, saving; the handbook page is [../../handbook/shop.md](../../handbook/sho
   3 to 7 Pfennig a seed ([shop.md](shop.md)); one seed is one planting. A pedlar by season is no
   longer needed for seeds.
 - Villagers give or swap seeds of their own crops by barter at the Neighbour level.
+- **Built (#11):** some seeds are found wild, by season, when a bush is picked
+  ([../farming/crops.md](../farming/crops.md)).
 - The harvest still gives one seed back, so a farm can keep going without buying.
 - The console's `give` stays for testing.
 

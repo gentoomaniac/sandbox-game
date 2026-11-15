@@ -260,7 +260,8 @@ func _do_use(target: Vector2i) -> Use:
 				_state.world.change_object(plant)
 			else:
 				_state.world.remove_object(target)
-			var picked := plant.picked_drops()
+			var picked := plant.picked_drops().duplicate()
+			picked.merge(WildSeeds.default_rules().found(plant.type, target, _state.clock.day))
 			_state.world.drop_items(target, picked)
 			_done(ActionOutcome.FORAGE, target, plant.type, picked)
 		Use.MOW:
