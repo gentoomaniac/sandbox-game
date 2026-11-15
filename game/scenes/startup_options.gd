@@ -128,6 +128,8 @@ extends RefCounted
 ##                            (default 6,0)
 ##   --worn-ground=<x>,<y>    a yard worn by many feet from that tile: a path, a trodden rim, a
 ##                            few worn islands (see DebugWornGround)
+##   --ways=<x>,<y>           the plank walk and the stone path laid in a sample from that tile:
+##                            straight runs, an L, a T, a crossing, a wide road (see DebugWays)
 ##   --footprints=<x>,<y>     trails of footprints from that tile, in snow with --snow=1, else in
 ##                            the mud of worn ground (see DebugFootprints)
 ##   --chest=<x>,<y>          a chest with some items on that tile
@@ -274,6 +276,7 @@ var mow := NO_TILE
 var path := NO_TILE
 var path_days := Vector2i(6, 0)
 var worn_ground := NO_TILE
+var ways := NO_TILE
 var footprints := NO_TILE
 var chest := NO_TILE
 var chest_inside := NO_TILE
@@ -465,6 +468,8 @@ func _init(args := PackedStringArray()) -> void:
 					path_days = days
 			"--worn-ground":
 				worn_ground = _tile(arg)
+			"--ways":
+				ways = _tile(arg)
 			"--footprints":
 				footprints = _tile(arg)
 			"--chest":

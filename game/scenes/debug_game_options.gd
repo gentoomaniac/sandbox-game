@@ -32,6 +32,8 @@ static func apply(options: StartupOptions, state: GameState) -> void:
 		DebugYard.create(state, options.yard)
 	if options.worn_ground != StartupOptions.NO_TILE:
 		DebugWornGround.create(state.world, options.worn_ground)
+	if options.ways != StartupOptions.NO_TILE:
+		DebugWays.create(state.world, options.ways)
 	if options.energy >= 0.0:
 		state.player.energy = options.energy
 	if options.health >= 0.0:
