@@ -130,3 +130,19 @@ func test_the_limits_are_the_rules_numbers() -> void:
 		masks.wait_for_mask(COAST + Vector2i(x, 0))
 	assert_eq(masks.mask_coords().size(), 2)
 	assert_eq(masks.raw_chunk_coords().size(), 4)
+
+
+func test_a_pinned_mask_is_kept_past_the_limit_until_it_is_unpinned() -> void:
+	var values := DataFile.read_sections(NpcRules.DEFAULT_PATH)
+	values["travel"]["far_masks_kept"] = 2
+	values["travel"]["far_chunks_kept"] = 4
+	masks = TravelMasks.for_world(world, NpcRules.new(values))
+	for x in 3:
+		masks.pin(COAST + Vector2i(x, 0))
+	for x in 3:
+		masks.wait_for_mask(COAST + Vector2i(x, 0))
+	assert_eq(masks.mask_coords().size(), 3, "all three, the limit is two")
+	for x in 3:
+		masks.unpin(COAST + Vector2i(x, 0))
+	masks.wait_for_mask(COAST + Vector2i(3, 0))
+	assert_eq(masks.mask_coords().size(), 2)

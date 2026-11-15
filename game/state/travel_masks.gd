@@ -31,6 +31,8 @@ var _raw_chunks: Dictionary[Vector2i, Chunk] = {}
 var _requested: Dictionary[Vector2i, bool] = {}
 var _masks_kept: int
 var _raw_chunks_kept: int
+## The chunks whose masks a time skip is about to use, which the limit does not drop (see `pin`).
+var _pinned: Dictionary[Vector2i, bool] = {}
 ## The worker's task (-1 while it has none) and what it makes: a chunk, or the mask of `_stamping`
 ## (null when it generates) made from chunks of the edit versions in `_stamping_versions`.
 var _task_id := -1
@@ -86,6 +88,17 @@ func mask_of(coords: Vector2i) -> TravelMask:
 	else:
 		_requested[coords] = true
 	return mask
+
+
+## Keeps the mask of `coords`, once made, from being dropped by the limit, until `unpin`. A skip
+## pins the masks of the way ahead of a trip, which it asked for a few at a time: more may be kept
+## than the limit says, for as long as they are pinned.
+func pin(coords: Vector2i) -> void:
+	_pinned[coords] = true
+
+
+func unpin(coords: Vector2i) -> void:
+	_pinned.erase(coords)
 
 
 ## The mask of a chunk if it is made, or null, without asking for it (see `mask_of`).
@@ -245,5 +258,8 @@ func _publish_stamped() -> void:
 		return
 	_requested.erase(coords)
 	_masks[coords] = mask
-	while _masks.size() > _masks_kept:
-		_masks.erase(_masks.keys()[0])
+	for kept in _masks.keys():
+		if _masks.size() <= _masks_kept:
+			break
+		if not _pinned.has(kept):
+			_masks.erase(kept)

@@ -82,6 +82,9 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
   the versions of the four chunks it copied; its mask is published only if they are all still the
   same, else dropped and made again (the request stays). An edit also **drops** the masks of its
   chunk and of E, S and SE of it. So a published mask is never stale.
+- **Pinning:** `pin(coords)` keeps a mask from being dropped by the limit until `unpin`; the cache
+  may hold more than its limit meanwhile, and shrinks when the next mask is published after the
+  unpin.
 - `mask_of(coords)` returns the mask or null, and asks for it. `made_mask(coords)` returns it
   without asking. `wait_for_mask` waits for the worker (tests, skips).
 
