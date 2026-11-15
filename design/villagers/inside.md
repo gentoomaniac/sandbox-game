@@ -39,18 +39,19 @@ On the villager (`Npc`, not the building, so a building does not know who is in 
 
 ## The door transition (`Npcs`)
 
-- `go_in(npc, building)`: the villager is in the yard of `building` (the trip ended there, or they
-  were near enough: `ARRIVED_TILES`). They walk straight to the middle of the door tile
-  (`entering`; the door is the one tile of a building that can be walked on) at the walking speed
-  and are inside then: `inside` set, `inside_position` a free tile of the room (from their name
-  and the day, so the same game gives the same place), the walk off. Nobody stands on a building
-  tile, so nobody is left on the door.
-- Unseen (the player inside, `update_unseen`; the chunk not loaded; a skip) they are inside at once:
-  there is no one to see the step.
-- `come_out(npc)`: they are at the yard in front of the door, outdoors, as if they had come from it,
-  and walk on from there. It also ends an `entering`. `ActivityUpkeep._send` calls it when the step
-  they are sent to is not in the building they are in, so the next trip starts at the yard.
-  `walk_to` and `place` do it too, so nothing walks or is put anywhere while still marked inside.
+- `Npcs.indoors.go_in(npc, building, is_instant)` (`NpcIndoors`, which also keeps the rest of this):
+  the villager is in the yard of `building` (the trip ended there, or they were near enough:
+  `ARRIVED_TILES`). They walk straight to the middle of the door tile (`entering`; the door is the
+  one tile of a building that can be walked on) at the walking speed and are inside then: `inside`
+  set, `inside_position` a free tile of the room (picked with the game's dice, which the tests
+  seed), the walk off. Nobody stands on a building tile, so nobody is left on the door.
+- Unseen (the player inside, `update_unseen`; the chunk not loaded; a skip: `is_instant`) they are
+  inside at once: there is no one to see the step.
+- `Npcs.indoors.come_out(npc)`: they are at the yard in front of the door, outdoors, as if they
+  had come from it, and walk on from there. It also ends an `entering`. `ActivityUpkeep._send`
+  calls it when the step they are sent to is not in the building they are in, so the next trip
+  starts at the yard. `walk_to` and `place` do it too, so nothing walks or is put anywhere while
+  still marked inside.
 - A building taken down (`Households.building_gone`) puts out those inside it.
 - No trip is ever made inside a building: the one step from the yard is the whole of the way, so the
   search and the masks stay out of interiors.
@@ -111,15 +112,14 @@ without a walk, so nothing is searched or walked.
 ## The steps (each a commit that passes on its own, with its tests and doc lines)
 
 1. This plan.
-2. **State and door:** `Npc.inside`, `inside_position`, `entering`; `Npcs.go_in`, `come_out` and the
-   step onto the door; `walk_to`, `place` and a building taken down put a villager out. Tests.
-3. **Walking about the room:** `NpcIndoors`, `Npcs.update_inside`, called by Main for the player's
-   room. Tests.
-4. **The day sends them in:** `inside` in `data/activities.cfg` and its header, `ActivityPlaces`
+2. **State, door and room:** `Npc.inside`, `inside_position`, `entering`; `NpcIndoors` (`go_in`,
+   `come_out` and the step onto the door); `walk_to`, `place` and a building taken down put a villager out;
+   `NpcIndoors` and `Npcs.update_inside` (Main calls it for the player's room, in step 4). Tests.
+3. **The day sends them in:** `inside` in `data/activities.cfg` and its header, `ActivityPlaces`
    `building_at_yard`, `ActivityStep.building`, `ActivityUpkeep` (arrive, send, skip). Tests,
    routines.md and villagers.md lines.
-5. **They are seen:** `NpcViews` has none for one who is inside, `InteriorNpcViews`, Main, and the
+4. **They are seen:** `NpcViews` has none for one who is inside, `InteriorNpcViews`, Main, and the
    speech and the chat skip them. Tests.
-6. **Saving:** drop the upgrade from 37; then version 48 with `inside`, its upgrade, the validator.
+5. **Saving:** drop the upgrade from 37; then version 48 with `inside`, its upgrade, the validator.
    Tests.
-7. **Seeing it:** the debug flag for the screenshot, the handbook, the pictures.
+6. **Seeing it:** the debug flag for the screenshot, the handbook, the pictures.

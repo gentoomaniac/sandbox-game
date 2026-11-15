@@ -44,9 +44,12 @@ var rules := NpcRules.default_rules():
 	set(value):
 		rules = value
 		_travel.rules = value
+		indoors.rules = value
 ## The villagers written by hand (see `spawn_villager`).
 var villagers := VillagerRules.default_rules()
 var rng := RandomNumberGenerator.new()
+## Going into buildings, being in them and coming out.
+var indoors: NpcIndoors
 ## Whether a skip's `catch_up` is running: the screen is faded, so `place` may be used on any
 ## villager, a visible one too.
 var is_skipping := false
@@ -59,6 +62,7 @@ var _travel: NpcTravel
 func _init(sun: Sun, clock := Callable(Time, "get_ticks_usec")) -> void:
 	_sun = sun
 	rng.randomize()
+	indoors = NpcIndoors.new(rules, rng)
 	_travel = NpcTravel.new(rules, clock)
 	_travel.arrived.connect(_on_trip_arrived)
 	_travel.blocked.connect(trip_blocked.emit)
@@ -199,11 +203,12 @@ func is_rest_time(day: int, minute: int) -> bool:
 ## `trip_blocked` when no way is found. `trip_arrived` comes at once too if it is there already. It
 ## finds its way and walks it over chunks that are not loaded too (#68).
 func walk_to(npc: Npc, tile: Vector2i, map: GameMap) -> void:
+	indoors.come_out(npc)
 	_travel.start(npc, tile, map)
 
 
 ## Sends a villager to the yard in front of the door of `building` of `map`, where `walk_to` ends:
-## going in is a step from there (task 229).
+## `go_in` is the step from there.
 func walk_to_door(npc: Npc, building: Building, map: GameMap) -> void:
 	walk_to(npc, Vector2i(building.yard().floor()), map)
 
@@ -218,6 +223,7 @@ func place(npc: Npc, tile: Vector2i, map: GameMap) -> bool:
 	if not is_skipping and (_is_in_loaded_chunk(npc, map) or _is_chunk_of_tile_loaded(tile, map)):
 		return false
 	cancel_trip(npc)
+	indoors.come_out(npc)
 	npc.position = Vector2(tile) + Vector2(0.5, 0.5)
 	npc.free_body_tiles = Rect2i()
 	return true
@@ -266,6 +272,16 @@ func update_unseen(delta: float, map: GameMap, clock: GameClock) -> void:
 	_update(delta, map, Vector2.INF, clock, false, true, true)
 
 
+## `update` for the villagers inside `interior`, the room the player is in: they stand and walk
+## about it (see NpcIndoors). The ones in other buildings are not looked at.
+func update_inside(delta: float, interior: Interior, clock: GameClock) -> void:
+	var is_resting := is_rest_time(clock.day, clock.minute_of_day)
+	delta = minf(delta, MAX_STEP_SECONDS)
+	for npc in _npcs:
+		if npc.inside != null and npc.inside.interior == interior:
+			indoors.update(npc, delta, interior, is_resting)
+
+
 func _update(
 	delta: float,
 	map: GameMap,
@@ -281,7 +297,12 @@ func _update(
 		_travel.tick()
 	var fits := _fits
 	for npc in _npcs:
+		if npc.inside != null:
+			continue
 		var is_loaded := _is_in_loaded_chunk(npc, map)
+		if npc.entering != null:
+			indoors.update_entering(npc, delta, is_loaded and not is_far_only)
+			continue
 		if not is_far_only and is_loaded and npc.free_body_tiles == Rect2i():
 			_step_off_buildings(npc, map)
 		# Where it was sent it goes, day and night, over chunks that are not loaded too: when to
@@ -360,6 +381,8 @@ func talk_to(npc: Npc, player_feet: Vector2) -> void:
 func _catch_up_one(npc: Npc, map: GameMap, day_catch_up: Callable) -> void:
 	# The day puts the villager at their place first; one it sends on its way is no one's to stroll.
 	if day_catch_up.is_valid() and day_catch_up.call(npc):
+		return
+	if npc.inside != null:
 		return
 	if not _is_in_loaded_chunk(npc, map):
 		return

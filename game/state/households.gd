@@ -127,9 +127,11 @@ func _leave_house(npc: Npc) -> void:
 		npc.workplace = null
 
 
-## A building is gone: nobody lives or works in it any more.
+## A building is gone: nobody lives or works in it any more, and those in it or going in are out.
 func building_gone(building: Building) -> void:
 	for npc in _npcs.all():
+		if npc.inside == building or npc.entering == building:
+			_npcs.indoors.come_out(npc)
 		if npc.house == building:
 			move_out(npc)
 		if npc.workplace != null and npc.workplace.building == building:

@@ -95,7 +95,15 @@ var opinion_moved_today := 0
 ## Whether NpcDialogue is summing up `uncompacted_lines`. Not saved.
 var is_compacting := false
 
+## The building they are in, or null (see Npcs `go_in`, design/villagers/inside.md). While they are,
+## their feet are `inside_position`, in the tiles of its interior, and `position` stays at the yard
+## in front of its door: whatever reads where villagers are in the world sees them at the door.
+var inside: Building
+var inside_position := Vector2.ZERO
+
 # What they are doing is not saved: a loaded villager stands and looks about for what to do.
+## The building whose door they are walking onto to go in: they are inside when they get there.
+var entering: Building
 ## The axis direction they look in (UP, DOWN, LEFT or RIGHT).
 var facing := Vector2i.DOWN
 var activity := Activity.IDLE
