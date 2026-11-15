@@ -1,6 +1,6 @@
 extends SaveValidationCase
-## The deed log and the stories of the villagers are saved; a save from before them (version 33)
-## has none.
+## The deed log and the stories of the villagers are saved; saves from before their later
+## changes (version 34 on) are upgraded.
 
 
 func _state_with_a_deed_seen_by_antje() -> GameState:
@@ -47,23 +47,6 @@ func test_a_story_heard_is_kept_with_who_told_it() -> void:
 
 	assert_eq(heard, momme.stories[0])
 	assert_eq([heard["how"], heard["told_by"], heard["hops"]], [GossipRules.HEARD, antje.name, 1])
-
-
-func test_a_version_33_save_loads_without_deeds() -> void:
-	var game := _current_game()
-	game["npcs"] = [
-		JSON.parse_string(
-			JSON.stringify(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict())
-		)
-	]
-	game.erase("deeds")
-	game["npcs"][0].erase("stories")
-	_write_save(33, game)
-
-	var loaded := SaveFile.read(SAVE_PATH)
-
-	assert_eq(loaded.deeds.entries, [] as Array[Dictionary])
-	assert_eq(loaded.npcs.all()[0].stories, [] as Array[Dictionary])
 
 
 func test_a_version_34_save_loads_its_stories_as_seen_and_medium() -> void:
