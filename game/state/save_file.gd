@@ -2,7 +2,7 @@ class_name SaveFile
 extends RefCounted
 ## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_32` and so on). Older ones are refused.
+## (see `_upgrade_from_version_33` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -22,8 +22,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 42
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (#61) makes its
+## step the tenth.
+const OLDEST_VERSION := VERSION - 9
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -187,8 +188,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 32:
-		_upgrade_from_version_32(game)
 	if version <= 33:
 		_upgrade_from_version_33(game)
 	if version <= 34:
@@ -207,29 +206,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_40(game)
 	if version <= 41:
 		_upgrade_from_version_41(game)
-
-
-## Version 32 had one grade of each tool (task 207): they are the rusty iron ones now, wherever
-## a stack of items is saved (the inventory, a chest, a station's grid, the ground), and in the
-## held layer of the player's look.
-static func _upgrade_from_version_32(game: Dictionary) -> void:
-	# Written out, not read from the data files, so a later change leaves old saves alone.
-	var tools := ["hoe", "axe", "pickaxe", "watering_can", "scythe", "shovel", "hammer"]
-	_rename_tools(game, tools)
-
-
-## Gives the rusty iron grade to the `tools` named by an `item` or a `variant` anywhere in saved
-## data.
-static func _rename_tools(data: Variant, tools: Array) -> void:
-	if data is Array:
-		for entry: Variant in data:
-			_rename_tools(entry, tools)
-	elif data is Dictionary:
-		for key: String in data:
-			if key in ["item", "variant"] and data[key] in tools:
-				data[key] = "rusty_iron_" + data[key]
-			else:
-				_rename_tools(data[key], tools)
 
 
 ## Version 33 had no deed log (task 125): nothing was seen yet, and no villager has a story.
