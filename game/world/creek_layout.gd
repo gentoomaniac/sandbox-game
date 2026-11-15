@@ -10,8 +10,10 @@ extends RefCounted
 ## it can never leave its band (see LandscapeRules). Where the line moves more than a tile from one
 ## row to the next, a row's water spans from its own middle to those of the rows beside it, so the
 ## water is always joined row to row (tests/test_creeks.gd checks it). It is about two tiles wide,
-## a little narrower at the source, which is a small patch of wetland. Fords, a `FORD_ROWS` tall
-## stretch of shallow ground in every `ford_spacing` tiles, let a walker cross.
+## a little narrower at the source, which is a small patch of wetland. Fords, a
+## round patch of shallow ground in every `ford_spacing` rows, let a walker cross: it lies on the
+## creek's middle line, so it is about `2 * FORD_RADIUS` tiles long along the creek whichever way
+## the creek runs, and as wide as the creek.
 
 ## What a tile is in a creek.
 enum Bed { NONE, WATER, FORD, SOURCE }
@@ -24,7 +26,11 @@ const BEND_SAMPLE_SPACING := 1000.0
 const SOURCE_RADIUS := 2.5
 const SOURCE_WIDTH := 1.7
 const MOUTH_WIDTH := 2.3
-const FORD_ROWS := 2.0
+## A ford is the creek's water within this many tiles of the point where the middle line crosses
+## the ford's row. That is more than half the creek's width, and tests/test_creeks.gd checks on
+## many seeds that it reaches both banks even where a bend is steep, where a row's water spans
+## several tiles (a ford as wide as that row's span would be a band along the creek again).
+const FORD_RADIUS := 1.5
 ## A band whose creek could come nearer than this to the coast line (the wandering coast included)
 ## has none: a creek must not break the sea dyke or reach the salt marsh.
 const COAST_CLEARANCE := 4.0
@@ -92,8 +98,23 @@ func bed_at(world_pos: Vector2i) -> Bed:
 	var span_to := maxf(middle_here, maxf(middle_before, middle_after)) + width / 2.0
 	if along > length or column < span_from or column > span_to:
 		return Bed.NONE
+	return Bed.FORD if _is_in_ford(band, middle_x, is_south_of_river, world_pos) else Bed.WATER
+
+
+## Whether a tile of a creek's water is within `FORD_RADIUS` of the middle of a ford. The fords lie
+## every `_ford_spacing` rows from the river, counted at the band's middle (not at the creek's own
+## column, which moves with the row), and each is round, so it is as long as it is wide even where
+## the creek runs east to west.
+func _is_in_ford(band: int, middle_x: float, is_south_of_river: bool, world_pos: Vector2i) -> bool:
+	var direction := 1.0 if is_south_of_river else -1.0
+	var river_y := _river.line_y(middle_x)
 	var first_ford := _roll(band, 3) * _ford_spacing
-	return Bed.FORD if fposmod(along - first_ford, _ford_spacing) < FORD_ROWS else Bed.WATER
+	var fords_away := roundf((direction * (world_pos.y - river_y) - first_ford) / _ford_spacing)
+	var ford_row := roundi(river_y + direction * (first_ford + fords_away * _ford_spacing))
+	if absi(world_pos.y - ford_row) > ceili(FORD_RADIUS):
+		return false
+	var ford_middle := Vector2(_middle_at(band, middle_x, ford_row), ford_row + 0.5)
+	return ford_middle.distance_to(Vector2(world_pos) + Vector2(0.5, 0.5)) <= FORD_RADIUS
 
 
 ## Where the creek of a band runs in a row: a world x.
