@@ -112,5 +112,7 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   `data/villagers.cfg` as it is now, and the saved sheet only stands in when their id has left
   the file. A version 22 made-up villager is made up anew from the tables by their name (the old
   tables had "Says Aye"), with another surname if theirs is now a family of the village sheet.
-- **Later:** schedules, intentions, suggestions from the model, NPC to NPC talk (see
-  the ideas doc).
+- **Their day:** a villager with a house follows a day of activities (default, or planned by the
+  model for the villagers nearest the player): [routines.md](routines.md), "Activities and the
+  planned day".
+- **Later:** intentions, NPC to NPC talk (see the ideas doc).

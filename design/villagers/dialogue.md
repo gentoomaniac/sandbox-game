@@ -93,6 +93,10 @@
   The same sheets, opinion and stories feed the bubbles over villagers' heads (task 130, a request
   of its own, asked quietly in the background at the chat's temperature; see
   [gossip.md](gossip.md), Bubbles); what a bubble says is not added to the chat or remembered.
+  The same model plans the days of the villagers nearest the player (task 239, `[plan]` of
+  `data/npc_talk.cfg`; see [routines.md](routines.md), "Who is planned and when"): a request of its
+  own, asked quietly in the background, one at a time, and no new one starts while a chat reply is awaited, and
+  given up on after 20 seconds, the default day standing in.
   Typing `/clear` in the chat forgets everything but the villager's knowledge: the chat, the
   stories, the memories and the lines waiting for a memory, with a line saying so (not sent, not kept); other text with a "/" is said as it is.
 - **Settings:** the endpoint (default the test LLM's), the model (default

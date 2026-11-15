@@ -208,7 +208,7 @@ func make_home_if_bedless(bed: WorldObject) -> void:
 ## (they would see it through its windows). A forced condition (see Console) replaces the
 ## simulated one.
 func current_weather() -> WeatherSample:
-	var sample := weather.at(_outdoor_tile(), clock.day, clock.minute_of_day)
+	var sample := weather.at(outdoor_tile(), clock.day, clock.minute_of_day)
 	return sample if weather_override == &"" else weather.forced(sample, weather_override)
 
 
@@ -233,20 +233,20 @@ func light_campfire(fire: WorldObject) -> void:
 ## The snow on the ground where the player is (or outside the house they are in), 0 to 1, now:
 ## it builds and melts a little every minute.
 func current_snow_cover() -> float:
-	return snow_cover.at(_outdoor_tile(), clock.day, clock.minute_of_day)
+	return snow_cover.at(outdoor_tile(), clock.day, clock.minute_of_day)
 
 
 ## The frost on the ground where the player is, 0 to 1, now: it builds on a cold morning and
 ## goes as the day warms.
 func current_frost() -> float:
 	return snow_cover.frost_at(
-		weather.at(_outdoor_tile(), clock.day, clock.minute_of_day).temperature
+		weather.at(outdoor_tile(), clock.day, clock.minute_of_day).temperature
 	)
 
 
 ## The thaw where the player is, 0 to 1, now: the warmth and the sun that melt the snow.
 func current_thaw() -> float:
-	var sample := weather.at(_outdoor_tile(), clock.day, clock.minute_of_day)
+	var sample := weather.at(outdoor_tile(), clock.day, clock.minute_of_day)
 	return snow_cover.thaw_at(sample.temperature, sample.sunlight)
 
 
@@ -259,7 +259,7 @@ func last_hour_rain() -> float:
 	# The first hour of the game has none before it, so it counts its own.
 	var hour := maxi(clock.total_minutes() / GameClock.MINUTES_PER_HOUR - 1, 0)
 	return weather.rain_in_hour(
-		_outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
+		outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
 	)
 
 
@@ -277,13 +277,13 @@ func refresh_mud() -> void:
 		var first_hour := maxi(this_hour - rules.window_hours(), 0)
 		for hour in range(first_hour, this_hour):
 			rain += weather.rain_in_hour(
-				_outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
+				outdoor_tile(), hour / CropLife.HOURS_PER_DAY + 1, hour % CropLife.HOURS_PER_DAY
 			)
 	world.set_muddy(rain >= rules.soaked_by())
 
 
 ## The tile whose weather the player sees: theirs, or outside the door of the house they are in.
-func _outdoor_tile() -> Vector2i:
+func outdoor_tile() -> Vector2i:
 	return _building_inside.door_tile() if is_inside() else player.tile()
 
 

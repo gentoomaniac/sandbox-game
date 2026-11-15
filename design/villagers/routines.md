@@ -283,7 +283,7 @@ routines' and off-screen travel is #68.
 Written 2026-11-15 after the user's clarification on #7, rewritten the same day with the answers of
 [#87](https://github.com/gentoomaniac/sandbox-game/issues/87),
 [#88](https://github.com/gentoomaniac/sandbox-game/issues/88) and
-[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 10 of "The steps" are built** (issue #7; each says **Done** there), the planner (11 and 12), saving (13) and the bench (14) are not. It
+[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 11 of "The steps" are built** (issue #7; each says **Done** there), the planner's radius check (12), saving (13) and the bench (14) are not. It
 says what will be built and in which steps. It replaces the first plan (fixed timetables for five
 kinds of work), whose parts that still fit are kept: leaving in time, skip and sleep, loading, the
 console, the place lookup. It builds on homes and workplaces (#69), the path search and trips (#6,
@@ -470,10 +470,13 @@ priority=5
   while a chat reply is awaited, so the player's talk is never behind a villager's plan. Entries of
   the evening come before those of the day; within each, the nearest to the player *now* first (the
   order is looked at again when the next one is taken from the queue). One that has left the radius
-  and is not in view before its turn is dropped from the queue: it is queued again when it
-  comes back.
-- **Quiet.** Each query is quiet (`is_quiet`): no notice per villager when it fails. A failed
-  night is one line in the log, and the console tells it for the villager.
+  before its turn is dropped from the queue (the planner has no view; being near is all it knows):
+  it is queued again when it comes back (for the evening's, tomorrow's current-day query).
+- **Quiet.** Each query is quiet (`is_quiet`): no notice per villager when it fails, and no line in
+  the log: the console tells it for the villager. Where the asking stands is `Npc.asked_plans`
+  (`{day: DayPlan.WAITING or FAILED}`, not saved), which is also how a villager is not asked twice
+  for a day; `routine` says "the model is asked" or "gave no plan in time, or none the game could
+  use" (it can't tell a late answer from an error: `ModelChat.answer` gives "" for both).
 - **Timeout.** `timeout_seconds` in `[plan]` (20; the chat's is 30) for each query, through
   `ModelChat.answer`. An answer that does not come in time, comes as an error, or cannot be read is
   "no plan": the default day stays, and the villager is not asked again for that day. No query for
@@ -755,10 +758,14 @@ village: they run on the camp's villagers and on the test worlds of the road tes
     day), so the words are its method `words`; what the prompt is made of is a `DayToPlan`
     (day, time, sun, weather words, the activities on offer with their walks, yesterday). The cut-down
     sheet has no `day` text, so the prompt adds it (`usual_day`). Tests: the prompt.
-11. **`DayPlanner`, the evening:** the queue, 18:00, the nearest within the radius, the cap, the
-    timeout, the late takeover, the pause during a chat, console `replan`. Tests: planner with a
-    fake model. Doc: [dialogue.md](dialogue.md) gets a line, villagers.md ("Later: schedules") is
-    changed.
+11. **`DayPlanner`, the evening:** **Done.** the queue (`game/scenes/day_planner.gd`, a node like
+    `StoryJudging`), 18:00, the nearest within the radius, the cap, the timeout
+    (`NpcDialogue.ask` takes one), the late takeover, the pause during a chat, console `replan`
+    (`Console.replanner`, set by the game scene). Tests: planner with a fake model. Doc:
+    [dialogue.md](dialogue.md) gets a line, villagers.md ("Later: schedules") is changed, the
+    handbook's console page has `replan`. The queue's entries are for a reason (console, evening, day
+    in step 12) which is how soon they are asked; `DayToPlan.of` makes what the prompt tells and
+    `ActivityUpkeep.offers_of` the activities on offer.
 12. **`DayPlanner`, while the player moves:** the radius check each game minute, the queries for
     the current day, `max_per_day`, the order looked at again. Tests.
 13. **Saving the plans** and `resume` for loading and spawning. The save version is the next free

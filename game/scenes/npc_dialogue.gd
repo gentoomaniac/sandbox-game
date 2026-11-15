@@ -20,6 +20,9 @@ extends Node
 ## `npc`, or there was none and only the player's line is in it.
 signal answered(npc: Npc)
 
+## `ask` with this timeout gives up as the chat does.
+const USE_CHAT_TIMEOUT := -1.0
+
 ## Ask the model, one for each protocol of the providers (GameSettings
 ## `LANGUAGE_MODEL_PROVIDERS`); tests put fakes in their place.
 var chats: Dictionary
@@ -63,13 +66,13 @@ func has_full_sheets() -> bool:
 
 
 ## The model's answer to `request` (see NpcPrompt), "" if it gives none. A quiet one does not tell
-## the player when it fails (see ModelChat `answer`).
-func ask(request: Dictionary, is_quiet := false) -> String:
+## the player when it fails (see ModelChat `answer`). It is given up on after `timeout_seconds`, the
+## chat's own (`timeout_seconds` of [request]) if that is not given.
+func ask(request: Dictionary, is_quiet := false, timeout_seconds := USE_CHAT_TIMEOUT) -> String:
+	if timeout_seconds == USE_CHAT_TIMEOUT:
+		timeout_seconds = rules.value("request", "timeout_seconds")
 	return await _chat_of_provider().answer(
-		_settings.profiles.language_model(),
-		request,
-		rules.value("request", "timeout_seconds"),
-		is_quiet
+		_settings.profiles.language_model(), request, timeout_seconds, is_quiet
 	)
 
 

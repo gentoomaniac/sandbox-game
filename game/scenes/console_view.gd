@@ -54,12 +54,14 @@ func _ready() -> void:
 
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
 ## them away for `killall` (see Console). `music` is what `play` and `stop` drive, and the log says
-## when a piece, rendered after the command ran, begins.
+## when a piece, rendered after the command ran, begins. `replanner` has the model plan a villager's
+## day for `replan`.
 func show_state(
 	state: GameState,
 	wildlife_spawner := Callable(),
 	wildlife_clearer := Callable(),
-	music: MusicPlayer = null
+	music: MusicPlayer = null,
+	replanner := Callable()
 ) -> void:
 	_console = Console.new(state)
 	if music != null:
@@ -67,6 +69,7 @@ func show_state(
 		_console.music_player = music.play
 		_console.music_stopper = music.stop
 		music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
+	_console.replanner = replanner
 	_console.wildlife_spawner = wildlife_spawner
 	_console.wildlife_clearer = wildlife_clearer
 

@@ -10,11 +10,14 @@ var requests: Array[Dictionary] = []
 ## Whether each request was asked quietly (see ModelChat `answer`).
 var quiet_flags: Array[bool] = []
 var language_models: Array[Dictionary] = []
+## The seconds each request was given before it is given up on.
+var timeouts: Array[float] = []
 
 
 func answer(
-	language_model: Dictionary, request: Dictionary, _timeout_seconds: float, is_quiet := false
+	language_model: Dictionary, request: Dictionary, timeout_seconds: float, is_quiet := false
 ) -> String:
+	timeouts.append(timeout_seconds)
 	quiet_flags.append(is_quiet)
 	language_models.append(language_model.duplicate())
 	requests.append(request)

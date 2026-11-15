@@ -35,3 +35,30 @@ func offered_ids() -> Array[String]:
 	for offer in activities:
 		ids.append(offer["id"])
 	return ids
+
+
+## What to tell about `day` for a villager with a house in the game of `state`, to plan from
+## `from_minute` of the day on.
+static func of(
+	state: GameState,
+	npc: Npc,
+	day: int,
+	from_minute: int,
+	activity_rules := ActivityRules.default_rules()
+) -> DayToPlan:
+	var to_plan := DayToPlan.new()
+	to_plan.today = state.clock.day
+	to_plan.day = day
+	to_plan.from_minute = from_minute
+	to_plan.sunrise = state.sun.sunrise(day)
+	to_plan.sunset = state.sun.sunset(day)
+	var weather := state.weather.day_summary(npc.tile(), day)
+	to_plan.weather_words = weather.words(activity_rules.number("rain_hour_limit"))
+	to_plan.activities = state.activities.offers_of(npc, day)
+	if day > 1:
+		var lines: Array[String] = []
+		for entry in state.activities.entries_of(npc, day - 1):
+			var verb: String = activity_rules.activity(entry.activity)["verb"]
+			lines.append("%s %s" % [Sun.time_text(entry.minute), verb])
+		to_plan.yesterday = ", ".join(lines)
+	return to_plan

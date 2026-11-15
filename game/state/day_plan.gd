@@ -4,6 +4,11 @@ extends RefCounted
 ## or for the rest of it from the time the model was asked. A day without one has the default
 ## day (see DefaultDay).
 
+## How the asking of the model for a day's plan stands (see Npc `asked_plans`): it is queued or its
+## answer awaited, or it came to nothing.
+const WAITING := &"waiting"
+const FAILED := &"failed"
+
 ## The game day it is for.
 var day: int
 ## In time order, at least one. They have no length: each lasts until the next starts.

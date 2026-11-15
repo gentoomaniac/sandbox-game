@@ -99,6 +99,25 @@ func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 	return days[day]
 
 
+## The activities a villager with a house may be given on game day `day`, for the model to choose
+## from: theirs, with their days and seasons holding and their place found, each `{id,
+## walk_minutes}` with the walk from the yard of their home to that place. A wild spot is not looked
+## for before the entry is on, so its walk is 0.
+func offers_of(npc: Npc, day: int) -> Array[Dictionary]:
+	var offers: Array[Dictionary] = []
+	var activities := VillagerActivities.of(npc, _npcs.villagers, _npcs.rules, _rules)
+	for id in activities.on_day(day, _rules):
+		var target: String = _rules.activity(id)["target"]
+		var spot := places.spot_of(npc, target, day)
+		if spot == ActivityPlaces.NOWHERE and target != "wild":
+			continue
+		var walk := 0.0
+		if spot != ActivityPlaces.NOWHERE:
+			walk = _rules.walk_minutes(npc.house.yard(), spot, _tiles_per_minute())
+		offers.append({"id": id, "walk_minutes": walk})
+	return offers
+
+
 ## The model's plan for a villager's day has come: it takes over from this minute, and the villager
 ## is sent to whatever is on now (they are not sent again if that is what they were sent to).
 func set_plan(npc: Npc, plan: DayPlan) -> void:
@@ -213,6 +232,9 @@ func _drop_old_plans(npc: Npc) -> void:
 	for plan_day: int in npc.day_plans.keys():
 		if plan_day < _clock.day - 1:
 			npc.day_plans.erase(plan_day)
+	for asked_day: int in npc.asked_plans.keys():
+		if asked_day < _clock.day:
+			npc.asked_plans.erase(asked_day)
 
 
 ## Sends the villager where their day has them be now, if that is not where they were sent last.

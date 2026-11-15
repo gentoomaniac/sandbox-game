@@ -137,3 +137,31 @@ func test_a_plan_for_the_rest_of_the_day_is_told_as_such() -> void:
 		_console.run("routine hinrich")[0],
 		"Hinrich Boysen: today, Thursday, planned by the model for the rest of the day at 14:20 today"
 	)
+
+
+func test_replan_has_the_planner_plan_the_villager_and_says_what_it_said() -> void:
+	var npc := _resident("hinrich")
+	var planned: Array[Npc] = []
+	_console.replanner = func(villager: Npc) -> String:
+		planned.append(villager)
+		return "Asking the model"
+	assert_eq(_console.run("replan hinrich"), ["Asking the model"] as Array[String])
+	assert_eq(planned, [npc] as Array[Npc])
+
+
+func test_replan_without_a_planner_an_unknown_villager_or_a_name_says_what_is_wrong() -> void:
+	_resident("hinrich")
+	assert_eq(_console.run("replan hinrich"), ["No planner here"] as Array[String])
+	assert_eq(_console.run("replan"), ["Usage: replan <villager>"] as Array[String])
+	assert_string_contains(_console.run("replan nobody")[0], "nobody")
+
+
+func test_a_day_the_model_has_not_planned_says_why() -> void:
+	var npc := _resident("hinrich")
+	npc.asked_plans[DAY] = DayPlan.WAITING
+	assert_eq(
+		_console.run("routine hinrich")[0],
+		"Hinrich Boysen: today, Thursday, default day: the model is asked"
+	)
+	npc.asked_plans[DAY] = DayPlan.FAILED
+	assert_string_contains(_console.run("routine hinrich")[0], "the model gave no plan in time")

@@ -23,7 +23,7 @@ static func lines(state: GameState, npc: Npc, is_whole_day := false) -> Array[St
 			)
 		]
 	var weekday: String = GameClock.WEEKDAY_NAMES[GameClock.weekday_of(clock.day)]
-	var source := _source_text(npc.day_plans.get(clock.day), clock.day)
+	var source := _source_text(npc, clock.day)
 	var lines: Array[String] = [head + "today, %s, %s" % [weekday, source]]
 	if is_whole_day:
 		lines.append_array(_day_lines(upkeep.entries_of(npc, clock.day), upkeep.entry_on(npc)))
@@ -40,9 +40,15 @@ static func lines(state: GameState, npc: Npc, is_whole_day := false) -> Array[St
 	return lines
 
 
-## "default day", or when and for how much of the day the model planned it.
-static func _source_text(plan: DayPlan, today: int) -> String:
+## "default day", why the model has not planned it, or when and for how much of the day it did.
+static func _source_text(npc: Npc, today: int) -> String:
+	var plan: DayPlan = npc.day_plans.get(today)
 	if plan == null:
+		match npc.asked_plans.get(today):
+			DayPlan.WAITING:
+				return "default day: the model is asked"
+			DayPlan.FAILED:
+				return "default day: the model gave no plan in time, or none the game could use"
 		return "default day"
 	var made_on := GameClock.day_of(plan.made_at)
 	var when := "today" if made_on == today else "yesterday"

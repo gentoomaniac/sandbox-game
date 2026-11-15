@@ -125,6 +125,11 @@ const COMMANDS := {
 			+ " with day, every entry of their day."
 		),
 	],
+	"replan":
+	[
+		"replan <villager>",
+		"Have the model plan the rest of a villager's day now, ahead of the rest."
+	],
 	"play":
 	[
 		"play <track>",
@@ -151,6 +156,7 @@ const ARGUMENTS := {
 	"work": [&"villager", &"place"],
 	"goto": [&"villager", &"destination"],
 	"routine": [&"villager", &"routine_view"],
+	"replan": [&"villager"],
 	"play": [&"track"],
 }
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
@@ -205,6 +211,9 @@ var music_tracks := Callable()
 var music_player := Callable()
 ## Fades the music out.
 var music_stopper := Callable()
+
+## Has the model plan a villager's rest of the day: takes them, returns what to say (set by main).
+var replanner := Callable()
 
 var _state: GameState
 var _home_commands: HomeCommands
@@ -297,8 +306,8 @@ func run(line: String) -> Array[String]:
 			output = _home_or_work(words[0], arguments)
 		"goto":
 			output = _goto(arguments)
-		"routine":
-			output = _routine(arguments)
+		"routine", "replan":
+			output = _routine_or_replan(words[0], arguments)
 		"play":
 			output = _play(arguments)
 		"stop":
@@ -819,16 +828,20 @@ func _home_or_work(command: String, arguments: PackedStringArray) -> Array[Strin
 	return _home_commands.work(npc, where)
 
 
-## `routine`: where a villager is going and why, or with `day` their whole day.
-func _routine(arguments: PackedStringArray) -> Array[String]:
-	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
+## `routine`: where a villager is going and why, or with `day` their whole day. `replan`: has the
+## model plan the rest of their day.
+func _routine_or_replan(command: String, arguments: PackedStringArray) -> Array[String]:
+	var most_arguments := 2 if command == "routine" else 1
+	var is_usage_wrong := arguments.is_empty() or arguments.size() > most_arguments
 	if arguments.size() == 2 and arguments[1] != WHOLE_DAY:
 		is_usage_wrong = true
 	if is_usage_wrong:
-		return ["Usage: %s" % COMMANDS["routine"][0]]
+		return ["Usage: %s" % COMMANDS[command][0]]
 	var npc := _npc_named(arguments[0])
 	if npc == null:
-		return _unknown("villager", arguments[0], "routine")
+		return _unknown("villager", arguments[0], command)
+	if command == "replan":
+		return [replanner.call(npc) if replanner.is_valid() else "No planner here"]
 	return RoutineReport.lines(_state, npc, arguments.size() == 2)
 
 
