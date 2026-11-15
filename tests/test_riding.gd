@@ -71,7 +71,7 @@ func test_the_horse_goes_where_the_player_rides_and_does_nothing_itself() -> voi
 	assert_eq(_horse.position, position)
 
 
-func test_the_horse_walks_then_trots_at_twice_the_walking_speed() -> void:
+func test_the_horse_walks_then_trots_at_one_and_a_half_times_the_walking_speed() -> void:
 	var rules := _state.livestock.rules
 	_state.mount(_horse)
 	assert_eq(_state.walk_speed_factor(), rules.general("ride_walk_factor"))
@@ -81,7 +81,7 @@ func test_the_horse_walks_then_trots_at_twice_the_walking_speed() -> void:
 
 	assert_true(_state.is_trotting())
 	assert_eq(_state.walk_speed_factor(), rules.general("ride_trot_factor"))
-	assert_eq(rules.general("ride_trot_factor"), 2.0 * rules.general("ride_walk_factor"))
+	assert_eq(rules.general("ride_trot_factor"), 1.5 * rules.general("ride_walk_factor"))
 	_ride(Vector2.ZERO, 0.05)
 	assert_false(_state.is_trotting(), "standing still, it walks off again")
 
