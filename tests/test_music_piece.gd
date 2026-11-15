@@ -57,6 +57,19 @@ func test_harbour_loops_or_goes_to_its_fill_which_leads_back() -> void:
 	assert_null(piece.section_named("bridge"))
 
 
+func test_the_everyday_pieces_have_fuller_versions_of_seven_channels() -> void:
+	for piece_name in ["sketch_tide", "sketch_harbour"]:
+		var piece := MusicPiece.read(MusicPlayer.MUSIC_DIR, piece_name)
+		assert_not_null(piece.full_module, piece_name)
+		assert_eq(piece.full_module.channels, 7, piece_name)
+		assert_eq(piece.module.channels, 4, "%s: the chiptune" % piece_name)
+		assert_eq(
+			ModuleRenderer.new(piece.full_module).rows_once_through(),
+			ModuleRenderer.new(piece.module).rows_once_through(),
+			"%s: the same rows, to switch in step" % piece_name
+		)
+
+
 func test_a_fuller_version_beside_the_piece_is_read_with_it() -> void:
 	_write_piece('[loop]\norder=0\nrows=64\nexits=["loop"]\n')
 	var piece := MusicPiece.read(DIR, "made_up")

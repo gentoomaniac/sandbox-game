@@ -1,0 +1,87 @@
+# "Harbour evening", the fuller version for the 32 px art (#15): the tune, time and form of
+# sketch_harbour.txt (A aeolian, 4/4, speed 6, tempo 80, a bar of 16 rows, an 8-bar loop and a
+# 1-bar fill), on seven softer voices. A reed sings the tune as the saw does; bowed strings swell
+# in on the chord tones like a concertina's bellows where the pulse did; a round bass walks the
+# capstan; a frame drum takes the thud on 1 and 3. A flute answers the tune's held notes in bars 2
+# and 4 and sings a descant over bars 5 to 8, a harp plucks the chord on 2 and 4, a bagpipe-like
+# drone holds the A an octave up. Every note struck clean and held plain, the held ones fading.
+# No water: the waves on the shore are a sound of the world, not of the music.
+
+speed 6
+tempo 80
+order loop fill
+
+section loop 128 exits loop fill
+tune reed:
+  E-2:6 D-2:2 C-2:4 D-2:4                           # 1 Am
+  E-2:8 .:8:A01                                     # 2 Am
+  F-2:6 E-2:2 D-2:4 C-2:4                           # 3 F
+  D-2:8 .:8:A01                                     # 4 G
+  A-2:6 G-2:2 E-2:4 D-2:4                           # 5 Am
+  E-2:6 G-2:2 C-2:8                                 # 6 C
+  F-2:6 E-2:2 C-2:4 A-1:4                           # 7 F
+  B-1:12 C-2:2 D-2:2                                # 8 Em
+squeeze strings:
+  E-1:1:C18 .:2:A10 .:5 A-1:1:C18 .:2:A10 .:5
+  C-2:1:C18 .:2:A10 .:5 A-1:1:C18 .:2:A10 .:5
+  A-1:1:C18 .:2:A10 .:5 F-1:1:C18 .:2:A10 .:5
+  G-1:1:C18 .:2:A10 .:5 B-1:1:C18 .:2:A10 .:5
+  A-1:1:C18 .:2:A10 .:5 E-1:1:C18 .:2:A10 .:5
+  G-1:1:C18 .:2:A10 .:5 E-1:1:C18 .:2:A10 .:5
+  F-1:1:C18 .:2:A10 .:5 A-1:1:C18 .:2:A10 .:5
+  G-1:1:C18 .:2:A10 .:5 B-1:1:C18 .:2:A10 .:5
+capstan bass:
+  A-1:6 A-1:2 E-1:4 A-1:4
+  A-1:6 A-1:2 E-1:4 A-1:4
+  F-1:6 F-1:2 C-1:4 F-1:4
+  G-1:6 G-1:2 D-1:4 G-1:4
+  A-1:6 A-1:2 E-1:4 A-1:4
+  C-2:6 C-2:2 G-1:4 C-2:4
+  F-1:6 F-1:2 C-1:4 F-1:4
+  E-1:6 E-1:2 B-1:4 E-1:4
+deck drum:
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+  E-1:8:C28 E-1:8:C18
+answer flute:
+  ^:24 A-2:4:C24 E-2:4:C1C                          # 1-2: the answer in the held note's fade
+  ^:24 B-2:4:C24 G-2:4:C1C                          # 3-4
+  C-3:8:C20 .:8:A01                                 # 5 Am, the descant
+  E-3:8:C1C .:8:A01                                 # 6 C
+  A-2:8:C20 C-3:8:C20                               # 7 F
+  B-2:8:C20 .:8:A01                                 # 8 Em
+pluck harp:
+  ^:4 C-2:1:C24 .:3:A02 ^:4 E-2:1:C20 .:3:A02
+  ^:4 C-2:1:C24 .:3:A02 ^:4 E-2:1:C20 .:3:A02
+  ^:4 C-2:1:C24 .:3:A02 ^:4 A-1:1:C20 .:3:A02
+  ^:4 B-1:1:C24 .:3:A02 ^:4 D-2:1:C20 .:3:A02
+  ^:4 C-2:1:C24 .:3:A02 ^:4 E-2:1:C20 .:3:A02
+  ^:4 E-2:1:C24 .:3:A02 ^:4 G-2:1:C20 .:3:A02
+  ^:4 C-2:1:C24 .:3:A02 ^:4 A-1:1:C20 .:3:A02
+  ^:4 B-1:1:C24 .:3:A02 ^:4 G-1:1:C20 .:3:A02
+drone drone:
+  A-2:1:C14 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3   # 1-2, swelling over a bar, ebbing over the next
+  .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3
+  .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3
+  .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3 .:1:A01 .:3
+
+section fill 16
+tune reed:
+  B-1:4 D-2:4 E-2:8
+squeeze strings:
+  G-1:1:C18 .:2:A10 .:5 B-1:1:C18 .:2:A10 .:5
+capstan bass:
+  E-1:6 E-1:2 B-1:4 G-1:4
+deck drum:
+  E-1:4:C18 E-1:4:C1C E-1:4:C20 E-1:2:C24 E-1:2:C28
+answer flute:
+  G-2:8:C1C B-2:8:C20
+pluck harp:
+  ^:4 B-1:1:C24 .:3:A02 ^:4 E-2:1:C20 .:3:A02
+drone drone:
+  A-2:1:C14 .:3 .:1:A10 .:3 .:1:A10 .:3 .:1:A10 .:3

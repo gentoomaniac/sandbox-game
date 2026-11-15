@@ -9,7 +9,14 @@ it plays round and round; Harbour evening's fill after every three loops). The m
 evening from the afternoon to the morning (15 to 7), taking turns where both fit; a piece plays at
 least 90 s, one that fits gives way after 180 s when the other fits too, and the next crossfades in
 on the bar. Each piece has a quieter mix for indoors (lead and chords down, the drum or the sea
-silent), rendered beside the whole one and blended in step as the player passes a door. The
+silent), rendered beside the whole one and blended in step as the player passes a door. Each
+piece comes in two versions (#15, the user's decision): the chiptune with the classic 16 px art, and
+a fuller one with the 32 px art (`<name>_full`: seven channels, softer instruments, still folk: a
+flute or reed for the tune, harp, bowed strings, a bagpipe-like drone, a round bass and a frame
+drum; no water, the user's word of 2026-11-15: the waves on the shore are to be a sound of the
+world), the same tune, form, fill, tempo and key, so that when the art changes the
+other version blends in on the next bar, in step (over 3 s, [versions] of data/music.cfg). The
+quieter mix indoors turns the fuller version's channels down in fours by the same four levels. The
 console's `play` and `stop` steer the same player (a stopped player stays quiet; a piece played
 from the console gives way after 90 s when it doesn't fit). They are rendered in the background
 (never waited for: what plays goes on looping) and kept in a bounded cache in user://music_cache/.
