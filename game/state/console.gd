@@ -183,8 +183,6 @@ const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `friendship` command looks for an animal.
 const FRIENDSHIP_SEARCH_RADIUS := 3.0
-## How far (in tiles) the `crop` command looks for a crop when none is in front of the player.
-const CROP_SEARCH_RADIUS := 4
 ## What `spawn` calls a villager (see Npcs).
 const NPC := "npc"
 ## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
@@ -287,7 +285,7 @@ func run(line: String) -> Array[String]:
 		"skip":
 			output = _skip(arguments)
 		"crop":
-			output = _crop()
+			output = CropCommands.crop(_state)
 		"crows":
 			output = _crows(arguments)
 		"skill":
@@ -927,16 +925,6 @@ func _skip(arguments: PackedStringArray) -> Array[String]:
 	return ["Skipped to %s, %s" % [_state.clock.date_text(), _state.clock.time_text()]]
 
 
-func _crop() -> Array[String]:
-	var crop := _nearest_crop()
-	if crop == null:
-		return ["No crop near you"]
-	var lines: Array[String] = []
-	lines.assign(CropLife.describe(crop))
-	lines.append("Soil moisture %.2f" % _state.world.moisture_at(crop.pos))
-	return lines
-
-
 ## `crows` shows the flocks and the day's tally; `crows raid` lets every flock raid at once.
 func _crows(arguments: PackedStringArray) -> Array[String]:
 	if arguments.size() > 1 or (arguments.size() == 1 and arguments[0] != "raid"):
@@ -946,28 +934,6 @@ func _crows(arguments: PackedStringArray) -> Array[String]:
 	var lines := _state.crop_raids.describe()
 	lines.append_array(_state.scarecrows.describe())
 	return lines
-
-
-## The crop in front of the player, else the nearest one within CROP_SEARCH_RADIUS.
-func _nearest_crop() -> WorldObject:
-	if _state.is_inside():
-		return null
-	var in_front := _state.world.object_at(_state.player.facing_tile())
-	if in_front != null and in_front.is_crop():
-		return in_front
-	var nearest: WorldObject = null
-	var player_tile := _state.player.tile()
-	for y in range(-CROP_SEARCH_RADIUS, CROP_SEARCH_RADIUS + 1):
-		for x in range(-CROP_SEARCH_RADIUS, CROP_SEARCH_RADIUS + 1):
-			var object := _state.world.object_at(player_tile + Vector2i(x, y))
-			if object == null or not object.is_crop():
-				continue
-			if (
-				nearest == null
-				or Vector2i(x, y).length_squared() < (nearest.pos - player_tile).length_squared()
-			):
-				nearest = object
-	return nearest
 
 
 func _unknown_item(typed: String) -> Array[String]:
