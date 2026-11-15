@@ -41,6 +41,13 @@ Warft and an Ewer here and there.
   not a window, and keeps its own code. The debug flags
   are parsed by `StartupOptions`; `DebugRunner` does the ones that wait for the world to be drawn
   (see below).
+  Whole concerns of the scene are services of their own, which Main creates and wires:
+  `GameLoader` (which game the scene starts with), `SessionFlow` (the quick save and load keys,
+  the load dialog's pick, New game and the save before quitting; `QuickLoadFlow` does F8's
+  reload), `BlackoutFlow` (door, sleep and passing out), `InteractFlow` (E, and the opening of a
+  chat or trade), `UseSwing` and `UseNotes` (a use of the held item and its note), `ScreenKeys`
+  and `HotbarKeys` (the window and hotbar keys) and `GameClockTicker` (real time to game minutes,
+  F2).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
