@@ -23,11 +23,14 @@ static func lines(state: GameState, npc: Npc, is_whole_day := false) -> Array[St
 			)
 		]
 	var weekday: String = GameClock.WEEKDAY_NAMES[GameClock.weekday_of(clock.day)]
-	var lines: Array[String] = [head + "today, %s, default day" % weekday]
+	var source := _source_text(npc.day_plans.get(clock.day), clock.day)
+	var lines: Array[String] = [head + "today, %s, %s" % [weekday, source]]
 	if is_whole_day:
 		lines.append_array(_day_lines(upkeep.entries_of(npc, clock.day), upkeep.entry_on(npc)))
 		return lines
-	lines.append("now: %s" % _now_text(npc))
+	var on := upkeep.entry_on(npc)
+	var why := "" if on == null or on.why.is_empty() else '. Why: "%s"' % on.why
+	lines.append("now: %s%s" % [_now_text(npc), why])
 	var next := upkeep.next_step_of(npc)
 	lines.append("next: %s" % ("nothing" if next == null else _next_text(next)))
 	var activity := "" if npc.current_step == null else npc.current_step.activity
@@ -35,6 +38,17 @@ static func lines(state: GameState, npc: Npc, is_whole_day := false) -> Array[St
 	lines.append("shelter: %s" % ("none" if shelter == "" else shelter))
 	lines.append("trip: %s" % (NpcTravel.text_of(npc) if npc.is_travelling() else "none"))
 	return lines
+
+
+## "default day", or when and for how much of the day the model planned it.
+static func _source_text(plan: DayPlan, today: int) -> String:
+	if plan == null:
+		return "default day"
+	var made_on := GameClock.day_of(plan.made_at)
+	var when := "today" if made_on == today else "yesterday"
+	var time := Sun.time_text(plan.made_at % GameClock.MINUTES_PER_DAY)
+	var part := "" if plan.is_whole_day else " for the rest of the day"
+	return "planned by the model%s at %s %s" % [part, time, when]
 
 
 ## Every entry of the day, a line each, the one that is on marked.
@@ -45,12 +59,9 @@ static func _day_lines(entries: Array[DayEntry], on: DayEntry) -> Array[String]:
 		var data := rules.activity(entry.activity)
 		var marker := "> " if entry == on else "  "
 		var time := Sun.time_text(entry.minute)
-		lines.append(
-			(
-				"%s%s %s (%s), up to %d min"
-				% [marker, time, data["verb"], data["target"], entry.minutes]
-			)
-		)
+		var length := "" if entry.minutes == 0 else ", up to %d min" % entry.minutes
+		var why := "" if entry.why.is_empty() else ': "%s"' % entry.why
+		lines.append("%s%s %s (%s)%s%s" % [marker, time, data["verb"], data["target"], length, why])
 	if lines.is_empty():
 		lines.append("  no entries")
 	return lines

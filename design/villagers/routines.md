@@ -635,8 +635,9 @@ over several days gives default days to those, then one query each for the day i
 ### Loading a save, saving
 
 The positions of the villagers are saved already. New: the **model plans** for today and tomorrow,
-per villager: `{"day": 23, "entries": [[activity, minute, why], ...]}` (`Npc.day_plans`, a few
-hundred bytes each). Why: a load must not ask the model again (it costs, and the day would
+per villager: `{"day": 23, "whole_day": true, "made_at": 33180, "entries": [[activity, minute, why],
+...]}` (a `DayPlan`, kept in `Npc.day_plans` by day, a few hundred bytes each; `made_at` is the game
+minute it came, for the console, and `whole_day` is false for a plan of the rest of a day). Why: a load must not ask the model again (it costs, and the day would
 change), and the console and the late rule need to know the day came from the model. A default
 day is never saved: it is made again, the same. A trip and the current entry are not saved.
 

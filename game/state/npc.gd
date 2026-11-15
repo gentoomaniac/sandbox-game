@@ -110,6 +110,9 @@ var free_body_tiles := Rect2i()
 ## Where they are walking to and how far they have got, or null (see NpcTravel). Not saved:
 ## whoever sent them sends them again.
 var trip: NpcTrip
+## The plans the language model made for their days, `{game day: DayPlan}`: today's and tomorrow's,
+## and yesterday's for the next prompt. Not saved yet. A day without one has the default day.
+var day_plans := {}
 ## Where the day sent them last (see ActivityUpkeep), or null while it has not.
 var current_step: ActivityStep
 ## How far they stroll from their anchor while they do what the day says; 0 for `anchor_radius` of

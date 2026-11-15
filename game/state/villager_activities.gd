@@ -41,3 +41,8 @@ func can_be_on(id: String, day: int, rules: ActivityRules) -> bool:
 	if id == CHURCH and is_church_feasts_only:
 		return rules.day_kinds(day).has("feast") and rules.fits_season(id, day)
 	return rules.fits_day(id, day)
+
+
+## The activities they have that can be done on game day `day`: their days and seasons hold.
+func on_day(day: int, rules: ActivityRules) -> Array[String]:
+	return ids.filter(func(id: String) -> bool: return can_be_on(id, day, rules))

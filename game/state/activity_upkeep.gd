@@ -33,6 +33,8 @@ var _days_of_npc := {}
 var _next_step_of_npc := {}
 ## A skip's rest is not played minute by minute (see `skip_begins`).
 var _is_in_skip := false
+## The game day of the last tick, to see a new day begin.
+var _day_of_last_tick := 0
 
 
 func _init(
@@ -59,7 +61,11 @@ func _init(
 func advance(_minutes: int, _clock_at_end: GameClock) -> void:
 	if _is_in_skip:
 		return
+	var is_new_day := _clock.day != _day_of_last_tick
+	_day_of_last_tick = _clock.day
 	for npc in _npcs.all():
+		if is_new_day:
+			_drop_old_plans(npc)
 		_follow_day(npc)
 
 
@@ -71,9 +77,11 @@ func skipped(_minutes: int, _clock_at_end: GameClock) -> void:
 	_is_in_skip = false
 
 
-## The entries of a villager's day, made once and kept for the days around the one asked for: a
-## field tilled or a church built later shows in the days made after it, not in one already kept.
-## A wild spot counts as found, as it is only looked for (in the loaded land) when the entry is on.
+## The entries of a villager's day: the model's plan for it if there is one (over the default day
+## if it is for the rest of the day only), else the default day. Made once and kept for the days
+## around the one asked for: a field tilled or a church built later shows in the days made after
+## it, not in one already kept. A wild spot counts as found, as it is only looked for (in the loaded
+## land) when the entry is on.
 func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 	var days: Dictionary = _days_of_npc.get(npc, {})
 	if not days.has(day):
@@ -84,9 +92,19 @@ func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 		var has_place := func(activity: String) -> bool:
 			var target: String = _rules.activity(activity)["target"]
 			return target == "wild" or places.spot_of(npc, target, day) != ActivityPlaces.NOWHERE
-		days[day] = DefaultDay.of(npc, activities, day, _world.world_seed, _rules, has_place)
+		var default_day := DefaultDay.of(npc, activities, day, _world.world_seed, _rules, has_place)
+		var plan: DayPlan = npc.day_plans.get(day)
+		days[day] = default_day if plan == null else plan.over(default_day)
 		_days_of_npc[npc] = days
 	return days[day]
+
+
+## The model's plan for a villager's day has come: it takes over from this minute, and the villager
+## is sent to whatever is on now (they are not sent again if that is what they were sent to).
+func set_plan(npc: Npc, plan: DayPlan) -> void:
+	npc.day_plans[plan.day] = plan
+	forget(npc)
+	_follow_day(npc)
 
 
 ## The entry of the villager's day that is on now, or null.
@@ -188,6 +206,13 @@ func _spot_before(npc: Npc, timeline: Array[Dictionary], index: int) -> Vector2:
 	var step := ActivityStep.new(before.activity, before.minute)
 	_resolve(npc, step, GameClock.day_of(timeline[index - 1]["starts_at"]))
 	return step.spot if step.has_place() else npc.position
+
+
+## Plans of days before yesterday are no use to anyone: yesterday's goes into the next prompt.
+func _drop_old_plans(npc: Npc) -> void:
+	for plan_day: int in npc.day_plans.keys():
+		if plan_day < _clock.day - 1:
+			npc.day_plans.erase(plan_day)
 
 
 ## Sends the villager where their day has them be now, if that is not where they were sent last.

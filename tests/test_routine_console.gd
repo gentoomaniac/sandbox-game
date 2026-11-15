@@ -110,3 +110,30 @@ func test_the_help_and_the_completion_know_it() -> void:
 	assert_true(Console.COMMANDS.has("routine"))
 	assert_eq(_console.complete("routine hinrich d"), "routine hinrich day ")
 	assert_eq(_console.complete("routine hin"), "routine hinrich ")
+
+
+func test_a_planned_day_says_who_planned_it_when_and_why() -> void:
+	var npc := _resident("hinrich")
+	_set_time(DAY, 12, 30)
+	var entries: Array[DayEntry] = [
+		DayEntry.new("rest", 12 * 60, 0, "tired of the heat"), DayEntry.new("sleep", 21 * 60)
+	]
+	_upkeep.set_plan(npc, DayPlan.new(DAY, entries, true, (DAY - 2) * 1440 + 19 * 60 + 40))
+	var lines := _console.run("routine hinrich")
+	assert_eq(lines[0], "Hinrich Boysen: today, Thursday, planned by the model at 19:40 yesterday")
+	assert_string_contains(lines[1], "now: rest (home) since 12:00")
+	assert_string_contains(lines[1], '. Why: "tired of the heat"')
+	var day_lines := _console.run("routine hinrich day")
+	assert_eq(day_lines[1], '> 12:00 rest (home): "tired of the heat"')
+	assert_eq(day_lines[2], "  21:00 sleep (home)")
+
+
+func test_a_plan_for_the_rest_of_the_day_is_told_as_such() -> void:
+	var npc := _resident("hinrich")
+	_set_time(DAY, 14, 30)
+	var entries: Array[DayEntry] = [DayEntry.new("rest", 14 * 60 + 30)]
+	_upkeep.set_plan(npc, DayPlan.new(DAY, entries, false, (DAY - 1) * 1440 + 14 * 60 + 20))
+	assert_eq(
+		_console.run("routine hinrich")[0],
+		"Hinrich Boysen: today, Thursday, planned by the model for the rest of the day at 14:20 today"
+	)
