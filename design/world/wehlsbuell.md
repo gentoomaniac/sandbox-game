@@ -464,8 +464,9 @@ The user can stop after step 5 and have the village standing, empty.
   up, which the plan promised and the rule "laying a way clears the wear" would otherwise break. The record's
   `lane_tiles` became `kept_worn_tiles` (the lanes' and the square's tiles that wear: 351 to 360 for the
   seeds measured; the plan's 300 to 500 was for the track), the field of step 4, in the same save
-  version. `world.gd` is at the 1 000 lines the lint allows. The map tool draws the buildings and the worn
-  ground. Tests: `tests/test_village_lanes.gd`.
+  version. `world.gd` reached the 1 000 lines the lint allows, so the making of its save data moved to
+  `WorldSave` (step 9). The map tool draws the buildings and the worn ground. Tests:
+  `tests/test_village_lanes.gd`.
 
 ## 15. Screenshots
 

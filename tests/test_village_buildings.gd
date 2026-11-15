@@ -8,8 +8,8 @@ func test_the_same_seed_gives_the_same_edits_and_buildings() -> void:
 	assert_eq(VillageBuilder.build(world, _site(1), _plan), "")
 	assert_eq(_edits_of(world), _edits_of(_world(1)))
 	assert_eq(
-		World.dict_of(world.snapshot())["buildings"],
-		World.dict_of(_world(1).snapshot())["buildings"]
+		WorldSave.dict_of(world.snapshot())["buildings"],
+		WorldSave.dict_of(_world(1).snapshot())["buildings"]
 	)
 
 

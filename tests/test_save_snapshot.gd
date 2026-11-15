@@ -130,7 +130,7 @@ func test_a_snapshot_of_the_game_of_an_hour_later_has_the_soil_as_of_then() -> v
 
 
 func _moisture_in(snapshot: Dictionary, tile: Vector2i) -> float:
-	var entries: Array = World.dict_of(snapshot["game"]["world"])["soil_moisture"]
+	var entries: Array = WorldSave.dict_of(snapshot["game"]["world"])["soil_moisture"]
 	for entry: Array in entries:
 		if SaveCodec.vector_from_json(entry) == tile:
 			return entry[2]

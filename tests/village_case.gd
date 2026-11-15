@@ -65,7 +65,7 @@ func _land_tiles() -> Array[Vector2i]:
 
 
 func _edits_of(world: World) -> Dictionary:
-	var edits := World.dict_of(world.snapshot())
+	var edits := WorldSave.dict_of(world.snapshot())
 	return {"terrain": edits["terrain_edits"], "objects": edits["object_edits"]}
 
 

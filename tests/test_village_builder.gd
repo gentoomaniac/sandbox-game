@@ -146,4 +146,4 @@ func test_land_with_a_building_of_the_player_on_it_is_refused_and_left_alone() -
 	assert_not_null(world.place_building(BuildingTypes.SHACK, shack_origin))
 	var reason := VillageBuilder.build_land(world, site, _plan)
 	assert_string_contains(reason, "a building stands on the village's land")
-	assert_eq(World.dict_of(world.snapshot())["terrain_edits"], [])
+	assert_eq(WorldSave.dict_of(world.snapshot())["terrain_edits"], [])

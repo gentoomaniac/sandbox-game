@@ -772,7 +772,7 @@ func snapshot() -> Dictionary:
 ## The save data of a `snapshot`. Safe to call from a thread.
 static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 	var data := snapshot_data.duplicate()
-	data["world"] = World.dict_of(snapshot_data["world"])
+	data["world"] = WorldSave.dict_of(snapshot_data["world"])
 	return data
 
 
