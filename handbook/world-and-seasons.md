@@ -47,6 +47,40 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 
 ![The marsh with dykes, ditches, reeds and pollard willows (a picture from before the open land became bare, #60)](../docs/screenshots/landscape.png)
 
+## Wehlsbüll
+
+A new game has the village Wehlsbüll in the world: about 80 by 60 tiles on the coast, west of the
+camp, a walk of a minute or two from it (more on some seeds; there is no track yet, the way is
+open land and creeks with fords). Type `village` in the [console](console.md) to learn how far and
+in which direction it lies and where its town square is, and `tp` takes you there.
+
+- Three farms stand on their own Warften behind the sea dyke (Warft: a raised dwelling mound),
+  each with a hall house, a barn, a wattle fence and a gate, and four fields beside them, each
+  ringed by a ditch on the marsh and a Knick on the Geest. Nothing is planted in them.
+- The church stands on the highest Warft with its churchyard, graves and bell frame, and the
+  parsonage and the Krug close by. Six cottages stand along the dyke and the sluice, and the
+  landing, with a jetty, a rowing boat and a net frame, is outside the dyke on the salt marsh.
+  The place for the post mill is kept free.
+- The lanes are trodden paths that stay: they do not grow back, walked or not. So does the town
+  square, an open place in the middle that is kept free for a market. Its middle is where the
+  villagers meet.
+- Eight villagers live here from the start (see [villagers.md](villagers.md)). The other houses
+  stand empty.
+- The village is not yours: its houses cannot be taken down, and building on its land costs you
+  goodwill (see [building-and-crafting.md](building-and-crafting.md)).
+- An old save from before the village has none: its world stays as it is.
+
+![The church and its yard, with the cottages by the dyke](../docs/screenshots/wehlsbuell-church.png)
+
+![The town square by the Krug, in the morning](../docs/screenshots/wehlsbuell-square.png)
+
+![The Boysen farm on its Warft with the ditch of a field above it](../docs/screenshots/wehlsbuell-boysen.png)
+
+![The landing outside the dyke: Ketels' hut, jetty, boat and net frame](../docs/screenshots/wehlsbuell-landing.png)
+
+The classic art has the same pictures with `-classic` in the name: `wehlsbuell-church-classic.png` and
+the others.
+
 ## The coast and the tides
 
 - In the west, a sea dyke runs along the coast. Beyond it lie the salt marsh and the tidal mud

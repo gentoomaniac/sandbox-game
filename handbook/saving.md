@@ -28,6 +28,8 @@ When and where the game saves, and what happens if a save goes wrong.
 - A save that can't be loaded (damaged, or from a version too old or new) is listed as such, with
   the reason, and can't be picked.
 - Starting the game continues from the newest save that can be loaded.
+- A save from before the village Wehlsbüll came has no village and stays as it is: the village is
+  built only when a new game starts.
 
 ## Quitting
 

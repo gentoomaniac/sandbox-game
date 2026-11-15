@@ -11,6 +11,8 @@ new one at 32 px per tile, and the classic 16 px one (F7 switches).
 
 ![The starting camp on a summer morning, at the widest view](docs/screenshots/camp.png)
 
+![The church and its yard in Wehlsbüll, with the cottages by the dyke](docs/screenshots/wehlsbuell-church.png)
+
 ![The same wood in spring, summer, autumn and winter](docs/screenshots/four-seasons.png)
 
 ![A field with every crop in every growth stage and dead](docs/screenshots/field.png)
@@ -26,6 +28,7 @@ new one at 32 px per tile, and the classic 16 px one (F7 switches).
 - Four seasons of 35 days, with trees, flowers, snow and frost: [the world](handbook/world-and-seasons.md).
 - A simulated weather with rain, snow, fog, storms and lightning, a Nordic day and a dark night:
   [the world](handbook/world-and-seasons.md).
+- The village Wehlsbüll, with its church, farms, fields and eight villagers: [the world](handbook/world-and-seasons.md).
 - Marsh, dykes, Knicks, and a tidal coast with a Warft: [the world](handbook/world-and-seasons.md).
 - Thirteen crops that grow with the weather: [farming](handbook/farming.md).
 - Cows, pigs, sheep, hens, horses you can ride, dogs and cats, and a wildlife of storks, geese, deer,

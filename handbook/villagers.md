@@ -2,9 +2,12 @@
 
 The people of Wehlsbüll: who they are, what they notice, and how to talk to them.
 
-For now villagers come from the [console](console.md) and are saved with the game. They stay
-within about six tiles of their home's door (or, with no home, of the house or campfire nearest
-to where they came), stroll about by day and stand still at night. You walk through them, so they never shut you in. Villagers on their way somewhere go on walking while you are inside a house, so they are where you would expect them when you come out.
+The eight villagers written by hand live in Wehlsbüll from the start of a new game (see
+[world-and-seasons.md](world-and-seasons.md)); more come from the [console](console.md). They are
+saved with the game. They follow their day: they go to work, to meals, to church on Sunday and to the
+Krug in the evening, and keep within a few tiles of where they are, strolling by day and standing
+still at night. Without a day to follow (no home) they stay within about six tiles of the house or
+campfire nearest to where they came. You walk through them, so they never shut you in. Villagers on their way somewhere go on walking while you are inside a house, so they are where you would expect them when you come out.
 
 ![Villagers by the camp, the name of the one E would speak to over their head](../docs/screenshots/npcs.png)
 
@@ -12,7 +15,8 @@ to where they came), stroll about by day and stand still at night. You walk thro
 
 - Wehlsbüll is a made-up marsh parish two hours north of Husum, in 1750.
 - Each villager has a name, age, trade, personality, family and friends, likes and secrets.
-- Eight are written by hand. `spawn npc <id>` brings one:
+- Eight are written by hand. They live in Wehlsbüll from the start (a game begun before the village
+  came has none: `spawn npc <id>` brings one):
   - `antje` (Antje Boysen, a farmer's wife), `hinrich` (her husband) and `boy` (their son)
   - `momme` (Momme Ketels, a fisherman) and `inken` (his daughter, Boy's sweetheart)
   - `ocke` (Ocke Hansen, the miller) and `gesche` (his wife)
@@ -41,7 +45,14 @@ to where they came), stroll about by day and stand still at night. You walk thro
   mouse leaves the building or a window opens. The middle click is still how you give a house or
   a workplace.
 - The place of a deed in the gossip ("by Antje's house") is the home of the villager who lives
-  nearest to it.
+  nearest to it. A deed on Wehlsbüll's own land is "on the village's own land" instead, and weighs
+  more: building there costs -2 with the villagers who see it (a house elsewhere earns +1), a fence
+  or a felled tree -1.
+- Wehlsbüll's villagers: the Boysens (Antje, Hinrich and Boy) live in the hall house on the biggest
+  farm, Antje works in its dairy and Hinrich and Boy in its barn; Momme and Inken Ketels live in the
+  hut at the landing and Momme works at the jetty; Kerrin lives in the brick cottage by the sluice;
+  Ocke and Gesche Hansen live in the cottage at the foot of the mill's free spot and Ocke works
+  there. Their fields are the village's fields.
 
 ## Talking
 

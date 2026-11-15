@@ -174,6 +174,11 @@ villagers' step rule: `godot --headless --path . -s tools/bench/path_search.gd` 
 `XDG_DATA_HOME` away from the real one). It sets `max_nodes` and the budget of a frame in `[travel]`
 of `data/npcs.cfg`.
 
+`tools/bench/new_game.gd` (#9; no make target, it needs no save and writes nothing) times a new game with
+and without the village Wehlsbüll and its villagers, and the size of the save of each, for seeds 1, 7 and 20
+(`-- --seeds=1,2`): `godot --headless --path . -s tools/bench/new_game.gd` (set `XDG_DATA_HOME` away from the
+real one). Numbers: design/world/wehlsbuell.md.
+
 `tools/bench/travel_masks.gd` (#68; no make target, it needs no save and writes nothing) times the
 travel masks of villagers far from the player (design/villagers/travel.md): for three seeds the masks
 of 81 chunks asked for at once and made a frame at a time while the worker generates, a stamp on its

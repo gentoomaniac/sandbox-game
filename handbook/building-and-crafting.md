@@ -131,6 +131,16 @@ bush](../docs/screenshots/bush-replanted-classic.png).
   house you have already furnished or changed inside keeps its room.
 - The console's `home` and `work` do the same (see [console.md](console.md)).
 
+### Wehlsbüll's land
+
+With the hammer in hand a thin orange line shows the edge of the village's land. While the ghost
+stands inside it the message says "Wehlsbüll's land: the villagers will not like it." You may still
+build there, but villagers who see it think less of you than they would elsewhere: a house there
+costs goodwill where it earns some elsewhere, and a fence or a felled tree costs some too (see
+[villagers.md](villagers.md)).
+
+![Build mode at the east edge of Wehlsbüll's land: the edge as an orange line and the message](../docs/screenshots/wehlsbuell-build.png)
+
 ### Taking down
 
 1. Press X with the hammer in hand. The menu gives way to a "Taking down" panel.
@@ -146,6 +156,8 @@ bush](../docs/screenshots/bush-replanted-classic.png).
 - The camp's campfire and bedroll come back as items to set up elsewhere. Held like a chest, the
   bedroll shows its ghost.
 - Press X again to go back to building.
+- The village's own houses (Wehlsbüll's) are not yours to take down: the panel says "That is the
+  village's." Walls and fences there you may take down.
 
 ![Taking down: a shack marked red, and what it gives](../docs/screenshots/take-down.png)
 

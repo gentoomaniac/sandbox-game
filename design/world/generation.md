@@ -16,8 +16,9 @@
   switches to it.
 - **The open land is bare** ([#60](https://github.com/gentoomaniac/sandbox-game/issues/60),
   2026-11-15; before it had a grid of fields, task 54): the generator lays no fields, fences,
-  hedges, walls or ditches over the natural land. Fields come only around the generated villages
-  ([#9](https://github.com/gentoomaniac/sandbox-game/issues/9)), and the player digs ditches
+  hedges, walls or ditches over the natural land. Fields come only with the village, which is not
+  generated but placed once when a new game starts at a site found from the seed
+  ([#9](https://github.com/gentoomaniac/sandbox-game/issues/9), [wehlsbuell.md](wehlsbuell.md)), and the player digs ditches
   ([#86](https://github.com/gentoomaniac/sandbox-game/issues/86)). See
   [map-generation-review.md](map-generation-review.md) for why and for the before and after maps.
   - **Dykes** are the one work of men left: on the land side of the floodplain's edge, in

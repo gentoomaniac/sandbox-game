@@ -1,9 +1,9 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6,
-8 and 9 of section 14 are built** (each step's note says what changed from this plan); the rest is
-plan. This page says what is built and what
-will be: where the village stands, its buildings, fields and
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6
+and 8 to 10 of section 14 are built** (step 7, the worn track, waits for the user's answer in
+[#95](https://github.com/gentoomaniac/sandbox-game/issues/95)); each step's note says what changed
+from this plan. This page says what is built and what will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
 ([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
 [#75](https://github.com/gentoomaniac/sandbox-game/issues/75),
@@ -496,17 +496,30 @@ The user can stop after step 5 and have the village standing, empty.
   its own: world.gd was at 1 000 lines). Tests: `tests/test_village_deeds.gd`, `tests/test_village_land.gd`,
   `tests/test_village_record.gd`, `tests/test_gossip_rules.gd`.
 
+- **Step 10.** The handbook ([world-and-seasons.md](../../handbook/world-and-seasons.md) "Wehlsbüll",
+  [villagers.md](../../handbook/villagers.md), [building-and-crafting.md](../../handbook/building-and-crafting.md),
+  [saving.md](../../handbook/saving.md), [console.md](../../handbook/console.md)), the screenshots of
+  section 15 and the bench `tools/bench/new_game.gd`. The routines read the meeting spot since step 8.
+  **The bench** (seeds 1, 7 and 20, best of 3, one core, niced): a new game takes 37 ms bare and 420 to 570 ms
+  with the village and its villagers (457, 420 and 569 ms; the site's search, the build and the eight
+  spawns); the save is 203 to 236 KB with it against 3 KB bare (220, 203 and 236 KB; the edits, 19 buildings
+  and 8 villagers with their sheets, memories and stories).
+
 ## 15. Screenshots
 
-Both arts, taken with `make screenshot` (the classic 16 px art with `ARGS=--classic-art`), saved to
-`docs/screenshots/` as `wehlsbuell-<what>.png` and `wehlsbuell-<what>-classic.png`: the village from above
-(zoomed out), the church and the town square by the Krug at dawn, the Boysen yard with a field beside it, the
-landing and the sluice at low water, the worn track near the village, and build mode with the land's edge.
-Checked by eye for both arts: a Warft, the wall, the fence, the Knick, the jetty. No new art is drawn: every
-building type and object exists in both arts. Where the classic art misses something (the Warft or the
-jetty), the picture says so and it becomes an art task.
+Both arts, taken with `make screenshot` (the classic 16 px art with `ARGS=--classic-art`, seed 1, at the
+widest view, `--day=45` and a time of day), saved to `docs/screenshots/` as `wehlsbuell-<what>.png` and
+`wehlsbuell-<what>-classic.png`: `church` (the church, the churchyard and the cottages by the dyke), `square`
+(the town square by the Krug, in the morning), `boysen` (the Boysen yard on its Warft with a field's ditch
+above it), `landing` (Ketels' hut, jetty, boat and net frame) and `build` (build mode at the land's east edge,
+with the edge and the hint). Checked by eye in both arts: the Warft, the wall, the fence, the Knick, the
+jetty. No new art was drawn and the classic art misses nothing the pictures show. Not taken: the village
+from above (the camera's widest view shows about 35 by 22 tiles of its 79 by 63) and the worn track (step 7).
 
 ## 16. Handbook and design pages
+
+Done but for the worn track (step 7): the handbook pages and generation.md, travel.md, villagers.md,
+reputation.md and gossip.md are written. coast.md and desire-paths.md are left as they are.
 
 - **Handbook:** [villagers.md](../../handbook/villagers.md) (they live in Wehlsbüll from the start; homes
   and workplaces; the village's land and the hammer), [world-and-seasons.md](../../handbook/world-and-seasons.md)
