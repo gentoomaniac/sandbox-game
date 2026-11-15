@@ -60,12 +60,15 @@ static func time_text(minute: int) -> String:
 
 
 ## What a keeper at their stall says when the player speaks to them while the shop is shut: that
-## it is shut today, when it opens or when they are back. "" when it is open or they are not at
-## the stall.
+## it is shut today, when it opens or when they are back; or, while it is open, that they will not
+## trade with the player, whom they think too ill of (the `trade` benefit). "" when it is open to
+## the player or they are not at the stall.
 static func closed_line(state: GameState, keeper: Npc) -> String:
-	if not is_at_stall(keeper) or is_open(state, keeper):
-		return ""
 	var talk := NpcTalkRules.default_rules()
+	if not is_at_stall(keeper):
+		return ""
+	if is_open(state, keeper):
+		return "" if Benefits.allows(keeper, &"trade") else talk.value("shop", "refused")
 	var rules := ActivityRules.default_rules()
 	var day := state.clock.day
 	if not rules.has_default_on(ACTIVITY, day):
@@ -114,7 +117,7 @@ static func fact(state: GameState, keeper: Npc) -> Dictionary:
 		if state.shops.room_of(shop, item) > 0:
 			takes.append(ItemTypes.TYPES[item]["name"].to_lower())
 	return {
-		"is_open": is_open(state, keeper),
+		"is_open": is_open(state, keeper) and Benefits.allows(keeper, &"trade"),
 		"opens": "" if next.is_empty() else time_text(next["minute"]),
 		"sells": sells,
 		"takes": takes,

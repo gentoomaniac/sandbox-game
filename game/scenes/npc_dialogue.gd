@@ -102,7 +102,8 @@ func request_at_chat_temperature(request: Dictionary) -> Dictionary:
 ## still owes an answer. The first line of the day counts for their opinion (see TalkFriendship).
 func say(npc: Npc, line: String, state: GameState) -> void:
 	var clock := state.clock
-	TalkFriendship.count_chat(state, npc)
+	if Benefits.allows(npc, &"talk"):
+		TalkFriendship.count_chat(state, npc)
 	# The chat so far: the model only follows a conversation it is told.
 	var history := npc.chat_history.duplicate()
 	npc.add_chat_line(clock.day, clock.minute_of_day, true, line)
@@ -120,6 +121,9 @@ func say(npc: Npc, line: String, state: GameState) -> void:
 ## The villager's answer to `message`, said after the lines of `history` (the chat so far, as
 ## Npc `chat_history`, without the message) in the game of `state` as it is now.
 func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameState) -> String:
+	if not Benefits.allows(npc, &"talk"):
+		var turn_away: Array = rules.value("scripted", "turn_away")
+		return turn_away[rng.randi_range(0, turn_away.size() - 1)]
 	if has_model():
 		var moment := NpcMoment.of(state, npc, rules.value("place", "reach"))
 		var request := NpcPrompt.reply_request(

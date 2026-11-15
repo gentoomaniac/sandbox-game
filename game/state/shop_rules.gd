@@ -99,10 +99,17 @@ func is_taken(shop: String, item: StringName) -> bool:
 
 
 ## What she asks of the player for one of the item, in Pfennig: its worth at `sell_percent`, rounded
-## up.
-func price(shop: String, item: StringName) -> int:
+## up. `standing_percent` is the share of that price the player pays by their friendship with her
+## (see ShopStanding), a whole percent.
+func price(shop: String, item: StringName, standing_percent := 100) -> int:
 	var percent: int = _values[_section(shop)]["sell_percent"]
-	return ceili(worth_of_sold(shop, item) * percent / 100.0)
+	return ceili(worth_of_sold(shop, item) * percent * standing_percent / 10000.0)
+
+
+## Whether the item is one of her best wares (`best` of its section), which she sells only to
+## those whose friendship has her `best_wares` benefit.
+func is_best(shop: String, item: StringName) -> bool:
+	return _values[_good_section(shop, SELLS, item)].get("best", false)
 
 
 ## What one of the item the player gives is worth to her, in Pfennig: its worth at `take_percent`,
@@ -193,6 +200,8 @@ func _good_problems(
 			found.append("[%s] no %s" % [section, key])
 		elif not (values[key] is int and values[key] >= 1):
 			found.append("[%s] %s is not a whole number from 1" % [section, key])
+	if kind == SELLS and not values.get("best", false) is bool:
+		found.append("[%s] best is not true or false" % section)
 	var is_stock := values.get("restock") is int and values.get("max") is int
 	if is_stock and values["restock"] > values["max"]:
 		found.append("[%s] restock is more than max" % section)

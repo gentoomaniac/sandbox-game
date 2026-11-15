@@ -76,6 +76,8 @@ static func reply_messages(
 		last.append(shop_text(moment.shop, words, rules))
 	last.append(_said(rules, "neighbour", words))
 	last.append(_said(rules, level_key(npc), words))
+	for line_key in benefit_line_keys(npc):
+		last.append(_said(rules, line_key, words))
 	last.append(_said(rules, "says", _with_message(words, message)))
 	var language := NpcLanguage.name_of(message, history, rules)
 	last.append(_said_in(rules, "language", _with_message(words, message), language))
@@ -562,6 +564,18 @@ static func _with_message(words: Dictionary, message: String) -> Dictionary:
 	var with_message := words.duplicate()
 	with_message["message"] = message
 	return with_message
+
+
+## The keys of `[prompt]` of the lines that tell what the villager gives the player by it (see
+## Benefits): whether they share small news, and whether they say what they want this year.
+static func benefit_line_keys(npc: Npc) -> Array[String]:
+	var keys: Array[String] = []
+	if Benefits.allows(npc, &"small_news"):
+		keys.append("benefit_small_news")
+	keys.append(
+		"benefit_tells_wants" if Benefits.allows(npc, &"tells_wants") else "benefit_keeps_wants"
+	)
+	return keys
 
 
 ## The key of `[prompt]` of the line that tells how the villager thinks of the player: `level_1`

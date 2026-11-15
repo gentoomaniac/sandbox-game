@@ -21,6 +21,8 @@ var give := {}
 
 var _state: GameState
 var _keeper: Npc
+## How the keeper treats the player by their friendship.
+var _standing := ShopStanding.new()
 var _shop := ""
 var _quote: ShopQuote
 ## What the line below says instead of the quote's, after a trade.
@@ -76,6 +78,7 @@ func open_shop(keeper: Npc, state: GameState) -> void:
 	close()
 	_state = state
 	_keeper = keeper
+	_standing = ShopStanding.with_keeper(keeper)
 	_shop = ShopRules.default_rules().shop_of_keeper(keeper.id)
 	assert(_shop != "", "%s keeps no shop" % keeper.id)
 	_show_goods()
@@ -110,14 +113,14 @@ func step_give(item: StringName, delta: int) -> void:
 
 ## Fills what the player gives with the cheapest of the bag, until what they get is paid.
 func cover() -> void:
-	give = _state.shops.cover(_shop, want, _state.player.inventory)
+	give = _state.shops.cover(_shop, want, _state.player.inventory, _standing)
 	_note = ""
 	_refresh()
 
 
 ## Does the deal if it is fair.
 func trade() -> void:
-	var problem := _state.shops.trade(_shop, want, give, _state.player.inventory)
+	var problem := _state.shops.trade(_shop, want, give, _state.player.inventory, _standing)
 	if problem == "":
 		want = {}
 		give = {}
@@ -188,7 +191,8 @@ func _refresh() -> void:
 	var bag := _state.player.inventory
 	for row in _sell_rows:
 		var stock := shops.stock_of(_shop, row.item)
-		var detail := "%d Pf, %d left" % [rules.price(_shop, row.item), stock]
+		var price := rules.price(_shop, row.item, _standing.price_percent)
+		var detail := "%d Pf, %d left" % [price, stock]
 		row.show_state(detail, want.get(row.item, 0), want.get(row.item, 0) < stock, stock == 0)
 	for row in _take_rows:
 		var room := shops.room_of(_shop, row.item)
@@ -196,7 +200,7 @@ func _refresh() -> void:
 		var detail := "%d Pf, room %d, you have %d" % [rules.value(_shop, row.item), room, carried]
 		var can_add: bool = give.get(row.item, 0) < _most_to_give(row.item)
 		row.show_state(detail, give.get(row.item, 0), can_add, carried == 0 or room == 0)
-	_quote = shops.quote(_shop, want, give, bag)
+	_quote = shops.quote(_shop, want, give, bag, _standing)
 	_get_label.text = "You get: %s" % _counts_text(want, _quote.price)
 	_give_label.text = "You give: %s" % _counts_text(give, _quote.value)
 	_status_label.text = status_text()

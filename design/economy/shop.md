@@ -212,6 +212,13 @@ goods the save knows and `_worked_out` fills the rest). She sells the seeds of *
   Sunday "Closed on Sundays, neighbour. Church." (in `data/npc_talk.cfg`, with the other scripted
   lines); while she is away at dinner, "Back at 1."
 - If she is not at the stall at all (asleep, away) the usual talk applies and no line is added.
+- **By friendship (#48, [../villagers/relationships.md](../villagers/relationships.md)):** a keeper
+  whose level with the player is below the benefit `trade` (Shunned and Mistrusted, levels 1 and 2)
+  does not trade: E opens the chat, her first line is "I have nothing to sell you." (`refused`) and a
+  model is told the stall is shut. From `better_prices` (Good neighbour, level 6) she asks 80 % of the
+  price (`ShopStanding`, `[shop]` of `data/friendship.cfg`; rounded up, so cheap goods cost the same);
+  goods marked `best=true` in `data/shops.cfg` are sold from `best_wares` (Close friend, level 9).
+  None is marked yet. The seeds still need no friendship above `trade`.
 
 ## With a language model
 

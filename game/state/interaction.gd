@@ -47,7 +47,9 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 	var npc := npc_to_chat(state, target)
 	if npc != null:
 		var is_shop_open := (
-			ShopRules.default_rules().shop_of_keeper(npc.id) != "" and ShopHours.is_open(state, npc)
+			ShopRules.default_rules().shop_of_keeper(npc.id) != ""
+			and ShopHours.is_open(state, npc)
+			and Benefits.allows(npc, &"trade")
 		)
 		return Choice.new(Kind.TRADE if is_shop_open else Kind.CHAT, npc)
 	var horse := horse_to_mount(state, target)

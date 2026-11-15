@@ -64,6 +64,16 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   code. A sheet may give `benefit_level` ({"lends_tool": 5}, levels 2 to 10, checked by
   `VillagerRules`; `benefit_levels(id)` reads it) to open a benefit sooner or hold it back. Nothing
   asks it yet (step 10).
+- Step 10: the first benefits at work, asked as `Benefits.allows(npc, benefit)`. **Level 1 turns
+  away:** `NpcDialogue.reply` answers with a line of `turn_away` (`[scripted]` of `data/npc_talk.cfg`),
+  asks no model and the first chat of the day counts nothing. **Levels 1 and 2:** a keeper does not
+  trade (`Interaction`, `ShopHours`: "I have nothing to sell you."), and no quests are posted
+  (`Quests`). **`better_prices`:** a keeper at level 6 asks 80 % (`ShopStanding`, `[shop]` of
+  `data/friendship.cfg`), **`best_wares`:** goods marked `best` in `data/shops.cfg` from level 9 (none is
+  marked yet: a content choice left open). **The prompt** tells after the level
+  line `benefit_small_news` (from level 4) and `benefit_tells_wants` (from 5) or `benefit_keeps_wants`.
+  There is no pedlar in the game yet, so none is shut; and `greets_by_name` waits for the player to have a
+  name. See [../economy/shop.md](../economy/shop.md) and [quests.md](quests.md).
 
 ## The user's words
 

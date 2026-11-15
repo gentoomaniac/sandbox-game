@@ -90,6 +90,7 @@ func problems() -> Array[String]:
 		["rating", "warm_daily_cap_points"],
 		["rating", "rude_daily_cap_points"],
 		["rating", "requests_per_day"],
+		["shop", "better_prices_percent"],
 		["harm", "stole_points"],
 		["harm", "damaged_points"],
 		["harm", "rude_points"],
@@ -209,6 +210,11 @@ func rating_daily_cap(rating: StringName) -> int:
 ## How many ratings of the player's words a villager is asked for in a day at most.
 func rating_requests_per_day() -> int:
 	return _values["rating"]["requests_per_day"]
+
+
+## The percent of the price that a shopkeeper with the `better_prices` benefit asks.
+func better_prices_percent() -> int:
+	return _values["shop"]["better_prices_percent"]
 
 
 ## What the villagers who see a harm of this kind (a GossipRules `STOLE`, `DAMAGED` or `RUDE`) lose

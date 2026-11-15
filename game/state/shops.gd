@@ -35,16 +35,19 @@ func room_of(shop: String, item: StringName) -> int:
 ## count, from the shop's `sells`), `give` what they give (from its `takes`) out of `bag`. The
 ## deal is fair when the value given is at least the price, and the bag holds what it gets once what
 ## it gives is out. The problems are in this order: nothing chosen, not sold or taken, no stock,
-## no room, not carried, too little value, no place in the bag.
-func quote(shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots) -> ShopQuote:
+## no room, not carried, too little value, no place in the bag. The `standing` of the player with
+## the keeper brings the prices down and may open the best wares.
+func quote(
+	shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots, standing := ShopStanding.new()
+) -> ShopQuote:
 	var deal := ShopQuote.new()
 	for item: StringName in want:
 		if _rules.is_sold(shop, item):
-			deal.price += _rules.price(shop, item) * want[item]
+			deal.price += _rules.price(shop, item, standing.price_percent) * want[item]
 	for item: StringName in give:
 		if _rules.is_taken(shop, item):
 			deal.value += _rules.value(shop, item) * give[item]
-	deal.problem = _problem(shop, want, give, bag, deal)
+	deal.problem = _problem(shop, want, give, bag, deal, standing)
 	if deal.is_fair():
 		deal.keeps = deal.value - deal.price
 	return deal
@@ -52,8 +55,10 @@ func quote(shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots) -> 
 
 ## Does the deal if `quote` says it can be done: the player's items go, the shop's come, the stock
 ## shrinks and the room is used up. Returns the problem and changes nothing if it can't be done.
-func trade(shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots) -> String:
-	var deal := quote(shop, want, give, bag)
+func trade(
+	shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots, standing := ShopStanding.new()
+) -> String:
+	var deal := quote(shop, want, give, bag, standing)
 	if not deal.is_fair():
 		return deal.problem
 	# A fair quote has checked that the bag holds it, so this works.
@@ -70,8 +75,10 @@ func trade(shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots) -> 
 ## What the player may give to pay for `want`: the cheapest of what they carry that she takes, one
 ## after the other, until it is paid or there is no more she takes of it (the room of the day and
 ## the bag's count are the limit). A help for the trade screen, which the player may change.
-func cover(shop: String, want: Dictionary, bag: ItemSlots) -> Dictionary:
-	var price := quote(shop, want, {}, bag).price
+func cover(
+	shop: String, want: Dictionary, bag: ItemSlots, standing := ShopStanding.new()
+) -> Dictionary:
+	var price := quote(shop, want, {}, bag, standing).price
 	var in_file_order := _rules.taken(shop)
 	var takable := in_file_order.filter(
 		func(item: StringName) -> bool: return _rules.value(shop, item) > 0
@@ -131,10 +138,22 @@ func fill(shop: String) -> void:
 
 
 func _problem(
-	shop: String, want: Dictionary, give: Dictionary, bag: ItemSlots, deal: ShopQuote
+	shop: String,
+	want: Dictionary,
+	give: Dictionary,
+	bag: ItemSlots,
+	deal: ShopQuote,
+	standing: ShopStanding
 ) -> String:
 	if want.is_empty():
 		return "Choose what you want." if give.is_empty() else "Choose what you want for it."
+	for item: StringName in want:
+		if (
+			_rules.is_sold(shop, item)
+			and _rules.is_best(shop, item)
+			and not standing.has_best_wares
+		):
+			return "%s is kept for friends." % _name_of(item).capitalize()
 	var problem := _stock_problem(shop, want)
 	if problem.is_empty():
 		problem = _room_problem(shop, give)

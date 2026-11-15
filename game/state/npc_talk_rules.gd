@@ -53,6 +53,9 @@ const KEYS := {
 		"level_8": TYPE_STRING,
 		"level_9": TYPE_STRING,
 		"level_10": TYPE_STRING,
+		"benefit_small_news": TYPE_STRING,
+		"benefit_tells_wants": TYPE_STRING,
+		"benefit_keeps_wants": TYPE_STRING,
 		"says": TYPE_STRING,
 		"reply": TYPE_STRING,
 		"language": TYPE_STRING,
@@ -103,7 +106,7 @@ const KEYS := {
 		"fireplace": TYPE_STRING,
 		"open": TYPE_STRING,
 	},
-	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY},
+	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY, "turn_away": TYPE_ARRAY},
 	"gift":
 	{
 		"liked": TYPE_STRING,
@@ -118,6 +121,7 @@ const KEYS := {
 		"shut_today": TYPE_STRING,
 		"shut_until": TYPE_STRING,
 		"closed_day": TYPE_STRING,
+		"refused": TYPE_STRING,
 		"stall_open": TYPE_STRING,
 		"stall_shut": TYPE_STRING,
 		"opens_at": TYPE_STRING,
