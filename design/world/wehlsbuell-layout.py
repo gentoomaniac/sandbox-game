@@ -76,6 +76,9 @@ LANES = [
     [(47, -12), (57, -12), (57, 12)],  # farm 2
     [(11, 24), (43, 24), (43, 12)],  # farm 3
     [(43, 18), (53, 18)],  # to the mill
+    [(9, -23), (60, -23)],  # along the north fields
+    [(9, 30), (30, 30)],  # to the south field
+    [(43, 24), (51, 24), (51, 25)],  # to the Koppel
 ]
 
 # Walls and fences: (kind, u0, v0, u1, v1, gaps as tiles).
@@ -86,7 +89,17 @@ FENCES = [
     ("fence", 22, 17, 42, 26, [(29, 17), (30, 17), (22, 24), (42, 24)]),  # farm 3 yard
 ]
 
-GREEN = (43, 6, 55, 11)  # the village green by the Krug
+# Fields: u0, v0, u1, v1 and the gap tiles. A ditch where the ground is marsh (u <= MARSH_END),
+# a Knick on the Geest, as the old generator did.
+FIELDS = [
+    (21, -28, 40, -24, [(30, -24), (31, -24)]),
+    (43, -28, 58, -24, [(50, -24), (51, -24)]),
+    (22, 31, 42, 34, [(30, 31), (31, 31)]),
+    (46, 26, 59, 33, [(51, 26), (52, 26)]),
+]
+MARSH_END = 36
+
+SQUARE = (43, 6, 55, 11)  # the town square by the Krug, kept free
 MEETING = (49, 8)
 MILL_SPOT = (51, 15, 57, 21)
 LANDING_SPOT = (-12, 12)
@@ -104,7 +117,8 @@ GEEST = (190, 212, 150)
 WATER = (80, 130, 190)
 WARFT = (150, 170, 100)
 LANE = (222, 200, 150)
-GREEN_COLOUR = (140, 200, 110)
+SQUARE_COLOUR = (236, 222, 170)
+KNICK = (190, 110, 50)
 
 
 def px(u: float, v: float) -> tuple[float, float]:
@@ -147,6 +161,18 @@ def fence_tiles() -> set[tuple[int, int]]:
     return tiles
 
 
+def field_tiles() -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    """The ditch tiles and the Knick tiles of the fields' rings."""
+    ditches: set[tuple[int, int]] = set()
+    knicks: set[tuple[int, int]] = set()
+    for u0, v0, u1, v1, gaps in FIELDS:
+        ring = {(u, v) for u in range(u0, u1 + 1) for v in range(v0, v1 + 1)
+                if u in (u0, u1) or v in (v0, v1)} - set(gaps)
+        ditches |= {tile for tile in ring if tile[0] <= MARSH_END}
+        knicks |= {tile for tile in ring if tile[0] > MARSH_END}
+    return ditches, knicks
+
+
 def check() -> None:
     covered: dict[tuple[int, int], str] = {}
     for kind, u, v, name, _ in BUILDINGS:
@@ -158,7 +184,9 @@ def check() -> None:
     lanes = lane_tiles()
     # A lane over the Sielzug is a culvert: the water goes under it.
     water = {(u, v) for u in range(SIELZUG[0], SIELZUG[2] + 1) for v in range(SIELZUG[1], SIELZUG[3] + 1)}
-    blocked = set(covered) | fences | (water - lanes)
+    ditches, knicks = field_tiles()
+    blocked = set(covered) | fences | (water - lanes) | ditches | knicks
+    assert not (ditches | knicks) & (set(covered) | fences | lanes), "a field ring is on a building, fence or lane"
     assert not lanes & (set(covered) | fences), f"a lane runs through {lanes & blocked}"
     for kind, u, v, name, _ in BUILDINGS:
         front = door_front(kind, u, v)
@@ -176,6 +204,21 @@ def check() -> None:
                     seen.add(tile)
                     queue.append(tile)
         assert (60, 12) in seen, f"nobody can walk from {name} to the Sielweg"
+    # No field is shut in: from its gap one can walk to the Sielweg.
+    for u0, v0, u1, v1, gaps in FIELDS:
+        seen = set(gaps)
+        queue = deque(seen)
+        while queue:
+            u, v = queue.popleft()
+            for step in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                tile = (u + step[0], v + step[1])
+                inside = U_MIN <= tile[0] <= U_MAX and V_MIN <= tile[1] <= V_MAX
+                if inside and tile not in blocked and tile not in seen:
+                    seen.add(tile)
+                    queue.append(tile)
+        assert (60, 12) in seen, f"the field at {u0}, {v0} is shut in"
+    square = {(u, v) for u in range(SQUARE[0], SQUARE[2] + 1) for v in range(SQUARE[1], SQUARE[3] + 1)}
+    assert not square & (set(covered) | fences | water | ditches | knicks), "the town square is not free"
     for spot in (MEETING, LANDING_SPOT):
         assert spot not in blocked, f"the spot {spot} is blocked"
 
@@ -191,7 +234,7 @@ def draw() -> Image.Image:
     pen.rectangle(tile_box(37, V_MIN, U_MAX, V_MAX), fill=GEEST)
     for u, v, radius_u, radius_v in WARFTEN:
         pen.ellipse([*px(u - radius_u, v - radius_v), *px(u + radius_u, v + radius_v)], fill=WARFT)
-    pen.rectangle(tile_box(*GREEN), fill=GREEN_COLOUR)
+    pen.rectangle(tile_box(*SQUARE), fill=SQUARE_COLOUR)
     pen.rectangle(tile_box(*SIELZUG), fill=WATER)
     for u, v in SIEL:
         pen.rectangle(tile_box(u, v, u, v), fill=WATER)
@@ -199,6 +242,10 @@ def draw() -> Image.Image:
         pen.rectangle(tile_box(u, v, u, v), fill=LANE)
     for u, v, w, h in PONDS:
         pen.rectangle(tile_box(u, v, u + w - 1, v + h - 1), fill=WATER)
+    ditches, knicks = field_tiles()
+    for tiles, colour in ((ditches, WATER), (knicks, KNICK)):
+        for u, v in tiles:
+            pen.rectangle(tile_box(u, v, u, v), fill=colour)
     pen.text(px(10, 13.2), "culvert", fill=(60, 40, 20))
     for u, v in fence_tiles():
         pen.rectangle(tile_box(u, v, u, v), fill=(250, 250, 250))
@@ -215,6 +262,8 @@ def draw() -> Image.Image:
         pen.text(px(u + 0.3, v + 0.2), name, fill=(255, 255, 255))
     pen.ellipse([*px(MEETING[0], MEETING[1]), *px(MEETING[0] + 1, MEETING[1] + 1)], fill=(220, 40, 40))
     pen.text(px(MEETING[0] + 1.5, MEETING[1]), "meeting place", fill=(120, 0, 0))
+    pen.text(px(SQUARE[0] + 0.5, SQUARE[1] + 0.3), "town square (kept free)", fill=(90, 70, 20))
+    pen.text(px(U_MAX - 12, 13), "track to the camp ->", fill=(90, 60, 20))
     pen.text(px(LANDING_SPOT[0] - 1, LANDING_SPOT[1] + 1), "landing", fill=(30, 30, 80))
     pen.text(px(1, 16.5), "Siel", fill=(30, 30, 100))
     pen.text(px(2, -28), "sea dyke at u = 0 (drawn straight)", fill=(60, 40, 30))
