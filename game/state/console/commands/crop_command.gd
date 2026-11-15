@@ -1,24 +1,34 @@
-class_name CropCommands
-extends RefCounted
-## What the console's `crop` says: how the crop in front of the player (or the nearest one) grows,
-## and the soil's moisture under it.
+extends ConsoleCommand
 
 ## How far (in tiles) `crop` looks for a crop when none is in front of the player.
 const SEARCH_RADIUS := 4
 
 
-static func crop(state: GameState) -> Array[String]:
-	var found := nearest_crop(state)
+func name() -> String:
+	return "crop"
+
+
+func usage() -> String:
+	return "crop"
+
+
+func help() -> String:
+	return "Show the growth, damage and needs of the crop in front of you or the nearest one."
+
+
+func run(_arguments: PackedStringArray) -> Array[String]:
+	var found := _nearest_crop()
 	if found == null:
 		return ["No crop near you"]
 	var lines: Array[String] = []
 	lines.assign(CropLife.describe(found))
-	lines.append("Soil moisture %.2f" % state.world.moisture_at(found.pos))
+	lines.append("Soil moisture %.2f" % context.state.world.moisture_at(found.pos))
 	return lines
 
 
 ## The crop in front of the player, else the nearest one within SEARCH_RADIUS.
-static func nearest_crop(state: GameState) -> WorldObject:
+func _nearest_crop() -> WorldObject:
+	var state := context.state
 	if state.is_inside():
 		return null
 	var in_front := state.world.object_at(state.player.facing_tile())

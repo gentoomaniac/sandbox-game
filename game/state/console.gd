@@ -6,7 +6,6 @@ extends RefCounted
 ## Command name to its usage and what it does, in the order `help` lists them.
 const COMMANDS := {
 	"help": ["help [command]", "List the commands, or show what one takes."],
-	"tp": ["tp <x> <y>", "Teleport to a world tile; from inside a house you step out there."],
 	"give": ["give <item> [count]", "Put items in the inventory."],
 	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
 	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
@@ -43,16 +42,6 @@ const COMMANDS := {
 		"snow [0..1|auto]",
 		"Show the snow cover, force it (0 to 1) or return to the weather (auto).",
 	],
-	"skip":
-	[
-		"skip <n>m|h|d",
-		"Let time pass: minutes, hours or days (crops grow, the weather moves on).",
-	],
-	"crop":
-	[
-		"crop",
-		"Show the growth, damage and needs of the crop in front of you or the nearest one.",
-	],
 	"skill": ["skill <skill> <points>", "Set a skill's points (0 to 100)."],
 	"attribute":
 	[
@@ -64,17 +53,7 @@ const COMMANDS := {
 		"friendship [0..100]",
 		"Show the friendship of the animal nearest to you, or set it.",
 	],
-	"crows":
-	[
-		"crows [raid]",
-		(
-			"Show the crow flocks, what the crows ate today and the scarecrows with the crops they guard;"
-			+ " raid lets every flock raid the crops near it now, whoever is by, and eat from each one it"
-			+ " tries."
-		),
-	],
 	"deeds": ["deeds", "List what you did within sight of villagers, and who saw it."],
-	"village": ["village", "Say where the village Wehlsbüll lies, and what it holds."],
 	"gossip":
 	[
 		"gossip <villager>",
@@ -142,7 +121,6 @@ const COMMANDS := {
 ## missing or unknown name list the candidates of the kinds in ConsoleHelper.LISTED_KINDS.
 const ARGUMENTS := {
 	"help": [&"command"],
-	"tp": [&"number", &"number"],
 	"give": [&"item", &"number"],
 	"spawn": [&"animal", &"number"],
 	"killall": [&"animal"],
@@ -162,9 +140,6 @@ const ARGUMENTS := {
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
 ## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
 const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
-## Minutes per unit of the `skip` command, and the longest skip (a year).
-const SKIP_UNITS := {"m": 1, "h": GameClock.MINUTES_PER_HOUR, "d": GameClock.MINUTES_PER_DAY}
-const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
 ## How far (in tiles) the `friendship` command looks for an animal.
 const FRIENDSHIP_SEARCH_RADIUS := 3.0
 
@@ -202,8 +177,6 @@ func run(line: String) -> Array[String]:
 	match words[0]:
 		"help":
 			output = _help(arguments)
-		"tp":
-			output = _tp(arguments)
 		"give":
 			output = _give(arguments)
 		"god":
@@ -252,12 +225,6 @@ func run(line: String) -> Array[String]:
 			output = _weather(arguments)
 		"snow":
 			output = _snow(arguments)
-		"skip":
-			output = _skip(arguments)
-		"crop":
-			output = CropCommands.crop(_state)
-		"crows":
-			output = _crows(arguments)
 		"skill":
 			output = _skill(arguments)
 		"attribute":
@@ -266,13 +233,6 @@ func run(line: String) -> Array[String]:
 			output = _friendship(arguments)
 		"deeds":
 			output = _deeds()
-		"village":
-			var village := _state.world.village
-			output = (
-				["This world has no village"] as Array[String]
-				if village == null
-				else village.describe_from(_state.player.tile())
-			)
 		"gossip":
 			output = _gossip(arguments)
 		"opinion":
@@ -374,34 +334,6 @@ func _candidates_text(command: String) -> Array[String]:
 		if ConsoleHelper.LISTED_KINDS.has(kind):
 			lines.append_array(ConsoleHelper.candidates_lines(kind, context))
 	return lines
-
-
-func _tp(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() != 2 or not arguments[0].is_valid_int() or not arguments[1].is_valid_int():
-		return ["Usage: %s" % COMMANDS["tp"][0]]
-	var tile := Vector2i(int(arguments[0]), int(arguments[1]))
-	if not World.is_in_bounds(tile):
-		return ["Tile %d, %d is outside the world" % [tile.x, tile.y]]
-	if _state.world.building_at(tile) != null:
-		return ["Tile %d, %d is covered by a building" % [tile.x, tile.y]]
-	if not _is_walkable_even_if_unloaded(tile):
-		return ["Can't walk on tile %d, %d" % [tile.x, tile.y]]
-	_state.teleport_to(tile)
-	return ["Teleported to %d, %d" % [tile.x, tile.y]]
-
-
-## Whether a tile of the world is walkable, also when its chunk is not loaded: that chunk is
-## generated for the look and dropped again, as the world view draws only the chunks it loads.
-func _is_walkable_even_if_unloaded(tile: Vector2i) -> bool:
-	var world := _state.world
-	var coords := Chunk.world_to_chunk(tile)
-	var was_loaded := world.is_chunk_loaded(coords)
-	if not was_loaded:
-		world.add_chunk(WorldGenerator.new(world.world_seed).generate_chunk(coords))
-	var is_walkable := world.is_walkable(tile)
-	if not was_loaded:
-		world.remove_chunk(coords)
-	return is_walkable
 
 
 func _give(arguments: PackedStringArray) -> Array[String]:
@@ -853,29 +785,3 @@ static func track_named(name: String, tracks: Array[String]) -> String:
 		func(track: String) -> bool: return name == track or track.ends_with("_" + name)
 	)
 	return matches[0] if matches.size() == 1 else ""
-
-
-func _skip(arguments: PackedStringArray) -> Array[String]:
-	var usage: Array[String] = ["Usage: %s" % COMMANDS["skip"][0]]
-	if arguments.size() != 1 or arguments[0].length() < 2:
-		return usage
-	var amount := arguments[0].left(-1)
-	var unit := arguments[0].right(1)
-	if not SKIP_UNITS.has(unit) or not amount.is_valid_int() or int(amount) <= 0:
-		return usage
-	var minutes: int = int(amount) * SKIP_UNITS[unit]
-	if minutes > MAX_SKIP_MINUTES:
-		return ["At most a year (%dd) at once" % GameClock.DAYS_PER_YEAR]
-	_state.simulation.skip(minutes)
-	return ["Skipped to %s, %s" % [_state.clock.date_text(), _state.clock.time_text()]]
-
-
-## `crows` shows the flocks and the day's tally; `crows raid` lets every flock raid at once.
-func _crows(arguments: PackedStringArray) -> Array[String]:
-	if arguments.size() > 1 or (arguments.size() == 1 and arguments[0] != "raid"):
-		return ["Usage: %s" % COMMANDS["crows"][0]]
-	if arguments.size() == 1:
-		_state.crop_raids.raid_hour(_state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR, true)
-	var lines := _state.crop_raids.describe()
-	lines.append_array(_state.scarecrows.describe())
-	return lines
