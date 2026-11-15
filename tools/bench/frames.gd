@@ -118,7 +118,7 @@ func _process(delta: float) -> bool:
 		Scenario.PASSING_OUT:
 			if _is_fade_over():
 				_end_scenario()
-				main._try_sleep()
+				main._blackout.try_sleep()
 		Scenario.SLEEPING:
 			if _is_fade_over():
 				_end_scenario()
@@ -139,8 +139,8 @@ func _process(delta: float) -> bool:
 func _is_fade_over() -> bool:
 	if main._fade_screen.is_waiting_for_key():
 		main._fade_screen.continued.emit()
-	has_faded = has_faded or main._is_in_transition
-	return has_faded and not main._is_in_transition
+	has_faded = has_faded or main._blackout.is_in_transition
+	return has_faded and not main._blackout.is_in_transition
 
 
 ## Puts the summer day and the snow cover on the settled view; the settle is over when it has drawn
