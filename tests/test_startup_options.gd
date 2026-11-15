@@ -133,6 +133,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 					"--drops=9,10",
 					"--forage=11,12",
 					"--felled=13,14",
+					"--snags=31,32",
 					"--mow=15,16",
 					"--chest=17,18",
 					"--chest-inside=19,20",
@@ -154,6 +155,7 @@ func test_every_tile_flag_reads_its_tile() -> void:
 	assert_eq(options.drops, Vector2i(9, 10))
 	assert_eq(options.forage, Vector2i(11, 12))
 	assert_eq(options.felled, Vector2i(13, 14))
+	assert_eq(options.snags, Vector2i(31, 32))
 	assert_eq(options.mow, Vector2i(15, 16))
 	assert_eq(options.chest, Vector2i(17, 18))
 	assert_eq(options.chest_inside, Vector2i(19, 20))

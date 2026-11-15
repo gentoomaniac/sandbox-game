@@ -18,6 +18,8 @@ static func apply(options: StartupOptions, state: GameState) -> void:
 		DebugForage.create(state, options.forage)
 	if options.felled != StartupOptions.NO_TILE:
 		DebugFelled.create(state.world, options.felled)
+	if options.snags != StartupOptions.NO_TILE:
+		DebugSnags.create(state.world, options.snags)
 	if options.mow != StartupOptions.NO_TILE:
 		DebugMow.create(state, options.mow)
 	if options.path != StartupOptions.NO_TILE:
