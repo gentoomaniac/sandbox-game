@@ -248,7 +248,7 @@ The player finds the village by a trodden way from the camp to it, as well as by
 
 - **Laid:** after the village stands, the builder asks the path search for a way from the camp to the
   east end of the Sielweg (the search of site rule 4) and gives each tile of it that can wear (grass and
-  floodplain; fords are floodplain, so they carry it) the wear of a path: `WorldWear.set_days` with
+  floodplain; fords are floodplain, so they keep it, though a ford is never drawn worn) the wear of a path: `WorldWear.set_days` with
   `most_days` (12). Tiles that cannot wear (a Warft, wetland) stay as they are. It is plain wear, saved
   in `world.wear` already: no new save field, no record. About 300 to 500 tiles.
 - **It keeps itself worn by use, like any desire path:** the rules are not changed. A tile needs 10

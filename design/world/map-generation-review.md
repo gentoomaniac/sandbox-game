@@ -190,7 +190,7 @@ Each step is one commit that passes `make test` and `make lint` on its own.
      tiles wide, in S-bends of about 35 tiles up to 22 tiles either side of the band's middle; where
      the line moves more than a tile per row a row's water spans to the rows beside it, so the
      water is always joined (tested); a **ford** of 2 rows (floodplain terrain, a
-     walkable muddy crossing; stone-bed art can come later) once in every 36 tiles.
+     walkable crossing; its stone-bed art came with #96) once in every 36 tiles.
 5. **Docs, save version and release note.** `design/world/generation.md`, `coast.md`, the
    handbook and the after-pictures; the save version goes up and the release note says the land
    of old saves is new.

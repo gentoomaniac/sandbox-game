@@ -136,3 +136,18 @@ func test_the_generator_makes_water_of_a_creek_and_walkable_ground_of_a_ford() -
 			CreekLayout.Bed.SOURCE:
 				assert_eq(generator.terrain_at(tile), Tile.Terrain.WETLAND, str(tile))
 	assert_gt(checked, 100, "creek tiles checked")
+
+
+func test_the_generator_knows_its_fords_and_keeps_them_clear_of_reeds() -> void:
+	var generator := WorldGenerator.new(SEEDS[0])
+	var layout := _layout(SEEDS[0])
+	var fords := 0
+	for tile in _creek_tiles(SEEDS[0]):
+		if tile.x < -240 or generator._river_distance(tile) < WorldGenerator.RIVER_HALF_WIDTH:
+			continue
+		var is_ford := layout.bed_at(tile) == CreekLayout.Bed.FORD
+		assert_eq(generator.is_ford(tile), is_ford, str(tile))
+		if is_ford:
+			fords += 1
+			assert_eq(generator.object_type_at(tile, generator.terrain_at(tile)), &"", str(tile))
+	assert_gt(fords, 10, "fords checked")

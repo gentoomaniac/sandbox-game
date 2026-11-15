@@ -115,6 +115,15 @@ def write_fire():
         save([strip], f"fire/{name}.png", box[2], box[3])
 
 
+def terrain_in(look, rows):
+    """The terrain rows in a look: the ford draws its own (`terrain.ford_in`), and the others are
+    `ground_looks.terrain_rows` of the rows without it, so their rime falls where it did before."""
+    ford = terrain.LAYERS.index(terrain.ford)
+    result = ground_looks.terrain_rows(look, rows[:ford] + rows[ford + 1 :])
+    result.insert(ford, terrain.ford_in(look, rows[ford]))
+    return result
+
+
 def write_ground():
     terrain_rows = []
     decoration_rows = []
@@ -126,7 +135,7 @@ def write_ground():
     decorations_by_look = {}
     for look in ground_looks.GROUND_LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
-        save(ground_looks.terrain_rows(look, terrain_rows), f"terrain{suffix}.png")
+        save(terrain_in(look, terrain_rows), f"terrain{suffix}.png")
         decorations_by_look[look] = ground_looks.ground_rows(look, decoration_rows, ground_looks.STANDING.get(look))
     layers = [layer.__name__ for layer in terrain.LAYERS]
     atlas.save_sheets("decorations", [*layers, "flowers"], ground_looks.GROUND_LOOKS, decorations_by_look, TILE, TILE)

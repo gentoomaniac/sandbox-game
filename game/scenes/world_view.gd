@@ -162,7 +162,7 @@ var _buildings := BuildingViews.new(entities)
 
 func _init() -> void:
 	decorations = DecorationView.new(_tileset)
-	_ground_look = GroundLook.new(ambient_motion.decoration_sway)
+	_ground_look = GroundLook.new(ambient_motion.decoration_sway, ambient_motion.ford)
 	decorations.show_ground_look(_ground_look)
 
 
@@ -178,6 +178,7 @@ func _ready() -> void:
 	for layer in TerrainTileset.LAYER_COUNT:
 		_layers[layer].material = _ground_look.terrain
 	_layers[TerrainTileset.Layer.WATER].material = ambient_motion.water
+	_layers[TerrainTileset.Layer.FORD].material = ambient_motion.ford
 	_layers[TerrainTileset.Layer.MUD].material = ambient_motion.mud
 	_layers[TerrainTileset.Layer.SOIL].material = _ground_look.soil
 	# Wet soil lies right over the soil terrain, and clears where snow lies on it.
@@ -856,8 +857,10 @@ func _draw_missing_cover() -> void:
 
 func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
 	var variety := _variety_noise.get_noise_2dv(Vector2(world_pos))
+	# Only the floodplain can be a ford, which is the cheap part to ask first.
+	var is_ford := terrain == Tile.Terrain.FLOODPLAIN and Fords.is_ford(world, world_pos)
 	return TerrainTileset.terrain_layer(
-		terrain, variety, world.wear_stage(world_pos), world.is_muddy
+		terrain, variety, world.wear_stage(world_pos), world.is_muddy, is_ford
 	)
 
 

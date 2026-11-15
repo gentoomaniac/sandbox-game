@@ -47,6 +47,8 @@ func test_the_land_layers_have_the_ground_material_and_the_water_and_mud_their_o
 		var expected: Material = ground.terrain
 		if layer == TerrainTileset.Layer.WATER:
 			expected = _view.ambient_motion.water
+		elif layer == TerrainTileset.Layer.FORD:
+			expected = _view.ambient_motion.ford
 		elif layer == TerrainTileset.Layer.MUD:
 			expected = _view.ambient_motion.mud
 		elif layer == TerrainTileset.Layer.SOIL:

@@ -3,7 +3,7 @@ assets/decorations.png.
 
 Tiles are drawn as 16x16 grids of palette colour names (None = transparent). Each terrain layer
 has one function that returns its atlas row and its decorations; `LAYERS` lists them bottom to
-top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass, dry grass, trodden grass,
+top: water, ford, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass, dry grass, trodden grass,
 path, muddy trodden grass, muddy path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
@@ -234,6 +234,103 @@ def water():
     decorations = [decoration(19, lily), decoration(20, lily, lily), decoration(21, lily_flower)]
     # Water is the bottom layer and always full, so it needs no edge shapes.
     return [blank()] * (EDGE_VARIANTS * FULL) + fulls, decorations
+
+
+# The ford (issue #96): the creek running shallow over a bed of stones. The light gravel of the
+# bed shows through the water in patches that repeat with the tile, and the creek's plain water
+# runs between them, rippled by the ford's shader like the creek's. It lies over the water, and
+# the floodplain's bank lies over it.
+_FORD_BED = periodic_noise(96, [(1, 1.0), (2, 0.8), (3, 0.6), (4, 0.4)])
+FORD_STONE = ("stone_dark", "stone", "stone_light")
+_FORD_KEYS = {
+    "f": "foam", "l": "stone_light", "s": "stone", "d": "stone_dark", "w": "water_deep",
+    "n": "sand", "m": "mud", "k": "mud_dark", "t": "stone", "g": "stone_dark", "o": "water",
+}
+_FORD_STONES = [
+    sprite(_FORD_KEYS, ".ff..", "flls.", "lssdw", ".ddw."),
+    sprite(_FORD_KEYS, "ff..", "lls.", "sddw", ".ww."),
+    sprite(_FORD_KEYS, ".ff.", "flls", "lsdw", "sdw.", ".w.."),
+]
+_FORD_PEBBLES = [
+    sprite(_FORD_KEYS, "nm", "mo"),
+    sprite(_FORD_KEYS, ".nm.", "nmmk", ".kko"),
+    sprite(_FORD_KEYS, "tg", "go"),
+    sprite(_FORD_KEYS, ".tg", "tgg", ".go"),
+]
+
+
+def _ford_bed(x, y):
+    """Whether the gravel of the bed shows at a pixel (the same in every tile)."""
+    return _FORD_BED(x, y) > -0.55
+
+
+def _ford_texture(seed):
+    return [["water_light" if _ford_bed(x, y) else "water" for x in range(TILE)] for y in range(TILE)]
+
+
+def _place(tile, covered, rng, pictures, count, margin):
+    """Stamps up to `count` of `pictures` where they lie wholly on the covered part of the tile,
+    `margin` pixels from its edge, inside the tile and on its water only."""
+    for _ in range(count * 4):
+        if count == 0:
+            return
+        picture = rng.choice(pictures)
+        width, height = max(len(row) for row in picture["rows"]), len(picture["rows"])
+        x, y = rng.randrange(1, TILE - width), rng.randrange(1, TILE - height)
+        spots = [(x + dx, y + dy) for dy, row in enumerate(picture["rows"]) for dx, char in enumerate(row) if char != "."]
+        if not all(covered(px, py) and edge_distance(covered, px, py, margin + 1) > margin for px, py in spots):
+            continue
+        if any(tile[py][px] not in ("water", "water_light") for px, py in spots):
+            continue
+        stamp(tile, picture, x, y)
+        count -= 1
+
+
+def _stones_of_ford(tile, covered, rng, stones, pebbles):
+    _place(tile, covered, rng, _FORD_STONES, stones, 2)
+    _place(tile, covered, rng, _FORD_PEBBLES, pebbles, 1)
+
+
+def ford():
+    """A ford: shallow water running over a bed of gravel and stones, walked across. Towards the
+    deep water the gravel thins out and the water runs over the edge of the bed in a broken light
+    line."""
+    fulls = []
+    for seed, stones, pebbles in ((61, 2, 5), (62, 2, 6), (63, 3, 4), (64, 2, 5), (65, 1, 6), (66, 2, 4)):
+        tile = _ford_texture(seed)
+        _stones_of_ford(tile, lambda x, y: True, random.Random(seed), stones, pebbles)
+        fulls.append(tile)
+    riffle = periodic_noise(98, [(3, 1.0), (5, 0.5)])
+
+    def decorate(tile, covered, rng):
+        for y in range(TILE):
+            for x in range(TILE):
+                if not covered(x, y):
+                    continue
+                distance = edge_distance(covered, x, y, 3)
+                if distance == 1:
+                    tile[y][x] = "foam" if riffle(x, y) > 0.7 else "water_light" if riffle(x, y) > 0.0 else "water"
+                elif tile[y][x] == "water_light" and rng.random() > (distance - 1) / 2:
+                    tile[y][x] = "water"
+        _stones_of_ford(tile, covered, rng, rng.choice((0, 1, 1)), rng.choice((1, 2, 3)))
+
+    shapes = edge_shapes(96, [(1, 1.0), (2, 0.6), (3, 0.3)], 0.14)
+    return edge_tiles(_ford_texture, shapes, 96, decorate) + fulls, []
+
+
+def ford_in(look, row):
+    """The ford's row in a look: the water never changes (it does not freeze), and the stones that
+    break it are rimed in a frost and capped with snow in the snow look."""
+    row = [copy(tile) for tile in row]
+    for tile in row:
+        for y in range(TILE):
+            for x in range(TILE):
+                name = tile[y][x]
+                if look == "frost" and name == "stone_light":
+                    tile[y][x] = "snow_light"
+                elif look == "snow" and name in FORD_STONE and (y == 0 or tile[y - 1][x] not in FORD_STONE):
+                    tile[y][x] = "snow_light" if name == "stone_light" else "snow"
+    return row
 
 
 # The ripple marks of the tidal mud follow one wave for every mud tile, so they run on in step
@@ -890,5 +987,5 @@ def weeds():
 
 
 LAYERS = [
-    water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, muddy_trodden, muddy_path, soil
+    water, ford, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, muddy_trodden, muddy_path, soil
 ]

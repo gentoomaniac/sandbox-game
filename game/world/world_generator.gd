@@ -542,7 +542,10 @@ func _object_type_from(
 	if _is_dyke(world_pos, terrain, river_distance):
 		return WorldObjectTypes.DYKE
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
-		return WorldObjectTypes.REEDS if _is_reeds_at(world_pos, terrain) else &""
+		# The way across a ford is kept clear.
+		var is_ford_here := terrain == Tile.Terrain.FLOODPLAIN and is_ford(world_pos)
+		var has_reeds := not is_ford_here and _is_reeds_at(world_pos, terrain)
+		return WorldObjectTypes.REEDS if has_reeds else &""
 	var object_type := _rolled_type_at(world_pos, terrain, river_distance)
 	if object_type != WorldObjectTypes.BOULDER:
 		return object_type
@@ -588,6 +591,13 @@ func _rolled_type_at(
 		return WorldObjectTypes.DEAD_TREE
 	var is_tall_grass := _woods.noise_at(world_pos) < MEADOW_BELOW and _is_tall_grass_at(world_pos)
 	return WorldObjectTypes.TALL_GRASS if is_tall_grass else &""
+
+
+## Whether a floodplain tile is a ford, where a creek runs shallow over its stones (see
+## CreekLayout): drawn as a ford, walked like the floodplain. Asked of another tile it may say yes
+## where the river's water lies over a creek's ford.
+func is_ford(world_pos: Vector2i) -> bool:
+	return _creeks.bed_at(world_pos) == CreekLayout.Bed.FORD
 
 
 ## Whether a tile lies in a wood, from its edge to its core: where the trees stand close.

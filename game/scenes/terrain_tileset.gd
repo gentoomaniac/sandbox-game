@@ -15,7 +15,10 @@ extends RefCounted
 ## mud lies just over the water, so the tideways are water cut into it; it looks the same in
 ## every season and weather, as the tide washes it. The salt marsh is a grass too, drawn over
 ## ordinary grass like the lush and dry grass, with seasons of its own: red-purple in autumn. A
-## Warft (a dwelling mound) is grass over grass too, whose edges are its slopes.
+## Warft (a dwelling mound) is grass over grass too, whose edges are its slopes. A ford (where a
+## creek runs shallow over its stones, see Fords) is a floodplain tile drawn as a layer of its own,
+## right over the water and under the bank, so the creek's water runs into it on both sides; it is
+## never drawn worn or muddy.
 ##
 ## Terrain atlas: one row per layer. EDGE_VARIANTS blocks of 15 columns hold the edge
 ## shapes for masks 0..14 (0 is empty), the columns from FULL_COLUMN on the full-tile
@@ -25,6 +28,7 @@ extends RefCounted
 ## Draw order and atlas row, bottom to top.
 enum Layer {
 	WATER,
+	FORD,
 	MUD,
 	FLOODPLAIN,
 	WETLAND,
@@ -72,7 +76,7 @@ const FULL_COLUMN := EDGE_VARIANTS * FULL
 const MISSING := -1
 const NO_DECORATION := Vector2i(-1, -1)
 
-const LAYER_COUNT := 14
+const LAYER_COUNT := 15
 ## The row of the decoration atlas with the meadow flowers: FLOWER_VARIANTS columns per species
 ## of FLOWER_SPECIES, in that order (see tools/art/flowers.py): a small plant, a few, and two
 ## tiles of the thick of a drift.
@@ -111,6 +115,7 @@ const LAYER_OF_TERRAIN: Dictionary[Tile.Terrain, Layer] = {
 ## grass beneath.
 const BASE_LAYER: Array[Layer] = [
 	Layer.WATER,
+	Layer.FORD,
 	Layer.MUD,
 	Layer.FLOODPLAIN,
 	Layer.WETLAND,
@@ -196,10 +201,17 @@ func show_art_set() -> void:
 
 ## Which layer a world tile is drawn on. `variety` is the slow variety noise at the tile, and
 ## `wear` how worn its grass is (World.wear_stage; only ground that wears is ever worn), and
-## `is_muddy` whether the rain has made worn ground mud (World.is_muddy).
+## `is_muddy` whether the rain has made worn ground mud (World.is_muddy). A ford (`is_ford`, see
+## Fords.is_ford) is always the ford.
 static func terrain_layer(
-	terrain: Tile.Terrain, variety: float, wear := PathRules.Stage.UNWORN, is_muddy := false
+	terrain: Tile.Terrain,
+	variety: float,
+	wear := PathRules.Stage.UNWORN,
+	is_muddy := false,
+	is_ford := false
 ) -> int:
+	if is_ford:
+		return Layer.FORD
 	if wear == PathRules.Stage.TRODDEN:
 		return Layer.MUDDY_TRODDEN if is_muddy else Layer.TRODDEN
 	if wear == PathRules.Stage.PATH:

@@ -12,7 +12,8 @@ extends RefCounted
 ## AmbientMotion's `decoration_sway`, which this makes the same as the others; the wet look of
 ## tilled soil has `soil_wet`, which clears where snow lies on the soil. The objects that stand
 ## still have `objects`, the frost and snow over their pictures (the ones that sway have it in their
-## own shader, see object_sway.gdshader).
+## own shader, see object_sway.gdshader). The ford's layer has AmbientMotion's `ford`, which this
+## gives the same looks as the terrain.
 
 const GROUND_SHADER := preload("res://game/scenes/ground.gdshader")
 const SOIL_WET_SHADER := preload("res://game/scenes/soil_wet.gdshader")
@@ -28,9 +29,10 @@ var _decoration_materials: Array[ShaderMaterial]
 var _mix := SeasonBlend.GroundMix.new()
 
 
-## `decoration_sway` is the material of the decorations that sway, which gets the same looks.
-func _init(decoration_sway: ShaderMaterial) -> void:
-	_terrain_materials = [terrain]
+## `decoration_sway` is the material of the decorations that sway, which gets the same looks, and
+## `ford` the one of the fords (see AmbientMotion), which gets the terrain's.
+func _init(decoration_sway: ShaderMaterial, ford: ShaderMaterial) -> void:
+	_terrain_materials = [terrain, ford]
 	_decoration_materials = [decoration, decoration_sway]
 	show_art_set()
 

@@ -167,8 +167,18 @@ Fallen leaves, frost and snow are overlays on top of that (`tools/art/cover.py`:
 map and the leaf litter in `art/generated/cover/`, and the looks `snow_cover` and `frost_cover` of
 the object sheets, the pixels that the snow and frost looks add; their rank is in the alpha channel,
 set when `make assets` packs the atlas, so they are no palette art). The salt marsh keeps its olive
-turf, with patches of red-purple glasswort. The ground's 16 px art
-stays as the classic art too.
+turf, with patches of red-purple glasswort. A ford (issue #96, `terrain.ford`, in the classic
+art too) is a layer of its own between the water and the floodplain, so the creek's water runs
+into it and the bank lies over it like any other dual-grid edge: shallow water in `water_light`
+over the gravel of the bed, in soft patches that repeat with the tile so they run on across
+tiles, with the creek's plain `water` between them, which its shader ripples like the creek's
+(ford.gdshader), so no seam shows where the two meet. On the bed lie stones under the water (a
+brown `mud` ramp and a grey one, each with a `water` shadow) and a few that break it, shaded in
+the stone ramp with a `water_deep` shadow and a crescent of `foam` and `water_light` heaped up on
+their upper side. Towards the deep water the gravel thins out and the water runs over the bed's
+edge in a broken light line. Its water does not freeze (no water does yet), so in a frost only
+the stones' lit tops are rimed and under snow only their tops are white (`terrain.ford_in`). The
+ground's 16 px art stays as the classic art too.
 
 The plants (task 108: trees.py, beech.py, birch.py, alder.py, willow.py, trunks.py, the tall
 grass in meadow.py, reeds.py and the meadow flowers in flowers.py) are drawn at 32 px in the

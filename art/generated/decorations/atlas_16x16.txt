@@ -1,6 +1,7 @@
 cell 16 16
 looks spring summer autumn bare frost snow
 water 3
+ford 0
 mud 0
 floodplain 4
 wetland 6

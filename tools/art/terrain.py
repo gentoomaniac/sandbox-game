@@ -3,7 +3,7 @@ assets/decorations.png, and the moister looks of tilled soil in assets/soil_wet.
 
 Tiles are drawn at the game's tile, 32x32 grids of palette colour names (None = transparent).
 Each terrain layer has one function that returns its atlas row and its decorations; `LAYERS`
-lists them bottom to top: water, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass,
+lists them bottom to top: water, ford, mud, floodplain, wetland, grass, salt marsh, Warft, lush grass,
 dry grass, trodden grass, path, muddy trodden grass, muddy path, soil. Both atlases are read by game/scenes/terrain_tileset.gd.
 
 assets/terrain.png, per row:
@@ -361,6 +361,137 @@ def water():
     ]
     # Water is the bottom layer and always full, so it needs no edge shapes.
     return [blank(GAME_TILE)] * (EDGE_VARIANTS * FULL) + fulls, decorations
+
+
+# The ford ---------------------------------------------------------------------------------------
+
+# Where a creek runs shallow over a bed of stones (issue #96): the light gravel of the bed shows
+# through the water in patches, which repeat with the tile so they run on from tile to tile, and
+# between them the creek's own plain water, which the ford's shader ripples like the creek's
+# (game/scenes/ford.gdshader), so the water runs through the ford without a seam.
+_FORD_BED = patch_noise(96, 16)
+_FORD_BED_FINE = patch_noise(97, 8)
+_FORD_BED_ABOVE = -0.45
+# The stones of the bed, lying under the water and breaking it, lit from the top left.
+FORD_STONE = ("stone_dark", "stone", "stone_light")
+FORD_PEBBLE = ("mud_dark", "mud", "sand")
+FORD_GREY = ("stone_dark", "stone_dark", "stone")
+FORD_SHAPES = edge_shapes(96, [(1, 1.0), (2, 0.6), (3, 0.3)], 0.14)
+
+
+def _ford_bed(x, y):
+    """Whether the gravel of the bed shows at a pixel (the same in every tile)."""
+    return _FORD_BED(x, y) + 0.3 * _FORD_BED_FINE(x, y) > _FORD_BED_ABOVE
+
+
+def _ford_texture(seed):
+    return [["water_light" if _ford_bed(x, y) else "water" for x in range(GAME_TILE)] for y in range(GAME_TILE)]
+
+
+def ford_stone(rx, ry):
+    """A stone that breaks the water: a low dome shaded from the top left, its shadow in the
+    water to the bottom right, and the water heaped up light against its upper side."""
+    width, height = round(2 * rx + 3), round(2 * ry + 3)
+    mask = forms.ellipse(width, height, rx + 1.5, ry + 1.5, rx, ry)
+    picture = shaded_sprite(width, height, [mask], FORD_STONE, shadow="water_deep")
+    for y in range(height):
+        for x in range(width):
+            if mask[y, x] or picture[y][x] or y > height // 2:
+                continue
+            if any(0 <= y + dy < height and 0 <= x + dx < width and mask[y + dy, x + dx] for dx, dy in NEIGHBOURS):
+                picture[y][x] = "foam" if x < width // 2 else "water_light"
+    return picture
+
+
+def ford_pebble(width, height, ramp):
+    """A stone of the bed under the water, `width` by `height` pixels, lit on its top left."""
+    if width <= 4:
+        mask = forms.rounded_box(width, height, 0, 0, width - 1, height - 1)
+    else:
+        mask = forms.ellipse(width, height, width / 2, height / 2, width / 2, height / 2)
+    return shaded_sprite(width, height, [mask], ramp, shadow="water")
+
+
+_FORD_STONES = [ford_stone(4, 3), ford_stone(5, 3.5), ford_stone(3.5, 3), ford_stone(5.5, 3)]
+_FORD_PEBBLES = [
+    ford_pebble(width, height, ramp)
+    for width, height in ((3, 2), (4, 3), (5, 3), (6, 4), (7, 4))
+    for ramp in (FORD_PEBBLE, FORD_GREY)
+]
+
+
+def _place(tile, covered, rng, pictures, count, margin, on_bed=False):
+    """Stamps up to `count` of `pictures` where they lie wholly on the covered part of the tile,
+    `margin` pixels from its edge and from the tile's border, on drawn pixels only."""
+    for _ in range(count * 4):
+        if count == 0:
+            return
+        picture = rng.choice(pictures)
+        width, height = size_of(picture)
+        x, y = rng.randrange(1, GAME_TILE - width), rng.randrange(1, GAME_TILE - height)
+        spots = [(x + dx, y + dy) for dy in range(height) for dx in range(width) if picture[dy][dx]]
+        if not all(covered(px, py) and edge_distance(covered, px, py, margin + 1) > margin for px, py in spots):
+            continue
+        if on_bed and not _ford_bed(x + width // 2, y + height // 2):
+            continue
+        if any(tile[py][px] not in ("water", "water_light") for px, py in spots):
+            continue
+        stamp(tile, picture, x, y)
+        count -= 1
+
+
+def _stones_of_ford(tile, covered, rng, stones, pebbles):
+    _place(tile, covered, rng, _FORD_STONES, stones, 3)
+    _place(tile, covered, rng, _FORD_PEBBLES, pebbles, 2, on_bed=True)
+
+
+def ford():
+    """A ford: shallow water running over a bed of gravel and stones, walked across. It lies over
+    the creek's water, and the floodplain's bank lies over it. Towards the deep water the gravel
+    thins out and the water runs over the edge of the bed in a broken light line."""
+    fulls = []
+    for seed, stones, pebbles in ((61, 3, 10), (62, 2, 12), (63, 3, 9), (64, 2, 11), (65, 2, 10), (66, 3, 9)):
+        tile = _ford_texture(seed)
+        _stones_of_ford(tile, lambda x, y: True, random.Random(seed), stones, pebbles)
+        fulls.append(tile)
+    riffle = periodic_noise(98, [(3, 1.0), (5, 0.5)])
+
+    def decorate(tile, covered, rng):
+        for y in range(GAME_TILE):
+            for x in range(GAME_TILE):
+                if not covered(x, y):
+                    continue
+                distance = edge_distance(covered, x, y, 5)
+                if distance == 1:
+                    tile[y][x] = "foam" if riffle(x, y) > 0.7 else "water_light" if riffle(x, y) > 0.0 else "water"
+                elif tile[y][x] == "water_light" and rng.random() > (distance - 1) / 4:
+                    tile[y][x] = "water"
+        _stones_of_ford(tile, covered, rng, rng.choice((1, 1, 2)), rng.choice((3, 4, 6)))
+
+    return edge_tiles(_ford_texture, FORD_SHAPES, 96, decorate) + fulls, []
+
+
+def ford_in(look, row):
+    """The ford's row in a look: the water never changes (it does not freeze), and the stones that
+    break it are rimed in a frost and capped with snow in the snow look."""
+    row = [[line[:] for line in tile] for tile in row]
+    if look == "frost":
+        for index, tile in enumerate(row):
+            rng = random.Random(f"ford-rime-{index}")
+            for line in tile:
+                for x, name in enumerate(line):
+                    if name == "stone_light" or (name == "stone" and rng.random() < 0.3):
+                        line[x] = "snow_light" if name == "stone_light" else "frost"
+    elif look == "snow":
+        for tile in row:
+            for x in range(GAME_TILE):
+                for y in range(GAME_TILE):
+                    name = tile[y][x]
+                    if name in FORD_STONE and (y == 0 or tile[y - 1][x] not in FORD_STONE):
+                        tile[y][x] = "snow_light" if name == "stone_light" else "snow"
+                        if y + 1 < GAME_TILE and tile[y + 1][x] in FORD_STONE:
+                            tile[y + 1][x] = "snow_shadow" if tile[y + 1][x] == "stone_dark" else "snow"
+    return row
 
 
 # The tidal mud ----------------------------------------------------------------------------------
@@ -1145,5 +1276,5 @@ def soil_edge():
 
 
 LAYERS = [
-    water, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, muddy_trodden, muddy_path, soil
+    water, ford, mud, floodplain, wetland, grass, salt_marsh, warft, lush_grass, dry_grass, trodden, path, muddy_trodden, muddy_path, soil
 ]

@@ -282,6 +282,16 @@ def atlas_cells(picture):
     return [[row[left : left + GAME_OBJECT_CELL_WIDTH] for row in picture] for left in range(0, len(picture[0]), GAME_OBJECT_CELL_WIDTH)]
 
 
+def terrain_in(look, rows, layers):
+    """The terrain rows in a look: the ford draws its own (`terrain.ford_in`: its water stays as it
+    is and only its stones take frost and snow), and the others are `seasons.terrain_rows` of the
+    rows without it, so their rime falls where it did before the ford came."""
+    ford = layers.index("ford")
+    result = seasons.terrain_rows(look, rows[:ford] + rows[ford + 1 :])
+    result.insert(ford, terrain.ford_in(look, rows[ford]))
+    return result
+
+
 def write_seasonal_art():
     """The art that has a file per look: terrain, decorations, objects and buildings. Summer
     keeps the plain names; the other looks add theirs, e.g. terrain_snow.png."""
@@ -314,7 +324,7 @@ def write_seasonal_art():
     for look in seasons.LOOKS:
         suffix = "" if look == "summer" else f"_{look}"
         if look in seasons.GROUND_LOOKS:
-            save(seasons.terrain_rows(look, terrain_rows), f"terrain{suffix}.png", GAME_TILE)
+            save(terrain_in(look, terrain_rows, layers), f"terrain{suffix}.png", GAME_TILE)
             decorations_by_look[look] = seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))
         objects_by_look[look] = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
         if look in seasons.HOUSE_LOOKS:

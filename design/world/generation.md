@@ -60,8 +60,9 @@
   130 tiles. A creek starts in a small wetland, is about 2 tiles wide, swings in S-bends of about 35 tiles, up to
   22 tiles either side of its band's middle (where it moves more than a tile per row, a row's water spans to the rows beside it, so it stays joined) and runs
   into the river through the floodplain and the dyke. A band whose creek could come within 4 tiles of the coast line (its wandering included) has none, so a creek never breaks the sea dyke. A **ford** (2 rows of shallow ground, which
-  is floodplain terrain for now, with art to come) lies once in every 36 tiles of it, so a walker
-  crosses. Creeks block walking like the river; reeds grow where one crosses the
+  is floodplain terrain drawn as shallow water over a bed of stones, [#96](https://github.com/gentoomaniac/sandbox-game/issues/96))
+  lies once in every 36 tiles of it, so a walker crosses. No reeds stand in a ford, it is never
+  drawn worn or muddy, and it takes no footprints (`Fords`). Creeks block walking like the river; reeds grow where one crosses the
   floodplain and clay is found along it.
 - **Woods** (task 56, 2026-11-06, redone in [#60](https://github.com/gentoomaniac/sandbox-game/issues/60)):
   trees stand in woods, compact patches that cover about 15 % of the Geest, and nowhere else: a

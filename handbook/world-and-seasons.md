@@ -42,6 +42,8 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 
 - The open land is bare: no fields, fences or ditches stand in it until you or a village make
   them. Only dykes run along the floodplain and the coast.
+- A few creeks wind down to the river. You can't swim them: cross at a ford, where the water runs
+  shallow over a bed of stones.
 - The axe cuts a Knick down for logs and fibre; the pickaxe takes a wall apart for stone.
 - Willows grow on wet ground and are felled like other trees.
 

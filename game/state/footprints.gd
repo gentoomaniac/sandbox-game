@@ -76,10 +76,12 @@ func _init(rules := FootprintRules.default_rules()) -> void:
 
 ## What a step onto `tile` leaves in the ground of `world`: snow where snow lies, mud on tidal
 ## mud that the tide does not cover and on worn ground the rain has made mud. Nothing on a way,
-## a building or in the water.
+## a building or in the water, the shallow water of a ford too.
 func kind_at(world: World, tile: Vector2i) -> Kind:
 	var chunk := world.chunk_at(Chunk.world_to_chunk(tile))
 	if chunk == null or world.is_way_at(tile) or world.building_at(tile) != null:
+		return Kind.NONE
+	if Fords.is_ford(world, tile):
 		return Kind.NONE
 	if is_snowed_at.call(tile):
 		return Kind.SNOW
