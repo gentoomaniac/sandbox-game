@@ -1,16 +1,16 @@
 class_name CampSite
 extends RefCounted
 ## The starting camp: a fireplace and a sleeping bag in a small free clearing near the world
-## centre. The sleeping bag lies vertically right of the fireplace, on the tiles up-right and
-## right of it. The player starts below the bag, so the fire is not behind them.
+## centre. The sleeping bag lies vertically a tile's gap right of the fireplace, not so near that
+## the sleeper would get burnt. The player starts below the gap, so the fire is not behind them.
 
-## The clearing is this many tiles wide and tall, centred on the fireplace.
-const CLEARING_SIZE := 3
+## The clearing, from the fireplace: a tile around it and the bag's two tiles beyond the gap.
+const CLEARING := Rect2i(-1, -1, 4, 3)
 ## Where the search gives up. Far beyond what any generated world needs.
 const MAX_SEARCH_RADIUS := 64
 
-const SLEEPING_BAG_OFFSET := Vector2i(1, -1)
-## Below the sleeping bag, so the player can sleep straight away.
+const SLEEPING_BAG_OFFSET := Vector2i(2, -1)
+## Below the gap between the fire and the bag: in reach of both, to cook or to sleep straight away.
 const SPAWN_OFFSET := Vector2i(1, 1)
 
 var fireplace_pos: Vector2i
@@ -56,10 +56,9 @@ static func _find_clearing(world: World, generator: WorldGenerator) -> Vector2i:
 
 
 static func _is_clearing(world: World, generator: WorldGenerator, center: Vector2i) -> bool:
-	var reach := CLEARING_SIZE / 2
-	for y in range(center.y - reach, center.y + reach + 1):
-		for x in range(center.x - reach, center.x + reach + 1):
-			var pos := Vector2i(x, y)
+	for y in range(CLEARING.position.y, CLEARING.end.y):
+		for x in range(CLEARING.position.x, CLEARING.end.x):
+			var pos := center + Vector2i(x, y)
 			_load_chunk_of(world, generator, pos)
 			if not world.is_buildable(pos):
 				return false
