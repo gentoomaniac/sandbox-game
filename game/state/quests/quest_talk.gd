@@ -44,8 +44,8 @@ static func greet(state: GameState, giver: Npc) -> String:
 	return ""
 
 
-## The quest is done: its giver says the `turn_in` lines and the player gets the reward, what does
-## not fit in the bag at their feet.
+## The quest is done: its giver says the `turn_in` lines, the player gets the reward, what does not
+## fit in the bag at their feet, and the village hears that they helped (see DeedLog `record_help`).
 static func complete(state: GameState, entry: Dictionary) -> void:
 	var quests := state.quests
 	var quest := quests.rules.quest(entry["id"])
@@ -53,6 +53,9 @@ static func complete(state: GameState, entry: Dictionary) -> void:
 	quests.finish(entry["id"])
 	if giver != null:
 		_say(state, giver, quest["turn_in"])
+		var steps: int = quest["reward"].get("opinion_steps", 0)
+		if steps > 0:
+			state.deeds.record_help(giver, steps, state.player.position)
 	var items: Dictionary = quest["reward"].get("items", {})
 	for item: String in items:
 		var left := state.player.inventory.add(StringName(item), items[item])

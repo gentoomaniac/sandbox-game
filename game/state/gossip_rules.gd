@@ -16,9 +16,23 @@ const SOWED := &"sowed"
 const HARVESTED := &"harvested"
 const DUG_CLAY := &"dug_clay"
 const MOWED := &"mowed"
+## Helping a neighbour with a quest (see Quests): the kind says how much it counts, by the steps of
+## opinion the quest's reward gives, one or two (see `help_kind`).
+const HELPED := &"helped"
+const HELPED_MUCH := &"helped_much"
 ## The kinds of deed, each a section of the file.
 const KINDS: Array[StringName] = [
-	FELLED, BUILT, TOOK_DOWN, FENCED, TILLED, SOWED, HARVESTED, DUG_CLAY, MOWED
+	FELLED,
+	BUILT,
+	TOOK_DOWN,
+	FENCED,
+	TILLED,
+	SOWED,
+	HARVESTED,
+	DUG_CLAY,
+	MOWED,
+	HELPED,
+	HELPED_MUCH,
 ]
 ## How a villager came to know a story.
 const SEEN := &"seen"
@@ -169,6 +183,12 @@ func opinion_word(points: int) -> StringName:
 	if points < opinion_cold_below():
 		return &"cold"
 	return &"warm" if points >= opinion_warm_from() else &"neutral"
+
+
+## The kind of deed that helping with a quest worth `steps` steps of opinion (1 or 2) is.
+static func help_kind(steps: int) -> StringName:
+	assert(steps >= 1 and steps <= MAX_CHANGE, "A help is worth 1 to %d steps" % MAX_CHANGE)
+	return HELPED if steps == 1 else HELPED_MUCH
 
 
 ## What the villagers who saw a deed of this kind think more (or less) of the player; for a deed

@@ -144,8 +144,8 @@ func test_a_reward_must_hold_something_that_exists() -> void:
 	_assert_one_problem({"reward": {}}, "nothing in it")
 	_assert_one_problem({"reward": {"items": {"gold": 1}}}, "reward item gold")
 	_assert_one_problem({"reward": {"items": {"wax": 0}}}, "reward item wax")
-	_assert_one_problem({"reward": {"opinion_steps": 4}}, "opinion_steps")
-	assert_eq(_rules_with({"reward": {"opinion_steps": 3}}).problems(), [] as Array[String])
+	_assert_one_problem({"reward": {"opinion_steps": 3}}, "opinion_steps")
+	assert_eq(_rules_with({"reward": {"opinion_steps": 2}}).problems(), [] as Array[String])
 
 
 func test_a_limit_that_is_missing_is_reported() -> void:

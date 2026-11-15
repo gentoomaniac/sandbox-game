@@ -19,8 +19,9 @@ const LIMIT_KEYS := {
 const MAX_DAYS := 60
 const MAX_NOTICE_LENGTH := 100
 const MAX_LINES := 6
-## How many steps of opinion a reward gives at most.
-const MAX_OPINION_STEPS := 3
+## How many steps of opinion a reward gives at most: what a deed of the villagers can be worth
+## (see GossipRules `help_kind`).
+const MAX_OPINION_STEPS := GossipRules.MAX_CHANGE
 ## The prerequisites a starter, the quest of the first day, may have: it must fit the start.
 const STARTER_CONDITIONS: Array[String] = ["day", "season"]
 ## What the lines may name in braces, as the game fills it in.

@@ -92,20 +92,44 @@ func record(outcome: ActionOutcome) -> void:
 	if kind == &"" or not outcome.map is World:
 		return
 	var spot := Vector2(outcome.tile) + Vector2(0.5, 0.5)
-	var is_night := _npcs.is_rest_time(_clock.day, _clock.minute_of_day)
-	var witnesses := _npcs.all().filter(
-		func(npc: Npc) -> bool:
-			return npc.inside == null and npc.position.distance_to(spot) <= rules.radius(is_night)
-	)
+	var witnesses := _witnesses_at(spot)
 	if witnesses.is_empty():
 		return
 	var house_owner := _nearest_home(spot)
+	_write_down(kind, _place_of(outcome, house_owner), witnesses, house_owner)
+
+
+## Writes down that the player helped `giver` with a quest worth `steps` steps of opinion (see
+## `GossipRules.help_kind`), seen by the giver and by whoever else was outdoors within reach of
+## `spot`, where the player stood. The place is the giver's house, whose family weigh it high.
+func record_help(giver: Npc, steps: int, spot: Vector2) -> void:
+	var witnesses := _witnesses_at(spot)
+	if not witnesses.has(giver):
+		witnesses.append(giver)
+	var place := rules.house_place(giver.name.get_slice(" ", 0))
+	_write_down(rules.help_kind(steps), place, witnesses, giver)
+
+
+## The villagers outdoors within sight of `spot`.
+func _witnesses_at(spot: Vector2) -> Array[Npc]:
+	var is_night := _npcs.is_rest_time(_clock.day, _clock.minute_of_day)
+	var radius := rules.radius(is_night)
+	var witnesses: Array[Npc] = []
+	for npc in _npcs.all():
+		if npc.inside == null and npc.position.distance_to(spot) <= radius:
+			witnesses.append(npc)
+	return witnesses
+
+
+## Adds the deed of today to the log, and to the stories of each witness. A story weighs high for
+## a witness who is `house_owner` or close to them (see `_is_close_to`), else medium.
+func _write_down(kind: StringName, place: String, witnesses: Array[Npc], house_owner: Npc) -> void:
 	var deed := {
 		"day": _clock.day,
 		"minute": _clock.minute_of_day,
 		"kind": kind,
 		"count": 1,
-		"place": _place_of(outcome, house_owner),
+		"place": place,
 		"witnesses": witnesses.map(func(npc: Npc) -> String: return npc.name),
 	}
 	add_to(entries, deed)

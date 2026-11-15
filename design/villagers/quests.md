@@ -35,7 +35,7 @@ holds the folder clean. The header of `data/quests/fibre_for_beans.cfg` lists ev
 | `short` | optional: said when too little is brought; `{have}` and `{count}` |
 | `objective` | `{"type": ..}` and what that kind needs |
 | `requires` | optional list of prerequisites, all must hold for it to be posted |
-| `reward` | `items` (item to count) and `opinion_steps` (1 to 3), at least one |
+| `reward` | `items` (item to count) and `opinion_steps` (1 or 2), at least one |
 
 Items are those of `game/state/item_types.gd` (there is no `items.cfg`); a count is at least 1 and a
 line may use only the braces named above.
@@ -121,6 +121,15 @@ prerequisites and `repeat_after_days` count from it. The objective kinds do the 
 
 **Rewards** are items that exist, mostly what the shop of #10 does not sell, so a quest is not a
 second barter: seeds on the first help only, **wax** (candle makings: its first source apart from
-the console), and a better tool grade for a big quest. The opinion reward comes in with the deed of
-the next step. No recipes as rewards in this task (the user, 2026-11-15; later, once recipes are
+the console), and a better tool grade for a big quest. The opinion reward is the deed `helped`
+(below). No recipes as rewards in this task (the user, 2026-11-15; later, once recipes are
 learned).
+
+## The opinion reward: the deed `helped`
+
+`reward.opinion_steps` is 1 or 2 (most a deed is worth). Handing in the quest tells the deed `helped`
+(a step: +1, 10 points) or `helped_much` (two: +2) to the giver and to the villagers outdoors within
+the witness radius of `data/gossip.cfg` (20 tiles by day) of where the player stood, so the village
+hears of it and the judge words it. With no model the deed's fixed change counts; with one the
+verdict may differ, within the day's cap of 20 points. A reward with no `opinion_steps` tells no
+deed. Nothing in the quests moves an opinion directly.

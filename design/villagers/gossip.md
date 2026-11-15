@@ -46,9 +46,14 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   maps both `take_down` (a placed object, with the axe or the hammer) and `demolish` (a building).
   A refusal or a loaded game tells nothing.
 - **First kinds:** felled a tree, built a building, took down a building, placed a fence or
-  wall, tilled, sowed, harvested, dug clay, mowed. The list, its words and the fixed opinion
-  changes are in `data/gossip.cfg`. Gifts, theft and helping come with
-  [relationships](relationships.md).
+  wall, tilled, sowed, harvested, dug clay, mowed, and **helped** (not an action: handing in a quest
+  tells it, see [quests.md](quests.md)). The list, its words and the fixed opinion changes are in
+  `data/gossip.cfg`. Gifts and theft come with [relationships](relationships.md).
+- **Helped:** `helped` (fixed change +1) for a quest whose reward has one step of opinion and
+  `helped_much` (+2) for two, the most a deed is worth (`GossipRules.MAX_CHANGE`). It is
+  seen by the giver and by the villagers outdoors within the usual witness radius of where the player
+  stood, in the place of the giver's house, so their family weigh it high; the stories are then
+  judged like any: by the model, else the fixed change, within the day's cap of 20 points.
 - **The place** in words: the house of the villager whose home is nearest within 20 tiles ("by
   Antje's house"), else "out on the marsh" (a word per biome in the data file). A deed on the
   village's own land (the record `World.village`, [../world/wehlsbuell.md](../world/wehlsbuell.md))
