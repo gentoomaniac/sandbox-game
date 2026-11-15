@@ -6,14 +6,6 @@ extends RefCounted
 ## Command name to its usage and what it does, in the order `help` lists them.
 const COMMANDS := {
 	"help": ["help [command]", "List the commands, or show what one takes."],
-	"god": ["god", "Toggle invincibility: health never drops (energy still runs out)."],
-	"nodrain": ["nodrain", "Toggle: actions cost no energy."],
-	"noweight": ["noweight", "Toggle: carried weight doesn't raise costs."],
-	"nocost": ["nocost", "Toggle: buildings and crafting need no materials."],
-	"nolate": ["nolate", "Toggle: staying up past 01:00 passes no one out and shows no warning."],
-	"noneeds": ["noneeds", "Toggle: the farm animals' hunger and thirst do not rise."],
-	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
-	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
@@ -57,33 +49,6 @@ func run(line: String) -> Array[String]:
 	match words[0]:
 		"help":
 			output = _help(arguments)
-		"god":
-			cheats.is_god = not cheats.is_god
-			output = [ConsoleHelper.toggle_message("God mode", cheats.is_god)]
-		"nodrain":
-			cheats.is_drain_off = not cheats.is_drain_off
-			output = [ConsoleHelper.toggle_message("No drain", cheats.is_drain_off)]
-		"noweight":
-			cheats.is_weight_off = not cheats.is_weight_off
-			output = [ConsoleHelper.toggle_message("No weight", cheats.is_weight_off)]
-		"nocost":
-			cheats.is_cost_off = not cheats.is_cost_off
-			output = [ConsoleHelper.toggle_message("No cost", cheats.is_cost_off)]
-		"nolate":
-			cheats.is_late_off = not cheats.is_late_off
-			output = [ConsoleHelper.toggle_message("No late", cheats.is_late_off)]
-		"noneeds":
-			cheats.are_needs_off = not cheats.are_needs_off
-			output = [ConsoleHelper.toggle_message("No needs", cheats.are_needs_off)]
-		"noclip":
-			cheats.is_noclip = not cheats.is_noclip
-			output = [ConsoleHelper.toggle_message("No clip", cheats.is_noclip)]
-			# Off inside a lake or a wall: onto the nearest ground they fit on.
-			if not cheats.is_noclip and not _state.put_player_on_free_ground():
-				output.append("No free ground near you: walk out, or turn noclip on again")
-		"freeze":
-			cheats.is_time_stopped = not cheats.is_time_stopped
-			output = [ConsoleHelper.toggle_message("Time stopped", cheats.is_time_stopped)]
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
