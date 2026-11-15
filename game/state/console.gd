@@ -15,6 +15,13 @@ func _init(state: GameState) -> void:
 		push_error("Console command: %s" % problem)
 
 
+func _notification(what: int) -> void:
+	# The context holds the commands (for `help`) and each command holds the context: a cycle that
+	# reference counting never frees. The console owns both, so it breaks the cycle as it goes.
+	if what == NOTIFICATION_PREDELETE:
+		context.commands.clear()
+
+
 ## Runs a line such as "give logs 5" (a leading "/" is optional) and returns the output.
 func run(line: String) -> Array[String]:
 	var words := _words(line)
