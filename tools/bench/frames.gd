@@ -13,9 +13,13 @@ extends SceneTree
 ## walker enters tiles (mask lookups, wear) that much faster. The end prints the trips completed
 ## and blocked and the searches a second, so that the frames can be compared with and without them
 ## (#68).
+## `--snow=<cover>` forces the snow cover (0 to 1) on a summer day after the settle and prints how
+## long one check of the flowers in bloom round the view takes, which the wildlife makes every
+## second (#91), and ends the run. With 0.4 no tile counts as snowed, so every flower still blooms
+## and is asked about.
 ## `make bench` runs it on a copy of the fixture save.
 ## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute --max-fps=0
-##   [--far-trips=<n> [--far-speed=<factor>]]
+##   [--far-trips=<n> [--far-speed=<factor>]] [--snow=<cover>]
 
 enum Scenario { STANDING, PASSING_OUT, SLEEPING, WALKING }
 
@@ -26,6 +30,10 @@ const LONG_MS := 33.0
 const SLOW_MS := 16.7
 ## The time of day the scenarios start at: no late night to pass out in by itself.
 const START_HOUR := 10
+## The day `--snow` sets: in the summer, when the flowers bloom.
+const SNOW_BENCH_DAY := 45
+## How many checks of the flowers are timed for their mean.
+const FLOWER_CHECKS := 10
 ## How many goals for the far trips (`--far-trips`) to choose from.
 const FAR_GOALS := 24
 ## How long a far walker whose trip is blocked waits before it is sent to another goal.
@@ -44,6 +52,8 @@ var walk_start := Vector2.ZERO
 ## Whether the fade of the passing out or the sleep has begun: its end ends the scenario.
 var has_faded := false
 var far_trips := 0
+var snow_cover := -1.0
+var is_snow_started := false
 var far_speed := 20.0
 var far_goals: Array[Vector2i] = []
 var far_walkers: Array[Npc] = []
@@ -62,6 +72,8 @@ func _initialize() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--far-trips="):
 			far_trips = int(argument.trim_prefix("--far-trips="))
+		elif argument.begins_with("--snow="):
+			snow_cover = float(argument.trim_prefix("--snow="))
 		elif argument.begins_with("--far-speed="):
 			far_speed = float(argument.trim_prefix("--far-speed="))
 	main = load("res://game/scenes/main.tscn").instantiate()
@@ -75,7 +87,9 @@ func _process(delta: float) -> bool:
 	var now := Time.get_ticks_usec()
 	var ms := (now - last) / 1000.0
 	last = now
-	if settled_at < 0 and main._view.is_settled:
+	if snow_cover >= 0.0 and not is_snow_started and main._view.is_settled:
+		_start_snow()
+	if settled_at < 0 and main._view.is_settled and main._view._refresh_queue.is_empty():
 		settled_at = frame
 		print("settled: frame ", frame, " after ms ", (now - t0) / 1000.0)
 		main._state.clock.set_time(START_HOUR, 0)
@@ -127,6 +141,15 @@ func _is_fade_over() -> bool:
 		main._fade_screen.continued.emit()
 	has_faded = has_faded or main._is_in_transition
 	return has_faded and not main._is_in_transition
+
+
+## Puts the summer day and the snow cover on the settled view; the settle is over when it has drawn
+## the day's flowers (its `_refresh_queue`).
+func _start_snow() -> void:
+	is_snow_started = true
+	main._state.snow_cover.forced = snow_cover
+	main._state.clock.day = SNOW_BENCH_DAY
+	main._show_clock()
 
 
 func _start_far_trips() -> void:
@@ -255,7 +278,25 @@ func _end_scenario() -> void:
 	times = []
 
 
+## The time of the wildlife's check of the flowers in bloom round the view, which it makes every
+## second (see WildlifeView `_match_counts`).
+func _print_flower_check() -> void:
+	var wildlife: WildlifeView = main._wildlife
+	var flowers := wildlife._flowers_near_view()
+	var start := Time.get_ticks_usec()
+	for _check in FLOWER_CHECKS:
+		wildlife._flowers_near_view()
+	var check_ms := (Time.get_ticks_usec() - start) / 1000.0 / FLOWER_CHECKS
+	print(
+		"snow cover %s: %d flowers in bloom round the view, a check takes %.2f ms"
+		% [snow_cover, flowers.size(), check_ms]
+	)
+
+
 func _print_counts() -> void:
+	if snow_cover >= 0.0:
+		_print_flower_check()
+		quit()
 	print("nodes ", Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 	var sprites := 0
 	for c in main._view.entities.get_children():
