@@ -171,7 +171,8 @@
   files that counts days of the year (the plants' curves, the season blend and litter windows,
   the thaw, the longest day, the stork's year) moved up by a sixth to keep its place in
   its season; what counts days of its own (the crops' growth, the width of a blend window, the
-  days of wear, the frost ramp) stays.
+  days of wear, the frost ramp) stays. A saved day is mapped to the same year, season and day
+  of the season (save version 44), as are the days and minutes the save counts from.
 - **The world looks like its season** (decided 2026-11-05, changed 2026-11-12 by task 185): the
   current art is summer. Spring is a lighter, fresher green; autumn is North Sea autumn (task 52):
   oaks brown, ochre or copper, beeches copper, birches yellow, alders a dull green-brown (task 56),
