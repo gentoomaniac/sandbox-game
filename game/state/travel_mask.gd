@@ -19,6 +19,8 @@ const OBJECT := 1 << 3
 const SEASONAL := 1 << 4
 ## Grass or floodplain: it wears to a lane where it is walked (`Tile.wears`).
 const WEARS := 1 << 5
+## A way the player laid (a plank walk, a stone path): it never wears, and villagers keep to it.
+const WAY := 1 << 6
 
 var coords: Vector2i
 var _flags := PackedByteArray()
@@ -64,9 +66,14 @@ func is_trampled(local: Vector2i, day: int) -> bool:
 	return _flags_at(local, day) & OBJECT != 0
 
 
-## Whether the grass of the tile wears to a lane.
+## Whether the grass of the tile wears to a lane: not under a way.
 func wears(local: Vector2i) -> bool:
-	return _flags[_index(local)] & WEARS != 0
+	return _flags[_index(local)] & (WEARS | WAY) == WEARS
+
+
+## Whether a way lies on the tile.
+func is_way(local: Vector2i) -> bool:
+	return _flags[_index(local)] & WAY != 0
 
 
 static func _ground_flags(terrain: Tile.Terrain) -> int:
@@ -87,6 +94,8 @@ static func _object_flags(object: WorldObject) -> int:
 	var flags := 0
 	if type.get("deck", false):
 		flags |= DECK
+	if type.get("way", false):
+		flags |= WAY
 	if object.blocks_walking():
 		flags |= BLOCKED
 	if NpcTravel.is_trampled(object):

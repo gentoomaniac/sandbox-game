@@ -61,9 +61,10 @@ func is_free(tile: Vector2i) -> bool:
 	)
 
 
-## What stepping onto the tile costs: 1.0 on ordinary ground, less on worn grass (the lanes), so
-## villagers keep to what others have walked, and more where something that feet spoil stands (a
-## crop, a flower), so they walk round the fields. Only for a known tile.
+## What stepping onto the tile costs: 1.0 on ordinary ground, less on worn grass (the lanes) and
+## on a way the player laid (as little as a path), so villagers keep to what has been walked or
+## made, and more where something that feet spoil stands (a crop, a flower), so they walk round
+## the fields. Only for a known tile.
 func cost_of(tile: Vector2i) -> float:
 	var cost := 1.0
 	match _path_rules.stage_of(_snapshot.wear.get(tile, 0)):
@@ -72,8 +73,12 @@ func cost_of(tile: Vector2i) -> float:
 		PathRules.Stage.PATH:
 			cost = _cost_path
 	var mask: TravelMask = _masks.get(Chunk.world_to_chunk(tile))
-	if mask != null and mask.is_trampled(Chunk.local_pos(tile), _day):
-		cost += _cost_object
+	if mask != null:
+		var local := Chunk.local_pos(tile)
+		if mask.is_way(local):
+			cost = minf(cost, _cost_path)
+		if mask.is_trampled(local, _day):
+			cost += _cost_object
 	return cost
 
 

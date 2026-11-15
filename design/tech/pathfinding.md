@@ -61,7 +61,11 @@ answers, for a tile, what `Npcs.can_stand_at` answers on the loaded chunk, excep
 - `SEASONAL`: a plant that is there only in its season; the flags are those of the ground alone
   and the plant is kept aside, its effect counted only on a day it is present
   (`Vegetation.is_present`).
-- `WEARS`: grass or floodplain, which wears to a lane where it is walked.
+- `WEARS`: grass or floodplain, which wears to a lane where it is walked. Not under a way.
+- `WAY`: a way the player laid (a plank walk, a stone path, #62; an object with `way`, which is a
+  deck too, so it is free like one). It never wears (`wears` is false for it) and costs what a lane
+  costs (below). It rides on the object edit like any object: laying or taking up one drops the
+  chunk's mask, and the next one has it, so nothing is drawn per frame.
 
 A mask is stamped from the generated chunks of its own chunk and of **W, N and NW** of it
 (`TravelMasks.SOURCE_STEPS`), because a big object (7 x 2 tiles at the most) reaches east and south
@@ -104,8 +108,9 @@ and the day are those, not the clock's). It holds a dictionary of the masks it h
 - `is_known(tile)`: true if its chunk's mask is held (or the tile is outside the world). If not, it
   notes the chunk in `missing` and says false.
 - `is_free(tile)`: not a building tile, and the mask says free at the view's tide and day.
-- `cost_of(tile)`: 1.0, 0.8 on trodden grass, 0.6 on a lane (the wear in the snapshot), plus
-  `cost_object` where the mask has `OBJECT`. **This is the only copy of the cost rule.**
+- `cost_of(tile)`: 1.0, 0.8 on trodden grass, 0.6 on a lane (the wear in the snapshot) or on a way
+  (the mask's `WAY`, so never dearer than a worn path), plus `cost_object` where the mask has
+  `OBJECT`. **This is the only copy of the cost rule.**
   Mud (the rain on worn ground, #61) is not in it, nor in the walkers' speed: see
   [../world/desire-paths.md](../world/desire-paths.md) for why.
 - `provide(masks)` (main thread, only while no search runs on the view): takes the masks of the

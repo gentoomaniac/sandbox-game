@@ -67,7 +67,8 @@ func disagreements(coords: Vector2i) -> Array[Vector2i]:
 			if (
 				is_free != Npcs.can_stand_at(world, Vector2(tile) + Vector2(0.5, 0.5))
 				or mask.is_trampled(local, day) != is_trampled
-				or mask.wears(local) != world.tile_at(tile).wears()
+				or mask.wears(local) != (world.tile_at(tile).wears() and not world.is_way_at(tile))
+				or mask.is_way(local) != world.is_way_at(tile)
 			):
 				tiles.append(tile)
 	return tiles

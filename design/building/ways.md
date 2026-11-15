@@ -27,3 +27,9 @@ can be fixed. Made and placed a piece a tile like the fence and wall pieces
   of data/paths.cfg, a reward for the work, not much). Laying one clears the wear beneath. How is in
   [desire-paths.md](../world/desire-paths.md#ways). A way over flooded mud (the plank walk) is walked
   dry-shod, at the same speed, like a jetty.
+- **Villagers use them** (cost, not speed, like the lanes): a tile with a way costs what a worn path
+  does (`cost_path` of data/npcs.cfg, 0.6; the mask's `WAY` flag, read in `TravelView.cost_of`).
+  The mask is dropped when a way is laid or taken up, as for any object edit. A way is free for them
+  like a deck, and the grass of a far chunk with one on it takes no steps (the mask's `wears`).
+  They walk at their own pace on it: only the player's is faster (see the pathfinding design for
+  why a speed that varies by tile stays out of the skip).

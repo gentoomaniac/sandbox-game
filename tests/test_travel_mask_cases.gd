@@ -123,6 +123,22 @@ func test_a_worn_path_stays_grass_for_the_mask_and_the_wear_is_the_world_s() -> 
 	assert_parity(COAST)
 
 
+func test_a_way_is_known_to_the_mask_and_the_grass_under_it_does_not_wear() -> void:
+	var tile := empty_row(COAST, Tile.Terrain.GRASS, 2)
+	var mask := masks.wait_for_mask(COAST)
+	assert_false(mask.is_way(Chunk.local_pos(tile)))
+	assert_true(mask.wears(Chunk.local_pos(tile)))
+	for type in [WorldObjectTypes.PLANK_WALK, WorldObjectTypes.STONE_PATH]:
+		world.remove_object(tile)
+		world.add_object(WorldObject.new(type, tile))
+		mask = masks.wait_for_mask(COAST)
+		assert_true(mask.is_way(Chunk.local_pos(tile)), str(type))
+		assert_false(mask.wears(Chunk.local_pos(tile)), str(type))
+		assert_true(mask.is_free(Chunk.local_pos(tile), 0.0, 1), str(type))
+		assert_false(mask.is_trampled(Chunk.local_pos(tile), 1), str(type))
+		assert_parity(COAST, str(type))
+
+
 func test_a_deck_over_mud_is_walked_at_high_water() -> void:
 	var tile := empty_row(MUD, Tile.Terrain.MUD)
 	set_high_water()

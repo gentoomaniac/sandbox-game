@@ -125,6 +125,26 @@ func test_costs_and_answers_are_those_of_the_loaded_chunk_whatever_is_on_it() ->
 	assert_eq(view.cost_of(tall_grass + Vector2i(2, 0)), _rules.travel("cost_path"))
 
 
+func test_a_way_costs_as_little_as_a_worn_path_and_taking_it_up_drops_the_mask() -> void:
+	var tile := empty_row(COAST, Tile.Terrain.GRASS, 3)
+	var path_cost: float = _rules.travel("cost_path")
+	world.add_object(WorldObject.new(WorldObjectTypes.PLANK_WALK, tile))
+	world.add_object(WorldObject.new(WorldObjectTypes.STONE_PATH, tile + Vector2i.RIGHT))
+	var view := _view()
+	assert_false(view.is_known(tile), "not given yet")
+	masks.wait_for_mask(COAST)
+	assert_true(view.provide(masks))
+	assert_eq(view.cost_of(tile), path_cost)
+	assert_eq(view.cost_of(tile + Vector2i.RIGHT), path_cost)
+	assert_eq(view.cost_of(tile + Vector2i(2, 0)), 1.0, "open ground beside them")
+	world.remove_object(tile)
+	var after_edit := _view()
+	assert_false(after_edit.is_known(tile), "not given yet")
+	masks.wait_for_mask(COAST)
+	assert_true(after_edit.provide(masks))
+	assert_eq(after_edit.cost_of(tile), 1.0)
+
+
 func test_a_big_object_whose_chunk_is_not_loaded_closes_the_tiles_it_reaches_for_good() -> void:
 	var west := COAST + Vector2i.LEFT
 	var ewer := put_down_on_grass(WorldObjectTypes.EWER, tile_of(west, Vector2i(28, 10)))
