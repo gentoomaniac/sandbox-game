@@ -21,6 +21,7 @@ const REQUIRED_KEYS := {
 		"villager_step",
 	],
 	"mud": ["soaked_by", "window_hours", "walk_factor"],
+	"wading": ["walk_factor"],
 }
 
 static var _default: PathRules
@@ -76,6 +77,8 @@ func problems() -> Array[String]:
 		found.append("[mud] window_hours must be at least 1")
 	if not (0.0 < walk_factor() and walk_factor() <= 1.0):
 		found.append("[mud] walk_factor must be above 0 and at most 1")
+	if not (0.0 < wading_walk_factor() and wading_walk_factor() <= 1.0):
+		found.append("[wading] walk_factor must be above 0 and at most 1")
 	return found
 
 
@@ -138,6 +141,11 @@ func window_hours() -> int:
 ## The fraction of their speed that the player walks at on mud.
 func walk_factor() -> float:
 	return _value("mud", "walk_factor")
+
+
+## The fraction of their speed that the player walks at in flooded tidal mud.
+func wading_walk_factor() -> float:
+	return _value("wading", "walk_factor")
 
 
 func _value(section: String, key: String) -> float:

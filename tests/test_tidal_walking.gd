@@ -1,7 +1,7 @@
 extends GutTest
-## Tidal mud under water can't be walked on, like the sea; the player who stands in it can wade
-## on, so the rising tide cuts no one off from the shore. Nothing is placed, built, dropped or
-## tilled on it.
+## Tidal mud under water can't be walked on, like the sea; the player on foot may wade into it, very
+## slowly, and on over it, so the rising tide cuts no one off from the shore. Deep water, the
+## villagers and a horse keep out. Nothing is placed, built, dropped or tilled on it.
 
 const SEED := 7
 ## Day 1 at 00:00 is high water; low water is 6 hours 12 minutes later.
@@ -75,10 +75,60 @@ func test_only_mud_floods() -> void:
 	assert_true(_world.is_walkable(_mud_tile + Vector2i.LEFT))
 
 
-func test_the_player_cannot_step_from_dry_ground_onto_flooded_mud() -> void:
+func _wade_east(seconds: float) -> void:
+	for _frame in int(seconds / FRAME):
+		_state.walk(Vector2.RIGHT, FRAME, _state.walk_speed_factor())
+
+
+func test_the_player_wades_from_dry_ground_into_flooded_mud_very_slowly() -> void:
 	_set_tide(HIGH_WATER_MINUTE)
 	_stand_on(_mud_tile + Vector2i(-1, 0))
-	_walk_east(1.5)
+	_wade_east(1.0)
+	assert_true(_world.is_flooded(_state.player.tile()), "in the water")
+	var water_edge_x := _state.player.position.x
+	_wade_east(1.0)
+	var wading_factor := PathRules.default_rules().wading_walk_factor()
+	assert_almost_eq(
+		_state.player.position.x - water_edge_x, PlayerState.SPEED * wading_factor, 0.1
+	)
+
+
+func test_the_player_walks_at_full_speed_again_on_dry_ground() -> void:
+	_set_tide(HIGH_WATER_MINUTE)
+	_stand_on(_mud_tile + Vector2i(-1, 0))
+	assert_eq(_state.walk_speed_factor(), 1.0)
+	_stand_on(_mud_tile)
+	assert_eq(_state.walk_speed_factor(), PathRules.default_rules().wading_walk_factor())
+	_set_tide(LOW_WATER_MINUTE)
+	assert_eq(_state.walk_speed_factor(), 1.0, "the tide went out")
+
+
+func test_wading_stops_at_deep_water() -> void:
+	_set_tide(HIGH_WATER_MINUTE)
+	_world.set_terrain(_mud_tile + Vector2i(1, 0), Tile.Terrain.WATER)
+	_stand_on(_mud_tile + Vector2i(-1, 0))
+	_wade_east(10.0)
+	assert_lt(_state.player.position.x, float(_mud_tile.x + 1), "stopped at the deep water")
+	assert_gt(_state.player.position.x, float(_mud_tile.x), "after wading in")
+
+
+func test_the_villagers_cannot_stand_in_flooded_mud() -> void:
+	_set_tide(HIGH_WATER_MINUTE)
+	var centre := Vector2(_mud_tile) + Vector2(0.5, 0.5)
+	assert_true(PlayerState.can_stand_at(_world, centre, true))
+	assert_false(PlayerState.can_stand_at(_world, centre))
+	assert_false(Npcs.can_stand_at(_world, centre))
+
+
+func test_a_horse_refuses_flooded_mud_and_the_rider_must_dismount() -> void:
+	_set_tide(HIGH_WATER_MINUTE)
+	var start := _mud_tile + Vector2i(-1, 0)
+	_stand_on(start)
+	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", _state.player.position)
+	horse.is_saddled = true
+	_state.livestock.add(horse)
+	_state.mount(horse)
+	_wade_east(1.5)
 	assert_lt(_state.player.position.x, float(_mud_tile.x), "stopped at the water's edge")
 
 

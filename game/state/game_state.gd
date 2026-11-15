@@ -296,8 +296,8 @@ func is_door_ahead() -> bool:
 
 
 ## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
-## a debuff allow, and mud slows on top of that. On horseback it is the horse's pace, which nothing
-## slows.
+## a debuff allow, and mud, or wading in flooded tidal mud, slows on top of that. On horseback it
+## is the horse's pace, which nothing slows.
 func walk_speed_factor() -> float:
 	if player.horse != null:
 		var pace := "ride_walk_factor"
@@ -309,8 +309,13 @@ func walk_speed_factor() -> float:
 	var factor := energy_rules.walk_factor(player.energy)
 	if player.is_debuffed:
 		factor = minf(factor, energy_rules.debuff_walk_factor())
-	if not is_inside() and world.is_muddy_at(player.tile()):
-		factor *= PathRules.default_rules().walk_factor()
+	if not is_inside():
+		var tile := player.tile()
+		# Worn ground is never tidal mud, so only one of the two can apply.
+		if world.is_muddy_at(tile):
+			factor *= PathRules.default_rules().walk_factor()
+		elif world.is_flooded(tile):
+			factor *= PathRules.default_rules().wading_walk_factor()
 	return factor
 
 
@@ -332,7 +337,10 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 ## part of them is on a building (its door would take them inside), with the horse they ride. One
 ## lying in a bed stays: they get out of it as they move. Returns whether they now fit.
 func put_player_on_free_ground(reach := 12) -> bool:
-	if player.bed_lying_in != null or PlayerState.can_stand_at(current_map, player.position):
+	if (
+		player.bed_lying_in != null
+		or PlayerState.can_stand_at(current_map, player.position, player.horse == null)
+	):
 		return true
 	var here := player.tile()
 	var nearest := Vector2.INF

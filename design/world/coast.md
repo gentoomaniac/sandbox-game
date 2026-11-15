@@ -25,13 +25,21 @@
     from the shader, and a tile of mud is flooded (`World.is_flooded`) when the water covers most
     of it, which is how the picture reads at the edges: a tile that looks mostly dry can be
     walked on. The dark troughs of the mud's pixels lie lower in the picture but not in the rule.
-    Flooded mud is not walkable (`World.is_ground_walkable`, the one place that says so, for
-    wading to change later): not for the player, the villagers or the farm animals, and the
-    paths of the villagers go round it. Whoever stands in it (the water rose, or a game was
-    saved there) can step off it, and on over any connected flooded mud (`GameMap.is_wadeable`),
-    until wading is designed (the user, 2026-11-14: wading in should be possible but very slow,
-    [#63](https://github.com/gentoomaniac/sandbox-game/issues/63)), so no one is cut off;
-    a jetty over the mud stays walkable. Wading birds stay. Ice on the mud in winter: not
+    Flooded mud is not walkable (`World.is_ground_walkable`, the one place that says so): not
+    for the villagers or the farm animals, and the paths of the villagers go round it. Whoever
+    stands in it (the water rose, or a game was saved there) can step off it, and on over any
+    connected flooded mud (`GameMap.is_wadeable`), so no one is cut off.
+  - **Wading** ([#63](https://github.com/gentoomaniac/sandbox-game/issues/63), the user,
+    2026-11-14): the player on foot can also wade into flooded mud (with nothing on it that
+    blocks walking) from dry ground: `PlayerState.can_stand_at` with `may_wade`, which only the
+    player's own fit rule passes. They walk at `walk_factor` of `[wading]` in
+    `data/paths.cfg` (0.3) while their feet are in it (`GameState.walk_speed_factor`; worn
+    ground is never tidal mud, so it does not combine with the rain's mud factor). The tideways
+    and the sea are water terrain, not flooded mud: still blocked. A horse refuses flooded
+    mud (the rider rides on over dry ground only, and `dismount` never puts them in it), so
+    the player gets off to wade; a rider caught in the rising water can ride out over it,
+    as before. Resources out on the mud, to make wading worth it, are to come. A jetty over
+    the mud stays walkable. Wading birds stay. Ice on the mud in winter: not
     done.
   - **Looks:** the mud keeps its look in every season and weather (the tide washes it). The salt
     marsh is grey-green turf with silvery sea purslane and green glasswort, fresher in spring,

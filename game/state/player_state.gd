@@ -174,10 +174,13 @@ func move(
 			horse.facing = facing.x
 
 
-## Whether the player fits with their feet at `feet` (see `can_stand_at`). On horseback they also
-## keep off the tiles of buildings: the door would take the horse inside.
+## Whether the player fits with their feet at `feet` (see `can_stand_at`). On foot they may wade
+## into flooded mud; on horseback they may not, and keep off the tiles of buildings too: the door
+## would take the horse inside.
 func _fits(map: GameMap, feet: Vector2) -> bool:
-	return can_stand_at(map, feet) and (horse == null or not touches_building(map, feet))
+	if horse == null:
+		return can_stand_at(map, feet, true)
+	return can_stand_at(map, feet) and not touches_building(map, feet)
 
 
 ## Whether the player, who stands where they do not fit (a game saved in bed, or with an object
@@ -298,11 +301,13 @@ static func touches_building(map: GameMap, feet: Vector2) -> bool:
 	return false
 
 
-## Whether a player with their feet at `feet` fits: every tile their body touches is walkable.
-static func can_stand_at(map: GameMap, feet: Vector2) -> bool:
+## Whether a player with their feet at `feet` fits: every tile their body touches is walkable, or
+## with `may_wade` flooded mud free of anything that blocks walking.
+static func can_stand_at(map: GameMap, feet: Vector2, may_wade := false) -> bool:
 	var tiles := body_tiles(feet)
 	for y in range(tiles.position.y, tiles.end.y):
 		for x in range(tiles.position.x, tiles.end.x):
-			if not map.is_walkable(Vector2i(x, y)):
+			var tile := Vector2i(x, y)
+			if not (map.is_walkable(tile) or (may_wade and map.is_wadeable(tile))):
 				return false
 	return true

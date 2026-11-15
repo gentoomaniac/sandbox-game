@@ -49,9 +49,11 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - In the west, a sea dyke runs along the coast. Beyond it lie the salt marsh and the tidal mud
   of the Wadden Sea.
 - The tide comes in and goes out twice a day.
-- Mud under water can't be walked on, like the sea: the flats open and close with the tide.
-- If the water catches you, you can still wade to the shore. Villagers and animals obey the same
-  rule.
+- Mud under water is not walked on like dry ground, and the sea and the tideways can't be walked
+  on at all. You can wade into flooded mud on foot, but very slowly: a third of your normal speed.
+  A horse won't go into it, so get off first.
+- If the water catches you, you can wade to the shore. Villagers and animals keep out of flooded
+  mud, and leave it if the water rises round them.
 - A Warft (a dwelling mound) stands on the salt marsh, and now and then an Ewer (a sailing barge)
   lies on the mud.
 - Storks, geese, oystercatchers, gulls and terns live here: see [wildlife](animals.md#wildlife).

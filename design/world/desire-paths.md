@@ -60,6 +60,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
 - **Slower:** the player walks at `walk_factor` (0.7) of their speed on a muddy tile
   (`GameState.walk_speed_factor`, so their walk animation slows too). Not on horseback: a horse's
   pace is its own and nothing slows it.
+  Wading in flooded tidal mud is slower still, by its own factor (see `design/world/coast.md`).
 - **Villagers and animals walk at normal speed in mud, and path searches don't mind it** (decided
   after looking at the design). The `TravelMask`s are immutable snapshots of a chunk and know only
   that grass wears (`WEARS`), not how worn it is or whether it rains; the cost of a lane is read from

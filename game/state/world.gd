@@ -548,7 +548,8 @@ func is_wadeable(world_pos: Vector2i) -> bool:
 
 
 ## Tile rules, and buildings: only their door can be walked on (none on one with no inside). Flooded
-## mud can't be walked on, like the sea. This is the one place that says so: wading is to come.
+## mud can't be walked on, like the sea; only the player on foot may wade into it (see
+## `PlayerState.can_stand_at`), and this is the one place that keeps everyone else out.
 func is_ground_walkable(world_pos: Vector2i) -> bool:
 	return _is_ground_walkable_at(world_pos, clock.total_minutes())
 
