@@ -56,6 +56,7 @@ import stall  # noqa: E402
 import stork_nest  # noqa: E402
 import swing  # noqa: E402
 import seasons  # noqa: E402
+import snags  # noqa: E402
 import terrain  # noqa: E402
 import tool_icons  # noqa: E402
 import portraits  # noqa: E402
@@ -258,6 +259,15 @@ def write_objects():
     save_picture(camp.bedroll_cover(), "bedroll_cover.png")
 
 
+def write_snags():
+    """The dead and the half-dead trees (snags.py, issue #102): a sheet each in objects/ as the
+    atlas's entities have, not yet rows of the atlas (see write_snags in tools/art/generate.py)."""
+    rows = snags.rows()
+    by_look = {look: object_looks.object_rows(look, rows, snags.redraws()) for look in object_looks.LOOKS}
+    by_look |= cover.object_cover_looks(by_look)
+    atlas.save_entity_sheets("objects", [kind for kind, _ in rows], object_looks.LOOKS + cover.COVER_LOOKS, by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+
+
 def write_crops():
     for crop, cells in crops.sheets().items():
         save([cells], f"crops/{crop}.png", TILE, len(cells[0]))
@@ -296,6 +306,7 @@ def main():
     cover.write_textures(TILE)
     write_buildings()
     write_objects()
+    write_snags()
     write_crops()
     write_interior()
     write_items()

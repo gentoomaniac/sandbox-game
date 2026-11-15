@@ -67,8 +67,9 @@ def bare_alder(seed):
     return canvas
 
 
-def alder(seed):
-    """The alder in leaf: a narrow, rounded cone of dark leaves round the stem."""
+def alder(seed, crown=None):
+    """The alder in leaf: a narrow, rounded cone of dark leaves round the stem. `crown`, if given,
+    picks the clumps (cx, cy, radius) that are drawn (a half-dead alder's, see snags.py)."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     _stem(canvas, rng)
@@ -81,7 +82,7 @@ def alder(seed):
             radius = 4.5 + min(index, 3) * 0.6 + rng.uniform(-1, 1.5)
             blobs.append((OBJECT_CENTRE + side * reach + rng.uniform(-2, 2), y + rng.uniform(-2, 2), radius))
         blobs.append((OBJECT_CENTRE + rng.uniform(-2, 2), y + rng.uniform(-1, 1), 4.5 + rng.uniform(0, 1.5)))
-    shaded_blob(canvas, rng, blobs, LEAVES, LEAF_OUTLINE)
+    shaded_blob(canvas, rng, crown(blobs) if crown else blobs, LEAVES, LEAF_OUTLINE)
     shade_under_crown(canvas, BARK)
     return canvas
 

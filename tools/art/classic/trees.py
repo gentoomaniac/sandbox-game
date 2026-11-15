@@ -113,7 +113,9 @@ def shade_under_crown(canvas, shades=BARK):
             canvas[lowest - 1][x] = "green_dark"
 
 
-def oak(seed):
+def oak(seed, crown=None):
+    """The oak in leaf. `crown`, if given, picks the clumps (cx, cy, radius) that are drawn (a
+    half-dead oak's, see snags.py)."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 13)
@@ -128,7 +130,7 @@ def oak(seed):
     blobs = [(24 + rng.uniform(-1, 1), 38 + rng.uniform(-1, 1), rng.uniform(12, 14))]
     for cx, cy, radius in ((9, 44, 8), (39, 44, 8), (24, 26, 8), (14, 31, 8), (34, 31, 8), (18, 51, 6), (30, 51, 6)):
         blobs.append((cx + rng.uniform(-2, 2), cy + rng.uniform(-1.5, 1.5), radius + rng.uniform(-1, 1)))
-    shaded_blob(canvas, rng, blobs, LEAVES[:5], "green_deep")
+    shaded_blob(canvas, rng, crown(blobs) if crown else blobs, LEAVES[:5], "green_deep")
     shade_under_crown(canvas)
     return canvas
 
@@ -197,7 +199,9 @@ def conifer_tier(canvas, rng, top, bottom, half_width):
                 ]
 
 
-def spruce(seed):
+def spruce(seed, keeps_tier=None):
+    """The spruce. `keeps_tier`, if given, says of each tier (top, bottom, half width) whether it is
+    drawn (a half-dead spruce's, see snags.py)."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 10)
@@ -205,7 +209,9 @@ def spruce(seed):
     # Tall and narrow: six tiers, the widest at the bottom, each overlapping the next.
     tiers = [(55, 70, 14), (46, 61, 12.5), (37, 53, 11), (28, 45, 9), (20, 37, 7), (13 + rng.randint(0, 2), 29, 5)]
     for top, bottom, half_width in tiers:
-        conifer_tier(canvas, rng, top, bottom, half_width + rng.uniform(-0.5, 0.5))
+        tier = (top, bottom, half_width + rng.uniform(-0.5, 0.5))
+        if keeps_tier is None or keeps_tier(tier):
+            conifer_tier(canvas, rng, *tier)
     shade_under_crown(canvas)
     return canvas
 
@@ -220,11 +226,13 @@ PINE_NEEDLES = ("meadow_light", "meadow", "green_deep", "bog_dark")
 PINE_CROWN_BARK_DEPTH = 34
 
 
-def pine(seed):
+def pine(seed, crown=None):
     """A Scots pine: a tall, slightly crooked trunk, bare for most of its height, warm brown up in
     the crown and grey-brown below with a few dead branch stubs; the crown is a loose, flat-topped
     umbrella of dark blue-green needle clumps on branches spreading from the top third, with gaps
-    where the sky shows through."""
+    where the sky shows through. `crown`, if given, picks the needle clumps (cx, cy, half width)
+    that are drawn (a dead or half-dead pine's, see snags.py); their branches are drawn all the
+    same."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     ground_shadow(canvas, 10)
@@ -283,7 +291,7 @@ def pine(seed):
     for side in (-1, 1):
         clumps.append((centres[top] + side * rng.uniform(4, 6), top + 5 + rng.randint(0, 2), 5 + rng.uniform(0, 1.5)))
     # The lowest clump is drawn first, so the ones above overlap it like layers.
-    for cx, cy, width in sorted(clumps, key=lambda clump: -clump[1]):
+    for cx, cy, width in sorted(crown(clumps) if crown else clumps, key=lambda clump: -clump[1]):
         needle_clump(canvas, rng, cx, cy, width)
     return canvas
 

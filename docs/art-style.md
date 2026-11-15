@@ -199,7 +199,7 @@ neither: they are rimmed in their darkest bark. The meadow flowers are a stem ov
 and a head of a few pixels lit on its upper left. The plants' 16 px art stays as the classic
 art.
 
-The dead and the half-dead trees (issue #102: snags.py)
+The dead and the half-dead trees (issue #102: snags.py, and classic/snags.py for the classic art)
 are drawn for every kind of tree, so a dead oak reads as an oak and a dead pine as a pine. A dead
 tree keeps its kind's trunk, bark and build: its limbs in bark near the trunk and weathered
 silver-grey (`stone`) beyond, a few stiff twigs, broken ends splintered pale (`sand_light`), bark

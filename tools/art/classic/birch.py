@@ -87,9 +87,10 @@ def bare_birch(seed):
     return canvas
 
 
-def birch(seed):
+def birch(seed, crown=None):
     """The birch in leaf: the white trunk through a narrow, open crown of small clumps of leaves
-    along hanging twigs."""
+    along hanging twigs. `crown`, if given, picks the clumps (cx, cy, radius) that are drawn (a
+    half-dead birch's, see snags.py)."""
     rng = random.Random(seed)
     canvas = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     centres = _trunk(canvas, rng, seed)
@@ -104,7 +105,7 @@ def birch(seed):
             blobs.append((x, y, rng.uniform(2.5, 4)))
     # Leave a few holes, so the crown stays open.
     blobs = rng.sample(blobs, len(blobs) - 4)
-    shaded_blob(canvas, rng, blobs, LEAVES, LEAF_OUTLINE)
+    shaded_blob(canvas, rng, crown(blobs) if crown else blobs, LEAVES, LEAF_OUTLINE)
     # The twigs hang: strands of leaves dangle from the clumps' undersides.
     _hanging_tips(canvas, rng, {LEAF_OUTLINE}, LEAVES[2], 22)
     return canvas
