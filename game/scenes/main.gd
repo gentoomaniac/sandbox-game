@@ -369,6 +369,8 @@ func _apply_start_options() -> void:
 		_console_view.open()
 		for line in _options.console:
 			_console_view.run_line(line)
+	if _options.footprints != StartupOptions.NO_TILE:
+		DebugFootprints.create(_state.world, _options.footprints, _options.snow >= 0.5)
 	_debug = DebugRunner.new(_options)
 	_debug.state = _state
 	_debug.view = _view
@@ -954,7 +956,11 @@ func _show_clock() -> void:
 	# pictures only change with the day.
 	_snow_cover = _state.current_snow_cover()
 	_frost = _state.current_frost()
-	_view.show_ground_cover(_state.clock.day, _snow_cover, _state.current_thaw(), _frost)
+	var thaw := _state.current_thaw()
+	_view.show_ground_cover(_state.clock.day, _snow_cover, thaw, _frost)
+	_state.world.footprints.advance_to(
+		_state.clock.total_minutes(), _weather.rain, _weather.snow, thaw
+	)
 	_view.refresh_looks(_state.clock.day)
 	_hud.show_time(_state.clock)
 

@@ -74,6 +74,8 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   routes, and a speed factor in `Npcs._walk` for the live ones only, accepting that the skip
   ignores it.
 
+The mud shows the feet that cross it: see [footprints](footprints.md).
+
 ## Ways
 
 The plank walk and the stone path the player lays (#62, `design/building/ways.md`) are the fix for

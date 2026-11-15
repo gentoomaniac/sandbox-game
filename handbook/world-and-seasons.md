@@ -27,6 +27,10 @@ Seasons, land, weather and light in the Schleswig-Holstein of about 1700-1800.
 - In rain, worn ground (trodden grass and paths) turns to mud: a few hours of steady rain make
   it, and it dries out again about ten hours after the rain stops. You walk slower on mud, so a
   road that stays dry is worth laying. Villagers and animals are not slowed.
+- Walking in snow or in mud (the mud of the rain, or the tidal mud when the tide is out) leaves
+  footprints, one for each step, left and right. They fade in a few hours, sooner in rain, fresh
+  snowfall or a thaw, and the tide washes the ones on the mud away. Ways (plank walk, stone path)
+  take none, and nor does a horse yet. Villagers leave them where you can see them.
 
 ![A path through a meadow after 3 days, after 8, 5 days after last use, and under snow](../docs/screenshots/desire-paths.png)
 
