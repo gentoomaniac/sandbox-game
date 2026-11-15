@@ -3,7 +3,7 @@ extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_42` and so on). Older ones are refused.
+## (see `_upgrade_from_version_43` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -23,9 +23,8 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 53
-## The oldest version we still upgrade. Eleven steps back for the moment: the commit that drops the
-## upgrade from version 42 follows the one that raised VERSION, and makes it ten again.
-const OLDEST_VERSION := VERSION - 11
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -220,8 +219,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 42:
-		_upgrade_from_version_42(game)
 	if version <= 43:
 		_upgrade_from_version_43(game)
 	if version <= 44:
@@ -242,26 +239,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_51(game)
 	if version <= 52:
 		_upgrade_from_version_52(game)
-
-
-## Version 42 counted the wear of desire paths in steps (#61): a tile with 8 steps was trodden and
-## one with 24 a path. They are counted in days of wear now, and a tile keeps the look it had: 3
-## days make a tile trodden and 8 a path; the steps of less worn tiles are forgotten, and no
-## tile has taken steps today.
-static func _upgrade_from_version_42(game: Dictionary) -> void:
-	# Written out, not read from data/paths.cfg, so a later change leaves old saves alone.
-	var trodden_from_steps := 8.0
-	var path_from_steps := 24.0
-	var trodden_days := 3
-	var path_days := 8
-	var days: Array = []
-	for entry: Array in game["world"]["wear"]:
-		if entry[2] >= path_from_steps:
-			days.append([entry[0], entry[1], path_days])
-		elif entry[2] >= trodden_from_steps:
-			days.append([entry[0], entry[1], trodden_days])
-	game["world"]["wear"] = days
-	game["world"]["wear_today"] = []
 
 
 ## Version 43 had seasons of 30 days and years of 120 (#85); they have 35 and 140 now. A saved day

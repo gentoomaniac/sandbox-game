@@ -22,7 +22,7 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
 - Step 4: those fields are saved, version 53; `_upgrade_from_version_52` gives an old save the
   defaults (days 0, counts 0, `bond` none) and leaves the points as they are. `SaveValidator`
   checks days and counts are not negative, what the actions moved today is within the cap and the
-  bond is known.
+  bond is known. Step 4b: the upgrade from version 42 is dropped (oldest read: 43).
 
 ## The user's words
 
