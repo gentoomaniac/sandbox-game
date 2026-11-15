@@ -116,6 +116,7 @@ func test_rain_at_the_end_of_a_skip_keeps_them_at_home() -> void:
 	_skip_to(17 * 60 + 30)
 	assert_eq(npc.current_step.shelter, "rain")
 	assert_lte(npc.position.distance_to(_house.yard()), 0.01, "put at home")
+	assert_eq(npc.inside, _house, "and in the house")
 
 
 func test_a_villager_with_no_house_is_left_to_the_stroll() -> void:

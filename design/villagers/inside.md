@@ -14,8 +14,9 @@ stands in the yard. This is how they go in. Decided here and built in the steps 
   field and the fisher's landing are not). `rest`, the flowers, `mend_nets`, the Krug's meeting,
   visiting a friend and the walk about the village stay outdoors. The place has to be a building
   with an inside whose door the activity's spot is in front of (`ActivityPlaces.building_at_yard`);
-  with none the villager stands in the yard as before. Rain and the dark send a villager to the
-  yard, not in (`_stay_home`): a villager inside does not know it rains. Nothing else changes in
+  with none the villager stands in the yard as before. Rain and the dark send a villager into
+  their house (the user's default on #8; `_stay_home` with a shelter has the house as its building)
+  to wait it out, and out again when it holds. One whose way is given up stays in the yard. Nothing else changes in
   the plan, the planner or the model's prompt: where they are is the routine's business only.
 - **A villager with no workplace of their own** works at home (the target `workplace` falls back to
   the house), so they are in the house for their work. One whose house is taken from them is put

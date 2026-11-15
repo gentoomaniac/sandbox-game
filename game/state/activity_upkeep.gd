@@ -360,7 +360,8 @@ func _resolve(npc: Npc, step: ActivityStep, day: int) -> void:
 
 func _stay_home(npc: Npc, step: ActivityStep) -> void:
 	step.spot = npc.house.yard()
-	step.building = null
+	# Out of the rain and the dark they go in; one who gave up the way is only home, in the yard.
+	step.building = places.building_at_yard(step.spot) if step.shelter != "" else null
 	var is_waiting := step.shelter != "" or step.is_given_up
 	step.doing = "stand" if is_waiting else "walk_about"
 	step.radius = STAND_TILES if is_waiting else 0.0

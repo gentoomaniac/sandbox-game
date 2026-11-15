@@ -169,11 +169,15 @@ func test_rain_sends_the_farmer_home_and_he_goes_back_when_it_stops() -> void:
 	assert_eq(npc.current_step.spot, _house.yard())
 	var is_home := func() -> bool: return npc.current_step.is_arrived
 	assert_true(_pass_minutes(30, is_home))
-	assert_true(npc.is_staying_put, "they wait it out in the yard")
+	assert_true(npc.is_staying_put, "they wait it out in the house")
 	assert_eq(npc.anchor, _house.yard())
+	assert_true(
+		_pass_minutes(3, func() -> bool: return npc.inside == _house), "inside, not in the yard"
+	)
 
 	weather.rain = 0.0
 	_pass_minutes(1)
+	assert_null(npc.inside, "out again, to the field")
 	assert_eq(npc.current_step.shelter, "")
 	assert_eq(npc.current_step.spot, field, "back to the field")
 	assert_true(_pass_minutes(30, is_at_the_field))

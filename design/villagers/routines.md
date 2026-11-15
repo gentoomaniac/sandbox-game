@@ -593,7 +593,7 @@ the player is inside") and the same code serves a skip.
 - **Rain and the dark** change what is on while it is on, not the plan. An activity with
   `needs_daylight` is not on from sunset to sunrise (`Sun`: the winter day is short), and one with
   `needs_dry` not while `Weather.rain_in_hour` (the hour's mean, one region, so no flicker) is at
-  least `rain_hour_limit`. Instead the villager goes `home` and stands in the yard, and goes back
+  least `rain_hour_limit`. Instead the villager goes `home`, into the house ([inside.md](inside.md)), and stands there, and goes back
   to the entry when it holds again. Work in a building (the barn, the mill, the shop) has neither
   flag and goes on; the fisher's `work` has `needs_dry=false` (it is the sea). Nobody knows it
   will rain: they leave when it does, and come late if far.
