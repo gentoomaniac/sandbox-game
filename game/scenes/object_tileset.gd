@@ -61,6 +61,7 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 			var edge_cell := Vector2i(mask, WorldObjectWays.EDGE_ROW)
 			source.create_tile(edge_cell)
 			source.get_tile_data(edge_cell, 0).texture_origin = cell_origin(Vector2i.ONE)
+		var footprints := {}  # Of the type that made the tile of each atlas cell.
 		for type: StringName in WorldObjectTypes.TYPES:
 			var object_type: Dictionary = WorldObjectTypes.TYPES[type]
 			if not object_type.has("atlas_row"):
@@ -70,7 +71,12 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 				var atlas_cell := Vector2i(variant * cells_wide, object_type["atlas_row"])
 				# A dead tree's trunk is drawn from the cell of its kind's trunk, which has the tile.
 				if source.has_tile(atlas_cell):
+					assert(
+						footprints[atlas_cell] == object_type["footprint"],
+						"%s reuses a cell of another footprint" % type
+					)
 					continue
+				footprints[atlas_cell] = object_type["footprint"]
 				source.create_tile(atlas_cell, Vector2i(cells_wide, 1))
 				var tile_data := source.get_tile_data(atlas_cell, 0)
 				tile_data.texture_origin = cell_origin(object_type["footprint"])
