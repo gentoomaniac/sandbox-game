@@ -52,6 +52,17 @@ func test_a_deed_no_villager_saw_is_not_written_down() -> void:
 	assert_eq(_state.deeds.entries, [] as Array[Dictionary])
 
 
+func test_a_villager_inside_a_building_sees_no_deed_outside() -> void:
+	var inside := _villager("antje", 5.0)
+	inside.inside = Building.new(BuildingTypes.KATE, Vector2i.ZERO)
+	var outside := _villager("hinrich", 5.0)
+
+	_fell_a_tree()
+
+	assert_eq(_state.deeds.entries[0]["witnesses"], [outside.name])
+	assert_eq(inside.stories, [] as Array[Dictionary])
+
+
 func test_every_villager_within_20_tiles_is_a_witness_and_no_one_beyond() -> void:
 	var near := _villager("antje", 19.5)
 	var far := _villager("hinrich", 20.5)

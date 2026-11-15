@@ -7,7 +7,8 @@ extends RefCounted
 ## deed of the entry, its kind (a GossipRules kind), how many times it was done, the place in words
 ## and the names of the villagers who saw it. Deeds of the same kind and place on the same day
 ## merge into one entry, adding up the count and the witnesses; an entry is kept for
-## GossipRules `keep_days`. Only the world is watched: a deed inside a house is not seen.
+## GossipRules `keep_days`. Only the world is watched: a deed inside a house is not seen, and a
+## villager who is inside a building sees none outside.
 ##
 ## Every witness also gets the deed as a story they saw in their gossip buffer (Npc `stories`,
 ## merged the same way), which the chat prompt tells and the judge (StoryJudge) has to judge. It
@@ -93,7 +94,8 @@ func record(outcome: ActionOutcome) -> void:
 	var spot := Vector2(outcome.tile) + Vector2(0.5, 0.5)
 	var is_night := _npcs.is_rest_time(_clock.day, _clock.minute_of_day)
 	var witnesses := _npcs.all().filter(
-		func(npc: Npc) -> bool: return npc.position.distance_to(spot) <= rules.radius(is_night)
+		func(npc: Npc) -> bool:
+			return npc.inside == null and npc.position.distance_to(spot) <= rules.radius(is_night)
 	)
 	if witnesses.is_empty():
 		return

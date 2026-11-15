@@ -34,10 +34,12 @@ On the villager (`Npc`, not the building, so a building does not know who is in 
   building's interior (`Building.inside()`, made the first time somebody goes in, as when the player
   does).
 - `position` is **not** in the interior while they are inside: it stays at the yard in front of the
-  door. Everything that reads where villagers are in the world (the planner's radius, the deeds
-  they hear, gossip, the anchor, the trip a routine starts) keeps working and is none the wiser; a
+  door. Everything that reads where villagers are in the world (the planner's radius,
+  gossip meetings, the anchor, the trip a routine starts) keeps working and is none the wiser; a
   villager in their house is "at the door" for it. What must not see a villager who is inside
-  filters on `inside` (the views, the speech bubbles, the villager E speaks to).
+  filters on `inside` (the views, the speech bubbles, the villager E speaks to, the witnesses of a
+  deed outside: `DeedLog.record`). Gossip meetings (`GossipSpread`) still go by the yard position,
+  so villagers inside the same house, or near each other's doors, meet as if in the yard.
 - `entering: Building`, not saved: they walk the last step from the yard onto the door tile and are
   inside when they reach its middle.
 - `anchor` and `keep_radius` stay what `ActivityUpkeep` sets (the yard, the activity's radius); the
