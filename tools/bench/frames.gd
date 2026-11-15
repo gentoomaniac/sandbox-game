@@ -18,7 +18,8 @@ extends SceneTree
 ## second (#91), and ends the run. With 0.4 no tile counts as snowed, so every flower still blooms
 ## and is asked about.
 ## `make bench` runs it on a copy of the fixture save.
-## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s> --mute --max-fps=0
+## godot --headless --path . -s tools/bench/frames.gd -- --save-path=<save> --settings-path=<s>
+##   --mute --max-fps=0
 ##   [--far-trips=<n> [--far-speed=<factor>]] [--snow=<cover>]
 
 enum Scenario { STANDING, PASSING_OUT, SLEEPING, WALKING }
@@ -165,7 +166,9 @@ func _start_far_trips() -> void:
 	var masks := TravelMasks.for_world(state.world, state.npcs.rules)
 	while far_goals.size() < FAR_GOALS:
 		var reach := far_rng.randf_range(150.0, 300.0)
-		var tile := state.player.tile() + Vector2i(Vector2.from_angle(far_rng.randf() * TAU) * reach)
+		var tile := (
+			state.player.tile() + Vector2i(Vector2.from_angle(far_rng.randf() * TAU) * reach)
+		)
 		var coords := Chunk.world_to_chunk(tile)
 		if not World.is_chunk_in_bounds(coords) or state.world.is_chunk_loaded(coords):
 			continue
@@ -188,8 +191,8 @@ func _start_far_trips() -> void:
 		_send_far(npc)
 
 
-## Whether a way leads from `start` to `goal`: searched over the masks as the villagers do, leg after
-## leg, on this thread.
+## Whether a way leads from `start` to `goal`: searched over the masks as the villagers do, leg
+## after leg, on this thread.
 func _is_reachable(state: GameState, masks: TravelMasks, start: Vector2i, goal: Vector2i) -> bool:
 	var rules: NpcRules = state.npcs.rules
 	var view := TravelView.new(
@@ -253,20 +256,23 @@ func _print_far_trips() -> void:
 	var seconds := (Time.get_ticks_usec() - far_started_at) / 1000000.0
 	print(
 		(
-			"far trips: %d walkers at %.0fx the pace, %d trips completed, %d blocked (%d no way, %d stuck), "
-			+ "%d searches in %.1f s (%.2f a second)"
+			(
+				"far trips: %d walkers at %.0fx the pace, %d trips completed, "
+				+ "%d blocked (%d no way, %d stuck), "
+				+ "%d searches in %.1f s (%.2f a second)"
+			)
+			% [
+				far_trips,
+				far_speed,
+				far_arrived,
+				far_blocked[0] + far_blocked[1],
+				far_blocked[NpcTrip.Block.NO_WAY],
+				far_blocked[NpcTrip.Block.STUCK],
+				far_searches,
+				seconds,
+				far_searches / seconds
+			]
 		)
-		% [
-			far_trips,
-			far_speed,
-			far_arrived,
-			far_blocked[0] + far_blocked[1],
-			far_blocked[NpcTrip.Block.NO_WAY],
-			far_blocked[NpcTrip.Block.STUCK],
-			far_searches,
-			seconds,
-			far_searches / seconds
-		]
 	)
 
 
@@ -288,8 +294,10 @@ func _print_flower_check() -> void:
 		wildlife._flowers_near_view()
 	var check_ms := (Time.get_ticks_usec() - start) / 1000.0 / FLOWER_CHECKS
 	print(
-		"snow cover %s: %d flowers in bloom round the view, a check takes %.2f ms"
-		% [snow_cover, flowers.size(), check_ms]
+		(
+			"snow cover %s: %d flowers in bloom round the view, a check takes %.2f ms"
+			% [snow_cover, flowers.size(), check_ms]
+		)
 	)
 
 
@@ -318,14 +326,19 @@ func _report(scenario_name: String, times_ms: Array[float]) -> void:
 		over_long += 1 if t > LONG_MS else 0
 		over_slow += 1 if t > SLOW_MS else 0
 	print(
-		"%s: %d frames, mean %.2f ms, 99th percentile %.1f ms, longest %.1f ms, over 33 ms: %d, over 16.7 ms: %d"
-		% [
-			scenario_name,
-			times_ms.size(),
-			sum / times_ms.size(),
-			sorted[int(sorted.size() * 0.99)],
-			longest,
-			over_long,
-			over_slow
-		]
+		(
+			(
+				"%s: %d frames, mean %.2f ms, 99th percentile %.1f ms, longest %.1f ms, "
+				+ "over 33 ms: %d, over 16.7 ms: %d"
+			)
+			% [
+				scenario_name,
+				times_ms.size(),
+				sum / times_ms.size(),
+				sorted[int(sorted.size() * 0.99)],
+				longest,
+				over_long,
+				over_slow
+			]
+		)
 	)
