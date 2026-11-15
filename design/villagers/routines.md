@@ -283,7 +283,7 @@ routines' and off-screen travel is #68.
 Written 2026-11-15 after the user's clarification on #7, rewritten the same day with the answers of
 [#87](https://github.com/gentoomaniac/sandbox-game/issues/87),
 [#88](https://github.com/gentoomaniac/sandbox-game/issues/88) and
-[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: nothing here is built.** It
+[#89](https://github.com/gentoomaniac/sandbox-game/issues/89). **Plan: steps 1 to 9 of "The steps" are built** (issue #7; each says **Done** there), the planner (10 to 12), saving (13) and the bench (14) are not. It
 says what will be built and in which steps. It replaces the first plan (fixed timetables for five
 kinds of work), whose parts that still fit are kept: leaving in time, skip and sleep, loading, the
 console, the place lookup. It builds on homes and workplaces (#69), the path search and trips (#6,
@@ -729,25 +729,25 @@ One file for each part, each short:
 The week (`GameClock.weekday()`, `day_of_year()`) is on main already (#85). Steps 1 to 9 need no
 village: they run on the camp's villagers and on the test worlds of the road tests.
 
-1. **The file and `ActivityRules`:** `data/activities.cfg` with the activities and sets,
+1. **The file and `ActivityRules`:** **Done.** `data/activities.cfg` with the activities and sets,
    `problems`. No game behaviour. Doc: the format in the file's header.
-2. **Who has which:** the sheet keys (`work_set`, `activities`, `skips`, `church_feasts_only`) in
+2. **Who has which:** **Done.** the sheet keys (`work_set`, `activities`, `skips`, `church_feasts_only`) in
    `VillagerRules` and the header of `data/villagers.cfg`, the third entry of the trades in
    `data/npcs.cfg`, the eight sheets. Tests: every sheet and trade has a set.
-3. **`ActivityPlaces`:** a target kind to a tile for one villager, with the fallbacks (`meeting`:
+3. **`ActivityPlaces`:** **Done.** a target kind to a tile for one villager, with the fallbacks (`meeting`:
    the church yard, `field`: tilled tiles or the workplace's field spot). Tests.
-4. **`DefaultDay` and the entry that is on:** pure (clock, sun and weather given), with the leaving
+4. **`DefaultDay` and the entry that is on:** **Done.** pure (clock, sun and weather given), with the leaving
    time and the offset. Tests: the tables above.
-5. **`ActivityUpkeep` and `Households.changed`:** sending, `Npc.keep_radius`, arrival, rain and
+5. **`ActivityUpkeep` and `Households.changed`:** **Done.** sending, `Npc.keep_radius`, arrival, rain and
    dark, blocked trips, GameState wiring. The anchor text of [villagers.md](villagers.md)
    ("Where") changes here. Villagers follow the default day from this step on. Tests: executing.
-6. **The skip:** `Npcs.catch_up`'s entry Callable, the `skip_begins` flag. Tests. Doc line in
+6. **The skip:** **Done.** `Npcs.catch_up`'s entry Callable, the `skip_begins` flag. Tests. Doc line in
    travel.md: "What 239 does" is done.
-7. **Console `routine`.** Tests. (Before the planner, so the default day can be watched.)
-8. **The sleep screen:** a sleep ends on `FadeScreen.show_message` instead of the note. Tests. It
+7. **Console `routine`.** **Done.** Tests. (Before the planner, so the default day can be watched.)
+8. **The sleep screen:** **Done.** a sleep ends on `FadeScreen.show_message` instead of the note. Tests. It
    is independent of the rest and may go in at any point; it is here so that it is in before the
    planner needs its wait.
-9. **`DayPlanAnswer` and the plan on the villager:** the parse and checks, whole day and rest of
+9. **`DayPlanAnswer` and the plan on the villager:** **Done.** the parse and checks, whole day and rest of
    day, pure; `Npc.day_plans` (not saved yet) and the entry that is on reading a plan, with the
    default entries before a mid-day plan. Tests.
 10. **`NpcPrompt.plan_request` and `WeatherDay`:** the prompt and the weather in words, pure. `[plan]`
