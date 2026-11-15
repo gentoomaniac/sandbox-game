@@ -19,7 +19,12 @@ static func is_ford(world: World, world_pos: Vector2i) -> bool:
 	var chunk := world.chunk_at(Chunk.world_to_chunk(world_pos))
 	if chunk == null or chunk.terrain_at(Chunk.local_pos(world_pos)) != Tile.Terrain.FLOODPLAIN:
 		return false
-	return _creeks(world.world_seed).bed_at(world_pos) == CreekLayout.Bed.FORD
+	return is_ford_bed(world.world_seed, world_pos)
+
+
+## Whether the creeks of a seed have a ford at a tile, whatever is there now (see `is_ford`).
+static func is_ford_bed(world_seed: int, world_pos: Vector2i) -> bool:
+	return _creeks(world_seed).bed_at(world_pos) == CreekLayout.Bed.FORD
 
 
 static func _creeks(world_seed: int) -> CreekLayout:

@@ -1,9 +1,9 @@
 extends SceneTree
 ## Draws a top-down map of the generated land as a PNG, headless: one block of pixels per tile,
 ## the terrain as the ground colour and the objects (trees, dykes, ...) over it. It
-## reads and writes no save. See design/world/map-generation-review.md for the colours. At 4 px
-## a tile or more, a dyke is drawn as a bank along its line over the ground, running on the
-## diagonal where the game draws it so (see LineSlants).
+## reads and writes no save. The colours are those of MapColors (see
+## design/world/map-generation-review.md). At 4 px a tile or more, a dyke is drawn as a bank along
+## its line over the ground, running on the diagonal where the game draws it so (see LineSlants).
 ##
 ##   godot --headless --path . -s tools/world_map.gd -- --seed=42 --center=0,0 --size=320 \
 ##       --scale=3 --out=/abs/path/map.png
@@ -12,51 +12,10 @@ extends SceneTree
 ## and the map shows it: unless given, the centre is the village's middle and the size is 128
 ## tiles at scale 8.
 
-const OBJECT_COLORS := {
-	&"oak": Color("12401a"),
-	&"beech": Color("12401a"),
-	&"birch": Color("1b5e20"),
-	&"alder": Color("1b5e20"),
-	&"willow": Color("6b8e23"),
-	&"pine": Color("06290a"),
-	&"spruce": Color("06290a"),
-	&"dead_tree": Color("5d4037"),
-	&"berry_bush": Color("7cb342"),
-	&"shrub": Color("7cb342"),
-	&"fern_bush": Color("7cb342"),
-	&"sapling": Color("7cb342"),
-	&"dyke": Color("8d6e63"),
-	&"reeds": Color("c0ca33"),
-	&"stone": Color("9e9e9e"),
-	&"boulder": Color("757575"),
-	&"ewer": Color("000000"),
-	&"knick": Color("e65100"),
-	&"stone_wall": Color("ffffff"),
-	&"wattle_fence": Color("f5f5f5"),
-	&"stone_path": Color("efebe9"),
-	&"grave": Color("616161"),
-	&"draw_well": Color("0277bd"),
-	&"jetty": Color("795548"),
-	&"rowing_boat": Color("4e342e"),
-	&"net_frame": Color("ffb300"),
-	&"eel_traps": Color("ffb300"),
-}
 ## From this many pixels a tile up, a dyke is drawn along its line (see `_draw_dyke`).
 const DYKE_LINE_SCALE := 4
 ## How far out from its line a dyke reaches on the map, in tiles.
 const DYKE_HALF_WIDTH := 0.36
-const BUILDING_COLOR := Color("b71c1c")
-const WORN_COLOR := Color("efebe9")
-const TERRAIN_COLORS := {
-	Tile.Terrain.GRASS: Color("c8e6c9"),
-	Tile.Terrain.WATER: Color("1e88e5"),
-	Tile.Terrain.WETLAND: Color("80cbc4"),
-	Tile.Terrain.FLOODPLAIN: Color("dce775"),
-	Tile.Terrain.MUD: Color("bcaaa4"),
-	Tile.Terrain.SALT_MARSH: Color("c5e1a5"),
-	Tile.Terrain.SEA: Color("0d47a1"),
-	Tile.Terrain.WARFT: Color("a1887f"),
-}
 
 ## The world the chunks are put into: the village's edits are replayed on them from it.
 var _world: World
@@ -97,16 +56,16 @@ func _init() -> void:
 					var shown := Chunk.to_world(chunk.coords, local) - top_left
 					if shown.x < 0 or shown.y < 0 or shown.x >= size or shown.y >= size:
 						continue
-					var color := _color_of(chunk, local)
+					var color := MapColors.of_tile(_world, chunk, local)
 					var object := chunk.object_at(local)
 					if (
 						tile_px >= DYKE_LINE_SCALE
 						and object != null
 						and object.type == WorldObjectTypes.DYKE
-						and color == OBJECT_COLORS[&"dyke"]
+						and color == MapColors.OBJECT_COLORS[&"dyke"]
 					):
 						dykes[shown] = true
-						color = TERRAIN_COLORS.get(chunk.terrain_at(local), Color.MAGENTA)
+						color = MapColors.ground_of(_world.world_seed, chunk, local)
 					image.fill_rect(Rect2i(shown * tile_px, Vector2i.ONE * tile_px), color)
 	for tile: Vector2i in dykes:
 		_draw_dyke(image, tile, tile_px, dykes)
@@ -142,7 +101,9 @@ func _draw_dyke(image: Image, tile: Vector2i, tile_px: int, dykes: Dictionary) -
 					point, segment[0], segment[1]
 				)
 				if point.distance_to(nearest) <= DYKE_HALF_WIDTH:
-					image.set_pixelv(tile * tile_px + Vector2i(x, y), OBJECT_COLORS[&"dyke"])
+					image.set_pixelv(
+						tile * tile_px + Vector2i(x, y), MapColors.OBJECT_COLORS[&"dyke"]
+					)
 					break
 
 
@@ -152,18 +113,6 @@ func _dyke_mask(tile: Vector2i, dykes: Dictionary) -> int:
 		if dykes.has(tile + World.CONNECTION_SIDES[side]):
 			mask |= 1 << side
 	return mask
-
-
-func _color_of(chunk: Chunk, local: Vector2i) -> Color:
-	var world_pos := Chunk.to_world(chunk.coords, local)
-	if _world.building_at(world_pos) != null:
-		return BUILDING_COLOR
-	var object := chunk.object_at(local)
-	if object != null and OBJECT_COLORS.has(object.type):
-		return OBJECT_COLORS[object.type]
-	if _world.wear_stage(world_pos) != PathRules.Stage.UNWORN:
-		return WORN_COLOR
-	return TERRAIN_COLORS.get(chunk.terrain_at(local), Color.MAGENTA)
 
 
 func _options() -> Dictionary:
