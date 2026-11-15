@@ -1,7 +1,7 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: step 1 of
-section 14 is built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 and 2 of
+section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
 ([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
@@ -73,26 +73,41 @@ within 60 tiles of the dyke.
 ### Finding the site (`VillageSite`, a pure function of the seed)
 
 Starting at the camp's row and going north and south in steps of 4 rows, the first row `y0` where the
-layout fits. With `dyke_x` the first land tile east of the salt marsh in a row:
+layout fits. The village's frame has `u` 0 at the first land tile of row `y0` (`WorldGenerator.first_land_x`,
+where the sea dyke stands) and `v` 0 at `y0`:
 
-1. **The coast is straight enough:** `dyke_x` in every second row from -30 to +36 is within 8 tiles of
-   that of `y0`. The inland part is laid out 9 or more tiles behind the dyke of `y0`, so the wandering
-   coast never reaches it.
-2. **The inland land is dry and clear of water:** every tile from 9 to 58 east of the dyke, rows -26
-   to +32, is grass, Warft or wetland (the village drains it). No river, floodplain, creek, ford, mud
-   or sea. Trees and stones are no reason to refuse: the builder fells them (woods stand on the
-   Geest only, so they touch the village's eastern part).
-3. **The landing has salt marsh:** the 11 by 9 tiles seaward of the dyke at the landing's rows.
-4. **The camp can walk there:** the villagers' path search (see
-   [../tech/pathfinding.md](../tech/pathfinding.md)) finds a way over the generated land from the camp
-   to the east end of the Sielweg. It is the only rule that needs a search, so it runs last, on rows
-   that passed the others. It replaces the first draft's "no river on the straight line": the river
-   and the creeks may lie between, and a ford must then carry the way.
+1. **The coast is straight enough:** the first land tile of every row of the village's land (`v` -28 to
+   34) is within 8 tiles of that of `y0`. The inland part is laid out 9 or more tiles behind the dyke of
+   `y0`, so the wandering coast never reaches it.
+2. **The inland land is dry and clear of water:** every tile of the land from `u` 9 on is grass or
+   wetland (the village drains the wetland). No river, floodplain, creek, ford, mud or sea. Trees and
+   stones are no reason to refuse: the builder fells them (woods stand on the Geest only, so they touch
+   the village's eastern part).
+3. **The landing has salt marsh:** every tile of the plan's landing Warft (the one with
+   `is_on_salt_marsh`) is salt marsh, not one of the generated Warften.
+4. **The camp can walk there:** a path search (A*, `PathSearch`) over the generated land finds a way from
+   the camp to the east end of the main lane, the Sielweg. The village's own land counts as cleared, as
+   the builder will clear it. It is the only rule that needs a search, so it runs last. The river has no
+   ford and runs from the coast to the east edge of the world, so only a village on the camp's side of
+   it can be walked to: that is asked first, from the river's centre line (`RiverLine.line_y`), because
+   a search on the wrong side would look at every tile it can reach. The creeks have fords and do not
+   stop the way.
 
 The first draft's rule about the generated ditch grid is gone with the grid (#60 made the open land
 bare). No rule needs the world's edits, so the same function answers for a new game of any seed. The
-search stops at the first fit. Its cost and the distance for seeds 1 to 20 are measured in step 2
-(with `make world-map`) and written here; the figures of the first draft were for the old generator.
+search stops at the first fit, or gives up after 900 rows from the camp (`find` then returns `null`; none
+of seeds 1 to 20 comes near it).
+
+**Measured (step 2, seeds 1 to 20, on the new map):** the search takes 160 to 380 ms for a seed (the
+camp's own search included). The site is 36 to 464 rows (north mostly) from the camp, and the
+village's east end is **205 to 643 tiles of way** from the camp (median about 300; the player walks 5
+tiles a second: 41 to 129 seconds, median a minute). Seed by seed (origin, tiles to the Sielweg's end
+as rows plus columns): 1 (-251, -192) 355; 2 (-272, -160) 358; 3 (-250, -356) 518; 4 (-268, 44) 264;
+5 (-263, -332) 507; 6 (-266, -181) 376; 7 (-266, -52) 230; 8 (-258, -16) 205; 9 (-249, -114) 292;
+10 (-264, -170) 364; 11 (-263, -63) 240; 12 (-253, -211) 378; 13 (-272, -105) 307; 14 (-272, -155) 356;
+15 (-255, -113) 286; 16 (-247, -121) 286; 17 (-274, -107) 295; 18 (-274, 52) 264; 19 (-256, -229) 415;
+20 (-259, -472) 643. Any site is accepted (#75), but seeds 3, 5 and 20 are about two minutes of
+walking: the worn track and the handbook have to be good for those.
 
 ## 3. Generated or placed: placed, at new-game time
 
@@ -404,6 +419,12 @@ The user can stop after step 5 and have the village standing, empty.
   starts at `u` -18 (the jetty reaches `u` -18); the benches of the square are gone (a bench is indoor
   furniture only) and its draw well stands beside it; the graves are the type `grave`; the well of the
   Boysen yard moved to `(31, -18)`, as the old place shut the barn's door in (found by the check).
+- **Step 2.** `VillageSite.find(seed)` (`game/world/village_site.gd`), with `WorldGenerator.first_land_x`
+  (the first land tile of a row). Changes from the plan, all in section 2: rule 1 checks every row of the
+  land, not every second row of a fixed range; rule 2 asks for grass or wetland (no Warft inland) over the
+  plan's inland land; rule 3 checks the landing Warft's own tiles for salt marsh instead of "11 by 9
+  tiles"; a village across the river is refused before the search. The distances (205 to 643 tiles) are
+  longer than the "about a minute" of section 1 for some seeds; the figures are in section 2.
 
 ## 15. Screenshots
 

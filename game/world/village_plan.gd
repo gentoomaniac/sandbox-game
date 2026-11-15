@@ -75,6 +75,14 @@ func is_valid() -> bool:
 	return problems().is_empty()
 
 
+## The last tile of the main lane, where the worn track from the camp ends.
+func main_lane_end() -> Vector2i:
+	for lane in lanes:
+		if lane["id"] == MAIN_LANE:
+			return lane["points"][-1]
+	return Vector2i.ZERO
+
+
 ## The tiles a building covers.
 func building_tiles(building: Dictionary) -> Array[Vector2i]:
 	return Building.footprint_tiles(building["type"], building["origin"])
@@ -376,11 +384,7 @@ func _ground_problems(
 ## Every door and every field's gap has a walk to the end of the main lane.
 func _reach_problems(blocked: Dictionary[Vector2i, bool]) -> Array[String]:
 	var found: Array[String] = []
-	var main_lane: Array[Vector2i] = []
-	for lane in lanes:
-		if lane["id"] == MAIN_LANE:
-			main_lane = lane["points"]
-	var reached := _tiles_reached_from(main_lane[-1], blocked)
+	var reached := _tiles_reached_from(main_lane_end(), blocked)
 	for building in buildings:
 		var front := door_front(building)
 		if blocked.has(front):

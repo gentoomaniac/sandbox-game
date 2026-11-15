@@ -319,6 +319,11 @@ func _is_within_coast(world_pos: Vector2i, distance: float) -> bool:
 	)
 
 
+## The first tile of land in a row, east of the salt marsh: where the sea dyke stands.
+func first_land_x(y: int) -> int:
+	return ceili(_coast_line_x(y))
+
+
 ## Where the coast line runs in a row.
 func _coast_line_x(y: float) -> float:
 	return _coast_x + _coast_noise.get_noise_1d(y) * _coast_wander
