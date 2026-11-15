@@ -104,6 +104,12 @@ out of date. Recipes that were used (add `--classic-art` for the classic art):
   take it a few times; the two arts side by side are two shots joined.
 - A frame of a tool's swing (`--swing-frame` freezes the held tool's swing on a frame, counted from 0): `make
   screenshot SIZE=320x200 ZOOM=2 TIME=12:00 ARGS="--hold=steel_axe --pose=right --swing-frame=3 --mouse-tile=0,0"`.
+- The shop (#10): Trienke Lorenzen behind her stall in shop hours, she walks from her cottage so give her
+  a minute: `make screenshot SIZE=640x360 ZOOM=2 TIME=07:30 AT=-204,-186 SCREENSHOT_TIMEOUT=300
+  ARGS="--day=1 --screenshot-delay=75 --mouse-tile=0,0"` (the stall of seed 1; add `--weather=rain` for
+  the rain). The trade screen: `make screenshot SIZE=640x360 ZOOM=2 TIME=09:00 AT=-204,-184
+  ARGS="--day=1 --screenshot-delay=2 --mouse-tile=0,0 --trade --console='give logs 5;give egg 8;give fibre 6'"`.
+  `docs/screenshots/shop-stall.png` and `shop-trade.png` are the two arts joined, the new one left.
 - The console with a long, wrapping line: `"ARGS=--console='weather;god;spawn'"` (several commands, `;`
   between them, need that quoting).
 - The build menu: `make screenshot SIZE=1000x700 ZOOM=0.75 TIME=12:00 AT=69,-17 ARGS="--day=45 --yard=40,-20

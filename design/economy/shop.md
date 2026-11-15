@@ -1,7 +1,7 @@
 # The shop: a keeper who keeps hours and trades
 
 [#10](https://github.com/gentoomaniac/sandbox-game/issues/10) (task 240). **Approved by the user
-(issue comment, all defaults); built step by step, steps 1 to 8 so far** (each step's note below says what
+(issue comment, all defaults); built, step by step, all nine steps** (each step's note below says what
 changed from the plan). It is the first step of the economy draft in [README.md](README.md),
 and it is built to carry [#11](https://github.com/gentoomaniac/sandbox-game/issues/11) (seeds from
 the shop) with data alone. Needs the village (#9) and the routines (#7), both built.
@@ -204,7 +204,7 @@ an optional `seasons=[...]` key, added there if wanted).
 
 ## Steps
 
-Built so far: 1 (the shop hours: `fixed`, `keep_shop`, the set `shopkeeper`; the model is not offered a
+Built: 1 (the shop hours: `fixed`, `keep_shop`, the set `shopkeeper`; the model is not offered a
 fixed activity), 2 (the stall, `WorldObjectVillage`, its art is a placeholder), 3 (Trienke's sheet and
 story, [../villagers/villagers.md](../villagers/villagers.md); her `people` name Kerrin and Antje, who
 name her back), 4 (`ShopRules`, `data/shops.cfg`), 5 (`Shops` and `ShopQuote`: stock, room, the quote and the trade; the
@@ -212,7 +212,10 @@ refusal texts are in `Shops`, and what `Shops.trade` refuses changes nothing), 6
 and `TradeRow`, the console's `shop` and `shop restock`, `Shops.cover` and `Shops.fill`; `GameState.shops`
 is not saved until step 8), 7 (`ShopHours`: E trades in hours, the chat with the scripted line out of
 hours; `[shop]` of `data/npc_talk.cfg`; the model's prompt fact; the keeper's line is only said when she
-stands at the stall), 8 (`Shops.to_dict` and `load_dict`, `shops` in the save, version 51).
+stands at the stall), 8 (`Shops.to_dict` and `load_dict`, `shops` in the save, version 51), 9 (the handbook page
+[../../handbook/shop.md](../../handbook/shop.md), this page and the economy README brought up to date; the
+play-test of the keeper at the stall in the rain and of a lost harvest paid in fibre and logs is in
+`tests/test_shops.gd` and in the pictures `docs/screenshots/shop-*.png`).
 
 Each is a commit that passes `make test` and `make lint`, with its tests and doc lines. Steps 1 to 3
 are the keeper and need no trade; 4 to 8 are the trade.
@@ -245,6 +248,24 @@ are the keeper and need no trade; 4 to 8 are the trade.
    takes); the economy README marks its first step built and its "until a shop exists" lines point
    here. Play-test: the keeper at the stall in the rain; a lost harvest paid in fibre and logs. #11
    then adds seeds as data.
+
+## Differences from the plan (as built)
+
+- **`fixed` also keeps the model from being offered the activity** (`offers_of` leaves it out), so
+  it can't plan the shop hours a second time elsewhere in the day; what a plan starts while a fixed
+  entry is on is dropped (`DayPlan.over`). `DayPlanner` itself did not need to change: the merge is
+  in `ActivityUpkeep.entries_of`.
+- **The stall's type is in `WorldObjectVillage`**, not in `WorldObjectTypes` (which had reached the
+  1000 lines), and `VillagePlan.problems` lets the stall stand on the square, which it kept free
+  before. The art is a placeholder for a pixel artist, in both arts.
+- **Trienke's ties are in `people`**, as the user's note asked: Kerrin and Antje name her back, so
+  their sheets have one line more each. Her trade is just "the Höker" (the title of the screen),
+  and `Lorenzen` left the surnames of the made-up villagers, as it is a family of the village now.
+- **The cottage** is the one at (10, 4), the plan's "empty `kate` nearest the square": all the
+  cottages stand by the dyke, 35 tiles from the stall, so she is on her way for much of her
+  dinner hour (a place nearer the square is a plan change, not a code one).
+- **Save version 51** (50 was main's when it was built), the upgrade from 40 dropped first.
+- **`--trade`** is a start option for the picture of the trade screen (docs/development.md).
 
 ## Open questions
 

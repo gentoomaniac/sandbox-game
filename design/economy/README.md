@@ -21,8 +21,9 @@ So there are three ways to turn what the player makes into something else:
 
 - There is no money and nothing to buy. Tools are given at the start; upgrades are meant to come
   from a smith "in a settlement" ([inventory-and-character.md](../player/inventory-and-character.md)).
-- Seeds come from the console (`give`) and one seed comes back with each harvest
-  ([crops.md](../farming/crops.md)). "Until a shop exists" is the standing promise.
+- Seeds came from the console (`give`) and one seed comes back with each harvest
+  ([crops.md](../farming/crops.md)). "Until a shop exists" was the standing promise: the first shop
+  exists now ([shop.md](shop.md), #10) and sells turnip seeds; the other seeds are #11.
 - The village sheet (`data/village.cfg`, the `[money]` topic) already tells every villager the
   prices of 1750: "People reckon in Mark and Schilling: 16 Schilling make a Mark, and 3 Mark a
   Reichstaler." A pound of butter is 4 Schilling, a dozen eggs 2, a loaf of rye bread 1, a measure
@@ -84,8 +85,8 @@ ratios agree with the village sheet.
 ## Shops
 
 **The first step, a keeper at a stall who barters by value, has a plan of its own:
-[shop.md](shop.md) (#10, being built: the keeper, her stall and hours, `ShopRules` and the pure
-state and trade `Shops` are in; the trade screen is next).** The rest of this section is the draft behind it.
+[shop.md](shop.md) (#10, built: Trienke Lorenzen's stall on the town square, her hours, the trade
+screen, saving; the handbook page is [../../handbook/shop.md](../../handbook/shop.md)).** The rest of this section is the draft behind it.
 
 **Who sells and buys in Wehlsbüll** (a first reading of `data/village.cfg`):
 

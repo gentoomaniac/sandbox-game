@@ -7,7 +7,7 @@ Stardew Valley and Harvest Moon, with more room for exploring. The pixel art com
 new one at 32 px per tile, and the classic 16 px one (F7 switches).
 
 > **Status:** early prototype, under active development. The core loop works: you can walk, farm,
-> fell, mine, gather, build and sleep through the seasons. There is no shop, combat or story yet.
+> fell, mine, gather, build and sleep through the seasons. There is one shop (barter, no money), but no combat or story yet.
 
 ![The starting camp on a summer morning, at the widest view](docs/screenshots/camp.png)
 
@@ -28,7 +28,7 @@ new one at 32 px per tile, and the classic 16 px one (F7 switches).
 - Four seasons of 35 days, with trees, flowers, snow and frost: [the world](handbook/world-and-seasons.md).
 - A simulated weather with rain, snow, fog, storms and lightning, a Nordic day and a dark night:
   [the world](handbook/world-and-seasons.md).
-- The village Wehlsbüll, with its church, farms, fields and eight villagers: [the world](handbook/world-and-seasons.md).
+- The village Wehlsbüll, with its church, farms, fields and nine villagers: [the world](handbook/world-and-seasons.md); one of them keeps [a shop](handbook/shop.md).
 - Marsh, dykes, Knicks, and a tidal coast with a Warft: [the world](handbook/world-and-seasons.md).
 - Thirteen crops that grow with the weather: [farming](handbook/farming.md).
 - Cows, pigs, sheep, hens, horses you can ride, dogs and cats, and a wildlife of storks, geese, deer,

@@ -2,7 +2,7 @@
 
 The people of Wehlsbüll: who they are, what they notice, and how to talk to them.
 
-The eight villagers written by hand live in Wehlsbüll from the start of a new game (see
+The nine villagers written by hand live in Wehlsbüll from the start of a new game (see
 [world-and-seasons.md](world-and-seasons.md)); more come from the [console](console.md). They are
 saved with the game. They follow their day: they go to work, to meals, to church on Sunday and to the
 Krug in the evening, and keep within a few tiles of where they are, strolling by day and standing
@@ -15,12 +15,14 @@ campfire nearest to where they came. You walk through them, so they never shut y
 
 - Wehlsbüll is a made-up marsh parish two hours north of Husum, in 1750.
 - Each villager has a name, age, trade, personality, family and friends, likes and secrets.
-- Eight are written by hand. They live in Wehlsbüll from the start (a game begun before the village
+- Nine are written by hand. They live in Wehlsbüll from the start (a game begun before the village
   came has none: `spawn npc <id>` brings one):
   - `antje` (Antje Boysen, a farmer's wife), `hinrich` (her husband) and `boy` (their son)
   - `momme` (Momme Ketels, a fisherman) and `inken` (his daughter, Boy's sweetheart)
   - `ocke` (Ocke Hansen, the miller) and `gesche` (his wife)
   - `kerrin` (Kerrin Paulsen, a widow who lived through the flood of 1717)
+  - `trienke` (Trienke Lorenzen, the Höker: a carter's widow from Husum who keeps the stall on
+    the town square, a friend of Antje's and of Kerrin's; see [shop.md](shop.md))
 - `spawn npc 3` makes up three newcomers or people of the outlying farms, kin to nobody. They
   start knowing nothing about the village and learn it from other villagers, one topic per
   meeting.

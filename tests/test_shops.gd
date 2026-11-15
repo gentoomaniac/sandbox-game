@@ -184,3 +184,19 @@ func test_fill_gives_back_the_whole_stock_and_room() -> void:
 	_shops.fill(SHOP)
 	assert_eq(_shops.stock_of(SHOP, SEEDS), 40)
 	assert_eq(_shops.room_of(SHOP, ItemTypes.EGG), 12)
+
+
+func test_a_lost_harvest_is_paid_for_in_a_days_fibre_and_logs() -> void:
+	_carry(ItemTypes.FIBRE, 20)
+	_carry(ItemTypes.LOGS, 10)
+	var want := {SEEDS: 20}
+	var give := {ItemTypes.FIBRE: 20, ItemTypes.LOGS: 10}
+	var quote := _shops.quote(SHOP, want, give, _bag)
+	assert_eq([quote.price, quote.value, quote.problem], [60, 60, ""])
+	assert_eq(_shops.trade(SHOP, want, give, _bag), "")
+	assert_eq(_bag.totals(), {SEEDS: 20})
+
+
+func test_one_turnip_pays_for_a_seed() -> void:
+	_carry(ItemTypes.TURNIP, 1)
+	assert_eq(_shops.trade(SHOP, {SEEDS: 1}, {ItemTypes.TURNIP: 1}, _bag), "")

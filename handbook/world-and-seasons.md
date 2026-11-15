@@ -66,11 +66,11 @@ and `tp` takes you there.
   parsonage and the Krug close by. Six cottages stand along the dyke and the sluice, and the
   landing, with a jetty, a rowing boat and a net frame, is outside the dyke on the salt marsh.
   The place for the post mill is kept free.
-- The lanes are laid with cobbles, and so is the town square, an open place in the middle that is
-  kept free for a market. The village's cobbles are not yours to take up. Its middle is where the
+- The lanes are laid with cobbles, and so is the town square, an open place in the middle with the
+  stall of Trienke Lorenzen's shop on it (see [shop.md](shop.md)). The village's cobbles are not yours to take up. Its middle is where the
   villagers meet.
-- Eight villagers live here from the start (see [villagers.md](villagers.md)). The other houses
-  stand empty.
+- Nine villagers live here from the start (see [villagers.md](villagers.md)); one of them keeps the
+  shop on the square. The other houses stand empty.
 - The village is not yours: its houses cannot be taken down, and building on its land costs you
   goodwill (see [building-and-crafting.md](building-and-crafting.md)).
 - An old save from before the village has none: its world stays as it is.
