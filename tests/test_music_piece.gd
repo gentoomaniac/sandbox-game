@@ -14,20 +14,27 @@ func after_each() -> void:
 
 ## A module of two patterns with no samples, and a sections file: a [piece] and `sections`.
 func _write_piece(sections: String) -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	var bytes := PackedByteArray()
-	bytes.resize(HEADER_SIZE + 2 + 128 + 4 + 2 * TrackerModule.PATTERN_ROWS * 16)
-	bytes[HEADER_SIZE] = 2
-	bytes[HEADER_SIZE + 3] = 1
-	var magic := "M.K.".to_ascii_buffer()
-	for index in 4:
-		bytes[HEADER_SIZE + 2 + 128 + index] = magic[index]
-	var module := FileAccess.open(DIR.path_join("made_up.mod"), FileAccess.WRITE)
-	module.store_buffer(bytes)
-	module.close()
+	_write_module("made_up.mod", [0, 1])
 	var file := FileAccess.open(DIR.path_join("made_up.cfg"), FileAccess.WRITE)
 	file.store_string("[piece]\nspeed=6\ntempo=90\nbeat_rows=6\nbar_beats=2\n" + sections)
 	file.close()
+
+
+## A module of 4 channels and no samples that plays the patterns of `order`, as `file_name`.
+func _write_module(file_name: String, order: Array[int]) -> void:
+	DirAccess.make_dir_recursive_absolute(DIR)
+	var patterns: int = order.max() + 1
+	var bytes := PackedByteArray()
+	bytes.resize(HEADER_SIZE + 2 + 128 + 4 + patterns * TrackerModule.PATTERN_ROWS * 16)
+	bytes[HEADER_SIZE] = order.size()
+	for index in order.size():
+		bytes[HEADER_SIZE + 2 + index] = order[index]
+	var magic := "M.K.".to_ascii_buffer()
+	for index in 4:
+		bytes[HEADER_SIZE + 2 + 128 + index] = magic[index]
+	var module := FileAccess.open(DIR.path_join(file_name), FileAccess.WRITE)
+	module.store_buffer(bytes)
+	module.close()
 
 
 func test_tide_is_a_6_8_sway_of_one_looping_section() -> void:
@@ -48,6 +55,30 @@ func test_harbour_loops_or_goes_to_its_fill_which_leads_back() -> void:
 	assert_eq([fill.order, fill.rows], [2, 16], "after the loop's two patterns")
 	assert_eq(fill.exits, ["loop"] as Array[String])
 	assert_null(piece.section_named("bridge"))
+
+
+func test_a_fuller_version_beside_the_piece_is_read_with_it() -> void:
+	_write_piece('[loop]\norder=0\nrows=64\nexits=["loop"]\n')
+	var piece := MusicPiece.read(DIR, "made_up")
+	assert_null(piece.full_module, "none yet")
+	assert_eq(piece.module_of(true), piece.module, "the chiptune then")
+	_write_module("made_up_full.mod", [0, 1])
+	piece = MusicPiece.read(DIR, "made_up")
+	assert_not_null(piece.full_module)
+	assert_eq(piece.module_of(true), piece.full_module)
+	assert_eq(piece.module_of(false), piece.module)
+
+
+func test_a_fuller_version_that_does_not_fit_its_piece_is_refused() -> void:
+	_write_piece('[loop]\norder=0\nrows=64\nexits=["loop"]\n')
+	_write_module("made_up_full.mod", [0])
+	assert_null(MusicPiece.read(DIR, "made_up"), "another order list")
+	assert_push_error("made_up_full.mod has another order list")
+	var file := FileAccess.open(DIR.path_join("made_up_full.mod"), FileAccess.WRITE)
+	file.store_buffer(PackedByteArray([1, 2, 3]))
+	file.close()
+	assert_null(MusicPiece.read(DIR, "made_up"), "no module")
+	assert_push_error("made_up_full.mod is no module the renderer plays")
 
 
 func test_the_sections_come_in_the_order_of_the_file() -> void:

@@ -11,6 +11,9 @@ extends Node
 ##   doesn't). The new piece renders in the background and crossfades in on the bar.
 ## - Inside a building the quieter mix of what plays blends in, and the whole one on the way out
 ##   (MusicPlayer.set_indoors).
+## - With the classic art the chiptune version of each piece plays, with the 32 px art its fuller
+##   one (#15); as the art changes, the other version blends in on the bar
+##   (MusicPlayer.set_classic).
 ## Whatever the player is told to play (the console's `play`) is followed the same way; a player
 ## that was stopped (the console's `stop`) stays quiet. The fills come with each piece's form.
 
@@ -49,6 +52,7 @@ func _process(delta: float) -> void:
 	if moment == null:
 		return
 	_player.set_indoors(moment.is_inside)
+	_player.set_classic(moment.is_classic_art)
 	var next := _rules.fitting_pieces(moment.hour)[0] if not _has_started else next_piece(moment)
 	if next != "":
 		_has_started = true

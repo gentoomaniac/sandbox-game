@@ -9,6 +9,7 @@ const DIRECTOR_RULES := {
 	"piece.tiny": {"hours": [4, 22]},
 	"piece.other": {"hours": [15, 7]},
 	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 0.05},
+	"versions": {"fade_seconds": 0.05},
 	"fades": {"crossfade_seconds": 0.05, "stop_seconds": 0.05},
 	"cache": {"max_megabytes": 10},
 }
@@ -116,6 +117,15 @@ func test_indoors_the_quieter_mix_plays() -> void:
 	assert_false(_music.is_indoors(), "the whole mix outside")
 
 
+func test_with_the_classic_art_the_chiptune_version_plays() -> void:
+	_start_director()
+	await _next_started()
+	assert_false(_music.is_classic(), "the 32 px art: the fuller version")
+	_moment = MusicMoment.new(NOON, false, true)
+	await wait_process_frames(2)
+	assert_true(_music.is_classic())
+
+
 func test_a_stopped_player_stays_quiet() -> void:
 	_start_director()
 	await _next_started()
@@ -129,5 +139,5 @@ func test_a_stopped_player_stays_quiet() -> void:
 func test_the_moment_of_a_game_is_its_hour_and_place() -> void:
 	var state := GameState.new()
 	state.clock.minute_of_day = 17 * GameClock.MINUTES_PER_HOUR + 59
-	var moment := MusicMoment.of(state)
-	assert_eq([moment.hour, moment.is_inside], [17, false])
+	var moment := MusicMoment.of(state, true)
+	assert_eq([moment.hour, moment.is_inside, moment.is_classic_art], [17, false, true])

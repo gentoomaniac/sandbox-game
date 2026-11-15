@@ -6,6 +6,7 @@ const GOOD := {
 	"everyday": {"pieces": ["a", "b"], "min_seconds": 90.0, "switch_seconds": 180.0},
 	"piece.b": {"form": ["loop", "fill"], "hours": [15, 7]},
 	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 1.5},
+	"versions": {"fade_seconds": 3.0},
 	"fades": {"crossfade_seconds": 4.0, "stop_seconds": 2.0},
 	"cache": {"max_megabytes": 64},
 }
@@ -34,6 +35,13 @@ func test_the_forms_fit_their_pieces() -> void:
 		var piece := MusicPiece.read(MusicPlayer.MUSIC_DIR, piece_name)
 		assert_eq(piece.form_problem(rules.form(piece_name)), "", piece_name)
 	assert_has(rules.form("sketch_harbour"), "fill", "Harbour evening plays its fill")
+
+
+func test_the_levels_indoors_go_in_fours_for_more_channels() -> void:
+	var rules := MusicRules.new(GOOD)
+	assert_eq(rules.indoors_levels(), PackedFloat32Array([0.5, 0.7, 0.8, 0.0]))
+	assert_eq(rules.indoors_levels(8), PackedFloat32Array([0.5, 0.7, 0.8, 0.0, 0.5, 0.7, 0.8, 0.0]))
+	assert_eq(rules.versions_fade_seconds(), 3.0)
 
 
 func test_the_values_read_back() -> void:
@@ -85,6 +93,9 @@ func test_values_out_of_range_are_reported() -> void:
 		)
 	assert_has(
 		_with("indoors", "fade_seconds", 0.0).problems(), "[indoors] fade_seconds must be above 0"
+	)
+	assert_has(
+		_with("versions", "fade_seconds", 0.0).problems(), "[versions] fade_seconds must be above 0"
 	)
 	assert_has(
 		_with("fades", "crossfade_seconds", 0.0).problems(),

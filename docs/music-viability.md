@@ -129,6 +129,16 @@ in data/music.cfg):
   renders as soon as the first plays, so going through a door blends at once (in step, over 1.5 s).
   Both mixes of the piece that is wanted are kept: up to 26 MB for Harbour evening, and the cache
   holds 4 renders (about 38 MB) of the two everyday pieces.
+- **Two versions** (#15): a piece's fuller version for the 32 px art (`<name>_full.mod`, 8
+  channels) is rendered instead of the chiptune while the 32 px art shows (`MusicMoment.is_classic_art`,
+  `MusicPlayer.set_classic`). Its renders are as long as the chiptune's, so as big (Tide 5.6 MB,
+  Harbour evening 13.2 MB a mix), and only the version wanted is kept in memory: up to 26 MB for
+  Harbour evening, as before, and a third render (13 MB) while the other version blends in. When
+  the art changes, the other version's mix renders on a worker (the old one plays on) and blends
+  in on the next bar, in step, over 3 s; then its other mix renders. The cache: both versions
+  with both mixes of the two pieces would be 8 renders, about 75 MB, over its 64 MB, so the
+  oldest renders go and a version not heard for a while is rendered again when the art changes
+  back (a few seconds in the background).
 - **The director** (task 171, `MusicDirector`, a node of Main's): each frame it looks at the
   moment (`MusicMoment`: the clock's hour and whether the player is inside). The everyday pieces
   that fit the hour (`hours` of their [piece.<name>]: Tide 4 to 22, Harbour evening 15 to 7) take

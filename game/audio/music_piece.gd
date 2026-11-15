@@ -3,6 +3,13 @@ extends RefCounted
 ## A piece of assets/music/: its module (<name>.mod) and what tools/music/generate.py wrote beside
 ## it in <name>.cfg: the speed and tempo, the rows in a beat and the beats in a bar, and its
 ## sections. Plain data; ModuleRenderer renders it and MusicPlayer plays it.
+##
+## A piece may have a fuller version (#15), <name>_full.mod: the chiptune plays with the classic
+## 16 px art, the fuller one with the 32 px art. The generator gives it the piece's time and
+## sections, so it plays the same parts and switches with the chiptune in step.
+
+## What a fuller version's file name ends in, before the extension.
+const FULL_SUFFIX := "_full"
 
 
 ## A stretch of the piece that plays on its own: it starts from the same state wherever it is
@@ -22,7 +29,10 @@ class Section:
 
 
 var name := ""
+## The chiptune.
 var module: TrackerModule
+## The fuller version, or null where the piece has none.
+var full_module: TrackerModule
 var speed := 6
 var tempo := 125
 var beat_rows := 4
@@ -31,8 +41,8 @@ var bar_beats := 4
 var sections: Array[Section] = []
 
 
-## The piece called `piece_name` in `directory`; null, with an error, when its files are missing
-## or wrong.
+## The piece called `piece_name` in `directory`, with its fuller version where it has one; null,
+## with an error, when its files are missing or wrong.
 static func read(directory: String, piece_name: String) -> MusicPiece:
 	var base := directory.path_join(piece_name)
 	var bytes := FileAccess.get_file_as_bytes(base + ".mod")
@@ -41,8 +51,15 @@ static func read(directory: String, piece_name: String) -> MusicPiece:
 	var piece := MusicPiece.new()
 	piece.name = piece_name
 	piece.module = TrackerModule.from_bytes(bytes)
+	var full_path := base + FULL_SUFFIX + ".mod"
+	if FileAccess.file_exists(full_path):
+		piece.full_module = TrackerModule.from_bytes(FileAccess.get_file_as_bytes(full_path))
 	if piece.module == null:
 		problem = "%s.mod is no module the renderer plays" % piece_name
+	elif FileAccess.file_exists(full_path) and piece.full_module == null:
+		problem = "%s%s.mod is no module the renderer plays" % [piece_name, FULL_SUFFIX]
+	elif piece.full_module != null and piece.full_module.order != piece.module.order:
+		problem = "%s%s.mod has another order list" % [piece_name, FULL_SUFFIX]
 	elif file.load(base + ".cfg") != OK:
 		problem = "%s.cfg can't be read" % piece_name
 	else:
@@ -51,6 +68,11 @@ static func read(directory: String, piece_name: String) -> MusicPiece:
 		push_error("MusicPiece: %s" % problem)
 		return null
 	return piece
+
+
+## The module of the fuller version when `is_full` and the piece has one, else the chiptune's.
+func module_of(is_full: bool) -> TrackerModule:
+	return full_module if is_full and full_module != null else module
 
 
 ## The section the piece loops: its first.

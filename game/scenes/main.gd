@@ -193,7 +193,7 @@ func _load_game() -> void:
 
 ## What the music is chosen by now (see MusicDirector); null until the game is loaded.
 func _music_moment() -> MusicMoment:
-	return null if _state == null else MusicMoment.of(_state)
+	return null if _state == null else MusicMoment.of(_state, ArtSet.is_classic)
 
 
 ## Puts every view in the tree, in the order they are drawn and take input.

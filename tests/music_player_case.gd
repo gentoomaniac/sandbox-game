@@ -19,6 +19,7 @@ const BREAK_CELL := [0, 0, ModuleRenderer.EFFECT_BREAK, 0]
 const RULES := {
 	"everyday": {"pieces": ["tiny"], "switch_seconds": 90.0},
 	"indoors": {"channel_levels": [0.5, 0.7, 0.8, 0.0], "fade_seconds": 0.05},
+	"versions": {"fade_seconds": 0.05},
 	"fades": {"crossfade_seconds": 0.05, "stop_seconds": 0.1},
 	"cache": {"max_megabytes": 10},
 }
@@ -40,6 +41,7 @@ func before_each() -> void:
 	_music.cache = MusicCache.new(CACHE_DIR, 100 * 1000 * 1000)
 	_music.stop_seconds = 0.1
 	_music.mix_seconds = 0.05
+	_music.version_seconds = 0.05
 	add_child_autofree(_music)
 
 
@@ -56,14 +58,16 @@ func after_each() -> void:
 		DirAccess.remove_absolute(CACHE_DIR)
 
 
-## A module of one pattern and no samples whose first row breaks at once.
-func _write_module(track: String) -> void:
+## A module of one pattern and no samples whose first row breaks at once, of 4 or 8 `channels`,
+## and its sections unless it is a fuller version (`track` ends in MusicPiece.FULL_SUFFIX).
+func _write_module(track: String, channels := TrackerModule.CHANNELS) -> void:
 	var bytes := PackedByteArray()
-	bytes.resize(HEADER_SIZE + 2 + 128 + 4 + TrackerModule.PATTERN_ROWS * 16)
+	bytes.resize(HEADER_SIZE + 2 + 128 + 4 + TrackerModule.PATTERN_ROWS * channels * 4)
 	# The title, so that no two pieces are the same module (they would share a cached render).
-	bytes.encode_u8(0, track.unicode_at(0))
+	for index in track.length():
+		bytes.encode_u8(index, track.unicode_at(index))
 	bytes[HEADER_SIZE] = 1
-	var magic := "M.K.".to_ascii_buffer()
+	var magic := ("M.K." if channels == TrackerModule.CHANNELS else "8CHN").to_ascii_buffer()
 	for index in 4:
 		bytes[HEADER_SIZE + 2 + 128 + index] = magic[index]
 	for index in 4:
@@ -71,6 +75,8 @@ func _write_module(track: String) -> void:
 	var file := FileAccess.open(DIR.path_join(track + ".mod"), FileAccess.WRITE)
 	file.store_buffer(bytes)
 	file.close()
+	if track.ends_with(MusicPiece.FULL_SUFFIX):
+		return
 	file = FileAccess.open(DIR.path_join(track + ".cfg"), FileAccess.WRITE)
 	file.store_string(SECTIONS)
 	file.close()
