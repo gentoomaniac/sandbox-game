@@ -425,6 +425,13 @@ along its foot.
   4 px diamond meshes so the ground shows through, cork floats along the hem; wicker eel
   traps (`straw`, `sand_light`, `sand`, `mud`, hoops and outline `mud_dark`). Snow covers
   the deck and the boat's floor (a remap, as the planks lie flat), and caps the rest.
+- **Ways** (#62, tools/art/ways.py, 32 and 16 px from one module): a plank walk of weathered
+  boards across the tile (`bare_light` worn edges, `bare` faces, gaps `mud_dark`, a darker `mud`
+  board here and there, nails and knots at 32 px only) and a stone path of rounded cobbles set in
+  `mud_dark` earth (cool `stone`, warm `bare` and brown `sand`/`mud` ramps, dome-shaded at 32 px).
+  Full-tile pieces with no connection masks: every variant meets every other at the seams. Low
+  contrast, so a long way reads as one. Snow lies evenly over both, the gaps showing as
+  `snow_shadow`.
 - **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,
   22x33 px): a little taller than the player. A driftwood pole (`bare_light`, `bare`, `mud_dark`)
   with the crossbar in the sleeves of an old coat of faded indigo linen (the `water` ramp, folds
