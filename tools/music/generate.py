@@ -1,10 +1,17 @@
-"""Writes every piece of tools/music/pieces/ as a 4-channel ProTracker module (run it with `make art`).
+"""Writes every piece of tools/music/pieces/ as a ProTracker module (run it with `make art`).
 
-Each pieces/<name>.txt becomes art/generated/music/<name>.mod ("M.K.", 31 samples, 64-row patterns)
-and <name>.cfg, which tell the game what the module doesn't: the piece's speed, tempo, beat and bar,
-and per section its place in the order list, its rows and its exits ([piece] and one section per
-section of the piece, game/audio/music_piece.gd reads them). `make assets` copies both to
-assets/music/. The same text gives the same bytes every time.
+Each pieces/<name>.txt becomes art/generated/music/<name>.mod (31 samples, 64-row patterns; 4
+channels, "M.K.", or 5 to 8, "5CHN" to "8CHN", as the piece has voices) and <name>.cfg, which tell
+the game what the module doesn't: the piece's speed, tempo, beat and bar, and per section its place
+in the order list, its rows and its exits ([piece] and one section per section of the piece,
+game/audio/music_piece.gd reads them). `make assets` copies both to assets/music/. The same text
+gives the same bytes every time.
+
+A piece's fuller version (#15: the chiptune plays with the classic 16 px art, the fuller one with
+the 32 px art) is pieces/<name>_full.txt: the same tune with more voices and softer instruments. It
+must have the piece's speed, tempo, beat, bar, order and sections (their names, rows and exits), so
+that the game can switch between the two in step; it becomes <name>_full.mod, and the game reads
+the sections from <name>.cfg.
 
 A piece is plain text; a `#` at the start of a line or after a space starts a comment:
 
@@ -21,8 +28,9 @@ A piece is plain text; a `#` at the start of a line or after a space starts a co
     lead saw:                a voice (one channel, in the order of the lines) and its instrument
       E-2:2 A-2:2 A-2:6:452  its tokens, on as many indented lines as wanted
 
-Every section has the same voices in the same order, four of them, and each voice's tokens fill the
-section's rows exactly. A token is NOTE:ROWS or NOTE:ROWS:EFFECT:
+Every section has the same voices in the same order, four to eight of them, and each voice's
+tokens fill the section's rows exactly. In stereo the channels go left, right, right, left, and so on
+in fours. A token is NOTE:ROWS or NOTE:ROWS:EFFECT:
 - NOTE is a note from C-1 to B-3 (`C-2`, `F#3`), played with the voice's instrument at its default
   volume; `.` plays nothing (what sounds goes on); `^` silences the channel (effect C00).
 - EFFECT is three hex digits, ProTracker's effect and parameter. The effects that act while a note
@@ -50,12 +58,24 @@ a note it strikes or with `^`; until it strikes its first note it may only rest 
 effect) or cut, and a tone portamento can't be its first note (it would slide from what played
 before).
 
-The instruments are short waveforms made here, looped (single-cycle) or one-shot:
+The instruments are short waveforms made here, looped (single-cycle) or one-shot. The chiptune's:
 - saw: a sawtooth of 32 samples, the sharp lead; with 32 samples C-2 sounds about as C4.
 - pulse: a 25 % pulse of 32 samples, for chords played as arpeggios.
 - triangle: a triangle of 64 samples, the soft bass (an octave below the others at the same note).
 - noise: 2048 samples of decaying noise, one-shot: low notes thud, high notes hiss.
-Each waveform starts at zero, so a note starts without a jump.
+The softer ones of the fuller versions (#15), the looped ones a cycle of a few harmonics that a short
+attack leads into (played once; then the cycle loops), so a note begins soft:
+- flute: 32 samples, nearly a sine, a whistle or flute for the tune.
+- reed: 32 samples, the first harmonics of a saw falling off fast, a nyckelharpa or concertina.
+- strings: 32 samples, warm and round, a slow bowed swell for held chords.
+- harp: 32 samples, plucked: bright at once, mellowing over eight cycles into a soft one, for broken
+  chords (each note let die away by a volume slide).
+- drone: 64 samples (an octave below), the odd harmonics strong, a bagpipe or hurdy-gurdy drone.
+- bass: 64 samples, a round low bass.
+- drum: 4096 samples, one-shot, a frame drum's low thump falling a little in pitch (an octave below
+  the cycles of 32: D-1 sounds about as D2).
+Each waveform starts at zero, so a note starts without a jump. A module holds the chiptune's four,
+and the softer ones after them when a voice plays one.
 """
 
 import re
@@ -69,8 +89,10 @@ ROOT = Path(__file__).resolve().parents[2]
 PIECES = Path(__file__).resolve().parent / "pieces"
 MUSIC = ROOT / "art" / "generated" / "music"
 
-CHANNELS = 4
+# The channels of a module, by the tag written after its order list.
+TAGS = {4: b"M.K.", 5: b"5CHN", 6: b"6CHN", 7: b"7CHN", 8: b"8CHN"}
 PATTERN_ROWS = 64
+FULL_SUFFIX = "_full"
 DEFAULT_BEAT_ROWS = 4
 DEFAULT_BAR_BEATS = 4
 SAMPLE_SLOTS = 31
@@ -87,24 +109,83 @@ CUT = "^"
 HELD_EFFECTS = "01234A"
 STATED_EFFECTS = "0xy arpeggio, 1xx/2xx portamento, 3xx tone portamento, 4xy vibrato, Axy volume slide, Cxx volume, ECx note cut"
 
+# The softer cycles: their samples, the strengths of their harmonics (all in sine phase), the
+# cycles of their swell and their default volume.
+SOFT_CYCLES = {
+    "flute": (32, [1, 0.12, 0.05], 6, 48),
+    "reed": (32, [1, 0.5, 0.33, 0.2, 0.12, 0.07, 0.04], 4, 64),
+    "strings": (32, [1, 0.4, 0.22, 0.1, 0.05], 12, 40),
+    "drone": (64, [1, 0.35, 0.6, 0.2, 0.4, 0.12, 0.25, 0.06, 0.12], 4, 40),
+    "bass": (64, [1, 0.3, 0.1], 2, 64),
+}
+# The frame drum's samples.
+DRUM_SAMPLES = 4096
+
 
 def waveform(name):
-    """An instrument's 8-bit samples (-128..127), whether they loop and its default volume (0..64)."""
+    """An instrument's 8-bit samples (-128..127), where its loop starts (None for a one-shot; the loop
+    runs to the end) and its default volume (0..64)."""
     if name == "saw":
-        return [(index + 16) % 32 * 8 - 128 for index in range(32)], True, 40
+        return [(index + 16) % 32 * 8 - 128 for index in range(32)], 0, 40
     if name == "pulse":
-        return [0] + [96] * 8 + [-32] * 23, True, 28
+        return [0] + [96] * 8 + [-32] * 23, 0, 28
     if name == "triangle":
-        return [round(127 * (1 - abs((index / 16 + 1) % 4 - 2))) for index in range(64)], True, 64
+        return [round(127 * (1 - abs((index / 16 + 1) % 4 - 2))) for index in range(64)], 0, 64
     if name == "noise":
         rng = np.random.default_rng(169)
         decay = np.exp(-np.arange(2048) / 400)
         # The first two samples stay 0: ProTracker loops them after a one-shot ends.
-        return [0, 0] + [int(value) for value in np.round(rng.uniform(-127, 127, 2046) * decay[2:])], False, 48
-    raise ValueError(f"unknown instrument {name!r} (saw, pulse, triangle or noise)")
+        return [0, 0] + [int(value) for value in np.round(rng.uniform(-127, 127, 2046) * decay[2:])], None, 48
+    if name in SOFT_CYCLES:
+        length, harmonics, attack_cycles, volume = SOFT_CYCLES[name]
+        return swelled_cycle(length, harmonics, attack_cycles), attack_cycles * length, volume
+    if name == "harp":
+        return plucked_cycle(32, [1, 0.25, 0.1, 0.04], 8), 8 * 32, 28
+    if name == "drum":
+        return frame_drum(), None, 36
+    raise ValueError(f"unknown instrument {name!r} ({', '.join(INSTRUMENTS)})")
 
 
-INSTRUMENTS = ["saw", "pulse", "triangle", "noise"]
+def swelled_cycle(length, harmonics, attack_cycles):
+    """A cycle of `length` samples summing `harmonics`, after `attack_cycles` of it swelling in from
+    silence (a raised cosine): 8-bit samples, the cycle's peak at 127."""
+    phase = np.arange(length) / length * 2 * np.pi
+    cycle = sum(strength * np.sin((number + 1) * phase) for number, strength in enumerate(harmonics))
+    cycle /= np.abs(cycle).max()
+    attack = np.arange(attack_cycles * length) / (attack_cycles * length)
+    swell = np.tile(cycle, attack_cycles) * (0.5 - 0.5 * np.cos(np.pi * attack))
+    return [int(value) for value in np.round(np.concatenate([swell, cycle]) * 127)]
+
+
+def plucked_cycle(length, harmonics, attack_cycles):
+    """A plucked string: a bright cycle (a saw's harmonics, 1 / n up to the 12th) mellowing into the
+    cycle of `harmonics` over `attack_cycles`, after a quarter cycle rising from silence; then that
+    cycle loops (a piece lets it die away with a volume slide)."""
+    phase = np.arange(length) / length * 2 * np.pi
+    soft = sum(strength * np.sin((number + 1) * phase) for number, strength in enumerate(harmonics))
+    bright = sum(np.sin(number * phase) / number for number in range(1, 13))
+    soft, bright = soft / np.abs(soft).max(), bright / np.abs(bright).max()
+    place = np.arange(attack_cycles * length) / (attack_cycles * length)
+    mellowing = np.tile(bright, attack_cycles) * (1 - place) + np.tile(soft, attack_cycles) * place
+    attack = mellowing * np.minimum(np.arange(attack_cycles * length) / (length / 4), 1)
+    return [int(value) for value in np.round(np.concatenate([attack, soft]) * 127)]
+
+
+def frame_drum():
+    """A frame drum's thump: a low sine falling from 56 to 64 samples a cycle as it dies away (an
+    octave below the cycles of 32), a touch of noise for the skin on top."""
+    rng = np.random.default_rng(15)
+    time = np.arange(DRUM_SAMPLES)
+    cycle = 64 - 8 * np.exp(-time / 600)
+    tone = np.sin(2 * np.pi * np.cumsum(1 / cycle)) * np.exp(-time / 840)
+    skin = rng.uniform(-1, 1, DRUM_SAMPLES) * np.exp(-time / 60) * 0.2
+    drum = (tone + skin) * np.minimum(time / 8, 1)
+    return [0, 0] + [int(value) for value in np.round(drum[2:] / np.abs(drum).max() * 127)]
+
+
+CLASSIC_INSTRUMENTS = ["saw", "pulse", "triangle", "noise"]
+SOFT_INSTRUMENTS = ["flute", "reed", "strings", "harp", "drone", "bass", "drum"]
+INSTRUMENTS = CLASSIC_INSTRUMENTS + SOFT_INSTRUMENTS
 
 
 class PieceError(ValueError):
@@ -214,8 +295,8 @@ def check_piece(piece):
         if any(exit_name not in played for exit_name in section["exits"]):
             raise PieceError(f"section {name}: exits {section['exits']} must name sections of the order ({' '.join(played)})")
         signature = [(voice, instrument) for voice, instrument, _ in section["voices"]]
-        if len(signature) != CHANNELS or signature != (voices or signature):
-            raise PieceError(f"section {name}: voices {signature}, but every section has the same {CHANNELS}")
+        if len(signature) not in TAGS or signature != (voices or signature):
+            raise PieceError(f"section {name}: voices {signature}, but every section has the same 4 to 8")
         voices = signature
         for voice, _, tokens in section["voices"]:
             rows = sum(token[1] for token in tokens)
@@ -237,9 +318,26 @@ def check_entry(where, tokens):
             raise PieceError(f"{where}: an effect before its first note acts on what played before")
 
 
+def check_full_version(full, piece):
+    """Refuses a fuller version that couldn't switch with its piece in step (see the docstring)."""
+    for key in ["speed", "tempo", "beat_rows", "bar_beats", "order"]:
+        if full[key] != piece[key]:
+            raise PieceError(f"its {key} is {full[key]}, the piece's {piece[key]}")
+    shape = {name: (section["rows"], section["exits"]) for name, section in piece["sections"].items()}
+    full_shape = {name: (section["rows"], section["exits"]) for name, section in full["sections"].items()}
+    if full_shape != shape:
+        raise PieceError(f"its sections (rows, exits) are {full_shape}, the piece's {shape}")
+
+
+def instruments_of(piece):
+    """The instruments a module of the piece holds: the chiptune's, and the softer ones when it plays one."""
+    played = {instrument for section in piece["sections"].values() for _, instrument, _ in section["voices"]}
+    return INSTRUMENTS if played & set(SOFT_INSTRUMENTS) else CLASSIC_INSTRUMENTS
+
+
 def section_rows(piece, section):
     """The section's rows: per row, per channel a cell [period or 0, sample number or 0, command, parameter]."""
-    rows = [[[0, 0, 0, 0] for _ in range(CHANNELS)] for _ in range(section["rows"])]
+    rows = [[[0, 0, 0, 0] for _ in section["voices"]] for _ in range(section["rows"])]
     for channel, (_, instrument, tokens) in enumerate(section["voices"]):
         row = 0
         for note, length, effect in tokens:
@@ -269,26 +367,29 @@ def put_in_free_channel(row, effects, where):
 
 
 def module_bytes(title, piece):
-    """The piece as a ProTracker module: header, sample headers, order list, "M.K.", patterns, samples."""
+    """The piece as a ProTracker module: header, sample headers, order list, its tag ("M.K." for 4
+    channels), patterns, samples."""
+    channels = len(next(iter(piece["sections"].values()))["voices"])
     patterns, pattern_of_section = [], {}
     for name in dict.fromkeys(piece["order"]):
         rows = section_rows(piece, piece["sections"][name])
         pattern_of_section[name] = list(range(len(patterns), len(patterns) + -(-len(rows) // PATTERN_ROWS)))
         for start in range(0, len(rows), PATTERN_ROWS):
             pattern = rows[start : start + PATTERN_ROWS]
-            patterns.append(pattern + [[[0, 0, 0, 0]] * CHANNELS] * (PATTERN_ROWS - len(pattern)))
+            patterns.append(pattern + [[[0, 0, 0, 0]] * channels] * (PATTERN_ROWS - len(pattern)))
     order = [pattern for name in piece["order"] for pattern in pattern_of_section[name]]
     if len(order) > 128:
         raise PieceError(f"the order is {len(order)} patterns long, a module holds 128")
 
     data = title.encode("ascii")[:20].ljust(20, b"\0")
-    waveforms = [waveform(name) for name in INSTRUMENTS]
-    for name, (samples, loops, volume) in zip(INSTRUMENTS, waveforms):
+    instruments = instruments_of(piece)
+    waveforms = [waveform(name) for name in instruments]
+    for name, (samples, loop_start, volume) in zip(instruments, waveforms):
         words = len(samples) // 2
-        loop_start, loop_words = (0, words) if loops else (0, 1)
-        data += struct.pack(">22sHBBHH", name.encode(), words, 0, volume, loop_start, loop_words)
-    data += struct.pack(">22sHBBHH", b"", 0, 0, 0, 0, 1) * (SAMPLE_SLOTS - len(INSTRUMENTS))
-    data += struct.pack(">BB", len(order), 0) + bytes(order).ljust(128, b"\0") + b"M.K."
+        loop_words = (0, 1) if loop_start is None else (loop_start // 2, words - loop_start // 2)
+        data += struct.pack(">22sHBBHH", name.encode(), words, 0, volume, *loop_words)
+    data += struct.pack(">22sHBBHH", b"", 0, 0, 0, 0, 1) * (SAMPLE_SLOTS - len(instruments))
+    data += struct.pack(">BB", len(order), 0) + bytes(order).ljust(128, b"\0") + TAGS[channels]
     for pattern in patterns:
         for row in pattern:
             for period, sample, command, parameter in row:
@@ -320,15 +421,30 @@ def sections_text(name, piece):
     return "\n".join(lines) + "\n"
 
 
+def read_piece(path):
+    """The piece of pieces/<name>.txt; a fuller version checked against its piece."""
+    piece = parse_piece(path.read_text())
+    if path.stem.endswith(FULL_SUFFIX):
+        base = path.with_name(path.stem.removesuffix(FULL_SUFFIX) + ".txt")
+        if not base.exists():
+            raise PieceError(f"a fuller version of {base.name}, which isn't there")
+        try:
+            check_full_version(piece, parse_piece(base.read_text()))
+        except PieceError as error:
+            raise PieceError(f"as the fuller version of {base.name}: {error}") from error
+    return piece
+
+
 def main():
     MUSIC.mkdir(parents=True, exist_ok=True)
     for path in sorted(PIECES.glob("*.txt")):
         try:
-            piece = parse_piece(path.read_text())
+            piece = read_piece(path)
         except PieceError as error:
             sys.exit(f"{path.relative_to(ROOT)}: {error}")
         (MUSIC / f"{path.stem}.mod").write_bytes(module_bytes(path.stem.replace("_", " "), piece))
-        (MUSIC / f"{path.stem}.cfg").write_text(sections_text(path.stem, piece))
+        if not path.stem.endswith(FULL_SUFFIX):
+            (MUSIC / f"{path.stem}.cfg").write_text(sections_text(path.stem, piece))
 
 
 if __name__ == "__main__":

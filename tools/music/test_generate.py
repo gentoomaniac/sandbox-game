@@ -4,13 +4,15 @@ and the bytes of the module."""
 import contextlib
 import io
 import struct
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
 import check
 import modplug
-from generate import PieceError, module_bytes, parse_piece, sections_text
+from generate import INSTRUMENTS, PERIODS, PieceError, module_bytes, parse_piece, read_piece, sections_text, waveform
 
 BAR = "C-2:16"
 PIECE = f"""
@@ -177,10 +179,104 @@ class SectionsTest(unittest.TestCase):
             parse_piece(PIECE.replace("section fill 16", "section piece 16").replace("order loop fill", "order loop piece"))
 
 
+EIGHT = PIECE.replace(
+    "drums noise:\n  C-1:2:EC4 .:62\n",
+    "drums noise:\n  C-1:2:EC4 .:62\nflute flute:\n  D-2:64\npad strings:\n  ^:64\ndrone drone:\n  D-1:64\ndeck drum:\n  D-1:64\n",
+).replace(
+    "drums noise:\n  G-2:16\n",
+    "drums noise:\n  G-2:16\nflute flute:\n  E-2:16\npad strings:\n  A-1:16\ndrone drone:\n  D-1:16\ndeck drum:\n  ^:16\n",
+)
+
+
+class ChannelsTest(unittest.TestCase):
+    def test_eight_voices_are_an_8chn_module_with_the_softer_instruments(self):
+        module = module_bytes("test", parse_piece(EIGHT))
+        self.assertEqual(module[PATTERNS - 4 : PATTERNS], b"8CHN")
+        row = 8 * 4
+        word, low, _ = struct.unpack_from(">HBB", module, PATTERNS + 4 * 4)
+        self.assertEqual((word & 0x0FFF, low >> 4), (PERIODS[14], INSTRUMENTS.index("flute") + 1))
+        _, low, parameter = struct.unpack_from(">HBB", module, PATTERNS + 64 * row + 7 * 4)
+        self.assertEqual((low & 0x0F, parameter), (0xC, 0), "the fill's drum is cut")
+        lengths = [len(waveform(name)[0]) for name in INSTRUMENTS]
+        self.assertEqual(len(module), PATTERNS + 2 * 64 * row + sum(lengths))
+
+    def test_a_softer_cycle_swells_into_its_loop(self):
+        for name in ["flute", "reed", "strings", "drone", "bass"]:
+            with self.subTest(name=name):
+                samples, loop_start, _ = waveform(name)
+                cycle = samples[loop_start:]
+                self.assertIn(len(cycle), (32, 64))
+                self.assertEqual(samples[0], 0, "starts at zero")
+                self.assertEqual(max(abs(value) for value in cycle), 127)
+                steepest = np.abs(np.diff(cycle + cycle[:1])).max()
+                self.assertLessEqual(np.abs(np.diff(samples[:loop_start] + cycle[:1])).max(), steepest, "no jump into the loop")
+                self.assertLess(max(abs(value) for value in samples[: len(cycle)]), 64, "the first cycle is soft")
+
+    def test_the_harp_rises_from_silence_bright_and_mellows_into_its_loop(self):
+        samples, loop_start, _ = waveform("harp")
+        cycle = np.array(samples[loop_start:])
+        self.assertEqual((len(cycle), samples[0]), (32, 0))
+        self.assertLess(max(abs(value) for value in samples[:4]), 64, "a quarter cycle rising")
+        bright, soft = np.array(samples[32:64]), cycle
+        self.assertGreater(np.abs(np.diff(bright)).max(), 2 * np.abs(np.diff(soft)).max(), "bright at first")
+        into_loop = np.abs(np.diff(samples[loop_start - 32 : loop_start + 1])).max()
+        self.assertLessEqual(into_loop, 1.5 * np.abs(np.diff(np.append(soft, soft[0]))).max(), "mellow by the loop")
+
+    def test_the_frame_drum_is_a_one_shot_from_zero(self):
+        samples, loop_start, _ = waveform("drum")
+        self.assertIsNone(loop_start)
+        self.assertEqual(samples[:2], [0, 0])
+        self.assertEqual(max(abs(value) for value in samples), 127)
+
+    def test_a_softer_cycle_loops_after_its_swell_in_the_header(self):
+        module = module_bytes("test", parse_piece(EIGHT))
+        slot = INSTRUMENTS.index("flute")
+        _, words, _, _, loop_start, loop_words = struct.unpack_from(">22sHBBHH", module, 20 + slot * 30)
+        self.assertEqual((words, loop_start, loop_words), (7 * 16, 6 * 16, 16))
+
+    def test_five_voices_are_a_5chn_module_and_three_are_refused(self):
+        five = PIECE.replace("drums noise:\n  C-1:2:EC4 .:62\n", "drums noise:\n  C-1:2:EC4 .:62\nflute flute:\n  D-2:64\n")
+        five = five.replace("drums noise:\n  G-2:16\n", "drums noise:\n  G-2:16\nflute flute:\n  E-2:16\n")
+        self.assertEqual(module_bytes("test", parse_piece(five))[PATTERNS - 4 : PATTERNS], b"5CHN")
+        three = PIECE.replace("drums noise:\n  C-1:2:EC4 .:62\n", "").replace("drums noise:\n  G-2:16\n", "")
+        with self.assertRaisesRegex(PieceError, "the same 4 to 8"):
+            parse_piece(three)
+
+
+class FullVersionTest(unittest.TestCase):
+    def read(self, piece, full):
+        with tempfile.TemporaryDirectory() as folder:
+            if piece is not None:
+                (Path(folder) / "tune.txt").write_text(piece)
+            (Path(folder) / "tune_full.txt").write_text(full)
+            return read_piece(Path(folder) / "tune_full.txt")
+
+    def test_a_fuller_version_with_the_pieces_sections_and_time_is_read(self):
+        self.assertEqual(len(self.read(PIECE, EIGHT)["sections"]["loop"]["voices"]), 8)
+
+    def test_refuses_a_fuller_version_that_could_not_switch_in_step(self):
+        cases = {
+            EIGHT.replace("tempo 125", "tempo 120"): "its tempo is 120",
+            EIGHT.replace("order loop fill", "order loop fill fill"): "its order",
+            EIGHT.replace("section loop 64", "section loop 64 exits loop fill"): "its sections",
+        }
+        for full, message in cases.items():
+            with self.subTest(message=message), self.assertRaisesRegex(PieceError, message):
+                self.read(PIECE, full)
+
+    def test_refuses_a_fuller_version_of_no_piece(self):
+        with self.assertRaisesRegex(PieceError, "tune.txt, which isn't there"):
+            self.read(None, EIGHT)
+
+
 @unittest.skipIf(modplug.LIBRARY is None, "libmodplug is not installed")
 class CheckTest(unittest.TestCase):
     def test_finds_nothing_wrong_with_a_module_as_its_piece_says(self):
         piece = parse_piece(PIECE)
+        self.assertEqual(check.problems(module_bytes("test", piece), piece), [])
+
+    def test_finds_nothing_wrong_with_a_module_of_eight_channels(self):
+        piece = parse_piece(EIGHT)
         self.assertEqual(check.problems(module_bytes("test", piece), piece), [])
 
     def test_finds_rows_played_at_another_speed(self):
