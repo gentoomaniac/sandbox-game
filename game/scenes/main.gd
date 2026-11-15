@@ -87,6 +87,7 @@ var _blackout: BlackoutFlow
 var _screen_keys: ScreenKeys
 var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
+var _interact: InteractFlow
 var _debug: DebugRunner
 var _pending_minutes := 0.0
 ## The game hour the wetness of the soil was last shown for.
@@ -236,7 +237,6 @@ func _make_views() -> void:
 	add_child(ModelNotices.new(_chat_screen.dialogue, _notifications))
 	add_child(_chat_screen)
 	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
-	_trade_screen.talk_requested.connect(_open_chat)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_load_dialog)
@@ -282,6 +282,19 @@ func _connect_state_and_views() -> void:
 	_session.notifications = _notifications
 	_session.blackout = _blackout
 	add_child(_session)
+	_interact = InteractFlow.new()
+	_interact.state = _state
+	_interact.use_highlight = _use_highlight
+	_interact.harvest_hud = _harvest_hud
+	_interact.blackout = _blackout
+	_interact.console_view = _console_view
+	_interact.chat_screen = _chat_screen
+	_interact.trade_screen = _trade_screen
+	_interact.process_screen = _process_screen
+	_interact.storage_screen = _storage_screen
+	_interact.fire_screen = _fire_screen
+	_interact.crafting_screen = _crafting_screen
+	_trade_screen.talk_requested.connect(_interact.open_chat)
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -340,7 +353,7 @@ func _connect_state_and_views() -> void:
 		_music,
 		day_planner.replan,
 		_map_screen.toggled,
-		_open_shop
+		_interact.open_shop
 	)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
@@ -422,8 +435,8 @@ func _apply_start_options() -> void:
 	_debug.crafting_screen = _crafting_screen
 	_debug.process_screen = _process_screen
 	_debug.chat_screen = _chat_screen
-	_debug.open_chat = _open_chat
-	_debug.open_shop = _open_shop
+	_debug.open_chat = _interact.open_chat
+	_debug.open_shop = _interact.open_shop
 	_debug.try_sleep = _blackout.try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _menu.open_page
@@ -490,7 +503,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():
-		_interact()
+		_interact.interact()
 	elif _is_use_event(event) and can_use and (_eat_held() or _state.switch_held_lantern()):
 		pass  # No target: a held food is eaten, the lantern lit or put out, instead of a tile used.
 	elif event.is_action_pressed("use") and can_use:
@@ -703,51 +716,6 @@ func _switch_art_set(event: InputEvent) -> bool:
 
 func _toggle_classic_art() -> void:
 	_settings.set_classic_art(not ArtSet.is_classic)
-
-
-## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
-## front, opens the chest or station in reach, rings the bell frame in reach or sleeps in the bed.
-func _interact() -> void:
-	var choice := Interaction.choice_at(_state, _use_highlight.targeting().tile)
-	match choice.kind:
-		Interaction.Kind.DISMOUNT:
-			if not _state.dismount():
-				_harvest_hud.show_note("No room to get off here.")
-		Interaction.Kind.CHAT:
-			_open_chat(choice.subject)
-		Interaction.Kind.TRADE:
-			_open_shop(choice.subject)
-		Interaction.Kind.MOUNT:
-			_state.mount(choice.subject)
-		Interaction.Kind.OPEN_STATION_GRID:
-			_process_screen.open_station(
-				ProcessStation.new(_state, Crafting.new(_state), choice.subject)
-			)
-		Interaction.Kind.OPEN_CHEST:
-			_storage_screen.open_chest(choice.subject, _state.player)
-		Interaction.Kind.OPEN_FIRE:
-			_fire_screen.open_fire(choice.subject, _state)
-		Interaction.Kind.OPEN_CRAFTING:
-			_crafting_screen.open_station(choice.subject)
-		Interaction.Kind.RING_BELL:
-			_state.ring_bell_in_reach()
-		Interaction.Kind.SLEEP:
-			_blackout.try_sleep()
-
-
-## Opens the trade with a shopkeeper, who turns to the player (the trade pauses the game).
-func _open_shop(keeper: Npc) -> void:
-	_console_view.close()
-	_state.npcs.talk_to(keeper, _state.player.position)
-	_trade_screen.open_shop(keeper, _state)
-
-
-## Opens the chat with a villager, who turns to the player (the chat pauses the game). A shopkeeper
-## at a shut stall says so first.
-func _open_chat(npc: Npc) -> void:
-	_state.npcs.talk_to(npc, _state.player.position)
-	ShopHours.greet(_state, npc)
-	_chat_screen.open_chat(npc, _state)
 
 
 func _pass_door() -> void:
