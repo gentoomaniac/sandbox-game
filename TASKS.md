@@ -20,6 +20,8 @@ on 2026-11-14: one task of the Parallel lane and one of the Chain lane at a time
 - **Talking:** the user and the coordinator talk in the chat, not on the issues (the user,
   2026-11-14). The board shows the state, and the coordinator keeps it current. New issues and
   comments are watched, as outside issues may come in.
+- **Marked as a robot:** every issue, comment and pull request text an agent writes starts with
+  🤖, so it is told apart from the user's own words (the user, 2026-11-15).
 - **When a task is merged:** the coordinator moves its card to To test and adds what to try by
   hand to the issue as a checklist. The user says in the chat what works; the coordinator ticks
   it and closes the issue, or makes an issue of what doesn't work. The tasks done before
