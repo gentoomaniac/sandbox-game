@@ -211,32 +211,24 @@ func _read(sections: Dictionary) -> void:
 func _read_section(kind: String, id: String, section: String, values: Dictionary) -> void:
 	match kind:
 		"warft":
-			(
-				warften
-				. append(
-					{
-						"id": id,
-						"centre": _value(values, section, "centre", TYPE_VECTOR2, Vector2.ZERO),
-						"radii": _value(values, section, "radii", TYPE_VECTOR2, Vector2.ONE),
-						"is_on_salt_marsh": values.get("is_on_salt_marsh", false),
-					}
-				)
-			)
+			var warft := {
+				"id": id,
+				"centre": _value(values, section, "centre", TYPE_VECTOR2, Vector2.ZERO),
+				"radii": _value(values, section, "radii", TYPE_VECTOR2, Vector2.ONE),
+				"is_on_salt_marsh": values.get("is_on_salt_marsh", false),
+			}
+			warften.append(warft)
 		"pond":
 			ponds.append(_value(values, section, "rect", TYPE_RECT2I, Rect2i()))
 		"building":
-			(
-				buildings
-				. append(
-					{
-						"id": id,
-						"type": StringName(_value(values, section, "type", TYPE_STRING, "")),
-						"style": StringName(values.get("style", "")),
-						"origin": _value(values, section, "origin", TYPE_VECTOR2I, Vector2i.ZERO),
-						"name": _value(values, section, "name", TYPE_STRING, ""),
-					}
-				)
-			)
+			var building := {
+				"id": id,
+				"type": StringName(_value(values, section, "type", TYPE_STRING, "")),
+				"style": StringName(values.get("style", "")),
+				"origin": _value(values, section, "origin", TYPE_VECTOR2I, Vector2i.ZERO),
+				"name": _value(values, section, "name", TYPE_STRING, ""),
+			}
+			buildings.append(building)
 		"lane":
 			var points: Array[Vector2i] = []
 			points.assign(_value(values, section, "points", TYPE_ARRAY, []))
@@ -248,16 +240,12 @@ func _read_section(kind: String, id: String, section: String, values: Dictionary
 		"objects":
 			var tiles: Array[Vector2i] = []
 			tiles.assign(_value(values, section, "tiles", TYPE_ARRAY, []))
-			(
-				objects
-				. append(
-					{
-						"id": id,
-						"type": StringName(_value(values, section, "type", TYPE_STRING, "")),
-						"tiles": tiles,
-					}
-				)
-			)
+			var group := {
+				"id": id,
+				"type": StringName(_value(values, section, "type", TYPE_STRING, "")),
+				"tiles": tiles,
+			}
+			objects.append(group)
 
 
 func _ring(id: String, section: String, values: Dictionary, more: Dictionary) -> Dictionary:
