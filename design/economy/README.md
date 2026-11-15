@@ -83,6 +83,9 @@ ratios agree with the village sheet.
 
 ## Shops
 
+**The first step, a keeper at a stall who barters by value, has a plan of its own:
+[shop.md](shop.md) (#10, not built).** The rest of this section is the draft behind it.
+
 **Who sells and buys in Wehlsbüll** (a first reading of `data/village.cfg`):
 
 | Who | Buys | Sells |
