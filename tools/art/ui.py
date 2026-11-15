@@ -12,7 +12,8 @@ Written to assets/ui/:
   4 px corners (margin 4). The focus frame has no fill and is drawn over the others;
 - close_normal.png, close_hover.png, close_pressed.png: 13x13 buttons for the corner of a window,
   the button frames with a cross on them (the hover one is lit and its cross gold);
-- energy_icon.png and health_icon.png: 12x12 icons for the bars next to the hotbar;
+- energy_icon.png, health_icon.png and stamina_icon.png (a horseshoe): 12x12 icons for the bars
+  in the top right corner;
 - backpack_icon.png and chest_icon.png: 12x12 headers of the storage screen's sides;
 - trash_icon.png: 16x16, drawn into the trash can's slot like the equip_* hints (items.py);
 - bag_icon.png: 16x16, the picture on the bag button beside the hotbar; like the other icons it is
@@ -20,8 +21,8 @@ Written to assets/ui/:
 - craft_icon.png: 16x16, the picture on the crafting button beside the bag button, drawn the same way;
 - process_<icon>.png: 12x12, the pictures on the activation buttons of the process stations (the
   `button_icon` of data/stations.cfg): process_fire.png, a fire on a log, for the kiln and the oven;
-- bar_frame.png (48x8) and energy_fill.png, health_fill.png (46x6, the frame's inside): the
-  bars. The game draws as much of a fill as the bar is full;
+- bar_frame.png (48x8) and energy_fill.png, health_fill.png, stamina_fill.png (46x6, the
+  frame's inside): the bars. The game draws as much of a fill as the bar is full;
 - bubble_<id>.png: the thought bubbles over the player's head, one per id of BUBBLE_ICONS.
 The Theme that uses them is game/scenes/ui_theme.tres.
 """
@@ -342,6 +343,20 @@ ICON_ROWS = {
 ....kk......
 ............
 """,
+    "stamina_icon": """
+............
+.kkk....kkk.
+kjjjk..kjjjk
+kjijk..kjijk
+kjijk..kjijk
+kjijk..kjijk
+kiiik..kiiik
+.kiidkkdiik.
+.kdiiiiiidk.
+..kddiiddk..
+...kkkkkk...
+............
+""",
     "health_icon": """
 ............
 ..kkkk.kkkk.
@@ -603,6 +618,7 @@ def ui_images(palette):
         "bar_frame.png": bar_frame(palette),
         "energy_fill.png": bar_fill(palette, "cream", "gold", "flame"),
         "health_fill.png": bar_fill(palette, "petal", "ember", "soil"),
+        "stamina_fill.png": bar_fill(palette, "foam", "water_light", "water"),
         "panel.png": frame(
             palette, PANEL_SIZE, "soil_dark", "soil_light", "soil", inner="soil_mid", studs="gold"
         ),

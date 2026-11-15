@@ -99,7 +99,8 @@ console (`spawn cow 3`, near the player). Unlike the wildlife they are state and
   a horse with none left can't sprint until 0.2 has come back. All of it is in `data/livestock.cfg`:
   `ride_walk_factor`, `ride_trot_factor`, `trot_after_seconds`, `ride_sprint_factor`,
   `sprint_stamina_seconds`, `stamina_walk_regain_seconds`, `stamina_stand_regain_seconds`,
-  `sprint_again_stamina`;
+  `sprint_again_stamina`; the stamina shows as a third bar (a horseshoe) under the energy and
+  health bars while riding (`VitalsHud`);
   riding costs no energy, and tiredness doesn't slow the horse (`data/livestock.cfg`). What collides
   is the rider's body, as on foot, and it also keeps off the tiles of buildings, so a horse is
   never ridden through a door (one that stood in a doorway is ridden out of it). On horseback

@@ -60,3 +60,20 @@ func test_the_bars_do_not_cover_the_notifications() -> void:
 		await wait_process_frames(2)
 		var lines: Control = notifications.find_children("*", "VBoxContainer", true, false)[0]
 		assert_false(bars.intersects(lines.get_rect()), "overlap at %s" % window_size)
+
+
+func test_the_stamina_bar_shows_the_ridden_horses_stamina_and_only_while_riding() -> void:
+	var hud := _hud_in(_window_of(Vector2i(640, 360)))
+	await wait_process_frames(2)
+	assert_false(hud.stamina_bar.visible, "on foot")
+
+	var state := GameState.new_game(7)
+	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", state.player.position)
+	horse.is_saddled = true
+	state.livestock.add(horse)
+	state.mount(horse)
+	horse.stamina = 0.5
+	hud.show_state(state)
+	await wait_process_frames(2)
+	assert_true(hud.stamina_bar.visible, "on horseback")
+	assert_eq(hud.stamina_bar.fullness, 0.5)

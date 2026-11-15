@@ -39,7 +39,7 @@ the game. Milk and wool are not in yet.
 - With an empty hand, the use key takes the saddle off again.
 - Press E at a saddled horse to get on, and E again to get off beside it.
 - A horse walks at your walking speed and, once it has got going, trots at one and a half times it. Riding costs you no energy.
-- Hold Shift (rebind it under Settings, Controls) to sprint: a trotting horse goes faster, and the sprint uses up its stamina. A full stamina lasts about eight seconds. It comes back slowly while the horse walks and faster while it stands; a horse with none left can't sprint until some has come back. The stamina is saved with the horse.
+- Hold Shift (rebind it under Settings, Controls) to sprint: a trotting horse goes faster, and the sprint uses up its stamina. A full stamina lasts about eight seconds. It comes back slowly while the horse walks and faster while it stands; a horse with none left can't sprint until some has come back. The horse's stamina is a small bar with a horseshoe under the energy and health bars while you ride, and it is saved with the horse.
 - On horseback you can only use the bag and hotbar and eat: no tools, building, crafting or doors.
 
 ![Trotting on a bay horse, walking a grey, and on a pony from behind](../docs/screenshots/riding.png)

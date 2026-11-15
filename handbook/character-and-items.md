@@ -51,7 +51,7 @@ The bag, the equipment, energy and sleep.
 
 ## Energy and weight
 
-- The energy and health bars are in the top right corner.
+- The energy and health bars are in the top right corner; on horseback the horse's stamina is a third bar under them.
 - The more you carry, the more each action costs. Up to 40 kg is free; the bag shows "Carrying
   x / 40 kg". Strength raises the 40. Tools weigh nothing.
 - Below 20 % energy the character sweats with every action, below 10 % even more.

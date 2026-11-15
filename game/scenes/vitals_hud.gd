@@ -1,18 +1,24 @@
 class_name VitalsHud
 extends CanvasLayer
-## The energy and health bars in the top right corner, one above the other. Each is a 12x12
-## icon and a 48x8 bar (art in tools/art/ui.py). A bar at or below the warning level pulses.
+## The energy and health bars in the top right corner, one above the other, and under them the
+## stamina of the horse the player rides, while they ride. Each is a 12x12 icon and a 48x8 bar
+## (art in tools/art/ui.py). The energy and health bars at or below the warning level pulse.
 
 ## Gap to the top and right edges of the window, as the clock has on the left.
 const MARGIN := 4
 const ROW_GAP := 1
-const BAR_COUNT := 2
-## Where the bars end, for what sits below them (the coordinates). A test checks it against the
-## column's real size, so a bar added without raising BAR_COUNT fails there.
+const BAR_COUNT := 3
+## Where the bars end, the stamina bar's room included, for what sits below them (the
+## coordinates). A test checks it against the column's real size, so a bar added without raising
+## BAR_COUNT fails there.
 const BOTTOM := MARGIN + BAR_COUNT * VitalBar.ICON_SIZE + (BAR_COUNT - 1) * ROW_GAP
 const PULSE_HZ := 1.0
 const PULSE_LOW_ALPHA := 0.5
 
+## The horse's stamina, shown while the player rides.
+var stamina_bar := VitalBar.new(
+	preload("res://assets/ui/stamina_icon.png"), preload("res://assets/ui/stamina_fill.png")
+)
 var _state: GameState
 var _column := VBoxContainer.new()
 var _energy_bar := VitalBar.new(
@@ -26,7 +32,7 @@ var _health_bar := VitalBar.new(
 func _init() -> void:
 	_column.add_theme_constant_override("separation", ROW_GAP)
 	_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for bar in [_energy_bar, _health_bar]:
+	for bar in [_energy_bar, _health_bar, stamina_bar]:
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_column.add_child(bar)
 	add_child(_column)
@@ -63,3 +69,7 @@ func _process(_delta: float) -> void:
 	_energy_bar.modulate.a = pulse if player.energy <= warning_level else 1.0
 	_health_bar.show_value(player.health / player.attributes.max_health())
 	_health_bar.modulate.a = pulse if player.health <= warning_level else 1.0
+	var horse := player.horse
+	stamina_bar.visible = horse != null
+	if horse != null:
+		stamina_bar.show_value(horse.stamina)
