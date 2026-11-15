@@ -18,7 +18,7 @@ func _state_with_a_village() -> GameState:
 	village.meeting_spot = Vector2i(10, 10)
 	village.square = Rect2i(5, 5, 13, 6)
 	village.mill_spot = Rect2i(30, 20, 7, 7)
-	village.lane_tiles = [Vector2i(0, 12), Vector2i(1, 12)]
+	village.kept_worn_tiles = [Vector2i(0, 12), Vector2i(1, 12)]
 	village.building_origins = [origin]
 	state.world.village = village
 	return state
@@ -47,7 +47,7 @@ func test_the_record_survives_a_save_and_a_load() -> void:
 	assert_eq(village.to_dict(), state.world.village.to_dict())
 	assert_eq(village.village_name, "Wehlsbüll")
 	assert_eq(village.area, Rect2i(-20, -10, 80, 60))
-	assert_eq(village.lane_tiles, state.world.village.lane_tiles)
+	assert_eq(village.kept_worn_tiles, state.world.village.kept_worn_tiles)
 	assert_true(village.is_populated)
 
 
@@ -99,9 +99,9 @@ func test_a_building_that_does_not_stand_is_named() -> void:
 func test_a_record_of_the_wrong_shape_is_named() -> void:
 	var game := _saved_village()
 	game["world"]["village"]["name"] = 7
-	game["world"]["village"].erase("lane_tiles")
+	game["world"]["village"].erase("kept_worn_tiles")
 
 	var reason := _refusal_of(game).reason
 
 	assert_string_contains(reason, "world village name: should be text")
-	assert_string_contains(reason, "world village: no lane_tiles")
+	assert_string_contains(reason, "world village: no kept_worn_tiles")

@@ -1,6 +1,6 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 5 of
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6 of
 section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
@@ -48,7 +48,7 @@ river) and fits the routines plan (#7, [../villagers/routines.md](../villagers/r
 | Town square | a free square for a future market | #76 |
 
 Defaults not asked about (no objection was raised): old saves keep their world as it is; the
-village's lane tiles do not regrow; the save version is taken at build time (section 12).
+village's lane tiles do not regrow (section 8); the save version is taken at build time (section 12).
 
 ![The layout, one block a tile](wehlsbuell-layout.png)
 
@@ -261,12 +261,16 @@ The player finds the village by a trodden way from the camp to it, as well as by
 ## 8. Lanes that stay
 
 A lane is a path on the ground only while it is walked: desire paths grow back in two weeks
-([../../data/paths.cfg](../../data/paths.cfg)). The village sets its lane tiles and the square to full
-wear at build time (the wear map is saved) and the nightly regrowth skips the tiles of the record's
-lanes and square. So they stay without walking. This is the smallest way: it changes one place in
-`WorldWear.end_day`. The player's ways (a plank walk or a stone path, #62) may be laid over a lane: a
-way never wears, and taking it up leaves the lane's wear as it was. Lanes are muddy in the rain like
-other worn ground. #60 built no lanes, so nothing else is waiting on their form.
+([../../data/paths.cfg](../../data/paths.cfg)). The village sets its lane tiles and the town square to
+full wear at build time (the wear map is saved), and every night wears them to the full again
+(`World.end_wear_day`, `WorldWear.keep_worn`), whether their chunk is loaded or not. So they stay
+without walking. The tiles are the record's `kept_worn_tiles`: the tiles of the lanes and the square
+that can wear (grass), made at build time, so a lane over a Warft or the salt marsh is a lane in
+the plan but not worn ground. A tile that the player tilled or built on, or that a way lies on,
+is left alone. The player's ways (a plank walk or a stone path, #62) may be laid over a lane: a way
+never wears, and laying one clears the wear beneath it (as it does anywhere), so taking it up leaves
+the lane unworn **until the next night**, which wears it again. Lanes are muddy in the rain like
+other worn ground.
 
 ## 9. Reputation and showing the village's land
 
@@ -454,6 +458,14 @@ The user can stop after step 5 and have the village standing, empty.
   the buildings, together 290 to 450 ms for seeds 7, 1 and 20 (a game without the village: about 60 ms).
   The save is 56 to 73 KB bigger than a bare world's (the record itself is 0.4 KB). Tests:
   `tests/test_village_buildings.gd` (the land tests of step 3 share `tests/village_case.gd`).
+- **Step 6.** The build wears the lane tiles and the square (`VillageBuilder._wear_lanes_and_square`), and
+  the world wears them again each night. **Changed from the plan:** not "the regrowth skips them" in
+  `WorldWear.end_day`, but "worn again every night": it also heals a lane after a way was laid on it and taken
+  up, which the plan promised and the rule "laying a way clears the wear" would otherwise break. The record's
+  `lane_tiles` became `kept_worn_tiles` (the lanes' and the square's tiles that wear: 351 to 360 for the
+  seeds measured; the plan's 300 to 500 was for the track), the field of step 4, in the same save
+  version. `world.gd` is at the 1 000 lines the lint allows. The map tool draws the buildings and the worn
+  ground. Tests: `tests/test_village_lanes.gd`.
 
 ## 15. Screenshots
 

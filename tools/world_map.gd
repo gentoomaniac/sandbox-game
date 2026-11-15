@@ -38,6 +38,8 @@ const OBJECT_COLORS := {
 	&"net_frame": Color("ffb300"),
 	&"eel_traps": Color("ffb300"),
 }
+const BUILDING_COLOR := Color("b71c1c")
+const WORN_COLOR := Color("efebe9")
 const TERRAIN_COLORS := {
 	Tile.Terrain.GRASS: Color("c8e6c9"),
 	Tile.Terrain.WATER: Color("1e88e5"),
@@ -49,18 +51,21 @@ const TERRAIN_COLORS := {
 	Tile.Terrain.WARFT: Color("a1887f"),
 }
 
+## The world the chunks are put into: the village's edits are replayed on them from it.
+var _world: World
+
 
 func _init() -> void:
 	var options := _options()
 	var world_seed := int(options.get("seed", "1"))
 	var generator := WorldGenerator.new(world_seed)
-	var world := World.new(world_seed)
+	_world = World.new(world_seed)
 	var has_village := options.has("village")
 	var village_center := Vector2i.ZERO
 	if has_village:
 		var plan := VillagePlan.default_plan()
 		var site := VillageSite.find(world_seed)
-		var reason := VillageBuilder.build_land(world, site, plan)
+		var reason := VillageBuilder.build(_world, site, plan)
 		if reason != "":
 			push_error("No village: %s" % reason)
 		village_center = site.to_world(plan.area.get_center())
@@ -77,7 +82,7 @@ func _init() -> void:
 			if chunk == null:
 				continue
 			# The village's edits are replayed on the chunk by the world.
-			world.add_chunk(chunk)
+			_world.add_chunk(chunk)
 			for local_y in Chunk.CHUNK_SIZE:
 				for local_x in Chunk.CHUNK_SIZE:
 					var local := Vector2i(local_x, local_y)
@@ -92,9 +97,14 @@ func _init() -> void:
 
 
 func _color_of(chunk: Chunk, local: Vector2i) -> Color:
+	var world_pos := Chunk.to_world(chunk.coords, local)
+	if _world.building_at(world_pos) != null:
+		return BUILDING_COLOR
 	var object := chunk.object_at(local)
 	if object != null and OBJECT_COLORS.has(object.type):
 		return OBJECT_COLORS[object.type]
+	if _world.wear_stage(world_pos) != PathRules.Stage.UNWORN:
+		return WORN_COLOR
 	return TERRAIN_COLORS.get(chunk.terrain_at(local), Color.MAGENTA)
 
 

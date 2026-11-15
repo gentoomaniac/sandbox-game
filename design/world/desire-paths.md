@@ -86,6 +86,13 @@ walks a way at `[way] walk_factor` (1.1) of their speed, in the rain and over fl
 (`GameState.walk_speed_factor`: a way comes before mud and wading). Villagers prefer ways to
 open ground (see `design/tech/pathfinding.md`).
 
+## The village's lanes
+
+The lanes and the town square of Wehlsbüll (#9, [wehlsbuell.md](wehlsbuell.md), section 8) are worn to
+the full at the start and worn to it again every night, walked or not (`World.end_wear_day`):
+they do not grow back. The ground that can't wear (a Warft) is not among them. This is the only
+wear that is kept by the world and not by walking.
+
 ## Saved
 
 `world.wear`: `[x, y, days]` for each worn tile, and `world.wear_today`: `[x, y, steps]` for the
