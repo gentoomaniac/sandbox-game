@@ -44,7 +44,7 @@ top of classic pixel art (details in [Lighting and look](presentation/look.md)).
     - [coast.md](world/coast.md): The North Sea coast: sea dyke, salt marsh, tidal mud, Warften, Ewer.
     - [seasons-and-weather.md](world/seasons-and-weather.md): Calendar, seasons, vegetation through the year, weather, day length, floods.
     - [wildlife.md](world/wildlife.md): Ambient wildlife: birds, deer, frogs and the rest, and how they come and go.
-    - [wehlsbuell.md](world/wehlsbuell.md): The village Wehlsbüll in the world: where, which buildings, its people, the steps (#9, steps 1 to 3 built).
+    - [wehlsbuell.md](world/wehlsbuell.md): The village Wehlsbüll in the world: where, which buildings, its people, the steps (#9, steps 1 to 4 built).
 - [Player](player/README.md): The figure the player controls: energy, sleep, inventory, tools and fighting.
     - [energy-and-sleep.md](player/energy-and-sleep.md): The energy bar, tiredness, passing out, beds, sleep.
     - [inventory-and-character.md](player/inventory-and-character.md): Mouse targeting, inventory and equipment, the character screen, movement keys, sprite, tools.

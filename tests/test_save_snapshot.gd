@@ -59,6 +59,7 @@ func _live_in_the_game() -> void:
 	_world.ground_items.add(_pile)
 	_world.wear_tile(_free_tile(4), 2.0)
 	_world.spend_clay_spot(_free_tile(5))
+	_world.village = Village.new()
 	_villager = Npc.create(3, Vector2(_free_tile(6)), _state.npcs.rules)
 	_villager.add_chat_line(1, 400, true, "hello")
 	_state.npcs.add(_villager)
@@ -84,6 +85,7 @@ func _change_everything() -> void:
 	_world.set_wear_days(_free_tile(4), 3)
 	_world.recover_clay_spots()
 	_world.spend_clay_spot(_free_tile(11))
+	_world.village.is_populated = true
 	_villager.add_chat_line(1, 401, false, "and more")
 	_villager.position += Vector2(1, 1)
 	_villager.add_memory("a memory", 1, MemoryWeight.HIGH, 20)

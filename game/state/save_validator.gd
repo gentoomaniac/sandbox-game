@@ -13,7 +13,7 @@ extends RefCounted
 ##   of the data, which is the player's choice to make (see LoadResult).
 ## A save is loadable as it is when both are empty.
 
-enum Kind { TEXT, NUMBER, WHOLE, BOOL, LIST, DICT, VECTOR, POINT }
+enum Kind { TEXT, NUMBER, WHOLE, BOOL, LIST, DICT, VECTOR, RECT, POINT }
 
 const KIND_NAMES := {
 	Kind.TEXT: "text",
@@ -23,6 +23,7 @@ const KIND_NAMES := {
 	Kind.LIST: "a list",
 	Kind.DICT: "a dictionary",
 	Kind.VECTOR: "two whole numbers",
+	Kind.RECT: "four whole numbers",
 	Kind.POINT: "two numbers",
 }
 
@@ -111,6 +112,50 @@ func _check_world(world: Dictionary) -> void:
 	if buildings != null:
 		for index in buildings.size():
 			_check_building(buildings[index], "world buildings %d" % index)
+	if not world.has("village"):
+		_report("world", "no village")
+	elif world["village"] != null:
+		_check_village(world["village"])
+
+
+## The record of the village: its land with the square, the meeting spot and the mill's spot
+## inside it, and the buildings it names, which stand.
+func _check_village(village: Variant) -> void:
+	var path := "world village"
+	if not village is Dictionary:
+		_report(path, "should be null or a dictionary")
+		return
+	_field(village, "name", Kind.TEXT, path)
+	_field(village, "is_populated", Kind.BOOL, path)
+	var area: Variant = _field(village, "area", Kind.RECT, path)
+	var square: Variant = _field(village, "square", Kind.RECT, path)
+	var mill_spot: Variant = _field(village, "mill_spot", Kind.RECT, path)
+	var meeting_spot: Variant = _field(village, "meeting_spot", Kind.VECTOR, path)
+	if area != null:
+		var land := SaveCodec.rect_from_json(area)
+		if land.size.x <= 0 or land.size.y <= 0:
+			_report(path, "the area is empty")
+		if square != null and not land.encloses(SaveCodec.rect_from_json(square)):
+			_report(path, "the square is not inside the area")
+		if mill_spot != null and not land.encloses(SaveCodec.rect_from_json(mill_spot)):
+			_report(path, "the mill's spot is not inside the area")
+		if meeting_spot != null and not land.has_point(SaveCodec.vector_from_json(meeting_spot)):
+			_report(path, "the meeting spot is not inside the area")
+	var lane_tiles: Variant = _field(village, "lane_tiles", Kind.LIST, path)
+	if lane_tiles != null and not lane_tiles.all(_is_vector):
+		_report(path, "lane_tiles should be a list of [x, y]")
+	var origins: Variant = _field(village, "building_origins", Kind.LIST, path)
+	if origins != null:
+		for index in origins.size():
+			var origin: Variant = origins[index]
+			if not _is_kind(origin, Kind.VECTOR):
+				_report(path, "building_origins %d should be [x, y]" % index)
+			elif not _has_interior_by_origin.has(SaveCodec.vector_from_json(origin)):
+				_report(path, "building_origins %d is no building of the world" % index)
+
+
+static func _is_vector(value: Variant) -> bool:
+	return _is_kind(value, Kind.VECTOR)
 
 
 ## A list of `[x, y, value]`, the value of the kind `value_kind`.
@@ -665,6 +710,12 @@ static func _is_kind(value: Variant, kind: Kind) -> bool:
 			return (
 				value is Array
 				and value.size() == 2
+				and value.all(func(part: Variant) -> bool: return _is_kind(part, Kind.WHOLE))
+			)
+		Kind.RECT:
+			return (
+				value is Array
+				and value.size() == 4
 				and value.all(func(part: Variant) -> bool: return _is_kind(part, Kind.WHOLE))
 			)
 		Kind.POINT:

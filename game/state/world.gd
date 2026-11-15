@@ -61,6 +61,8 @@ var is_muddy := false
 var footprints := Footprints.new()
 ## The wear of the grass, by walking (see `wear_tile`).
 var wear := WorldWear.new()
+## The village the world was built with (see VillageBuilder), or null in a world without one.
+var village: Village
 ## The clay spots that were dug, with the nights left until they hold clay again (see
 ## `recover_clay_spots`).
 var _spent_clay_spots: Dictionary[Vector2i, int] = {}
@@ -839,6 +841,7 @@ func snapshot() -> Dictionary:
 		"object_edit_positions": _object_edits.keys(),
 		"object_edits": object_edits,
 		"buildings": buildings_data,
+		"village": null if village == null else village.to_dict(),
 	}
 
 
@@ -888,6 +891,7 @@ static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 		"fallow_soil": FallowSoil.array_of(snapshot_data["fallow_soil"]),
 		"object_edits": object_edits,
 		"buildings": snapshot_data["buildings"],
+		"village": snapshot_data["village"],
 	}
 
 
@@ -921,6 +925,8 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	for building_data: Dictionary in data["buildings"]:
 		world._add_building(Building.from_dict(building_data))
 	world.ground_items.load_array(data["ground_items"])
+	if data["village"] != null:
+		world.village = Village.from_dict(data["village"])
 	return world
 
 

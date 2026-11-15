@@ -13,6 +13,14 @@ static func vector_from_json(array: Array) -> Vector2i:
 	return Vector2i(int(array[0]), int(array[1]))
 
 
+static func rect_to_json(rect: Rect2i) -> Array:
+	return [rect.position.x, rect.position.y, rect.size.x, rect.size.y]
+
+
+static func rect_from_json(array: Array) -> Rect2i:
+	return Rect2i(int(array[0]), int(array[1]), int(array[2]), int(array[3]))
+
+
 static func float_vector_to_json(vector: Vector2) -> Array:
 	return [vector.x, vector.y]
 

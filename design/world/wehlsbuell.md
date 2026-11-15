@@ -1,6 +1,6 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 3 of
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 4 of
 section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
@@ -437,6 +437,13 @@ The user can stop after step 5 and have the village standing, empty.
   Sielzug starts at the row's own first land tile (the dyke wanders up to 8 tiles from `u` 0 and the
   gap has to be where the dyke is), and everything inland of `u` 9 but the sea dyke is cleared, reeds
   and wetland included. A lane is not laid in this step (step 6).
+- **Step 4.** `Village` (`game/state/village.gd`), the record, is `World.village` (null without a village),
+  saved as `"village"` of the world; save version 46, whose upgrade from 45 sets it to `null`; the
+  validator checks it (`SaveValidator._check_village`); the upgrade from version 35 was dropped in a
+  commit of its own before. Tests: `tests/test_village_record.gd`. The record holds the name, the land (`area`),
+  `meeting_spot`, `square`, `mill_spot`, `lane_tiles` (step 6), `building_origins` (step 5) and
+  `is_populated` (step 8), all in world tiles. The flag is in already so that step 8 needs no save version of
+  its own. No builder fills the record yet.
 
 ## 15. Screenshots
 

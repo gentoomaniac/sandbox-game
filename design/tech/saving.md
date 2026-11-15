@@ -1,7 +1,8 @@
 # Saving (first version)
 
 - Save format: seed + world edits (terrain, objects, the days of wear of desire paths, the steps
-  taken today, and how long tilled soil has lain fallow) + buildings with their interiors (and the
+  taken today, how long tilled soil has lain fallow, and the record of the village, if the world was
+  built with one: `World.village`, see [../world/wehlsbuell.md](../world/wehlsbuell.md)) + buildings with their interiors (and the
   items lying on their floors) +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
   file per save under `user://saves/`, see the next point.
@@ -81,7 +82,7 @@
   save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
-  load (36 to 45 today, nine until the next version adds its step); an older one is refused like any unreadable save (renamed `.bak`,
+  load (36 to 46 today); an older one is refused like any unreadable save (renamed `.bak`,
   a new game). When `VERSION` goes up, the oldest step, its constants, helpers and tests go,
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.
   To rescue an older save, find that commit with `git log --grep '^Save: drop'`, check out
