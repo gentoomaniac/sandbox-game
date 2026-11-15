@@ -65,6 +65,20 @@ const ACTIVE_TOOLS := [
 	ItemTypes.SCYTHE,
 	ItemTypes.SHOVEL,
 ]
+## The uses of a tool that the player swings it for (see UseSwing): the ones that work on the tile
+## with the tool in hand, or at least try to. What the hand does (a pick, a pat) and what is not
+## done (a tool too weak is, but an empty can or a tile out of reach is not) have no swing.
+const SWUNG_USES := [
+	Use.TILL,
+	Use.HIT,
+	Use.NEEDS_BETTER_TOOL,
+	Use.WATER,
+	Use.POUR,
+	Use.MOW,
+	Use.DIG,
+	Use.DIG_UP,
+	Use.TAKE_DOWN,
+]
 ## The energy rule (see EnergyRules `cost_of`) for each use that costs energy. The others
 ## (nothing done, too weak a tool) cost nothing.
 const COST_KINDS := {

@@ -92,8 +92,8 @@
   is drawn on the same figure, so they line up; the faces have eyes with a glint, brows, a
   nose shadow, cheeks and a mouth. The player and the villagers stand on a small contact
   shadow, as the animals do. Every tool shows in the hand (its item's `held_sheet`), in
-  every facing and walk frame; there is no use animation yet, so a tool stays in the hand as
-  it is used. The held layer of the appearance follows the selected item in the player's
+  every facing and walk frame, and swings when it is used (see "Swinging a tool" below). The
+  held layer of the appearance follows the selected item in the player's
   state (as the worn layers follow the equipment), so every view of the look, also the preview
   on the character screen, shows it with no PlayerView at work.
 - **Tools** are bought and upgraded (decided 2026-11-05):
@@ -137,6 +137,28 @@
     the Geest, which grubbed the fieldstones of the till out of the fields) breaks stones, the
     watering can wets tilled soil, the scythe mows tall grass, the shovel digs for clay and digs bushes up,
     an empty hand harvests crops, clears dead ones and picks bushes.
+  - **Swinging a tool** (issue 13, the user approved the frames 2026-11-15): a use of the axe,
+    pickaxe, hoe, shovel, scythe or watering can that does something (a tile to till, a tree to
+    hit, grass to mow, soil to water, a bush to dig up, a placed object to take down; also a tool
+    too weak for the object) plays the tool's swing in the way the player faces: 4 or 5 frames,
+    the character's layers drawn from the swing sheets (`character/use/`, see `docs/art-style.md`).
+    **The effect lands on the strike frame** (decided as the better feel, over doing it at once
+    with the swing as decoration): the tile changes, the energy is spent, the sound plays and the
+    skill grows when the blow lands, about 0.3 to 0.5 seconds after the key. Until the swing is
+    over **a second use is refused** (no queue: a key pressed in the swing is lost), so a tool
+    can't be used faster than it swings; **holding Space or the mouse button swings again** as
+    soon as it ends. Walking is free during a swing. The use is of the tile aimed at when the key
+    was pressed; if the held item is changed before the blow, nothing is used. A use of an empty
+    hand, seeds or any item without a swing, and a tool at a tile it does nothing on (an empty
+    can, a tile out of reach), is done at once with no swing. The hammer's knock is drawn and
+    timed but not played: the hammer has no use action, building takes place in build mode.
+    From behind the body hides the tool, except the watering can, which is drawn over the body
+    while it pours (the art says per frame whether the tool is in front or behind). Which frames
+    each swing has, how long each shows and where the blow lands are in `data/tool_swing.cfg`
+    (read by `ToolSwingRules`; the timings are a start, tune them in the game): the whole swing is
+    0.5 to 0.7 seconds. Villagers have no use animation yet (their work activities stand still);
+    they could share the swing, as they share the walk sheets, once the swing sheets are drawn
+    for their layers (now only the player's).
 - **The lantern** (task 177): a horn lantern, for the dark nights. Held and selected, the use
   key (space, or a click) lights it or puts it out, anywhere, with a soft pop (it needs a
   candle, see below). Lit,

@@ -52,6 +52,7 @@ var _tooltip_view := TooltipView.new()
 var _options := StartupOptions.from_command_line()
 var _player_view := PlayerView.new()
 var _tiredness_view := TirednessView.new()
+var _use_swing: UseSwing
 var _use_highlight := UseHighlight.new()
 var _harvest_hud := HarvestHud.new()
 var _notifications := NotificationHud.new()
@@ -302,6 +303,9 @@ func _connect_state_and_views() -> void:
 	_fire_screen.cook_requested.connect(_crafting_screen.open_station)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
+	_use_swing = UseSwing.new(_state, _player_view)
+	_use_swing.used.connect(_after_use)
+	_player_view.swing_ended.connect(_repeat_held_use)
 	_tiredness_view.watch(_state.player, _state.clock, _state.energy_rules, _state.cheats)
 	_use_highlight.show_for(_state, _camera)
 	_hotbar.show_inventory(_state.player.inventory)
@@ -465,11 +469,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _is_use_event(event) and can_use and (_eat_held() or _state.switch_held_lantern()):
 		pass  # No target: a held food is eaten, the lantern lit or put out, instead of a tile used.
 	elif event.is_action_pressed("use") and can_use:
-		_use_on(_use_highlight.targeting())
+		_use_swing.use_on(_use_highlight.targeting())
 	elif event.is_action_pressed("use_click") and can_use:
 		var target := _use_highlight.targeting()
 		if target.source == Targeting.Source.MOUSE and not _state.ring_bell_in_reach(target.tile):
-			_use_on(target)
+			_use_swing.use_on(target)
 		# A click also counts as the mouse being in use. One that wakes an idle mouse (the target
 		# is then the facing tile) does not act.
 		_use_highlight.note_mouse_activity()
@@ -625,10 +629,25 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 	return -1
 
 
-## Uses the targeted tile (the state refuses one out of reach).
-func _use_on(target: Targeting) -> void:
-	var use := _state.use_tile(target.tile)
-	_sounds.failed_use(use, target.tile)
+## Holding the use key or the mouse button swings again as soon as the swing is over. A click on a
+## bell frame rang it once when it was pressed: it does not ring again, nor swing.
+func _repeat_held_use() -> void:
+	if not _can_use() or _console_view.is_open():
+		return
+	var target := _use_highlight.targeting()
+	var is_click_held := (
+		Input.is_action_pressed("use_click")
+		and target.source == Targeting.Source.MOUSE
+		and Interaction.bell_frame_to_ring(_state, target.tile) == null
+	)
+	if Input.is_action_pressed("use") or is_click_held:
+		_use_swing.use_on(target)
+
+
+## What follows a use of a tile, when it is done: the sound of a use that failed, the signs of
+## tiredness, a note.
+func _after_use(use: ToolUse.Use, target_tile: Vector2i) -> void:
+	_sounds.failed_use(use, target_tile)
 	_tiredness_view.acted(use)
 	if USE_NOTES.has(use):
 		_harvest_hud.show_note(USE_NOTES[use])

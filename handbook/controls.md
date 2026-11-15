@@ -13,7 +13,7 @@ These are the default keys. Change any of them, mouse buttons too, under Setting
 | Key | Action |
 |---|---|
 | WASD or arrow keys | Walk. With the hammer in hand only WASD walks: the arrows pick in the build menu. |
-| Space or left click | Use the held item on the targeted tile. |
+| Space or left click | Use the held item on the targeted tile. A tool swings first and works on the tile when the blow lands; hold the key to keep swinging. |
 | 1-8 | Pick a hotbar slot. |
 | Mouse wheel | Next or previous hotbar slot. |
 | E | See the list below. |
