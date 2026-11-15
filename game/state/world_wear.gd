@@ -10,6 +10,24 @@ var days: Dictionary[Vector2i, int] = {}
 ## The steps each tile took today (see `add_steps`), by world position; counted at midnight.
 var steps_today: Dictionary[Vector2i, float] = {}
 
+## `days` as it was when `days_copy` last made a copy, or null when it has changed since.
+var _days_copy: Variant
+
+
+## A copy of `days` that nobody changes: workers read it while the main thread goes on. Wear days
+## change at midnight and when the debug views make worn ground, so the copy is kept until then
+## and every snapshot of a day shares it, instead of copying every worn tile each time.
+func days_copy() -> Dictionary[Vector2i, int]:
+	if _days_copy == null:
+		_days_copy = days.duplicate()
+	return _days_copy
+
+
+## Gives a tile `new_days` of wear as it was saved (see `set_days` for the rules of play).
+func restore_days(world_pos: Vector2i, saved_days: int) -> void:
+	days[world_pos] = saved_days
+	_days_copy = null
+
 
 ## Adds `steps` to the steps the tile at `world_pos` took today.
 func add_steps(world_pos: Vector2i, steps: float) -> void:
@@ -24,6 +42,7 @@ func stage_of(world_pos: Vector2i) -> PathRules.Stage:
 ## Gives a tile `new_days` of wear, as if it had been walked on enough for that many days in a row.
 ## Returns whether the tile looks different now.
 func set_days(world_pos: Vector2i, new_days: int) -> bool:
+	_days_copy = null
 	var stage := stage_of(world_pos)
 	if new_days > 0:
 		days[world_pos] = mini(new_days, PathRules.default_rules().most_days())
@@ -35,6 +54,7 @@ func set_days(world_pos: Vector2i, new_days: int) -> bool:
 ## Takes all wear off a tile, today's steps included. Returns whether it was worn.
 func forget(world_pos: Vector2i) -> bool:
 	steps_today.erase(world_pos)
+	_days_copy = null
 	return days.erase(world_pos)
 
 
@@ -43,6 +63,7 @@ func forget(world_pos: Vector2i) -> bool:
 ## tiles that look different now.
 func end_day() -> Array[Vector2i]:
 	var rules := PathRules.default_rules()
+	_days_copy = null
 	var walked := steps_today
 	steps_today = {}
 	var tiles := days.keys()

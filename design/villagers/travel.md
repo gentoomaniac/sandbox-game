@@ -430,6 +430,26 @@ bench (walking p99 2.3 ms with one search task, 3.2 with two, 5 to 8.5 with thre
 tasks and four jobs), so `search_tasks` stays 1, as the user asked for the per-frame work to stay
 small. The user's answer (30 villagers on their way within 10 s, 155 within 60 s) holds.
 
+**The snapshot's copy of the wear** (`WorldWear.days_copy`): the days of wear change only at the end
+of the day (and in the debug views and a load), yet every snapshot, one every `snapshot_seconds`
+while villagers search, copied all worn tiles. The copy is now kept until the days change and
+shared by the snapshots of the day. `paths.gd day=100 wear=60000`, 155 villagers to and fro, two
+runs each, before and after (sending is `walk_to`, ms a frame, mean / p99 / longest; the four
+slowest sending frames of a run were all one trip sent, with a snapshot made, 5.3 to 5.6 ms
+before and 0.3 ms after):
+
+| | Sending mean / p99 / longest | A snapshot made now | Walking mean / p99 |
+|---|---|---|---|
+| before | 0.066-0.070 / 0.18-0.22 / 5.5 (cold, 4.0 warm) | 3.1-3.2 ms | 1.6 / 2.4 |
+| after | 0.050-0.053 / 0.17-0.22 / 0.3 | 0.01 ms | 1.6 / 2.4-2.5 |
+
+That is also what "the first send after the masks are made costs 7 to 22 ms" of step 6 was in the
+runs that wore many tiles: the frame of a send that made a snapshot (and, in `once`, the frame
+that sends all 155 trips at once: 4.3 to 6.5 ms, 28 to 42 us a trip, which a game does not do). No
+other cost was found in a send: making the masks object on the first one is 0.4 ms (a generator is made
+on a worker). The one copy a day (the first snapshot after midnight) remains, 3 ms at 60,000 worn
+tiles; midnight's own `end_day` walks all of them anyway.
+
 ## Time skips and sleep
 
 A skip moves every trip along its path by its minutes (one tile a minute). The skip's three walked

@@ -638,9 +638,10 @@ func wear_steps() -> Dictionary:
 	return wear.steps_today.duplicate()
 
 
-## The days of wear of the worn tiles (see `end_wear_day`), as a copy.
+## The days of wear of the worn tiles (see `end_wear_day`), as a copy that is not changed (shared
+## by every call until the wear changes).
 func wear_days() -> Dictionary:
-	return wear.days.duplicate()
+	return wear.days_copy()
 
 
 ## The building whose footprint covers a tile, or null.
@@ -900,7 +901,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	for entry: Array in data["spent_clay_spots"]:
 		world._spent_clay_spots[SaveCodec.vector_from_json(entry)] = int(entry[2])
 	for entry: Array in data["wear"]:
-		world.wear.days[SaveCodec.vector_from_json(entry)] = int(entry[2])
+		world.wear.restore_days(SaveCodec.vector_from_json(entry), int(entry[2]))
 	for entry: Array in data["wear_today"]:
 		world.wear.steps_today[SaveCodec.vector_from_json(entry)] = float(entry[2])
 	for edit: Dictionary in data["object_edits"]:

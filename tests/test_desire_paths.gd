@@ -163,3 +163,23 @@ func test_growing_back_changes_the_look_only_when_the_stage_does() -> void:
 	assert_signal_emit_count(_world, "tile_changed", 0, "still trodden")
 	_world.end_wear_day()
 	assert_signal_emitted_with_parameters(_world, "tile_changed", [TILE])
+
+
+func test_the_copy_of_the_wear_days_is_shared_until_they_change_and_never_changes() -> void:
+	_wear(TILE, 2)
+	var copy := _world.wear_days()
+
+	assert_same(_world.wear_days(), copy, "the same copy while the wear has not changed")
+
+	_world.wear_tile(TILE, _rules.busy_steps())
+	assert_same(_world.wear_days(), copy, "steps only count at the end of the day")
+	_world.end_wear_day()
+	var next_day := _world.wear_days()
+	_world.set_wear_days(TILE, 9)
+	var after_debug_view := _world.wear_days()
+
+	assert_ne(next_day, copy, "the end of the day made another")
+	assert_eq(copy, {TILE: 2}, "what a worker was given stays as it was")
+	assert_eq(next_day, {TILE: 3})
+	assert_ne(after_debug_view, next_day)
+	assert_eq(after_debug_view, {TILE: 9})

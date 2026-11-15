@@ -105,6 +105,12 @@ villagers) and `World.wear_days()` (the days of wear of the worn tiles), copied.
 one and makes it again when `World.change_count` has moved or it is older than `snapshot_seconds`
 (the wear changes at midnight and a search does not mind it a little late).
 
+The days of wear are copied once for all snapshots: `WorldWear.days_copy` keeps its copy until the
+days change (the end of the day, a debug view, a load), and nothing ever writes to it, so every
+snapshot of a day shares it and a worker reads it while the main thread goes on. What a snapshot
+costs the main thread is then the buildings' copy, whatever the wear (3.2 ms with 60,000 worn
+tiles before, 0.01 ms now); the one copy a day is made by the first snapshot after midnight.
+
 ### `TravelView`: what a search reads
 
 Made for one search, from the snapshot, the rules and the **time the search starts at** (the tide
@@ -343,7 +349,7 @@ for something inside a pool task (a task that waits for a mask can block every w
 | `max_nodes` (2500) | the length of a leg: more sees further in one search, costs more time on a worker |
 | `heuristic_weight` (1.0) | speed of the search against the way being the best one (0.6 is exact and searches fields all over) |
 | `search_tasks` (1) | searches at once: 2 finishes a crowd of 30 in half the time (0.5 s against 0.8 to 1.0 s warm) but, measured under 15 searches a second, costs the main thread's frames (walking p99 21.6 ms against 17.7 with 1, baseline 13.5 to 15.2); each is a pool task |
-| `snapshot_seconds` (2) | how old the wear and the buildings a search sees may be, against the cost of copying them: 0.4 ms at 6000 worn tiles, 2.5 to 3 ms at 33000, 6 to 9 ms at 55000 to 60000, on the main thread. 10 s gave no clear gain in the stress (p99 10.5 and 5.9 ms in two runs, against 10.4 and 11.7 for 2 s: the runs differ more than that); kept until #70 makes the copy cheaper |
+| `snapshot_seconds` (2) | how old the wear and the buildings a search sees may be, against the cost of copying them: the buildings' copy on the main thread (the wear's is shared for the day since #70: it was 0.4 ms at 6000 worn tiles, 2.5 to 3 ms at 33000, 3 to 9 ms at 55000 to 60000). 10 s gave no clear gain in the stress (p99 10.5 and 5.9 ms in two runs, against 10.4 and 11.7 for 2 s: the runs differ more than that) |
 | `cost_trodden`, `cost_path`, `cost_object` | how much villagers keep to lanes and walk round fields |
 | `max_legs` (6) | how long a chain of legs may be |
 | `blocked_give_up_seconds` (0.5), `retries` (2) | how fast a villager with a blocked step thinks again, and how often before it gives up |
