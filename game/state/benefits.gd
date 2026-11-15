@@ -7,6 +7,18 @@ extends RefCounted
 ## villager says matches what the game does.
 
 
+## Whether courting `npc` may start: they give the benefit `may_court` (level 10 unless their sheet
+## says otherwise), their sheet is open to romance and no bond holds them yet. Courting itself is
+## not built (see design/villagers/relationships.md, "Courting and marriage").
+static func may_court(npc: Npc, villagers := VillagerRules.default_rules()) -> bool:
+	return (
+		allows(npc, &"may_court", villagers)
+		and villagers.has(npc.id)
+		and villagers.is_romance_open(npc.id)
+		and npc.bond == FriendshipRules.BOND_NONE
+	)
+
+
 ## Whether `npc` gives the player `benefit` (a FriendshipRules BENEFITS one) at their friendship.
 static func allows(
 	npc: Npc, benefit: StringName, villagers := VillagerRules.default_rules()

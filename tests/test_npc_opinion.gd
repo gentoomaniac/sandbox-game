@@ -75,11 +75,17 @@ func test_the_prompt_tells_the_line_of_each_level_in_words_not_numbers() -> void
 
 func test_the_console_shows_the_opinion() -> void:
 	_antje.opinion = 30
-	assert_eq(_console.run("opinion antje"), ["Antje Boysen: Acquaintance, level 4 (30 points)"])
+	assert_eq(
+		_console.run("opinion antje"),
+		["Antje Boysen: Acquaintance, level 4 (30 points), bond none"]
+	)
 
 
 func test_the_console_sets_the_opinion_within_its_bounds() -> void:
-	assert_eq(_console.run("opinion antje -30"), ["Antje Boysen: Mistrusted, level 2 (-30 points)"])
+	assert_eq(
+		_console.run("opinion antje -30"),
+		["Antje Boysen: Mistrusted, level 2 (-30 points), bond none"]
+	)
 	assert_eq(_antje.opinion, -30)
 	_console.run("opinion antje 99999")
 	assert_eq(_antje.opinion, _rules.opinion_max())

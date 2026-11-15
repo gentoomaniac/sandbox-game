@@ -74,6 +74,10 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   line `benefit_small_news` (from level 4) and `benefit_tells_wants` (from 5) or `benefit_keeps_wants`.
   There is no pedlar in the game yet, so none is shut; and `greets_by_name` waits for the player to have a
   name. See [../economy/shop.md](../economy/shop.md) and [quests.md](quests.md).
+- Step 11: `romance` and the courting check. A sheet may say `romance=true` (default false; nobody
+  does yet, Boy is sweet on Inken, the user names who is open), `VillagerRules.is_romance_open`.
+  `Benefits.may_court(npc)` is `may_court` (level 10) and the sheet's romance and `bond` none. The
+  console's `opinion` shows the bond and "may be courted". Nothing starts a bond.
 
 ## The user's words
 

@@ -39,6 +39,9 @@ const CHURCH_FEASTS_ONLY_KEY := "church_feasts_only"
 ## The key a sheet may add to open a benefit of FriendshipRules at another level than the data
 ## file says: {benefit: level}, e.g. {"lends_tool": 5}.
 const BENEFIT_LEVEL_KEY := "benefit_level"
+## The key a sheet may add (true or false, default false) for a villager who may be courted: single
+## adults only, one by one (see Benefits `may_court`).
+const ROMANCE_KEY := "romance"
 ## A villager's sample lines: the cut-down sheet tells this many.
 const MIN_SAMPLES := 2
 ## The kinds of people a villager may name in `people`: the sex of the one named ("" for
@@ -121,6 +124,8 @@ func problems() -> Array[String]:
 			)
 		)
 		found.append_array(_benefit_problems(id, villager))
+		if villager.has(ROMANCE_KEY) and not villager[ROMANCE_KEY] is bool:
+			found.append("[%s] %s is not true or false" % [id, ROMANCE_KEY])
 		found.append_array(_place_problems(id, villager))
 		found.append_array(_activity_problems(id, villager))
 		found.append_array(_interior_problems(id, villager))
@@ -190,6 +195,11 @@ func _relation_problems(id: String, other: String) -> Array[String]:
 					)
 				)
 	return found
+
+
+## Whether the sheet of the villager lets them be courted: false unless it says `romance=true`.
+func is_romance_open(id: String) -> bool:
+	return _values[id].get(ROMANCE_KEY, false)
 
 
 ## The levels that a sheet opens benefits at, {benefit: level}: none for most villagers.
