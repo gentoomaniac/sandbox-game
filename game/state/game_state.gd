@@ -328,6 +328,7 @@ func walk_speed_factor() -> float:
 ## Outdoors, each tile they step onto wears a little towards a desire path.
 func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	var tile_before := player.tile()
+	var position_before := player.position
 	if player.horse != null:
 		_tire_or_rest_horse(direction != Vector2.ZERO, delta)
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
@@ -335,9 +336,9 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	# A noclip walk (through trees, rocks and walls) leaves no path.
 	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
 		world.wear_tile(player.tile())
-		# A horse's hooves, not the rider's boots, would leave the prints (see Footprints).
-		if player.horse == null:
-			world.footprints.step(world, player.tile(), direction)
+	# A horse's hooves, not the rider's boots, would leave the prints (see Footprints).
+	if not is_inside() and not cheats.is_noclip and player.horse == null:
+		world.footprints.walk(world, player.stride, position_before, player.position)
 
 
 ## Puts a player who stands where they don't fit (noclip just turned off in a lake, a rock or a

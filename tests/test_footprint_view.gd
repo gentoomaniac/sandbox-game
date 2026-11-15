@@ -16,8 +16,11 @@ func before_each() -> void:
 
 
 func _step_along(count: int) -> void:
+	var step := FootprintRules.default_rules().step_tiles()
+	var stride := Footprints.Stride.new()
 	for x in count:
-		_world.footprints.step(_world, TILE + Vector2i(x % 4, 0), Vector2.RIGHT)
+		var from := Vector2(TILE) + Vector2(x % 4 * step, 0.5)
+		_world.footprints.walk(_world, stride, from, from + Vector2.RIGHT * step * 1.01)
 
 
 func test_a_chunk_gets_one_multimesh_however_many_prints() -> void:

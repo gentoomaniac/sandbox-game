@@ -1,7 +1,7 @@
 extends ResourceCase
-## Footprints in snow and mud (#64): a step onto soft ground leaves a print and one onto grass,
+## Footprints in snow and mud (#64): a step on soft ground leaves a print and one on grass,
 ## a way or flooded mud does not; the prints fade by the weather, a chunk keeps a few and drops
-## them when it is unloaded.
+## them when it is unloaded. (How a walk makes them: test_footprint_steps.gd.)
 
 const MUD_TILE := Vector2i(8, 8)
 
@@ -22,6 +22,14 @@ func _ring_size(tile: Vector2i) -> int:
 	return 0 if ring == null else ring.size
 
 
+## A walker with no steps made yet walks one step's length to the middle of `tile`: leaves one
+## print there if the ground is soft. A little over the step, for what float sums leave out.
+func _step_onto(tile: Vector2i, toes := Vector2.RIGHT) -> void:
+	var to := Vector2(tile) + Vector2(0.5, 0.5)
+	var step := FootprintRules.default_rules().step_tiles()
+	_footprints.walk(_world, Footprints.Stride.new(), to - toes * step * 1.01, to)
+
+
 func _wear_to_path(tile: Vector2i) -> void:
 	_world.set_wear_days(tile, PathRules.default_rules().path_after_days())
 
@@ -38,69 +46,41 @@ func _make_mud_with_tide(tile: Vector2i, is_flooded: bool) -> void:
 
 func test_a_step_in_snow_leaves_a_print() -> void:
 	_is_snowed = true
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	assert_eq(_ring_size(_tile), 1)
 	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
 	assert_eq(_footprints.kind_of_slot(ring, 0), Footprints.Kind.SNOW)
 
 
 func test_grass_takes_no_print() -> void:
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	assert_eq(_ring_size(_tile), 0)
 
 
 func test_worn_ground_takes_prints_only_while_the_rain_makes_it_mud() -> void:
 	_wear_to_path(_tile)
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	assert_eq(_ring_size(_tile), 0, "dry")
 	_world.set_muddy(true)
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
 	assert_eq(_footprints.kind_of_slot(ring, 0), Footprints.Kind.MUD)
 
 
 func test_tidal_mud_takes_prints_when_dry_and_none_when_the_tide_covers_it() -> void:
 	_make_mud_with_tide(MUD_TILE, true)
-	_footprints.step(_world, MUD_TILE, Vector2.RIGHT)
+	_step_onto(MUD_TILE)
 	assert_eq(_ring_size(MUD_TILE), 0, "flooded")
 	_make_mud_with_tide(MUD_TILE, false)
-	_footprints.step(_world, MUD_TILE, Vector2.RIGHT)
+	_step_onto(MUD_TILE)
 	assert_eq(_ring_size(MUD_TILE), 1, "dry")
 
 
 func test_a_way_takes_no_print_in_snow() -> void:
 	_is_snowed = true
 	_place(WorldObjectTypes.PLANK_WALK)
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	assert_eq(_ring_size(_tile), 0)
-
-
-func test_the_feet_alternate_and_the_toes_point_the_way_the_walker_goes() -> void:
-	_is_snowed = true
-	var ring_cells := []
-	for x in 4:
-		_footprints.step(_world, _tile + Vector2i(x, 0), Vector2.RIGHT)
-	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
-	for slot in 4:
-		ring_cells.append(ring.cell[slot])
-		assert_eq(ring.quarter_turns[slot], 1, "toes to the east")
-	assert_ne(ring_cells[0], ring_cells[1])
-	assert_eq(ring_cells[0], ring_cells[2])
-	_footprints.step(_world, _tile + Vector2i(0, 2), Vector2.UP)
-	assert_eq(ring.quarter_turns[4], 0)
-	_footprints.step(_world, _tile + Vector2i(0, 3), Vector2.LEFT)
-	assert_eq(ring.quarter_turns[5], 3)
-	_footprints.step(_world, _tile + Vector2i(0, 4), Vector2.DOWN)
-	assert_eq(ring.quarter_turns[6], 2)
-
-
-func test_a_print_lies_within_its_tile() -> void:
-	_is_snowed = true
-	for heading in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
-		_footprints.step(_world, _tile, heading)
-	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
-	for slot in ring.size:
-		assert_eq(Vector2i(ring.position[slot].floor()), _tile)
 
 
 func test_a_print_fades_over_its_time_and_faster_in_rain() -> void:
@@ -142,7 +122,7 @@ func test_a_chunk_keeps_its_last_prints_and_overwrites_the_oldest() -> void:
 	_is_snowed = true
 	var cap := FootprintRules.default_rules().per_chunk()
 	for index in cap + 3:
-		_footprints.step(_world, _tile + Vector2i(index % 2, 0), Vector2.RIGHT)
+		_step_onto(_tile + Vector2i(index % 2, 0))
 	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
 	assert_eq(ring.size, cap)
 	assert_eq(ring.next, 3, "the next print overwrites the fourth oldest")
@@ -151,13 +131,13 @@ func test_a_chunk_keeps_its_last_prints_and_overwrites_the_oldest() -> void:
 
 func test_a_print_on_a_chunk_that_is_not_loaded_is_not_made() -> void:
 	_is_snowed = true
-	_footprints.step(_world, Vector2i(5000, 5000), Vector2.RIGHT)
+	_step_onto(Vector2i(5000, 5000))
 	assert_null(_footprints.ring_of(Chunk.world_to_chunk(Vector2i(5000, 5000))))
 
 
 func test_unloading_a_chunk_drops_its_prints() -> void:
 	_is_snowed = true
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	var coords := Chunk.world_to_chunk(_tile)
 	_footprints.forget_chunk(coords)
 	assert_null(_footprints.ring_of(coords))
@@ -165,7 +145,7 @@ func test_unloading_a_chunk_drops_its_prints() -> void:
 
 func test_a_print_is_gone_when_its_ground_is_not_soft_any_more() -> void:
 	_is_snowed = true
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
 	_footprints.check_next_chunk(_world)
 	assert_ne(ring.born[0], Footprints.GONE, "the snow lies on")
@@ -176,7 +156,7 @@ func test_a_print_is_gone_when_its_ground_is_not_soft_any_more() -> void:
 
 func test_a_print_in_mud_is_gone_when_the_tide_covers_it() -> void:
 	_make_mud_with_tide(MUD_TILE, false)
-	_footprints.step(_world, MUD_TILE, Vector2.RIGHT)
+	_step_onto(MUD_TILE)
 	var ring := _footprints.ring_of(Chunk.world_to_chunk(MUD_TILE))
 	_make_mud_with_tide(MUD_TILE, true)
 	_footprints.check_next_chunk(_world)
@@ -185,32 +165,11 @@ func test_a_print_in_mud_is_gone_when_the_tide_covers_it() -> void:
 
 func test_checking_a_chunk_makes_no_new_print_and_visits_each_in_turn() -> void:
 	_is_snowed = true
-	_footprints.step(_world, _tile, Vector2.RIGHT)
+	_step_onto(_tile)
 	var size_before := _ring_size(_tile)
 	for _i in 5:
 		_footprints.check_next_chunk(_world)
 	assert_eq(_ring_size(_tile), size_before)
-
-
-func test_the_player_leaves_prints_on_foot_and_not_on_horseback() -> void:
-	_is_snowed = true
-	_state.player.position = Vector2(_tile) + Vector2(0.9, 0.5)
-	_state.walk(Vector2.RIGHT, 0.2)
-	assert_eq(_ring_size(_tile + Vector2i.RIGHT), 1)
-	_state.player.horse = FarmAnimal.new(LivestockRules.HORSE, &"bay", _state.player.position)
-	_state.walk(Vector2.RIGHT, 0.5)
-	assert_eq(_ring_size(_tile + Vector2i.RIGHT), 1, "the horse's hooves are for #65")
-
-
-func test_a_villager_leaves_a_print_for_a_step_onto_a_new_tile_only() -> void:
-	_is_snowed = true
-	var from_tile := _tile
-	Npcs.leave_footprint(_world, Vector2(from_tile) + Vector2(0.8, 0.5), from_tile)
-	assert_eq(_ring_size(_tile), 0, "same tile")
-	Npcs.leave_footprint(_world, Vector2(from_tile) + Vector2(1.1, 0.5), from_tile)
-	assert_eq(_ring_size(_tile), 1)
-	var ring := _footprints.ring_of(Chunk.world_to_chunk(_tile))
-	assert_eq(ring.quarter_turns[0], 1, "east")
 
 
 func test_the_data_file_is_valid() -> void:

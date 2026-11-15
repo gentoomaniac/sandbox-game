@@ -172,14 +172,11 @@ static func wear_step(map: GameMap, feet: Vector2, from_tile: Vector2i) -> void:
 		(map as World).wear_tile(feet_tile, step)
 
 
-## A step onto `feet` from the tile `from_tile` that the player can see leaves a footprint where the
-## ground is soft (see Footprints). The steps of far walkers and of a skip are not seen, so they
-## leave none.
-static func leave_footprint(map: GameMap, feet: Vector2, from_tile: Vector2i) -> void:
-	var feet_tile := Vector2i(feet.floor())
-	if feet_tile != from_tile and map is World:
-		var heading := feet - (Vector2(from_tile) + Vector2(0.5, 0.5))
-		(map as World).footprints.step(map as World, feet_tile, heading)
+## A villager's step to `feet` that the player can see leaves footprints where the ground is soft
+## (see Footprints). The steps of far walkers and of a skip are not seen, so they leave none.
+static func leave_footprint(map: GameMap, npc: Npc, feet: Vector2) -> void:
+	if map is World:
+		(map as World).footprints.walk(map as World, npc.stride, npc.position, feet)
 
 
 ## Whether a villager fits with their feet at `feet`: as the player does (see
@@ -462,7 +459,7 @@ func _walk(npc: Npc, delta: float, map: GameMap, player_feet: Vector2) -> bool:
 		if not _fits(npc, feet, map):
 			continue
 		wear_step(map, feet, npc.tile())
-		leave_footprint(map, feet, npc.tile())
+		leave_footprint(map, npc, feet)
 		npc.position = feet
 		npc.heading = way
 		npc.facing = Npc.facing_of(way)

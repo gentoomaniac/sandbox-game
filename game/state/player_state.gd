@@ -14,6 +14,8 @@ const MAX_STEP_SECONDS := 0.05
 
 ## World position of the feet, in tiles: tile (x, y) spans x..x+1 and y..y+1.
 var position := Vector2.ZERO
+## How far they have walked since their last footprint (see Footprints).
+var stride := Footprints.Stride.new()
 ## The axis direction the player last tried to walk in (UP, DOWN, LEFT or RIGHT), also when
 ## a wall stopped them.
 var facing := Vector2i.DOWN

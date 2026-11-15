@@ -6,6 +6,8 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://data/footprints.cfg"
 const REQUIRED_KEYS: Array[String] = [
+	"step_tiles",
+	"foot_side_tiles",
 	"per_chunk",
 	"snow_lasts_minutes",
 	"mud_lasts_minutes",
@@ -46,6 +48,8 @@ func problems() -> Array[String]:
 			found.append("[footprints] no %s" % key)
 	if not found.is_empty():
 		return found
+	if step_tiles() <= 0.0 or foot_side_tiles() < 0.0:
+		found.append("[footprints] a step must be longer than 0 tiles, a foot's side not below 0")
 	if per_chunk() < 1:
 		found.append("[footprints] per_chunk must be at least 1")
 	if snow_lasts_minutes() <= 0.0 or mud_lasts_minutes() <= 0.0:
@@ -57,6 +61,16 @@ func problems() -> Array[String]:
 
 func is_valid() -> bool:
 	return problems().is_empty()
+
+
+## How far a walker goes between two prints, in tiles.
+func step_tiles() -> float:
+	return float(_values["step_tiles"])
+
+
+## How far to the side of the walker's line each foot lies, in tiles.
+func foot_side_tiles() -> float:
+	return float(_values["foot_side_tiles"])
 
 
 ## The prints a chunk keeps.

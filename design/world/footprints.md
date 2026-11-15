@@ -26,10 +26,15 @@ The player and the villagers leave footprints on soft ground, and they fade (dec
 
 ## What a print is
 
-- One print for each tile a walker steps onto, a left and a right foot in turn (the foot follows
-  the parity of the tile on the axis the walker mostly goes on, so no one's step has to be
-  remembered), a fifth of a tile to the side of the middle, its toes the way the walker goes, in
-  quarter turns so that the pixels stay crisp (a diagonal rounds to the nearer side).
+- One print a step along the way walked: every `step_tiles` (0.45 of a tile) of the path a walker
+  actually goes (not for each tile it enters), the left and the right foot in turn, each
+  `foot_side_tiles` (0.15) to its own side of the line, so the two rows are 0.3 of a tile apart and
+  the prints in a row 0.9 apart, as the trail of a shoe in the snow. Its toes point the way the
+  walker goes, at any angle (the picture is turned by the instance's transform), diagonals too.
+- The distance walked is kept by each walker, a `Footprints.Stride` (a float and which foot is
+  next) on the player and on each villager, made once with it: a frame adds its length and writes
+  the prints the sum has reached, none if it has not. A move longer than two tiles (a jump, not
+  walking) makes none.
 - **Not saved:** a print is a look nothing else reads, and it fades in hours anyway. A loaded game
   starts on clean ground.
 
@@ -49,9 +54,9 @@ The player and the villagers leave footprints on soft ground, and they fade (dec
 
 ## Cost
 
-- Prints exist only in loaded chunks. Each chunk keeps a ring of `per_chunk` (64): a new print past
-  that overwrites the oldest, so the total is at most 64 times the loaded chunks (about 25), a few
-  thousand floats. A ring is made when the chunk gets its first print and dropped with the chunk
+- Prints exist only in loaded chunks. Each chunk keeps a ring of `per_chunk` (160, since a print a step is
+  more than twice the old one a tile): a new print past that overwrites the oldest, so the total is
+  at most 160 times the loaded chunks (about 25), 4000 instances of a few floats. A ring is made when the chunk gets its first print and dropped with the chunk
   (`WorldView._on_chunk_unloaded`).
 - Drawn as one MultiMesh a chunk (`FootprintView`): a print is written to its instance once, when
   it is made or when it goes, and the shader (`footprints.gdshader`) fades it by the two clocks,
@@ -70,4 +75,5 @@ a dark floor with a pale rim, the lighter on the side away from the light.
 ## Looking at them
 
 `--footprints=<x>,<y>` (`DebugFootprints`) lays two trails of prints from that tile for a
-screenshot: in snow with `--snow=1`, else in mud (with `--weather=rain`).
+screenshot, one straight east and one diagonal to the north east, starting a tile north of it: in
+snow with `--snow=1`, else in mud (with `--weather=rain`).

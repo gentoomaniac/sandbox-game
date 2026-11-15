@@ -7,8 +7,8 @@ extends RefCounted
 ## Only the loaded chunks keep prints (a walker on a chunk that is not loaded, as one on a far trip
 ## is, makes none: nobody sees them). Each chunk keeps a ring of the last `per_chunk` prints, so
 ## the cost has a bound however much is walked: a new print past the cap overwrites the oldest.
-## One print is made for each tile a walker steps onto, the left and the right foot in turn, with
-## its toes the way the walker goes.
+## A walker makes a print each step of the way it walks (`step_tiles`), the left and the right foot
+## in turn to either side of its line, with its toes the way the walker goes, at any angle.
 ##
 ## A print fades by its age, which is not time but the pace of the weather: each kind has its own
 ## clock (`age_of`) that runs faster in rain, in snowfall or in the thaw, so the prints of all
@@ -23,8 +23,8 @@ enum Kind { NONE, SNOW, MUD }
 ## The art's cells: a left and a right foot of each kind, in the order SNOW, MUD (see
 ## tools/art/footprints.py).
 const CELLS_PER_KIND := 2
-## A print this far to the side of its tile's middle, in tiles, so the two feet walk apart.
-const FOOT_SIDE_OFFSET := 0.2
+## A segment of a walk longer than this (in tiles) is a jump, not steps: it makes no prints.
+const MAX_SEGMENT := 2.0
 ## The born age of a print that is gone: it is older than any print can get.
 const GONE := -1.0e9
 
@@ -40,13 +40,22 @@ var _last_minute := -1
 var _to_check: Array[Vector2i] = []
 
 
+## How far a walker has gone since its last print, and which foot is next. Each player and
+## villager carries one, so that the steps are counted along the walk and nothing is allocated for
+## a step.
+class Stride:
+	extends RefCounted
+	var walked := 0.0
+	var is_right_next := false
+
+
 ## The last prints of one chunk, as slots of parallel arrays: where the print lies (in tiles, the
-## middle of its foot), how many quarter turns the picture is turned from toes up, its cell of the
-## art and the age of its kind when it was made (`GONE` for a print that has vanished).
+## middle of its foot), how far the picture is turned from toes up (radians), its cell of the art
+## and the age of its kind when it was made (`GONE` for a print that has vanished).
 class Ring:
 	extends RefCounted
 	var position: PackedVector2Array
-	var quarter_turns: PackedByteArray
+	var rotation: PackedFloat32Array
 	var cell: PackedByteArray
 	var born: PackedFloat32Array
 	## How many slots hold a print (or the remains of one).
@@ -56,7 +65,7 @@ class Ring:
 
 	func _init(capacity: int) -> void:
 		position.resize(capacity)
-		quarter_turns.resize(capacity)
+		rotation.resize(capacity)
 		cell.resize(capacity)
 		born.resize(capacity)
 
@@ -79,31 +88,26 @@ func kind_at(world: World, tile: Vector2i) -> Kind:
 	return Kind.MUD if world.is_muddy_at(tile) else Kind.NONE
 
 
-## A walker steps onto `tile`, heading the way of `heading` (any length): leaves a print if the
-## ground there is soft.
-func step(world: World, tile: Vector2i, heading: Vector2) -> void:
-	var kind := kind_at(world, tile)
-	if kind == Kind.NONE or heading.is_zero_approx():
+## A walker with `stride` goes from the point `from` to `to` (in tiles): leaves a print for each
+## step of the way where the ground is soft. A print lies where its step ends, to the side of the
+## line the walker goes on, the left and the right foot in turn.
+func walk(world: World, stride: Stride, from: Vector2, to: Vector2) -> void:
+	var way := to - from
+	var length := way.length()
+	if length > MAX_SEGMENT:
 		return
-	var quarter_turns := posmod(roundi(heading.angle() / (PI / 2.0)) + 1, 4)
-	var toes := Vector2.UP.rotated(quarter_turns * PI / 2.0)
-	# The feet follow each other along the axis the walker mostly goes on, so they alternate
-	# without remembering whose step it was.
-	var is_right := (tile.x if absf(heading.x) > absf(heading.y) else tile.y) % 2 != 0
-	var side := toes.rotated(PI / 2.0) * (FOOT_SIDE_OFFSET if is_right else -FOOT_SIDE_OFFSET)
-	var chunk_coords := Chunk.world_to_chunk(tile)
-	var ring := _rings.get(chunk_coords) as Ring
-	if ring == null:
-		ring = Ring.new(_rules.per_chunk())
-		_rings[chunk_coords] = ring
-	var slot := ring.next
-	ring.position[slot] = Vector2(tile) + Vector2(0.5, 0.5) + side
-	ring.quarter_turns[slot] = quarter_turns
-	ring.cell[slot] = (kind - 1) * CELLS_PER_KIND + (1 if is_right else 0)
-	ring.born[slot] = _age[kind]
-	ring.size = maxi(ring.size, slot + 1)
-	ring.next = (slot + 1) % ring.born.size()
-	printed.emit(chunk_coords, slot)
+	stride.walked += length
+	var step_tiles := _rules.step_tiles()
+	while stride.walked >= step_tiles:
+		stride.walked -= step_tiles
+		var toes := way / length
+		var side := toes.rotated(PI / 2.0) * _rules.foot_side_tiles()
+		if not stride.is_right_next:
+			side = -side
+		# The step ended `walked` tiles before `to`.
+		var foot := to - toes * stride.walked + side
+		_print(world, foot, toes.angle() + PI / 2.0, stride.is_right_next)
+		stride.is_right_next = not stride.is_right_next
 
 
 ## Lets the prints age up to the game minute `total_minutes` (see GameClock.total_minutes) in the
@@ -139,6 +143,28 @@ func ring_of(chunk_coords: Vector2i) -> Ring:
 func kind_of_slot(ring: Ring, slot: int) -> Kind:
 	@warning_ignore("integer_division")
 	return (ring.cell[slot] / CELLS_PER_KIND + 1) as Kind
+
+
+## Writes the print of a foot at `foot` (in tiles) turned `rotation` from toes up, if the ground
+## there is soft.
+func _print(world: World, foot: Vector2, rotation: float, is_right: bool) -> void:
+	var tile := Vector2i(foot.floor())
+	var kind := kind_at(world, tile)
+	if kind == Kind.NONE:
+		return
+	var chunk_coords := Chunk.world_to_chunk(tile)
+	var ring := _rings.get(chunk_coords) as Ring
+	if ring == null:
+		ring = Ring.new(_rules.per_chunk())
+		_rings[chunk_coords] = ring
+	var slot := ring.next
+	ring.position[slot] = foot
+	ring.rotation[slot] = rotation
+	ring.cell[slot] = (kind - 1) * CELLS_PER_KIND + (1 if is_right else 0)
+	ring.born[slot] = _age[kind]
+	ring.size = maxi(ring.size, slot + 1)
+	ring.next = (slot + 1) % ring.born.size()
+	printed.emit(chunk_coords, slot)
 
 
 ## Forgets the prints of a chunk that was unloaded.

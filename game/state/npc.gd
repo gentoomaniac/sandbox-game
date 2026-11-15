@@ -102,6 +102,8 @@ var activity := Activity.IDLE
 var seconds_left := 0.0
 ## The way they stroll, a unit vector.
 var heading := Vector2.ZERO
+## How far they have walked since their last footprint (see Footprints).
+var stride := Footprints.Stride.new()
 ## The tiles their body last stood on, all walkable: a step that stays on them needs no asking
 ## the map again (see Npcs).
 var free_body_tiles := Rect2i()

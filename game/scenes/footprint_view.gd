@@ -75,8 +75,9 @@ func _on_printed(chunk_coords: Vector2i, slot: int) -> void:
 		prints = _add_chunk_prints(chunk_coords, ring.born.size())
 	var multimesh := prints.multimesh
 	multimesh.visible_instance_count = ring.size
-	var turn := ring.quarter_turns[slot] * PI / 2.0
-	multimesh.set_instance_transform_2d(slot, Transform2D(turn, ring.position[slot] * TILE_SIZE))
+	multimesh.set_instance_transform_2d(
+		slot, Transform2D(ring.rotation[slot], ring.position[slot] * TILE_SIZE)
+	)
 	multimesh.set_instance_custom_data(slot, Color(ring.born[slot], ring.cell[slot], 0.0, 0.0))
 
 
