@@ -62,8 +62,10 @@ The player and the villagers leave footprints on soft ground, and they fade (dec
 
 `assets/effects/footprints.png`, four cells a tile square (snow left foot, snow right foot, mud left
 foot, mud right foot), in both art sets (`tools/art/footprints.py`; the classic art draws it at 16 px
-and it is doubled, so it is the same size on screen). A print is a dent: its floor a shade
-darker than the ground, the rim towards the light shaded and the far rim lit.
+and it is doubled, so it is the same size on screen). A print is the sole of a shoe, toes up: a broad
+ball, a narrow waist on the inside and a round heel, 14 px long at 32 px (7 at 16 px), the two feet
+mirrors. It is a dent: in snow a soft grey-blue floor with its rim towards the light shaded; in mud
+a dark floor with a pale rim, the lighter on the side away from the light.
 
 ## Looking at them
 

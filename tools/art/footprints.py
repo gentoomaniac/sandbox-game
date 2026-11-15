@@ -2,9 +2,8 @@
 generator imports this module too, with its 16 px tile).
 
 assets/effects/footprints.png is a sheet of 4 cells, each a tile square, with one print in the
-middle of its cell, the toes up (the game turns it to the way the walker goes, in quarter turns,
-so the pixels stay crisp): a left and a right foot in snow, a left and a right foot in mud. The
-foot is about a shoe long (12 px of the 32 px tile, 6 px of the 16 px one), narrow at the arch,
+middle of its cell, the toes up (the game turns it to the way the walker goes, at any angle): a
+left and a right foot in snow, a left and a right foot in mud. The foot is about a shoe long (14 px of the 32 px tile, 7 px of the 16 px one), narrow at the arch,
 which lies on the inside, so the two feet are mirrors.
 
 A print is a dent: its floor is a shade darker than what it is pressed into, the rim towards the
@@ -15,24 +14,27 @@ opaque; the game fades it by its alpha.
 from canvas import blank
 
 # What a print is made of: its floor, the shaded rim at the top left and the lit one at the
-# lower right.
+# lower right. A print in snow is a soft grey-blue dent; one in mud is dark with a pale rim.
 SNOW = ("snow_shadow", "snow_deep", "snow_shadow")
-MUD = ("soil_dark", "ink", "sand")
+MUD = ("soil_dark", "sand", "sand_light")
 KINDS = {"snow": SNOW, "mud": MUD}
 
-# The left foot, toes up, arch on its right. The right foot is its mirror.
+# The left foot, toes up, arch on its right: a broad ball, a narrow waist and a round heel, as
+# the sole of a shoe. The right foot is its mirror.
 LEFT_FOOT = {
     32: (
         ".XXXX.",
         "XXXXXX",
         "XXXXXX",
         "XXXXXX",
+        "XXXXXX",
         ".XXXXX",
         ".XXXX.",
-        ".XXXX.",
+        ".XXX..",
         ".XXX..",
         ".XXXX.",
-        ".XXXX.",
+        ".XXXXX",
+        ".XXXXX",
         ".XXXX.",
         "..XX..",
     ),
@@ -40,9 +42,10 @@ LEFT_FOOT = {
         ".XXX",
         "XXXX",
         "XXXX",
+        ".XX.",
+        ".XX.",
         ".XXX",
-        ".XX.",
-        ".XX.",
+        "..XX",
     ),
 }
 
