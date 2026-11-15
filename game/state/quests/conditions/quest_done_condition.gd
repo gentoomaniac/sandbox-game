@@ -11,3 +11,7 @@ func problems(fields: Dictionary, quest_ids: Array[String]) -> Array[String]:
 	if quest_ids.has(fields.get("quest")):
 		return []
 	return ["quest is no quest"]
+
+
+func is_met(fields: Dictionary, _giver: String, quests: Quests) -> bool:
+	return quests.is_done(fields["quest"])

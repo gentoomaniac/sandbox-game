@@ -11,3 +11,7 @@ func problems(fields: Dictionary) -> Array[String]:
 	var found := QuestFields.item(fields, "item")
 	found.append_array(QuestFields.whole_number(fields, "count", 1))
 	return found
+
+
+func thing(fields: Dictionary) -> String:
+	return ItemTypes.TYPES[StringName(fields["item"])]["name"].to_lower()

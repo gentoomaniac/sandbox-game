@@ -15,3 +15,7 @@ func problems(fields: Dictionary, _quest_ids: Array[String]) -> Array[String]:
 		if fields.has(key):
 			found.append_array(QuestFields.whole_number(fields, key, 1))
 	return found
+
+
+func is_met(fields: Dictionary, _giver: String, quests: Quests) -> bool:
+	return quests.day() >= fields.get("at_least", 1) and quests.day() <= fields.get("at_most", INF)

@@ -12,3 +12,8 @@ func kind() -> String:
 ## What is wrong with the quest's `objective` dictionary for this kind.
 func problems(_fields: Dictionary) -> Array[String]:
 	return []
+
+
+## What the quest asks for, in words for "X no longer needs the ...".
+func thing(_fields: Dictionary) -> String:
+	return ""

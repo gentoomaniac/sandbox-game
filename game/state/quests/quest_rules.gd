@@ -117,6 +117,15 @@ func quest(id: String) -> Dictionary:
 	return _quests[id]
 
 
+## The kind of objective or prerequisite the file names by `type`.
+func objective_kind(type: String) -> QuestObjective:
+	return _objective_kinds[type]
+
+
+func condition_kind(type: String) -> QuestCondition:
+	return _condition_kinds[type]
+
+
 ## The villager who gives it, or `ANY_GIVER`.
 func giver_of(id: String) -> String:
 	return _quests[id].get("giver", ANY_GIVER)

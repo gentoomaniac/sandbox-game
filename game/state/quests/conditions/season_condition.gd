@@ -18,3 +18,7 @@ func problems(fields: Dictionary, _quest_ids: Array[String]) -> Array[String]:
 
 static func _is_season(name: Variant) -> bool:
 	return name is String and NAMES.has(name)
+
+
+func is_met(fields: Dictionary, _giver: String, quests: Quests) -> bool:
+	return fields["seasons"].has(quests.season_name())

@@ -71,3 +71,25 @@ what it does at play.
 
 To add a kind: a new file in the folder with a `kind()` and its `problems`, and a line in the table
 above.
+
+## When quests are posted
+
+- **At the start of each day** (`GameClock.new_day`, so a long skip too, a day at a time):
+  `Quests.post_today()` lets the quests whose days are up go away, then posts one. Nothing runs at
+  night. The pick is **random but seeded by the world and the day**, so a reload or a skip gives the
+  same quests.
+- **At most `max_open` open at once, `per_day` a day.** Open counts the posted and the taken ones.
+  One giver has one quest open at a time, and a quest id is not posted again for
+  `repeat_after_days` after it was done or went away.
+- **How a quest is picked:** the quests whose prerequisites hold now with a giver who may give it:
+  the villager its file names or, with `giver="any"`, any villager of the world. Neither one who is
+  cold to the player (`cold_below` of `data/gossip.cfg`) nor one who has a quest gives one. A quest
+  is picked at random of those, then its giver.
+- **How long:** `days` from the day it was posted, taken or not: the last day it stays is the posting
+  day plus `days` less one, and on the morning after it is gone. Nothing else happens: no opinion is
+  lost.
+- **The first day:** a new game with a village posts at once a random quest marked `starter`, with
+  a random giver. A world with no village has none.
+
+The state is `Quests` (`game/state/quests/quests.gd`, `GameState.quests`), with the signals `posted`
+and `went_away`; the console's `quest` is its test tool (handbook console page).

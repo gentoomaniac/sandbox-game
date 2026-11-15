@@ -13,3 +13,7 @@ func problems(fields: Dictionary, _quest_ids: Array[String]) -> Array[String]:
 	if not (skill is String and SkillRules.default_rules().has_skill(StringName(skill))):
 		found.append("skill is no skill")
 	return found
+
+
+func is_met(fields: Dictionary, _giver: String, quests: Quests) -> bool:
+	return quests.skill_points(fields["skill"]) >= fields["at_least"]

@@ -14,3 +14,8 @@ func kind() -> String:
 ## there are.
 func problems(_fields: Dictionary, _quest_ids: Array[String]) -> Array[String]:
 	return []
+
+
+## Whether it holds for a quest that `giver` (a villager id) would give.
+func is_met(_fields: Dictionary, _giver: String, _quests: Quests) -> bool:
+	return false

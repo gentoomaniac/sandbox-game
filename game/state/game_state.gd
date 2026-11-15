@@ -75,6 +75,9 @@ var activities: ActivityUpkeep
 ## What the shops have left to sell and take today (saved: a reload does not give back a sold-out
 ## shop).
 var shops: Shops
+## The quests the villagers have posted, and the player's list (see design/villagers/quests.md).
+## Built with the simulation.
+var quests: Quests
 ## What the player did within sight of villagers.
 var deeds: DeedLog
 ## What the villagers make of the stories they know (StoryJudging asks the language model).
@@ -141,6 +144,7 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 			problem = VillagePeople.move_in(state, site, plan)
 			if problem != "":
 				push_error("The villagers did not all move in: %s" % problem)
+	state.quests.post_first()
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
 	state.explored.see(state.player.tile())
 	state.player.home_map = state.world
@@ -905,6 +909,7 @@ func _start_simulation() -> void:
 		ActorsUpkeep.new(world, livestock, npcs, _player_feet, activities.catch_up)
 	)
 	simulation.add_system(GossipSpread.new(npcs, deeds))
+	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, world.world_seed)
 	simulation.add_system(LanternUpkeep.new(_the_player))
 	simulation.add_system(CampfireUpkeep.new(world))
 
