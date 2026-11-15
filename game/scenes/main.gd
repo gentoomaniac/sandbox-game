@@ -240,6 +240,7 @@ func _make_views() -> void:
 	add_child(ModelNotices.new(_chat_screen.dialogue, _notifications))
 	add_child(_chat_screen)
 	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
+	_trade_screen.talk_requested.connect(_open_chat)
 	_hotbar.crafting_requested.connect(_on_crafting_requested)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
@@ -763,6 +764,8 @@ func _interact() -> void:
 				_harvest_hud.show_note("No room to get off here.")
 		Interaction.Kind.CHAT:
 			_open_chat(choice.subject)
+		Interaction.Kind.TRADE:
+			_open_shop(choice.subject)
 		Interaction.Kind.MOUNT:
 			_state.mount(choice.subject)
 		Interaction.Kind.OPEN_STATION_GRID:
@@ -788,9 +791,11 @@ func _open_shop(keeper: Npc) -> void:
 	_trade_screen.open_shop(keeper, _state)
 
 
-## Opens the chat with a villager, who turns to the player (the chat pauses the game).
+## Opens the chat with a villager, who turns to the player (the chat pauses the game). A shopkeeper
+## at a shut stall says so first.
 func _open_chat(npc: Npc) -> void:
 	_state.npcs.talk_to(npc, _state.player.position)
+	ShopHours.greet(_state, npc)
 	_chat_screen.open_chat(npc, _state)
 
 

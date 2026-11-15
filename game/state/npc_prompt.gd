@@ -72,6 +72,8 @@ static func reply_messages(
 		last.append(_said(rules, "memory", words))
 	last.append_array(GossipRules.default_rules().story_lines(npc.stories, moment.clock.day))
 	last.append(_said(rules, "moment", words))
+	if not moment.shop.is_empty():
+		last.append(shop_text(moment.shop, words, rules))
 	last.append(_said(rules, "neighbour", words))
 	var opinion_word := GossipRules.default_rules().opinion_word(npc.opinion)
 	last.append(_said(rules, "opinion_" + opinion_word, words))
@@ -328,6 +330,26 @@ static func looks_text(npc: Npc, rules: NpcTalkRules) -> String:
 			}
 		)
 	)
+
+
+## What a keeper is told of their shop (see NpcMoment `shop`): whether the stall is open, when it
+## opens, and what it sells and takes today. `words` has the placeholders of the villager.
+static func shop_text(shop: Dictionary, words: Dictionary, rules: NpcTalkRules) -> String:
+	var shop_words := words.duplicate()
+	var opens := ""
+	if shop["opens"] != "":
+		opens = rules.value("shop", "opens_at").format({"time": shop["opens"]})
+	shop_words["opens"] = opens
+	var none: String = rules.value("shop", "none_in_stock")
+	var sells: Array[String] = []
+	sells.assign(shop["sells"])
+	var takes: Array[String] = []
+	takes.assign(shop["takes"])
+	shop_words["sells"] = _listed(sells) if not sells.is_empty() else none
+	shop_words["takes"] = _listed(takes) if not takes.is_empty() else none
+	var state_line: String = rules.value("shop", "stall_open" if shop["is_open"] else "stall_shut")
+	var goods: String = rules.value("shop", "goods")
+	return "%s %s" % [state_line.format(shop_words), goods.format(shop_words)]
 
 
 ## The words of the moment, by the placeholders of [prompt] `moment`: date, time, part_of_day,

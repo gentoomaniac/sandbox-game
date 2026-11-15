@@ -18,6 +18,19 @@
   text still grows with the UI scale (decided 2026-11-09). Enter sends; while the answer is awaited the villager
   has a "..." bubble; Escape leaves (and doesn't open the
   pause menu). The villager turns to the player and stands a while.
+- **The shopkeeper (#10, [../economy/shop.md](../economy/shop.md)):** E on a keeper whose shop is
+  **open** (their entry of the day is `keep_shop`, they have arrived at the stall) opens the trade
+  screen instead of the chat (`Interaction.Kind.TRADE`, "Trade with Trienke Lorenzen"; its `Talk`
+  button opens the chat). E on them at any other time is the chat. If they are at their stall
+  (within 4 tiles of the spot of their workplace) and it is shut, they say a line first, before the
+  player writes, made from the hours of the routine and the words of `[shop]` in `data/npc_talk.cfg`
+  (`ShopHours.greet`): "The shop opens at 7." before the hours, "Back at 1." between them, "The
+  shop is shut for today. It opens at 7." after them and "Closed on Sundays, neighbour. Church." on
+  a day with none; it is added to the chat once. A keeper who is not at the stall (asleep, away) is
+  spoken to as anyone. **The chat never trades**: a model is told, in the last turn after the
+  moment, whether the stall is open and when it opens, what is in stock and what she has room for
+  today, and that the prices are not hers to name; it voices the shop and the trade screen, which
+  needs no model, does the numbers.
 - **Answers:** one function, `NpcDialogue.reply`, awaited by the chat. With a language model
   set in Settings (a provider, an OpenAI-compatible chat endpoint by default, the test LLM's
   `http://127.0.0.1:11434/v1`, or Claude, whose endpoint and model, `claude-opus-5-5`, it starts

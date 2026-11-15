@@ -15,6 +15,8 @@ var building := ""
 ## Whether a burning campfire is near (told only when no building is): one that is out is no
 ## "campfire" to be by.
 var is_by_fire := false
+## What the villager's shop is like, if they keep one (see ShopHours `fact`); empty otherwise.
+var shop := {}
 
 
 ## The moment of the game now, for a villager in it. The weather is what the player sees (with a
@@ -34,6 +36,7 @@ static func of(state: GameState, npc: Npc, reach: float) -> NpcMoment:
 		if distance <= nearest:
 			nearest = distance
 			moment.building = building.type_data()["name"]
+	moment.shop = ShopHours.fact(state, npc)
 	var centre := npc.tile()
 	var tiles := ceili(reach)
 	for y in range(-tiles, tiles + 1):

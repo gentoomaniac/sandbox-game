@@ -1,7 +1,7 @@
 # The shop: a keeper who keeps hours and trades
 
 [#10](https://github.com/gentoomaniac/sandbox-game/issues/10) (task 240). **Approved by the user
-(issue comment, all defaults); built step by step, steps 1 to 6 so far** (each step's note below says what
+(issue comment, all defaults); built step by step, steps 1 to 7 so far** (each step's note below says what
 changed from the plan). It is the first step of the economy draft in [README.md](README.md),
 and it is built to carry [#11](https://github.com/gentoomaniac/sandbox-game/issues/11) (seeds from
 the shop) with data alone. Needs the village (#9) and the routines (#7), both built.
@@ -209,7 +209,9 @@ story, [../villagers/villagers.md](../villagers/villagers.md); her `people` name
 name her back), 4 (`ShopRules`, `data/shops.cfg`), 5 (`Shops` and `ShopQuote`: stock, room, the quote and the trade; the
 refusal texts are in `Shops`, and what `Shops.trade` refuses changes nothing), 6 (`TradeScreen`
 and `TradeRow`, the console's `shop` and `shop restock`, `Shops.cover` and `Shops.fill`; `GameState.shops`
-is not saved until step 8).
+is not saved until step 8), 7 (`ShopHours`: E trades in hours, the chat with the scripted line out of
+hours; `[shop]` of `data/npc_talk.cfg`; the model's prompt fact; the keeper's line is only said when she
+stands at the stall).
 
 Each is a commit that passes `make test` and `make lint`, with its tests and doc lines. Steps 1 to 3
 are the keeper and need no trade; 4 to 8 are the trade.

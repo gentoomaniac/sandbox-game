@@ -44,6 +44,8 @@ static func e_text(state: GameState, target: Vector2i) -> String:
 			return "Get off the horse"
 		Interaction.Kind.CHAT:
 			return "Talk to %s" % choice.subject.name
+		Interaction.Kind.TRADE:
+			return "Trade with %s" % choice.subject.name
 		Interaction.Kind.MOUNT:
 			return "Get on the horse"
 		Interaction.Kind.OPEN_STATION_GRID:

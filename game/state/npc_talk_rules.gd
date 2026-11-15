@@ -97,6 +97,19 @@ const KEYS := {
 		"open": TYPE_STRING,
 	},
 	"scripted": {"thinking_seconds": TYPE_FLOAT, "replies": TYPE_ARRAY},
+	"shop":
+	{
+		"opens": TYPE_STRING,
+		"back": TYPE_STRING,
+		"shut_today": TYPE_STRING,
+		"shut_until": TYPE_STRING,
+		"closed_day": TYPE_STRING,
+		"stall_open": TYPE_STRING,
+		"stall_shut": TYPE_STRING,
+		"opens_at": TYPE_STRING,
+		"goods": TYPE_STRING,
+		"none_in_stock": TYPE_STRING,
+	},
 	"bubble":
 	{
 		"interval_seconds": TYPE_FLOAT,

@@ -3,7 +3,8 @@ extends RefCounted
 ## What the player's E acts on: the villagers, saddled horses, beds, chests and crafting stations
 ## within reach of them (Targeting.REACH, the same as the use action's). Plain rules; Main asks and
 ## then chats, gets on the horse, sleeps, opens the storage screen or opens the crafting menu of
-## the station. A villager E speaks to (`npc_to_chat`) comes first, then a horse to get on
+## the station. A villager E speaks to (`npc_to_chat`) comes first (a shopkeeper whose shop is open
+## trades with the player instead, see ShopHours), then a horse to get on
 ## (`horse_to_mount`), before any chest, station or bed; a bell frame to ring (`bell_frame_to_ring`)
 ## comes after the chests and stations.
 
@@ -12,6 +13,7 @@ enum Kind {
 	NOTHING,
 	DISMOUNT,
 	CHAT,
+	TRADE,
 	MOUNT,
 	OPEN_STATION_GRID,
 	OPEN_CHEST,
@@ -43,7 +45,10 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 		return Choice.new(Kind.DISMOUNT)
 	var npc := npc_to_chat(state, target)
 	if npc != null:
-		return Choice.new(Kind.CHAT, npc)
+		var is_shop_open := (
+			ShopRules.default_rules().shop_of_keeper(npc.id) != "" and ShopHours.is_open(state, npc)
+		)
+		return Choice.new(Kind.TRADE if is_shop_open else Kind.CHAT, npc)
 	var horse := horse_to_mount(state, target)
 	if horse != null:
 		return Choice.new(Kind.MOUNT, horse)
