@@ -6,10 +6,11 @@ extends RefCounted
 
 
 ## The step on a tile. Snow lies over anything, ice is frozen water, a floodplain is sand,
-## the tidal mud squelches like wetland.
+## the tidal mud squelches like wetland, and a ford (floodplain under shallow water, see Fords) is
+## waded through.
 ## Indoors the clogs clack on the brick floor as on wood, and a clay floor is soil.
 static func footstep(
-	terrain: Tile.Terrain, is_frozen: bool, is_snowed: bool, is_indoors: bool
+	terrain: Tile.Terrain, is_frozen: bool, is_snowed: bool, is_indoors: bool, is_ford := false
 ) -> StringName:
 	if terrain == Tile.Terrain.CLAY_FLOOR:
 		return &"step_soil"
@@ -24,7 +25,7 @@ static func footstep(
 		Tile.Terrain.WETLAND, Tile.Terrain.MUD:
 			return &"step_wetland"
 		Tile.Terrain.FLOODPLAIN:
-			return &"step_sand"
+			return &"step_wade" if is_ford else &"step_sand"
 		Tile.Terrain.SOIL:
 			return &"step_soil"
 	return &"step_grass"

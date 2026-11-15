@@ -19,6 +19,7 @@ const EVENTS: Array[StringName] = [
 	&"step_ice",
 	&"step_snow",
 	&"step_wood",
+	&"step_wade",
 	&"axe_chop",
 	&"tree_fall",
 	&"pickaxe_hit",

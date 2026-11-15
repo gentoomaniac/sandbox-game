@@ -12,7 +12,7 @@ What you hear in the game, and how to turn it up or down.
 ## Effects
 
 - Footsteps follow the walk and the ground: grass, soil, sand, wetland, ice, snow, a wooden
-  floor.
+  floor, and a soft splash when you wade through a ford.
 - Every tool, pickup, building and menu has a sound, played from where it happens.
 - What you do is heard when it worked. An action the game refuses only says "denied".
 - Inside a house the weather and the outside world are muffled and faint.

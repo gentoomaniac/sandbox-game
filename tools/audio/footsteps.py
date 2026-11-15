@@ -81,3 +81,25 @@ def step_wood(rng):
     place(out, burst(rng, 0.02, 800, 4000, 0.0005, 400), 0, 0.15)
     place(out, sweep(110 * pitch, 70 * pitch, 0.12) * envelope(0.12, 0.002, 40), 0, 0.5)
     return out
+
+
+def step_wade(rng):
+    """A step in ankle-deep water over stones: the foot slaps the surface (a soft thump and a
+    short wash of noise), the water sloshes round the leg, and a few drops fall back."""
+    pitch = rng.uniform(0.9, 1.1)
+    out = silence(0.4)
+    place(out, burst(rng, 0.12, 60, 400, 0.004, 40), 0, 0.5)
+    splash_length = 0.22
+    splash = bandpass(noise(rng, splash_length), 500 * pitch, 3500 * pitch)
+    splash = splash * envelope(splash_length, 0.01, 14)
+    place(out, splash / rms(splash), 0.005, 0.45)
+    # The slosh: a lower band of water running round the shin, a little after the foot.
+    slosh_length = 0.28
+    centre = 300 * pitch * 2 ** (0.8 * times(slosh_length) / slosh_length)
+    slosh = swept_band(noise(rng, slosh_length), centre, 0.3) * envelope(slosh_length, 0.05, 12)
+    place(out, slosh / rms(slosh), rng.uniform(0.03, 0.06), 0.3)
+    # Drops falling back, and the click of a stone shifting under the heel.
+    for _ in range(rng.integers(3, 6)):
+        place(out, bubble(rng.uniform(600, 1800) * pitch, 0.025), rng.uniform(0.06, 0.3), 0.15)
+    place(out, burst(rng, 0.02, 1500, 5000, 0.0005, 300), rng.uniform(0.0, 0.02), 0.15)
+    return out

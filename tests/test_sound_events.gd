@@ -15,6 +15,14 @@ func test_footstep_by_ground() -> void:
 		assert_eq(SoundEvents.footstep(terrain, false, false, false), cases[terrain], str(terrain))
 
 
+func test_a_ford_is_waded_and_the_floodplain_next_to_it_is_sand() -> void:
+	var floodplain := Tile.Terrain.FLOODPLAIN
+	assert_eq(SoundEvents.footstep(floodplain, false, false, false, true), &"step_wade")
+	assert_eq(SoundEvents.footstep(floodplain, false, false, false, false), &"step_sand")
+	assert_eq(SoundEvents.footstep(floodplain, false, true, false, true), &"step_snow")
+	assert_eq(SoundEvents.footstep(floodplain, false, false, true, true), &"step_wood")
+
+
 func test_frozen_water_sounds_like_ice() -> void:
 	assert_eq(SoundEvents.footstep(Tile.Terrain.WATER, true, false, false), &"step_ice")
 

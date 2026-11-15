@@ -56,6 +56,8 @@ EVENTS = {
     "step_ice": (-20, [footsteps.step_ice] * 4),
     "step_snow": (-19, [footsteps.step_snow] * 4),
     "step_wood": (-17, [footsteps.step_wood] * 4),
+    # Fords (#100): shallow water over stones, about as loud as the mud's squelch.
+    "step_wade": (-17, [footsteps.step_wade] * 4),
     "axe_chop": (-6, [work.axe_chop] * 3),
     "tree_fall": (-4, [work.tree_fall] * 2),
     "pickaxe_hit": (-8, [work.pickaxe_hit] * 3),

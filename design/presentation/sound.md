@@ -47,7 +47,8 @@ MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchr
   Effects and Ambience (a click on the UI bus, which only Master governs, since those buses are silent
   now; Master's is a click at full level; Music is heard as it plays; nothing at 0 %). A moving slider clicks at most every 0.15 s (`TEST_CLICK_SECONDS`), the last click at its final level.
 - **Footsteps** follow the walk animation and the ground: grass, soil, sand or floodplain,
-  wetland (squelch), ice, snow (crunch), wooden floor.
+  wetland (squelch), ice, snow (crunch), wooden floor, and a soft wading splash in a ford (`step_wade`,
+  chosen by `Fords.is_ford` on a floodplain tile; snow still lies over it).
 - **Work:** axe chop, a tree's crack and thud when it falls, pickaxe on stone, stone
   breaking, scythe swish, shovel dig, hoe, watering, planting, picking a bush, a soft pop
   when an item on the ground is collected, placing a building, and a short "denied" sound
