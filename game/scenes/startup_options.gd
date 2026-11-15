@@ -98,6 +98,8 @@ extends RefCounted
 ##                            drawn, with things to put in, and open its window; the phase is
 ##                            empty, loaded, running or done (see DebugProcess)
 ##   --console=<line>;<line>  run those console commands at start and leave the console open
+##   --trade                  open the trade screen with the shopkeeper (as the console's `shop`),
+##                            for a picture; `give` things first with --console
 ##   --chat=<line>;<line>     speak to the nearest villager once the world is drawn (see
 ##                            --npcs, --villager) and say those lines, each after the answer to
 ##                            the last
@@ -255,6 +257,7 @@ var character := false
 var skills := false
 var crafting := false
 var load_dialog := false
+var trade := false
 var station := false
 var storage := false
 ## "kiln,loaded" (see DebugProcess), or "".
@@ -435,6 +438,8 @@ func _init(args := PackedStringArray()) -> void:
 				crafting = true
 			"--load-dialog":
 				load_dialog = true
+			"--trade":
+				trade = true
 			"--station":
 				station = true
 			"--storage":

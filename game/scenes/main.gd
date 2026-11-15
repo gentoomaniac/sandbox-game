@@ -413,6 +413,7 @@ func _apply_start_options() -> void:
 	_debug.process_screen = _process_screen
 	_debug.chat_screen = _chat_screen
 	_debug.open_chat = _open_chat
+	_debug.open_shop = _open_shop
 	_debug.try_sleep = _blackout.try_sleep
 	_debug.pass_door = _pass_door
 	_debug.open_menu = _menu.open_page
