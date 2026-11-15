@@ -62,6 +62,11 @@ MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchr
   sharp crackles and rips scattered irregularly, thickest in the middle, about the mid level (-9);
   no steady rate of pulses anywhere (the first version had a rippling flutter and sounded like a
   helicopter, the user, 2026-11-13); mono, so the game pans or moves its source.
+- **The sea:** `sea_loop` (task 97, `tools/audio/sea.py`), two 15-second circles of soft waves on
+  a flat Wadden Sea shore: no surf and no boom, a wave every five to eight seconds that swells
+  over a second or two as hushing wash, fizzes with foam at its crest and runs back with a thin
+  patter over the mud, over a faint steady hush of the sea beyond (about 10 dB between the quiet
+  and the wave). Plays on the Ambience bus; see the nearness below.
 - **Fire:** `fire_crackle_loop` (task 172, `tools/audio/fire.py`), an 8-second circle of
   crackling only, no bed of noise under it (the user, 2026-11-11): fine flecks of the embers
   all through, ticks and snaps of all sizes over them (short, bright and dry, nothing low or

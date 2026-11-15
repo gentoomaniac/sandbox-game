@@ -3,7 +3,7 @@
 Each sound event (see EVENTS; the names are also the keys of data/sounds.cfg) is written as
 a few variants, art/generated/sounds/<event>_<n>.wav with n from 1: mono, 16 bit, 44.1 kHz.
 
-- The sounds are made in footsteps.py, work.py, ui.py, weather.py, fire.py, bell.py and
+- The sounds are made in footsteps.py, work.py, ui.py, weather.py, sea.py, fire.py, bell.py and
   animals.py, from the building blocks in dsp.py. Each variant is a function that takes a random
   generator and returns samples. An event lists its variant functions, so most repeat one
   function (the generator makes each a little different in pitch, timing and noise) and some
@@ -39,6 +39,7 @@ import animals
 import bell
 import fire
 import footsteps
+import sea
 import ui
 import weather
 import work
@@ -76,6 +77,8 @@ EVENTS = {
     "chest_close": (-10, [ui.chest_close] * 2),
     "rain_loop": (-10, [weather.rain_loop] * 2),
     "wind_loop": (-12, [weather.wind_loop] * 2),
+    # Soft waves on a flat shore (task 97): a steady ambience, a little under the wind.
+    "sea_loop": (-12, [sea.sea_loop] * 2),
     "wind_gust": (-8, [weather.wind_gust] * 3),
     # By distance (task 214): the game also lowers and dulls them the farther the strike was.
     "thunder_far": (-16, weather.thunder_variants(weather.FAR)),
