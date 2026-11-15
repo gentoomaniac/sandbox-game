@@ -3,7 +3,7 @@
 The people of Wehlsbüll, what they say, and what they think of the player.
 
 - [villagers.md](villagers.md): Who the villagers are, the village, sheets, behaviour, what is saved.
-- [routines.md](routines.md): Homes, workplaces, own interiors, routines, pathfinding.
+- [routines.md](routines.md): Homes, workplaces, own interiors, activities and the planned day, pathfinding.
   Decided, not built.
 - [travel.md](travel.md): Villagers travelling where the world isn't loaded (#68). Planned, not
   decided.
