@@ -778,28 +778,12 @@ func wear_stage(world_pos: Vector2i) -> PathRules.Stage:
 	return wear.stage_of(world_pos)
 
 
-## The day that has just ended counts for every tile that was walked on (see NightUpkeep), and the
-## village's lanes and square are worn again. Emits `tile_changed` for tiles that look different.
+## The day that has just ended counts for every tile that was walked on (see NightUpkeep). Emits
+## `tile_changed` for the tiles of loaded chunks that look different now.
 func end_wear_day() -> void:
-	var changed := wear.end_day()
-	if village != null:
-		changed.append_array(wear.keep_worn(village.kept_worn_tiles, _is_kept_tile_free_to_wear))
-	# A kept tile that the quiet day changed and the keeping changed back is on the list twice.
-	var emitted: Dictionary[Vector2i, bool] = {}
-	for pos in changed:
-		if not emitted.has(pos) and is_chunk_loaded(Chunk.world_to_chunk(pos)):
-			emitted[pos] = true
+	for pos in wear.end_day():
+		if is_chunk_loaded(Chunk.world_to_chunk(pos)):
 			tile_changed.emit(pos)
-
-
-## Whether a kept tile still wears, loaded or not: not tilled, not under a building or a way.
-func _is_kept_tile_free_to_wear(world_pos: Vector2i) -> bool:
-	var edit: WorldObject = _object_edits.get(world_pos)
-	return (
-		_terrain_edits.get(world_pos, Tile.Terrain.GRASS) == Tile.Terrain.GRASS
-		and building_at(world_pos) == null
-		and (edit == null or not edit.type_data().get("way", false))
-	)
 
 
 ## Whether a tile can wear: only grass and the floodplain do (see `Tile.wears`), and not under a

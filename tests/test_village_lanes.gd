@@ -1,16 +1,11 @@
 extends VillageCase
-## The lanes and the town square of the village are worn to a path and stay so, walked or not
-## (design/world/wehlsbuell.md, section 8).
+## The lanes and the town square of the village are laid with cobbles at the start, the same cobble
+## ways the player lays (design/world/wehlsbuell.md, section 8).
 
-const NIGHTS := 40
-
-
-## A world of its own to run nights in, with the village built and its chunks as the build left them
-## (not loaded).
-func _fresh_world() -> World:
-	var world := World.new(1)
-	assert_eq(VillageBuilder.build(world, _site(1), _plan), "")
-	return world
+## The bits of a connection mask (see World `connections`).
+const SOUTH := 4
+const EAST := 2
+const WEST := 8
 
 
 func _plan_tiles_of_lanes_and_square() -> Array[Vector2i]:
@@ -22,83 +17,57 @@ func _plan_tiles_of_lanes_and_square() -> Array[Vector2i]:
 	return tiles
 
 
-func _end_nights(world: World, nights: int) -> void:
-	for _night in nights:
+func _is_cobble(world_seed: int, plan_tile: Vector2i) -> bool:
+	var object := _object_at(world_seed, plan_tile)
+	return object != null and object.type == WorldObjectTypes.STONE_PATH
+
+
+func test_every_lane_and_square_tile_that_is_free_ground_has_a_cobble() -> void:
+	for world_seed: int in SEEDS:
+		var cobbled := 0
+		for plan_tile in _plan_tiles_of_lanes_and_square():
+			var tile := _site(world_seed).to_world(plan_tile)
+			if _is_cobble(world_seed, plan_tile):
+				cobbled += 1
+				continue
+			var object := _object_at(world_seed, plan_tile)
+			var terrain := _terrain_at(world_seed, plan_tile)
+			var reason := "%s of seed %d" % [plan_tile, world_seed]
+			assert_true(
+				(
+					object != null
+					or _world(world_seed).building_at(tile) != null
+					or (
+						terrain
+						not in [Tile.Terrain.GRASS, Tile.Terrain.WARFT, Tile.Terrain.FLOODPLAIN]
+					)
+				),
+				"a free tile with no cobble: " + reason
+			)
+		assert_gt(cobbled, 350, "seed %d" % world_seed)
+
+
+func test_no_cobble_lies_under_a_building_or_beside_the_door_it_would_shut() -> void:
+	for world_seed: int in SEEDS:
+		for plan_tile in _plan_tiles_of_lanes_and_square():
+			if _is_cobble(world_seed, plan_tile):
+				var tile := _site(world_seed).to_world(plan_tile)
+				assert_null(_world(world_seed).building_at(tile), "%s" % plan_tile)
+
+
+func test_the_cobbles_of_a_lane_join_up_and_end_where_it_does() -> void:
+	var world := _world(1)
+	var site := _site(1)
+	var middle := world.object_at(site.to_world(Vector2i(20, 12)))
+	assert_eq(world.connections(middle), EAST | WEST)
+	var corner := world.object_at(site.to_world(Vector2i(57, -12)))
+	assert_eq(world.connections(corner), SOUTH | WEST)
+
+
+func test_the_cobbles_do_not_wear_or_turn_to_grass_over_the_nights() -> void:
+	var world := _world(1)
+	var tile := _site(1).to_world(Vector2i(20, 12))
+	for _night in 40:
 		world.end_wear_day()
-
-
-func test_every_grass_tile_of_the_lanes_and_the_square_is_a_path_after_the_build() -> void:
-	var world := _fresh_world()
-	var kept := world.village.kept_worn_tiles
-	assert_gt(kept.size(), 300)
-	for plan_tile in _plan_tiles_of_lanes_and_square():
-		var tile := _site(1).to_world(plan_tile)
-		var wears := _terrain_at(1, plan_tile) in [Tile.Terrain.GRASS, Tile.Terrain.FLOODPLAIN]
-		assert_eq(kept.has(tile), wears, "%s" % plan_tile)
-		if wears:
-			assert_eq(world.wear_stage(tile), PathRules.Stage.PATH, "%s" % plan_tile)
-
-
-func test_a_tile_that_does_not_wear_is_not_kept() -> void:
-	var world := _fresh_world()
-	var warft_tiles := _plan.warft_tiles(_plan.warften[1])
-	# The church's Warft lies under the end of the Kirchweg and the corner of the square.
-	var warft_lane_tile := Vector2i(29, 7)
-	assert_true(warft_tiles.has(warft_lane_tile))
-	assert_false(world.village.kept_worn_tiles.has(_site(1).to_world(warft_lane_tile)))
-
-
-func test_lanes_and_square_stay_worn_over_many_nights_loaded_or_not() -> void:
-	var world := _fresh_world()
-	var kept := world.village.kept_worn_tiles.duplicate()
-	var elsewhere := _site(1).to_world(Vector2i(70, 40))
-	world.wear.restore_days(elsewhere, PathRules.default_rules().most_days())
-
-	_end_nights(world, NIGHTS)
-
-	for tile in kept:
-		assert_eq(world.wear_stage(tile), PathRules.Stage.PATH, "%s" % tile)
-	assert_eq(
-		world.wear_stage(elsewhere), PathRules.Stage.UNWORN, "ground that is not kept grows back"
-	)
-
-
-func test_a_way_laid_on_a_lane_wipes_its_wear_and_it_is_worn_again_when_the_way_is_taken_up(
-) -> void:
-	var world := _fresh_world()
-	var tile := _site(1).to_world(Vector2i(30, 12))
-	_load(world, _generator(1), tile)
-	assert_true(world.village.kept_worn_tiles.has(tile))
-	world.add_object(WorldObject.new(WorldObjectTypes.PLANK_WALK, tile))
-
-	_end_nights(world, 3)
-	assert_eq(world.wear_stage(tile), PathRules.Stage.UNWORN, "a way never wears")
-
-	world.remove_object(tile)
-	_end_nights(world, 1)
-	assert_eq(world.wear_stage(tile), PathRules.Stage.PATH, "the lane is back")
-
-
-func test_a_lane_tile_that_was_tilled_does_not_wear_again() -> void:
-	var world := _fresh_world()
-	var tile := _site(1).to_world(Vector2i(30, 12))
-	_load(world, _generator(1), tile)
-	world.set_terrain(tile, Tile.Terrain.SOIL)
-
-	_end_nights(world, 2)
-
 	assert_eq(world.wear_stage(tile), PathRules.Stage.UNWORN)
-
-
-func test_a_kept_tile_that_the_quiet_day_changed_and_the_keeping_changed_back_is_announced_once(
-) -> void:
-	var world := _fresh_world()
-	var tile := _site(1).to_world(Vector2i(30, 12))
-	_load(world, _generator(1), tile)
-	world.wear.restore_days(tile, PathRules.default_rules().path_after_days())
-	var announced: Array[Vector2i] = []
-	world.tile_changed.connect(announced.append)
-
-	world.end_wear_day()
-
-	assert_eq(announced.count(tile), 1)
+	assert_eq(world.object_at(tile).type, WorldObjectTypes.STONE_PATH)

@@ -83,15 +83,3 @@ func end_day() -> Array[Vector2i]:
 		if rules.stage_of(days_after) != rules.stage_of(days_before):
 			changed.append(pos)
 	return changed
-
-
-## Wears the `tiles` that `is_free_to_wear(tile)` accepts to the most there is, as if they were
-## walked on every day (the lanes and the square of the village, which do not grow back). Returns
-## the tiles that look different now.
-func keep_worn(tiles: Array[Vector2i], is_free_to_wear: Callable) -> Array[Vector2i]:
-	var changed: Array[Vector2i] = []
-	var most_days := PathRules.default_rules().most_days()
-	for pos in tiles:
-		if is_free_to_wear.call(pos) and set_days(pos, most_days):
-			changed.append(pos)
-	return changed

@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 48
-## The oldest version we still upgrade. Nine steps back, for the next version (#9) makes its step
-## the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 49
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -238,6 +237,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_46(game)
 	if version <= 47:
 		_upgrade_from_version_47(game)
+	if version <= 48:
+		_upgrade_from_version_48(game)
 
 
 ## Version 39 had lanterns that burnt no candle (task 231): every lantern, in a stack of the player
@@ -353,6 +354,15 @@ static func _upgrade_from_version_46(game: Dictionary) -> void:
 static func _upgrade_from_version_47(game: Dictionary) -> void:
 	for npc: Dictionary in game["npcs"]:
 		npc["inside"] = null
+
+
+## Version 48 kept the village's lane tiles worn in its record (`kept_worn_tiles`). The lanes are
+## cobbled now (#9), so the list goes; the cobbles are not laid in a village that stands: its lanes
+## stay as they were.
+static func _upgrade_from_version_48(game: Dictionary) -> void:
+	var village: Variant = game["world"]["village"]
+	if village != null:
+		village.erase("kept_worn_tiles")
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:

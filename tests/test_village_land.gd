@@ -72,19 +72,19 @@ func test_the_hint_is_given_where_the_ghost_stands_on_the_land_and_not_elsewhere
 	assert_ne(messages[1], messages[0])
 
 
+## The cobble that the village laid on its meeting spot, with the player beside it.
 func _cobble_on_the_land() -> WorldObject:
 	var tile := _state.world.village.meeting_spot
 	var coords := Chunk.world_to_chunk(tile)
 	if not _state.world.is_chunk_loaded(coords):
 		_state.world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
 	_state.teleport_to(tile + Vector2i(0, 1))
-	var cobble := WorldObject.new(WorldObjectTypes.STONE_PATH, tile)
-	_state.world.add_object(cobble)
-	return cobble
+	return _state.world.object_at(tile)
 
 
 func test_a_cobble_on_the_land_is_not_taken_up_by_the_hammer_or_the_pickaxe() -> void:
 	var cobble := _cobble_on_the_land()
+	assert_eq(cobble.type, WorldObjectTypes.STONE_PATH, "the village laid it")
 	var builder := Builder.new(_state)
 	var target := builder.take_down_target(cobble.pos)
 	assert_eq(builder.why_not_take_down(target), "That is the village's.")

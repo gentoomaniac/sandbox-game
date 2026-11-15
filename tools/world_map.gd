@@ -33,6 +33,7 @@ const OBJECT_COLORS := {
 	&"knick": Color("e65100"),
 	&"stone_wall": Color("ffffff"),
 	&"wattle_fence": Color("f5f5f5"),
+	&"stone_path": Color("efebe9"),
 	&"grave": Color("616161"),
 	&"draw_well": Color("0277bd"),
 	&"jetty": Color("795548"),

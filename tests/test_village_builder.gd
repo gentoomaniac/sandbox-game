@@ -32,7 +32,8 @@ func test_the_square_the_meeting_spot_and_the_mills_spot_are_free_dry_land() -> 
 		for tile in tiles:
 			var terrain := _terrain_at(world_seed, tile)
 			assert_true(terrain == Tile.Terrain.GRASS or terrain == Tile.Terrain.WARFT, "%s" % tile)
-			assert_null(_object_at(world_seed, tile), "%s" % tile)
+			var object := _object_at(world_seed, tile)
+			assert_true(object == null or object.type == WorldObjectTypes.STONE_PATH, "%s" % tile)
 
 
 func test_the_pond_the_sielzug_and_the_field_ditches_are_the_only_new_water() -> void:
@@ -77,6 +78,7 @@ func test_the_inland_ground_is_clean_and_drained() -> void:
 		WorldObjectTypes.KNICK,
 		WorldObjectTypes.STONE_WALL,
 		WorldObjectTypes.WATTLE_FENCE,
+		WorldObjectTypes.STONE_PATH,
 	]
 	for world_seed: int in SEEDS:
 		for tile in _land_tiles():

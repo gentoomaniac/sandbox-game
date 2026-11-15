@@ -141,9 +141,6 @@ func _check_village(village: Variant) -> void:
 			_report(path, "the mill's spot is not inside the area")
 		if meeting_spot != null and not land.has_point(SaveCodec.vector_from_json(meeting_spot)):
 			_report(path, "the meeting spot is not inside the area")
-	var kept_worn_tiles: Variant = _field(village, "kept_worn_tiles", Kind.LIST, path)
-	if kept_worn_tiles != null and not kept_worn_tiles.all(_is_vector):
-		_report(path, "kept_worn_tiles should be a list of [x, y]")
 	var field_spots: Variant = _field(village, "field_spots", Kind.LIST, path)
 	if field_spots != null and not field_spots.all(_is_vector):
 		_report(path, "field_spots should be a list of [x, y]")

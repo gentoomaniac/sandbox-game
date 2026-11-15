@@ -49,7 +49,7 @@ river) and fits the routines plan (#7, [../villagers/routines.md](../villagers/r
 | Town square | a free square for a future market | #76 |
 
 Defaults not asked about (no objection was raised): old saves keep their world as it is; the
-village's lane tiles do not regrow (section 8); the save version is taken at build time (section 12).
+village's lanes and square are laid with cobbles at the start (section 8); the save version is taken at build time (section 12).
 
 ![The layout, one block a tile](wehlsbuell-layout.png)
 
@@ -196,7 +196,7 @@ The sexton's house with the school is left out (no villager, no type).
 
 ### Lanes, fences and walls
 
-- **Lanes**, one tile wide, laid as worn path (section 8): the **Sielweg** from the landing through
+- **Lanes**, one tile wide, laid with cobbles (section 8): the **Sielweg** from the landing through
   the dyke gap across the whole village to the Geest, the **Deichweg** along the dyke, a lane from each
   farm gate and the churchyard gate, a lane along the north fields and one to each of the other
   fields. A lane over the Sielzug is a culvert: the lane tile stays land. #73: lanes stay in and
@@ -219,7 +219,7 @@ cream area), kept free for a future market (#76).
   gone: a bench is furniture that only stands indoors), and the record keeps it as `square`. A later market task puts its stalls there; until then it is empty ground.
   The player is not stopped from building on it (it is the village's land, with the goodwill cost of
   section 9).
-- **Ground:** trodden earth like the lanes, kept (section 8).
+- **Ground:** cobbles like the lanes (section 8), but for the well and anything else that stands there.
 - **It is the meeting place.** Its middle is `meeting_spot` in the record, which #7's routines read
   (section 6). It is open air, so it is "in the open" for the rain rule of the routines.
 
@@ -259,19 +259,19 @@ The player finds the village by a trodden way from the camp to it, as well as by
   reason to lay a way (#62). See "Check with the user" at the end.
 - **Not a lane:** it is not in the record and is not kept. The village's own lanes are (section 8).
 
-## 8. Lanes that stay
+## 8. Lanes and the square, cobbled
 
-A lane is a path on the ground only while it is walked: desire paths grow back in two weeks
-([../../data/paths.cfg](../../data/paths.cfg)). The village sets its lane tiles and the town square to
-full wear at build time (the wear map is saved), and every night wears them to the full again
-(`World.end_wear_day`, `WorldWear.keep_worn`), whether their chunk is loaded or not. So they stay
-without walking. The tiles are the record's `kept_worn_tiles`: the tiles of the lanes and the square
-that can wear (grass), made at build time, so a lane over a Warft or the salt marsh is a lane in
-the plan but not worn ground. A tile that the player tilled or built on, or that a way lies on,
-is left alone. The player's ways (a plank walk or a stone path, #62) may be laid over a lane: a way
-never wears, and laying one clears the wear beneath it (as it does anywhere), so taking it up leaves
-the lane unworn **until the next night**, which wears it again. Lanes are muddy in the rain like
-other worn ground.
+The user's answer in [#95](https://github.com/gentoomaniac/sandbox-game/issues/95): the village's paths
+get the cobbles directly. The build lays a `stone_path` (the cobble way of #62,
+[../building/ways.md](../building/ways.md)) on every tile of the lanes and of the town square that is
+free ground: not under a building, a well, a fence or the dyke, and ground a cobble can be laid on
+(grass, Warft, floodplain; a lane over the Sielzug is a culvert, so land). A cobble never wears
+and never turns to mud, so the lanes stay without any upkeep, and the ways' masks join the pieces
+along a lane and round the square with no code of the village's own. The cobbles are the village's
+(`World.is_village_cobble`): the hammer says "That is the village's." and the pickaxe is refused with
+the same words, as with the village's houses. The record keeps no list of them: they are objects,
+edits of the world, saved like the rest. The village is built once, in a new game, so nothing lays
+them again; an old save keeps the lanes it has.
 
 ## 9. Reputation and showing the village's land
 
@@ -348,7 +348,7 @@ workplace is the nearest of its type. The plan says who lives where: each buildi
 
 - **The calendar** has 35-day seasons (#85): nothing here counts days; the track's fading is in days of
   wear (section 7).
-- **Ways connect** (#84): lanes are worn ground, not ways; the player's ways lie over them (section 8).
+- **Ways connect** (#84): the lanes are laid with the cobble ways (section 8), so they join along a lane and round the square by the ways' own masks.
 - **Saves rotate** (#16): the record is part of the world, so every rotated file holds it. Nothing to do.
 - **The save version** is 44 on main and 45 once #60 merges. The village takes the next free one when
   its step 4 is built, not a number written here.
@@ -386,8 +386,10 @@ One file for each part, short, in `tests/`:
   one house; spawned once (a save and a load spawns none); a villager's door reaches the church gate by a
   real path search for 5 seeds.
 - `test_village_record.gd`: the record's save round trip; a save of the version before loads with none;
-  the validator names a bad area; `is_village_land` on the edge; the lanes and the square skip the
-  regrowth; the take-down is refused for the village's buildings and allowed for the player's.
+  the validator names a bad area; `is_village_land` on the edge; a save of version 47 loses the worn
+  tiles; the take-down is refused for the village's buildings and cobbles and allowed for the player's.
+- `test_village_lanes.gd`: every free tile of the lanes and the square has a cobble and no other has a reason
+  to lack one; none lies under a building; the pieces join by the ways' masks; they do not wear.
 - `test_village_deeds.gd`: a `built` deed inside the land has the village's change, one outside the usual.
 - The far-view parity case of travel.md: the masks over the village equal the loaded chunks'.
 - A bench (`tools/bench/`): the new game's build time and the save's size, numbers written here.
@@ -411,8 +413,8 @@ The village is built after #60 has merged.
    Tests: `test_village_record.gd` (round trip, old save, validator). Doc: [../tech/saving.md](../tech/saving.md).
 5. **The buildings.** `VillageBuilder.build` places the buildings and fills the record; `GameState.new_game` builds
    the village. Tests: the rest of `test_village_builder.gd`. Save size and time written here.
-6. **Lanes and the square that stay.** The lane tiles and the square worn to a path and kept. Tests: the
-   regrowth skip.
+6. **Lanes and the square.** First the lane tiles and the square worn to a path and kept, then (the user's
+   answer in #95) laid with cobbles instead: `VillageBuilder._lay_cobbles`. Tests: `test_village_lanes.gd`.
 7. **The worn track.** `VillageBuilder.lay_track`: the path search from the camp, the wear laid, in `new_game`
    after the village. Tests: `test_village_track.gd`. Doc: desire-paths.md (a track laid at the start).
 8. **The people.** The eight spawned in `new_game`, the sheets' spots (`workplace_spot` for Ocke and Gesche),
@@ -464,7 +466,11 @@ The user can stop after step 5 and have the village standing, empty.
   the buildings, together 290 to 450 ms for seeds 7, 1 and 20 (a game without the village: about 60 ms).
   The save is 56 to 73 KB bigger than a bare world's (the record itself is 0.4 KB). Tests:
   `tests/test_village_buildings.gd` (the land tests of step 3 share `tests/village_case.gd`).
-- **Step 6.** The build wears the lane tiles and the square (`VillageBuilder._wear_lanes_and_square`), and
+- **Step 6, changed by #95.** The first draft below, worn tiles kept by the world every night, is gone: the
+  lanes and the square are cobbled (section 8), `kept_worn_tiles`, `WorldWear.keep_worn` and the night's
+  keeping are removed, and the save is version 49, whose upgrade from 48 drops the field from a record
+  that has it. The cobbles are the village's (`World.is_village_cobble`, `ToolUse.Use.THE_VILLAGES`).
+  The first draft: the build wears the lane tiles and the square (`VillageBuilder._wear_lanes_and_square`), and
   the world wears them again each night. **Changed from the plan:** not "the regrowth skips them" in
   `WorldWear.end_day`, but "worn again every night": it also heals a lane after a way was laid on it and taken
   up, which the plan promised and the rule "laying a way clears the wear" would otherwise break. The record's

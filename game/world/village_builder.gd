@@ -75,26 +75,26 @@ static func _put_up_buildings(world: World, site: VillageSite, plan: VillagePlan
 		if world.place_building(entry["type"], origin, entry["style"]) == null:
 			return "%s can't stand at %s" % [entry["id"], origin]
 		village.building_origins.append(origin)
-	_wear_lanes_and_square(world, site, plan, village)
+	_lay_cobbles(world, site, plan)
 	world.village = village
 	return ""
 
 
-## Wears the lanes and the square to a path, and records the tiles that took it (grass: not the
-## Warft, which does not wear) for the village to keep (see `World.end_wear_day`).
-static func _wear_lanes_and_square(
-	world: World, site: VillageSite, plan: VillagePlan, village: Village
-) -> void:
+## Lays a cobble on every tile of the lanes and the square that is free: not under a building, a
+## well or a fence, and ground a cobble can be laid on (a lane over the Sielzug is a culvert, which
+## is land). The cobbles are the village's own (see `World.is_village_cobble`).
+static func _lay_cobbles(world: World, site: VillageSite, plan: VillagePlan) -> void:
 	var plan_tiles := plan.all_lane_tiles()
 	for v in range(plan.square.position.y, plan.square.end.y):
 		for u in range(plan.square.position.x, plan.square.end.x):
 			plan_tiles[Vector2i(u, v)] = true
-	var most_days := PathRules.default_rules().most_days()
+	var cobble_terrains: Array = WorldObjectTypes.TYPES[WorldObjectTypes.STONE_PATH]["placed_on"]
 	for plan_tile in plan_tiles:
 		var tile := site.to_world(plan_tile)
-		world.set_wear_days(tile, most_days)
-		if world.wear_stage(tile) != PathRules.Stage.UNWORN:
-			village.kept_worn_tiles.append(tile)
+		if cobble_terrains.any(
+			func(terrain: Tile.Terrain) -> bool: return world.is_free_on(tile, terrain)
+		):
+			_put(world, WorldObjectTypes.STONE_PATH, tile)
 
 
 ## Why the village can't be built on this land, or "" if it can.

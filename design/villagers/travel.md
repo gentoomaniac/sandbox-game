@@ -538,8 +538,7 @@ load. A console `goto` is lost over a save.
 ## The village (#9, task 234)
 
 Whatever the village puts into the world must come from `generate_chunk` or be an edit or a building
-of `World`, never set on loaded chunks only, so the far view sees it. Its lanes (worn or a lane
-terrain, #61 and #62) then cost what they cost near. The parity test has a village case (**built**,
+of `World`, never set on loaded chunks only, so the far view sees it. Its lanes (cobble ways, #62) then cost what they cost near. The parity test has a village case (**built**,
 `test_chunks_of_the_village_equal_the_loaded_chunks`: the chunks of the church, the square, the fields
 and the buildings of Wehlsbüll's seed 1).
 
