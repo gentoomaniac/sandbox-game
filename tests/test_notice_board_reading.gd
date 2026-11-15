@@ -18,7 +18,7 @@ func _put_up_the_board() -> void:
 
 func _take(id: String, giver: String) -> void:
 	_state.quests.post(id, giver)
-	QuestTalk.greet(_state, _state.npcs.find(giver))
+	QuestTalk.greet_and_say(_state, _state.npcs.find(giver))
 
 
 func test_e_on_the_board_reads_it() -> void:
@@ -107,7 +107,7 @@ func test_the_mark_hangs_over_a_board_while_there_is_news_and_goes_when_it_is_ta
 	marks._process(1.0)
 	assert_eq(marks.get_child_count(), 1)
 
-	QuestTalk.greet(_state, _state.npcs.find("antje"))
+	QuestTalk.greet_and_say(_state, _state.npcs.find("antje"))
 	marks._process(1.0)
 	await wait_frames(2)
 	assert_eq(

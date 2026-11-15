@@ -33,7 +33,10 @@ func run(arguments: PackedStringArray) -> Array[String]:
 		var entry := quests.entry_of(arguments[1])
 		if entry.is_empty():
 			return ["%s is not open" % arguments[1]]
-		QuestTalk.complete(context.state, entry)
+		var giver := context.state.npcs.find(entry["giver"])
+		var lines := QuestTalk.complete(context.state, entry)
+		if giver != null:
+			QuestTalk.say(context.state, giver, lines)
 		return ["Done %s" % arguments[1]]
 	if arguments[0] == "clear" and arguments.size() == 1:
 		quests.clear()

@@ -183,3 +183,12 @@ stands again).
   on it.
 - **E on that villager** gives the actual quest (see Taking a quest). The board is a way in, not a
   gate: a posted quest is given the same way whether the player read the board or not.
+
+## Dialogue: with and without a model
+
+- **Without a model**, or with the profile's "Quest lines" switch off: the `dialogue`, `turn_in` and
+  `short` lines of the file, said in order as chat lines. It works with no endpoint, with the test
+  endpoint down, and on an error.
+- **With a model** and the switch on (#107): the villager says each in their own words, one line for
+  each fixed line, the fixed lines as the fallback. The game decides everything and the model only
+  voices it: see [dialogue.md](dialogue.md), "Quest lines". The board's rough lines are not voiced.

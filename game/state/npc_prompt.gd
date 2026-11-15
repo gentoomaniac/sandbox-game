@@ -120,6 +120,71 @@ static func sheet_text(npc: Npc, full_sheets: bool, rules: NpcTalkRules) -> Stri
 	return "\n".join(Array(sheet_lines).filter(func(line: String) -> bool: return line != ""))
 
 
+## The request that has a villager say the fixed `lines` of a quest in their own words (see
+## data/npc_talk.cfg [quest_lines]): {messages, temperature, max_tokens}. `intent` is the part of
+## the quest the lines are for (`give`, `remind`, `short` or `turn_in`).
+static func quest_lines_request(
+	npc: Npc, intent: StringName, lines: Array[String], rules: NpcTalkRules, full_sheets: bool
+) -> Dictionary:
+	var words := _words_of(npc, rules)
+	var numbered: Array[String] = []
+	for index in lines.size():
+		numbered.append("%d. %s" % [index + 1, lines[index]])
+	var meaning: String = rules.value("quest_lines", "meaning")
+	var turn: Array[String] = [
+		sheet_text(npc, full_sheets, rules),
+		"",
+		(
+			meaning
+			. format(
+				{
+					"intent": rules.value("quest_lines", "intent_%s" % intent).format(words),
+					"first_name": words["first_name"],
+					"lines": "\n".join(numbered),
+				}
+			)
+		),
+		rules.value("quest_lines", "label").format(
+			{"first_name": words["first_name"], "count": lines.size()}
+		),
+	]
+	return {
+		"messages":
+		[
+			_message("system", rules.value("quest_lines", "system")),
+			_message("user", "\n".join(turn)),
+		],
+		"temperature": float(rules.value("request", "temperature")),
+		"max_tokens": int(rules.value("quest_lines", "max_tokens")),
+	}
+
+
+## The `count` lines in the model's `answer` to `quest_lines_request`, as the villager says them
+## (see `trimmed_reply`; a leading number or dash of a list is taken off), or none if the answer
+## has not exactly that many lines, or one of them is empty or longer than [quest_lines]
+## max_length characters.
+static func quest_lines_from_answer(
+	answer: String, npc: Npc, count: int, rules: NpcTalkRules
+) -> Array[String]:
+	var label: String = rules.value("quest_lines", "label").format(
+		{"first_name": npc.name.get_slice(" ", 0), "count": count}
+	)
+	var said := answer.strip_edges()
+	if said.to_lower().begins_with(label.to_lower()):
+		said = said.substr(label.length()).strip_edges()
+	var list_marker := RegEx.create_from_string("^(\\d+[.)]|[-*])\\s*")
+	var lines: Array[String] = []
+	for raw in said.split("\n", false):
+		var line := NpcPrompt.trimmed_reply(list_marker.sub(raw.strip_edges(), ""), npc, 2)
+		if line.length() > int(rules.value("quest_lines", "max_length")):
+			return []
+		if line != "":
+			lines.append(line)
+	if lines.size() != count:
+		return []
+	return lines
+
+
 ## The request that has a villager judge a `story` (see StoryJudge) that is `days_ago` days old:
 ## {messages, temperature, max_tokens}. The story is told as the chat tells it, by its template.
 static func judge_request(

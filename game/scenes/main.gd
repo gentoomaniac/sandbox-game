@@ -288,9 +288,10 @@ func _connect_state_and_views() -> void:
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
-	var quest_flow := QuestFlow.new(_state, _notifications, _view.entities)
+	var quest_flow := QuestFlow.new(_state, _chat_screen.dialogue, _notifications, _view.entities)
 	add_child(quest_flow)
 	_interact.board_screen = quest_flow.board_screen
+	_interact.quest_voice = quest_flow.voice
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
 	_interior_npc_views.show_npcs(_state.npcs, _interior_view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is

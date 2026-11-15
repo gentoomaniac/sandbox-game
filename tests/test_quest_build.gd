@@ -36,7 +36,7 @@ func _take_the_wattle_quest(count := 6) -> void:
 	)
 	_state.clock.day = 5
 	_quests.post("a", ANTJE)
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 	_antje.chat_history.clear()
 
 
@@ -142,7 +142,7 @@ func test_speaking_with_too_few_up_says_the_short_line_and_changes_nothing() -> 
 	_take_the_wattle_quest()
 	_put_up(Vector2i(1, 0), 5)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_eq(_said(), ["Not yet six, neighbour. 1 of 6 stand by the garden."])
 	assert_true(_quests.is_open("a"))
@@ -153,7 +153,7 @@ func test_speaking_with_enough_up_finishes_it_and_takes_nothing() -> void:
 	for x in 6:
 		_put_up(Vector2i(x, 0), 5)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_true(_quests.is_done("a"))
 	assert_eq(_said().size(), 2, "the turn-in lines")

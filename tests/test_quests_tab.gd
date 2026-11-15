@@ -28,7 +28,7 @@ func _texts() -> Array:
 
 func _take_the_fibre_quest() -> void:
 	_state.quests.post("fibre_for_beans", "antje")
-	QuestTalk.greet(_state, _state.npcs.find("antje"))
+	QuestTalk.greet_and_say(_state, _state.npcs.find("antje"))
 	_panel().refresh()
 
 

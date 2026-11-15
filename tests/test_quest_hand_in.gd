@@ -20,7 +20,7 @@ func before_each() -> void:
 func _take_the_fibre_quest(changes := {}) -> void:
 	_use_rules({"a": changes})
 	_quests.post("a", ANTJE)
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 	_antje.chat_history.clear()
 
 
@@ -36,7 +36,7 @@ func test_with_enough_in_hand_it_is_handed_in_and_paid() -> void:
 	_bag.add(FIBRE_ITEM, 7)
 	_bag.hold(FIBRE_ITEM)
 
-	assert_eq(QuestTalk.greet(_state, _antje), "")
+	assert_eq(QuestTalk.greet_and_say(_state, _antje), "")
 
 	assert_eq(_bag.count_of(FIBRE_ITEM), 2, "all 5 asked for were taken and no more")
 	assert_eq(_bag.count_of(SEEDS), 10)
@@ -50,7 +50,7 @@ func test_with_too_few_the_short_line_is_said_and_nothing_is_taken() -> void:
 	_bag.add(FIBRE_ITEM, 3)
 	_bag.hold(FIBRE_ITEM)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_eq(_lines_said(), ["Not yet five, neighbour. 3 of 5."])
 	assert_eq(_bag.count_of(FIBRE_ITEM), 3)
@@ -64,7 +64,7 @@ func test_a_file_with_no_short_line_has_the_default() -> void:
 	_bag.add(FIBRE_ITEM, 1)
 	_bag.hold(FIBRE_ITEM)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_eq(_lines_said(), ["Not yet, neighbour. 1 of 5."])
 
@@ -74,8 +74,8 @@ func test_the_short_line_is_not_said_again_while_it_is_the_last() -> void:
 	_bag.add(FIBRE_ITEM, 1)
 	_bag.hold(FIBRE_ITEM)
 
-	QuestTalk.greet(_state, _antje)
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_eq(_lines_said().size(), 1)
 
@@ -86,7 +86,7 @@ func test_with_the_item_not_in_hand_the_quest_is_recalled_and_nothing_is_taken()
 	_bag.add(ItemTypes.LOGS, 1)
 	_bag.hold(ItemTypes.LOGS)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	assert_eq(_lines_said(), ["My bean rows sag, neighbour."])
 	assert_eq(_bag.count_of(FIBRE_ITEM), 9)
@@ -102,7 +102,7 @@ func test_a_reward_that_does_not_fit_the_bag_falls_at_the_feet() -> void:
 			_bag.slots[slot] = {"item": ItemTypes.STONE, "count": 1}
 	assert_eq(_bag.count_of(SEEDS), 0)
 
-	QuestTalk.greet(_state, _antje)
+	QuestTalk.greet_and_say(_state, _antje)
 
 	var on_ground := 0
 	for pile in _state.current_map.ground_items.near(_state.player.position, 3.0):

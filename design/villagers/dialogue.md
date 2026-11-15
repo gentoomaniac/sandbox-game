@@ -124,7 +124,21 @@
 
 A villager with a quest to give, or who has given one the player took, says the lines of the quest's
 file when the player speaks to them (E, design/villagers/quests.md): the `dialogue` lines, one chat
-line each, the first time (and the quest is then taken), and the first of them again as a reminder
-when the player speaks to them again later. They are plain chat lines, in the villager's history
-like any other, with no model needed (`QuestTalk`). A full quest log refuses the quest with a
-notice in the chat and says nothing.
+line each, the first time (and the quest is then taken), the first of them again as a reminder when
+the player speaks to them again later, the `short` line when too little is brought, and the `turn_in`
+lines when it is handed in. They are plain chat lines, in the villager's history like any other, and
+need no model (`QuestTalk`). A full quest log refuses the quest with a notice in the chat and says
+nothing.
+
+**With a model, and the switch on.** With a language model set and the profile's "Quest lines" switch
+on (Settings > Language model, on by default; `NpcDialogue.has_model_for(&"quest_lines")`), the
+villager says those lines in their own words (`QuestVoice`). The fixed lines are given to the model
+as what the villager means to say (`NpcPrompt.quest_lines_request`, `[quest_lines]` of
+`data/npc_talk.cfg`): the villager's sheet, what the lines are for (asking a favour, a reminder,
+"not enough yet", thanks) and the lines numbered. It returns one line for each, which are taken
+(`quest_lines_from_answer`: a number or dash of a list, quotes and the label are taken off; exactly
+as many lines as given, none over 200 characters). The villager is typing (`Npc.is_answering`) while
+the model is asked, quietly, and the chat is told when the lines come. **The model only words it:**
+the game has decided what is asked, how much, the reward and whether it is done before the model is
+asked; an answer that fails, is empty or has the wrong number of lines means the fixed lines are
+said. With the switch off nothing is asked, as with no model.

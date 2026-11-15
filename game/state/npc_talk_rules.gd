@@ -125,6 +125,18 @@ const KEYS := {
 		"about_player": TYPE_STRING,
 		"label": TYPE_STRING,
 	},
+	"quest_lines":
+	{
+		"system": TYPE_STRING,
+		"meaning": TYPE_STRING,
+		"label": TYPE_STRING,
+		"intent_give": TYPE_STRING,
+		"intent_remind": TYPE_STRING,
+		"intent_short": TYPE_STRING,
+		"intent_turn_in": TYPE_STRING,
+		"max_tokens": TYPE_INT,
+		"max_length": TYPE_INT,
+	},
 	"bubble_lines":
 	{"weather": TYPE_DICTIONARY, "part_of_day": TYPE_DICTIONARY, "near_player": TYPE_DICTIONARY},
 	"judge":

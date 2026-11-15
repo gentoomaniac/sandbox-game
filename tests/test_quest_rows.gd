@@ -5,7 +5,7 @@ extends QuestsCase
 
 func _take(id: String, giver: String) -> void:
 	_quests.post(id, giver)
-	QuestTalk.greet(_state, _state.npcs.find(giver))
+	QuestTalk.greet_and_say(_state, _state.npcs.find(giver))
 
 
 func before_each() -> void:

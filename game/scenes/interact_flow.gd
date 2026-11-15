@@ -16,6 +16,7 @@ var storage_screen: StorageScreen
 var fire_screen: CampfireScreen
 var crafting_screen: CraftingScreen
 var board_screen: NoticeBoardScreen
+var quest_voice: QuestVoice
 
 
 ## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
@@ -59,11 +60,12 @@ func open_shop(keeper: Npc) -> void:
 
 
 ## Opens the chat with a villager, who turns to the player (the chat pauses the game). A shopkeeper
-## at a shut stall says so first, and one with a quest gives it.
+## at a shut stall says so first, and one with a quest gives it (see QuestVoice).
 func open_chat(npc: Npc) -> void:
 	state.npcs.talk_to(npc, state.player.position)
 	ShopHours.greet(state, npc)
-	var refusal := QuestTalk.greet(state, npc)
+	var saying := QuestTalk.greet(state, npc)
 	chat_screen.open_chat(npc, state)
-	if refusal != "":
-		chat_screen.show_notice(refusal)
+	if saying.refusal != "":
+		chat_screen.show_notice(saying.refusal)
+	quest_voice.speak(state, npc, saying)
