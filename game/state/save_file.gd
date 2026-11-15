@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 49
-## The oldest version we still upgrade. Nine steps back, for the next version (#104) makes its step
-## the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 50
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -238,6 +237,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_47(game)
 	if version <= 48:
 		_upgrade_from_version_48(game)
+	if version <= 49:
+		_upgrade_from_version_49(game)
 
 
 ## Version 40 had campfires that burnt for ever (task 56): every fireplace has a slot for wood, and
@@ -356,3 +357,9 @@ static func _upgrade_from_version_48(game: Dictionary) -> void:
 	var village: Variant = game["world"]["village"]
 	if village != null:
 		village.erase("kept_worn_tiles")
+
+
+## Version 49 had no record of the land the player has seen (#104): none is explored, but the land
+## about the player, which they see where they stand.
+static func _upgrade_from_version_49(game: Dictionary) -> void:
+	game["explored"] = []

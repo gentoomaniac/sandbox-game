@@ -83,12 +83,13 @@
   save". Only the last one quits.
 - **Upgrades kept for ten steps** (the user, 2026-11-08): the game is in
   development, so a save of version `VERSION - 10` to `VERSION` is upgraded step by step on
-  load (40 to 49 today, nine until the next version adds its step); an older one is refused like
+  load (40 to 50 today); an older one is refused like
   any unreadable save (renamed `.bak`,
   a new game). When `VERSION` goes up, the oldest step, its constants, helpers and tests go,
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.
   To rescue an older save, find that commit with `git log --grep '^Save: drop'`, check out
   its parent (which still upgrades it), load and save the game there, then move on.
+- **The explored land** (#104, version 50): the `explored` list of the game keeps the tiles the player has seen, a bit a tile for each chunk (see [../world/world-map.md](../world/world-map.md)); a version 49 save has none.
 - **A save is checked before anything is built from it** (task 140, review R2). After the upgrades,
   `SaveValidator` walks the whole game data once: field types, counts and stack limits of every
   item slot (inventory, chests), the selected hotbar slot, equipment slots, object, building and

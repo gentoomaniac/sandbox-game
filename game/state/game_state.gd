@@ -50,6 +50,8 @@ var weather_override := &""
 ## The snow on the ground, from the weather (see SnowCover); built with `weather`.
 var snow_cover: SnowCover
 var player := PlayerState.new()
+## The land the player has seen (see the world map).
+var explored := Exploration.new()
 ## Session-only cheats (see Console): not saved.
 var cheats := CheatFlags.new()
 ## The dice of the harvests: how much a crop gives and whether it gives a seed. Tests seed it.
@@ -136,6 +138,7 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 			if problem != "":
 				push_error("The villagers did not all move in: %s" % problem)
 	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
+	state.explored.see(state.player.tile())
 	state.player.home_map = state.world
 	state.player.home_bed = camp.sleeping_bag_pos
 	state.player.inventory = Inventory.with_starting_items()
@@ -351,6 +354,8 @@ func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
 	if player.horse != null:
 		_tire_or_rest_horse(direction != Vector2.ZERO, delta)
 	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
+	if not is_inside():
+		explored.see(player.tile())
 	_moving_seconds = _moving_seconds + delta if direction != Vector2.ZERO else 0.0
 	# A noclip walk (through trees, rocks and walls) leaves no path.
 	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
@@ -664,6 +669,7 @@ func teleport_to(tile: Vector2i) -> void:
 	_building_inside = null
 	player.position = _tile_centre(tile)
 	player.bed_lying_in = null
+	explored.see(tile)
 
 
 ## What `use_tile` would do on a tile (see ToolUse). The use rules get a ToolUse made for the
@@ -771,6 +777,7 @@ func snapshot() -> Dictionary:
 		player_data["position"] = SaveCodec.float_vector_to_json(spot)
 	return {
 		"world": world.snapshot(),
+		"explored": explored.snapshot(),
 		"clock": clock.to_dict(),
 		"player": player_data,
 		"livestock": livestock.to_array(),
@@ -785,6 +792,7 @@ func snapshot() -> Dictionary:
 static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 	var data := snapshot_data.duplicate()
 	data["world"] = WorldSave.dict_of(snapshot_data["world"])
+	data["explored"] = Exploration.array_of(snapshot_data["explored"])
 	return data
 
 
@@ -796,12 +804,17 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.snow_cover = SnowCover.new(state.weather)
 	state._start_simulation()
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
+	state.explored.load_array(data["explored"])
 	state.livestock.load_array(data["livestock"])
 	state.npcs.load_array(data["npcs"], state.world)
 	for npc in state.npcs.all():
 		state.activities.resume(npc)
 	state.deeds.load_array(data["deeds"])
 	state._building_inside = state._building_of_ref(data["current_map"])
+	# The land about the player is seen from where they stand (a save from before the record has
+	# none).
+	if not state.is_inside():
+		state.explored.see(state.player.tile())
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
 	var minute := state.clock.minute_of_day

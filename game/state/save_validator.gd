@@ -63,6 +63,7 @@ func _check_game(game: Variant) -> void:
 	var world: Variant = _field(game, "world", Kind.DICT, "")
 	if world != null:
 		_check_world(world)
+	_check_explored(game)
 	var player: Variant = _field(game, "player", Kind.DICT, "")
 	if player != null:
 		_check_player(player)
@@ -83,6 +84,25 @@ func _check_clock(clock: Dictionary) -> void:
 	var minute: Variant = _field(clock, "minute_of_day", Kind.WHOLE, "clock")
 	if minute != null and (minute < 0 or minute >= GameClock.MINUTES_PER_DAY):
 		_report("clock", "minute_of_day %d is not in the day" % minute)
+
+
+## The land the player has seen: the bits of each chunk, base64 of a byte array of a whole size.
+func _check_explored(game: Dictionary) -> void:
+	var entries: Variant = _field(game, "explored", Kind.LIST, "")
+	if entries == null:
+		return
+	for index in entries.size():
+		var path := "explored %d" % index
+		var entry: Variant = entries[index]
+		if not entry is Dictionary:
+			_report(path, "should be a dictionary")
+			continue
+		var coords: Variant = _field(entry, "chunk", Kind.VECTOR, path)
+		if coords != null and not World.is_chunk_in_bounds(SaveCodec.vector_from_json(coords)):
+			_report(path, "chunk %s is outside the world" % [coords])
+		var seen: Variant = _field(entry, "seen", Kind.TEXT, path)
+		if seen != null and Marshalls.base64_to_raw(seen).size() != Exploration.BYTES_PER_CHUNK:
+			_report(path, "seen is not %d bytes" % Exploration.BYTES_PER_CHUNK)
 
 
 # --- The world ---
