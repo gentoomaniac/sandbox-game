@@ -30,6 +30,7 @@ const _FIXED_OBJECT_COLORS := {
 	&"wattle_fence": Color("f5f5f5"),
 	&"grave": Color("616161"),
 	&"draw_well": Color("0277bd"),
+	&"notice_board": Color("f9a825"),
 	&"jetty": Color("795548"),
 	&"rowing_boat": Color("4e342e"),
 	&"net_frame": Color("ffb300"),

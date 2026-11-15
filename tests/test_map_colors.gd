@@ -66,3 +66,11 @@ func _first_ford() -> Vector2i:
 				return Vector2i(x, y)
 	fail_test("no ford in seed 1")
 	return Vector2i.ZERO
+
+
+func test_the_notice_board_has_a_colour_of_its_own() -> void:
+	_chunk.add_object(WorldObject.new(WorldObjectTypes.NOTICE_BOARD, Vector2i(5, 5)))
+
+	assert_eq(
+		MapColors.of_tile(_world, _chunk, Vector2i(5, 5)), MapColors.OBJECT_COLORS[&"notice_board"]
+	)

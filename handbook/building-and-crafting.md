@@ -185,6 +185,9 @@ Press Shift+C for the crafting menu (C is the character window).
   [the lantern](world-and-seasons.md#the-lantern).
 - Scarecrow: a log, 6 hay and 4 fibre. Put it down anywhere outdoors; the axe or hammer takes it
   down. See [animals](animals.md#crows-and-scarecrows).
+- Notice board: no recipe; get one with `give notice_board` in the [console](console.md). Put it down
+  anywhere outdoors; the axe takes it down for the item again. The village has one on its town
+  square, for the villagers' quests.
 - Lantern: made at the workbench, 2 planks and 2 fibre, no skill needed. It takes a candle
   when used, see [the lantern](world-and-seasons.md#the-lantern).
 - Wattle fence: made at the workbench, half a log and 2 fibre a piece, woodworking 5.
