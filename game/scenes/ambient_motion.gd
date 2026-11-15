@@ -71,12 +71,12 @@ const MAX_SPLASH_CHANCE := 0.45
 ## that stay put (`stem`, a trunk) and where they bend the most (`top`), how far (`strength`,
 ## a share of the wind's sway) and how fast they swing (`frequency`, per second). Measured on
 ## the art drawn at 32 px, in the world's pixels; types that are not here stand still (the dead
-## tree is a bare snag, too stiff to sway). The grass, the reeds and the fern bend most, so their
+## trees are bare snags, too stiff to sway). The grass, the reeds and the fern bend most, so their
 ## tips flick in a light air; the bushes and the sapling less; the big trees least and slowest,
 ## so they stand still in a light air (the user, 2026-11-08: "grass and crops usually move more
 ## than large trees"). The whole is calm: the plants bend half as far on screen as the doubled
 ## 16 px art did.
-const SWAY_PROFILES := {
+const _LIVING_SWAY := {
 	WorldObjectTypes.OAK: {"stem": 44.0, "top": 126.0, "strength": 0.5, "frequency": 0.35},
 	WorldObjectTypes.SPRUCE: {"stem": 18.0, "top": 136.0, "strength": 0.4, "frequency": 0.4},
 	WorldObjectTypes.PINE: {"stem": 70.0, "top": 150.0, "strength": 0.5, "frequency": 0.35},
@@ -134,6 +134,10 @@ const SWAYING_DECORATIONS := {
 	TerrainTileset.Layer.WARFT: [true, true],
 }
 
+## The sway of everything that sways: the living profiles and a half-dead tree's, which sways like
+## its kind with `top` moved by the difference in height of its picture (the dead top can stand
+## out of the crown). The dead trees are not here: they are bare snags, too stiff to sway.
+static var SWAY_PROFILES := _with_half_dead(_LIVING_SWAY)  # gdlint: ignore=class-variable-name
 ## On the water layer of the terrain, and on the node that draws the rain's splashes.
 var water := _material(WATER_SHADER)
 ## On the mud layer of the terrain: the tide (see `show_tide`), whose water ripples like the river.
@@ -183,6 +187,21 @@ func scarecrow_frame() -> int:
 	if wind.length() < SCARECROW_CALM_WIND:
 		return 0
 	return SCARECROW_SWAY_ORDER[int(_scarecrow_phase) % SCARECROW_SWAY_ORDER.size()]
+
+
+## The living profiles and one for each half-dead tree: its kind's, with the bend's top moved by as
+## much as its picture is taller or shorter than the living tree's.
+static func _with_half_dead(living: Dictionary) -> Dictionary:
+	var profiles := living.duplicate()
+	for kind in WorldObjectSnags.KINDS:
+		var profile: Dictionary = living[kind].duplicate()
+		var extra_height: int = (
+			WorldObjectTypes.TYPES[WorldObjectSnags.half_dead_type(kind)]["sprite_height"]
+			- WorldObjectTypes.TYPES[kind]["sprite_height"]
+		)
+		profile["top"] += extra_height
+		profiles[WorldObjectSnags.half_dead_type(kind)] = profile
+	return profiles
 
 
 ## Whether an object of this type burns with a visible fire: the hearth and the fireplace.
