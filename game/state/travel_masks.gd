@@ -46,8 +46,8 @@ var _edit_versions: Dictionary[Vector2i, int] = {}
 
 ## One piece of work on a worker: a chunk generated, or a mask stamped. The worker writes only to
 ## its own job, which the main thread takes the result of once the task is done. The task is given
-## a WeakRef to it: a job bound directly crashed the exit of the engine (the pool keeps the Callable
-## of a finished task).
+## a WeakRef to it: with the job bound directly, the engine was observed to crash at exit (the cause
+## is not established; the destructor waits for every task in flight either way).
 class Job:
 	extends RefCounted
 	var task_id: int

@@ -93,7 +93,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   `update`, which is 0.08 ms at the median and 0.5 ms at most. Up to `far_mask_jobs` (3) jobs at a
   time (one before #70), the stamps before the generations. The raw chunks a pending request needs are never evicted, whatever the limit.
   (Pausing `generate_chunk` across frames would mean rewriting the generator; on the main thread
-  one call is 9 to 13 ms, too much at 60 fps.) The destructor waits for the worker.
+  one call is 9 to 13 ms, too much at 60 fps.) The destructor waits for the workers.
 - **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `_edit_terrain` and
   `_edit_object`, which every change of terrain and objects goes through, loaded or not. An edit of
   C drops the masks of C, E, S and SE (and no others); the raw chunks stay (they hold no edits).

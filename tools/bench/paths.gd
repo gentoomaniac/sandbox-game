@@ -165,7 +165,7 @@ func _wear_tiles_round_the_player() -> void:
 	var side := ceili(sqrt(_worn_tiles))
 	var corner := _state.player.tile() - Vector2i(side, side) / 2
 	for index in _worn_tiles:
-		_state.world.wear.days[corner + Vector2i(index % side, index / side)] = 5
+		_state.world.wear.restore_days(corner + Vector2i(index % side, index / side), 5)
 
 
 ## A goal for each villager: a tile a villager can stand on, REACH tiles away, that a way leads

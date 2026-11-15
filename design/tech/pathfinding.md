@@ -81,9 +81,9 @@ from its own tile. So a loaded tile whose west neighbour is not loaded is still 
   each of the oldest requests whose four raw chunks are all there, then a generation job for each
   chunk the oldest requests lack and nobody generates yet. A job owns what it writes (its chunk or
   its mask, and a `WorldGenerator` to itself, made by the worker the first time), and `update`
-  takes its result once the task is done; the task is given a `WeakRef` to the job (bound
-  directly, a job crashed the exit of the engine, as the pool keeps the Callable of a finished
-  task). A job is started and taken in a frame at the soonest, so one at a time made 60 jobs a
+  takes its result once the task is done; the task is given a `WeakRef` to the job (with the job
+  bound directly, the engine was observed to crash at exit; the cause is not established, and the
+  destructor waits for every task in flight either way). A job is started and taken in a frame at the soonest, so one at a time made 60 jobs a
   second at most. Generating (9 to 13 ms a chunk) and stamping (3 ms) are both off the main thread.
 - **Stamping** works on copies of the raw chunks and a **snapshot of the edits** of those four
   chunks (`World.edits_snapshot`: terrain by position, object type by position), copied on the
@@ -301,7 +301,7 @@ sequenceDiagram
 **What runs where.** Main thread: the game, `World`, everything of `NpcTravel` and `NpcTrip`,
 `TravelMasks`' bookkeeping, `Pathfinder.tick`, `TravelView.provide` and `prefetch`, the live step
 check. Worker threads: `PathSearch.step` (and the Callables it calls: the view's methods), the
-stamping of a mask and the generating of a raw chunk (one task at a time in `TravelMasks`).
+stamping of a mask and the generating of a raw chunk (up to `far_mask_jobs` tasks in `TravelMasks`).
 
 **What may be shared, and why it is safe.**
 
