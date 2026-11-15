@@ -158,6 +158,9 @@ keep several (say Gemini flash and pro). The key belongs to the provider.
 | Stories a villager keeps | 10 | 1 to 100. More stories make answers slower. |
 | Memories a villager keeps | 20 | 1 to 200. The lightest is forgotten first. |
 | Lines a villager keeps | 24 | 2 to 200. More lines make answers slower and dearer. |
+| Random speech | on | Whether villagers' bubbles to each other and passing remarks ask the model. |
+| Day plans | on | Whether the evening and newcomer day plans ask the model. |
+| Quest lines | on | Whether villagers voice quest lines with the model. Stored for now: it does nothing until quests are voiced. |
 | Key | empty | Only for endpoints that need one. Sent only to that provider. |
 | Max tokens per answer | empty | 1 to 32000. Empty is 60 for a line (1000 with Claude). Give a thinking model a few hundred. |
 | Temperature | empty | 0 to 2: lower is steadier. Empty is 0.5. Claude takes none. |

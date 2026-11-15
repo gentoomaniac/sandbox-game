@@ -4,11 +4,12 @@ extends VBoxContainer
 ## use, picked from the list and added, copied, renamed or deleted here, which has a provider (an
 ## OpenAI-compatible chat API, Claude or Gemini), its endpoint, the
 ## model's name, the most tokens and the temperature of an answer, and how many lines of a chat,
-## stories and long-term memories a villager keeps; and the key, if the provider needs one, which is
-## the provider's, not the profile's. Each is stored as it is chosen or typed. The test LLM is the
-## default; with the endpoint emptied, villagers speak scripted lines. The endpoint is asked which
-## models it has, to pick one from a list (the name can be typed too, as the endpoint may not be
-## reachable).
+## stories and long-term memories a villager keeps, and whether the model is asked for random
+## speech, day plans and quest lines (a switch each); and the key, if the provider needs one,
+## which is the provider's, not the profile's. Each is stored as it is chosen or typed. The test
+## LLM is the default; with the endpoint emptied, villagers speak scripted lines. The endpoint is
+## asked which models it has, to pick one from a list (the name can be typed too, as the endpoint
+## may not be reachable).
 
 signal back_requested
 
@@ -114,6 +115,32 @@ const MEMORIES_TIP := (
 	+ " between equal weights the oldest. Every memory is sent with each question, so more of them"
 	+ " make the answers slower (and cost more with a hosted model)."
 )
+## The switch of each use of the model (see LanguageModelProfiles `USES`): its label and tip.
+const USES := {
+	&"random_speech":
+	{
+		"label": "Random speech",
+		"tip":
+		(
+			"Villagers' bubbles to each other and their passing remarks. Off: they say the fixed"
+			+ " lines they use without a model, and nothing is asked."
+		),
+	},
+	&"day_plans":
+	{
+		"label": "Day plans",
+		"tip":
+		(
+			"The evening and newcomer plans of the villagers' days. Off: villagers keep the"
+			+ " default day, and nothing is asked."
+		),
+	},
+	&"quest_lines":
+	{
+		"label": "Quest lines",
+		"tip": "Villagers voicing quest lines. Off: they use the plain lines.",
+	},
+}
 const NOTE := "The key is stored as plain text in settings.cfg."
 const FIELD_WIDTH := 260
 
@@ -143,6 +170,8 @@ var _stories_label := Label.new()
 var _stories_kept := HSlider.new()
 var _memories_label := Label.new()
 var _memories_kept := HSlider.new()
+## The switch for each use of the model, by its key in `USES`.
+var _use_switches := {}
 ## Says why a name typed was not taken; hidden while there is nothing to say.
 var _name_note := Label.new()
 ## What scrolls: everything between the title and the note.
@@ -218,6 +247,8 @@ func _init(settings: GameSettings) -> void:
 		"setting_memories_kept",
 		_settings.profiles.set_memories_kept
 	)
+	for use: StringName in USES:
+		_add_use_switch(use)
 	var note := Label.new()
 	note.text = NOTE
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -250,6 +281,8 @@ func show_settings() -> void:
 	_stories_kept.set_value_no_signal(language_model["stories_kept"])
 	_memories_kept.set_value_no_signal(language_model["memories_kept"])
 	_show_counts()
+	for use: StringName in _use_switches:
+		_use_switches[use].set_pressed_no_signal(language_model[use])
 	_fields["endpoint"].placeholder_text = provider["endpoint"]
 	_fields["model"].placeholder_text = provider["model"]
 	_fields["max_tokens"].placeholder_text = str(_game_max_tokens(provider["protocol"]))
@@ -361,6 +394,17 @@ func _add_count_slider(
 	)
 	TooltipView.set_text(slider, tip, tip_id)
 	_rows.add_child(slider)
+
+
+func _add_use_switch(use: StringName) -> void:
+	var switch := CheckBox.new()
+	switch.text = USES[use]["label"]
+	switch.toggled.connect(
+		func(is_on: bool) -> void: _settings.profiles.set_uses_model_for(use, is_on)
+	)
+	TooltipView.set_text(switch, USES[use]["tip"], "setting_language_model_%s" % use)
+	_rows.add_child(switch)
+	_use_switches[use] = switch
 
 
 func _show_counts() -> void:

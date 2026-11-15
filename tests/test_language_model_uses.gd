@@ -67,3 +67,17 @@ func test_a_use_that_is_not_true_or_false_is_ignored() -> void:
 	)
 	assert_true(_reloaded().profiles.uses_model_for(&"day_plans"))
 	assert_push_warning_count(1)
+
+
+func test_the_page_shows_the_switches_and_stores_a_change() -> void:
+	_settings.profiles.set_uses_model_for(&"day_plans", false)
+	var page := LanguageModelPage.new(_settings)
+	add_child_autofree(page)
+	page.show_settings()
+	assert_true(page._use_switches[&"random_speech"].button_pressed)
+	assert_false(page._use_switches[&"day_plans"].button_pressed)
+	page._use_switches[&"quest_lines"].button_pressed = false
+	assert_false(_reloaded().profiles.uses_model_for(&"quest_lines"))
+	_settings.profiles.copy()
+	page.show_settings()
+	assert_false(page._use_switches[&"quest_lines"].button_pressed, "a copy keeps them")
