@@ -1,7 +1,9 @@
 extends SceneTree
 ## Draws a top-down map of the generated land as a PNG, headless: one block of pixels per tile,
 ## the terrain as the ground colour and the objects (trees, dykes, ...) over it. It
-## reads and writes no save. See design/world/map-generation-review.md for the colours.
+## reads and writes no save. See design/world/map-generation-review.md for the colours. At 4 px
+## a tile or more, a dyke is drawn as a bank along its line over the ground, running on the
+## diagonal where the game draws it so (see LineSlants).
 ##
 ##   godot --headless --path . -s tools/world_map.gd -- --seed=42 --center=0,0 --size=320 \
 ##       --scale=3 --out=/abs/path/map.png
@@ -38,6 +40,10 @@ const OBJECT_COLORS := {
 	&"net_frame": Color("ffb300"),
 	&"eel_traps": Color("ffb300"),
 }
+## From this many pixels a tile up, a dyke is drawn along its line (see `_draw_dyke`).
+const DYKE_LINE_SCALE := 4
+## How far out from its line a dyke reaches on the map, in tiles.
+const DYKE_HALF_WIDTH := 0.36
 const BUILDING_COLOR := Color("b71c1c")
 const WORN_COLOR := Color("efebe9")
 const TERRAIN_COLORS := {
@@ -74,6 +80,7 @@ func _init() -> void:
 	var center := _vector(options["center"]) if options.has("center") else village_center
 	var top_left := center - Vector2i.ONE * (size / 2)
 	var image := Image.create_empty(size * tile_px, size * tile_px, false, Image.FORMAT_RGB8)
+	var dykes: Dictionary[Vector2i, bool] = {}
 	var first_chunk := Chunk.world_to_chunk(top_left)
 	var last_chunk := Chunk.world_to_chunk(top_left + Vector2i.ONE * size)
 	for chunk_y in range(first_chunk.y, last_chunk.y + 1):
@@ -89,11 +96,61 @@ func _init() -> void:
 					var shown := Chunk.to_world(chunk.coords, local) - top_left
 					if shown.x < 0 or shown.y < 0 or shown.x >= size or shown.y >= size:
 						continue
-					image.fill_rect(
-						Rect2i(shown * tile_px, Vector2i.ONE * tile_px), _color_of(chunk, local)
-					)
+					var color := _color_of(chunk, local)
+					var object := chunk.object_at(local)
+					if (
+						tile_px >= DYKE_LINE_SCALE
+						and object != null
+						and object.type == WorldObjectTypes.DYKE
+						and color == OBJECT_COLORS[&"dyke"]
+					):
+						dykes[shown] = true
+						color = TERRAIN_COLORS.get(chunk.terrain_at(local), Color.MAGENTA)
+					image.fill_rect(Rect2i(shown * tile_px, Vector2i.ONE * tile_px), color)
+	for tile: Vector2i in dykes:
+		_draw_dyke(image, tile, tile_px, dykes)
 	image.save_png(options["out"])
 	quit()
+
+
+## Draws a dyke on `tile` (of the map) as a bank DYKE_HALF_WIDTH of a tile either side of its
+## line: arms from the middle to the sides it joins, or on a slanted corner a straight line from the
+## middle of one side to the other.
+func _draw_dyke(image: Image, tile: Vector2i, tile_px: int, dykes: Dictionary) -> void:
+	var mask := _dyke_mask(tile, dykes)
+	# The map has no World of the chunks' lines, so it works the masks out of the dykes it drew.
+	var is_slanted := LineSlants.slanted_sides_at(tile, _dyke_mask.bind(dykes)) != 0
+	var middle := Vector2(0.5, 0.5)
+	var ends := PackedVector2Array()
+	for side in World.CONNECTION_SIDES.size():
+		if mask & (1 << side):
+			ends.append(middle + Vector2(World.CONNECTION_SIDES[side]) / 2.0)
+	var segments: Array[PackedVector2Array] = []
+	if is_slanted:
+		segments.append(ends)
+	else:
+		for end in ends:
+			segments.append(PackedVector2Array([middle, end]))
+		if ends.is_empty():
+			segments.append(PackedVector2Array([middle, middle]))
+	for y in tile_px:
+		for x in tile_px:
+			var point := (Vector2(x, y) + middle) / tile_px
+			for segment in segments:
+				var nearest := Geometry2D.get_closest_point_to_segment(
+					point, segment[0], segment[1]
+				)
+				if point.distance_to(nearest) <= DYKE_HALF_WIDTH:
+					image.set_pixelv(tile * tile_px + Vector2i(x, y), OBJECT_COLORS[&"dyke"])
+					break
+
+
+func _dyke_mask(tile: Vector2i, dykes: Dictionary) -> int:
+	var mask := 0
+	for side in World.CONNECTION_SIDES.size():
+		if dykes.has(tile + World.CONNECTION_SIDES[side]):
+			mask |= 1 << side
+	return mask
 
 
 func _color_of(chunk: Chunk, local: Vector2i) -> Color:
