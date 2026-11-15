@@ -7,6 +7,19 @@ extends RefCounted
 ## move the opinion by is capped for the day, both for the cost and for the game's own balance.
 
 
+## Has a villager who has shunned the player (no `talk` benefit, see Benefits) say a line of
+## `turn_away` when the player speaks to them, before the player writes, unless that was the last
+## thing said in their chat.
+static func greet(state: GameState, npc: Npc) -> void:
+	if Benefits.allows(npc, &"talk"):
+		return
+	var lines: Array = NpcTalkRules.default_rules().value("scripted", "turn_away")
+	var line: String = lines[(state.clock.day + npc.name.hash()) % lines.size()]
+	var history := npc.chat_history
+	if history.is_empty() or history.back()["text"] != line:
+		npc.add_chat_line(state.clock.day, state.clock.minute_of_day, false, line)
+
+
 ## Counts the chat of today with `npc`: the first one of a day moves their opinion by
 ## FriendshipRules `first_chat_points`, later ones nothing.
 static func count_chat(state: GameState, npc: Npc) -> void:

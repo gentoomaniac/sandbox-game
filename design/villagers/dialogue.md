@@ -145,6 +145,15 @@ the game has decided what is asked, how much, the reward and whether it is done 
 asked; an answer that fails, is empty or has the wrong number of lines means the fixed lines are
 said. With the switch off nothing is asked, as with no model.
 
+## The level in the chat window
+
+The villager's name under their portrait has the name of their level of friendship with the player
+under it ("Antje Boysen", "Good neighbour"; the points are never shown), kept up to date as a gift or
+a line changes it. A villager who has shunned the player (level 1, no `talk` benefit) says a line of
+`turn_away` (`[scripted]` of `data/npc_talk.cfg`) when the window opens, as a keeper at a shut stall
+says why, and answers anything the player writes with one, asking no model (`TalkFriendship.greet`,
+`NpcDialogue.reply`). The window needs no art: the level is text.
+
 ## Rating the player's words
 
 What the player says counts for friendship ([relationships.md](relationships.md)): the first line of

@@ -225,7 +225,7 @@ func test_opening_the_chat_again_moves_it_to_the_other_villager() -> void:
 	screen.open_chat(other, _state)
 	assert_true(screen.is_open())
 	assert_true(get_tree().paused)
-	assert_eq(screen._npc_name.text, other.name)
+	assert_string_starts_with(screen._npc_name.text, other.name + "\n")
 	screen.close()
 
 

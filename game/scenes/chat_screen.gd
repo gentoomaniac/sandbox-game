@@ -1,7 +1,8 @@
 class_name ChatScreen
 extends Modal
 ## The chat with a villager, laid out like a messenger: the villager's portrait on the left and
-## the player's on the right, each with the name under it, and between them the lines so far as
+## the player's on the right, each with the name under it (the villager's with the name of their
+## level of friendship with the player, see FriendshipRules), and between them the lines so far as
 ## bubbles, the villager's on the left under their name and the player's on the right, each with
 ## the game time in its corner, and above each day's lines that day ("Today", "Yesterday" or the
 ## date), so a line of an earlier day doesn't look newer than the one after it. The window
@@ -152,7 +153,7 @@ func _exit_tree() -> void:
 func _on_open() -> void:
 	_show_portrait(_player_portrait, _state.player.appearance)
 	_show_portrait(_npc_portrait, _npc.appearance)
-	_npc_name.text = _npc.name
+	_show_level()
 	_line_edit.clear()
 	_notice = ""
 	_show_lines()
@@ -213,7 +214,17 @@ func _on_give_pressed() -> void:
 	Gifts.give(_state, _npc)
 	_notice = ""
 	_show_lines()
+	_show_level()
 	_update_give_button()
+
+
+## The villager's name with the name of their level of friendship under it, which a gift or a line
+## may change.
+func _show_level() -> void:
+	var friendship := FriendshipRules.default_rules()
+	_npc_name.text = (
+		"%s\n%s" % [_npc.name, friendship.level_name(friendship.level_of(_npc.opinion))]
+	)
 
 
 ## The button offers the item in the player's hand, or says there is none.
@@ -232,6 +243,7 @@ func _update_give_button() -> void:
 func _on_answered(npc: Npc) -> void:
 	if npc == _npc and visible:
 		_show_lines()
+		_show_level()
 	answered.emit()
 
 

@@ -78,6 +78,9 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   does yet, Boy is sweet on Inken, the user names who is open), `VillagerRules.is_romance_open`.
   `Benefits.may_court(npc)` is `may_court` (level 10) and the sheet's romance and `bond` none. The
   console's `opinion` shows the bond and "may be courted". Nothing starts a bond.
+- Step 12: the level in the talk panel. The villager's name under their portrait has their level's
+  name under it, updated after a gift or a line; a villager at level 1 says a turn-away line when the
+  window opens (`TalkFriendship.greet`) and to anything the player writes. See [dialogue.md](dialogue.md).
 
 ## The user's words
 
