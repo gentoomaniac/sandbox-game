@@ -23,7 +23,8 @@ func test_the_warften_are_dry_ground() -> void:
 
 func test_the_square_the_meeting_spot_and_the_mills_spot_are_free_dry_land() -> void:
 	for world_seed: int in SEEDS:
-		var tiles: Array[Vector2i] = [_plan.meeting_spot, _plan.landing_spot]
+		var tiles: Array[Vector2i] = [_plan.meeting_spot]
+		tiles.append_array(_plan.workplace_spots.values())
 		for rect in [_plan.square, _plan.mill_spot]:
 			for v in range(rect.position.y, rect.end.y):
 				for u in range(rect.position.x, rect.end.x):

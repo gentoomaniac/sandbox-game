@@ -17,6 +17,8 @@ var mill_spot := Rect2i()
 ## The tiles of the lanes and of the town square that wear (grass), which the village keeps worn
 ## to a path (see `World.end_wear_day`).
 var kept_worn_tiles: Array[Vector2i] = []
+## A tile in the middle of each field the village keeps, where a villager goes to tend it.
+var field_spots: Array[Vector2i] = []
 ## The origins of the buildings the village put up.
 var building_origins: Array[Vector2i] = []
 ## Whether the villagers of the village were spawned (they are, once).
@@ -31,6 +33,7 @@ func to_dict() -> Dictionary:
 		"square": SaveCodec.rect_to_json(square),
 		"mill_spot": SaveCodec.rect_to_json(mill_spot),
 		"kept_worn_tiles": kept_worn_tiles.map(SaveCodec.vector_to_json),
+		"field_spots": field_spots.map(SaveCodec.vector_to_json),
 		"building_origins": building_origins.map(SaveCodec.vector_to_json),
 		"is_populated": is_populated,
 	}
@@ -45,6 +48,8 @@ static func from_dict(data: Dictionary) -> Village:
 	village.mill_spot = SaveCodec.rect_from_json(data["mill_spot"])
 	for entry: Array in data["kept_worn_tiles"]:
 		village.kept_worn_tiles.append(SaveCodec.vector_from_json(entry))
+	for entry: Array in data["field_spots"]:
+		village.field_spots.append(SaveCodec.vector_from_json(entry))
 	for entry: Array in data["building_origins"]:
 		village.building_origins.append(SaveCodec.vector_from_json(entry))
 	village.is_populated = data["is_populated"]

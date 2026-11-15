@@ -25,13 +25,15 @@ var marsh_end_u := 0
 var square := Rect2i()
 var meeting_spot := Vector2i.ZERO
 var mill_spot := Rect2i()
-var landing_spot := Vector2i.ZERO
+## The tile of each spot a villager's sheet names as their workplace (`workplace_spot`), by name.
+var workplace_spots: Dictionary = {}
 ## The Sielzug: from the dyke (its first column) to the last tile of the ditch.
 var siel := Rect2i()
 ## {id, centre: Vector2, radii: Vector2, is_on_salt_marsh: bool} of each Warft.
 var warften: Array[Dictionary] = []
 var ponds: Array[Rect2i] = []
-## {id, type: StringName, style: StringName, origin: Vector2i, name: String} of each building.
+## {id, type: StringName, style: StringName, origin: Vector2i, name: String, residents:
+## Array[String]} of each building: the ids of the villagers of data/villagers.cfg who live there.
 var buildings: Array[Dictionary] = []
 ## {id, points: Array[Vector2i]} of each lane.
 var lanes: Array[Dictionary] = []
@@ -81,6 +83,12 @@ func main_lane_end() -> Vector2i:
 		if lane["id"] == MAIN_LANE:
 			return lane["points"][-1]
 	return Vector2i.ZERO
+
+
+## The tile in the middle of a field, inside its boundary, where a villager goes to tend it.
+func field_spot(field: Dictionary) -> Vector2i:
+	var rect: Rect2i = field["rect"]
+	return rect.position + rect.size / 2
 
 
 ## The tiles a building covers.
@@ -197,7 +205,7 @@ func _read(sections: Dictionary) -> void:
 	square = _value(village, "village", "square", TYPE_RECT2I, Rect2i())
 	meeting_spot = _value(village, "village", "meeting_spot", TYPE_VECTOR2I, Vector2i.ZERO)
 	mill_spot = _value(village, "village", "mill_spot", TYPE_RECT2I, Rect2i())
-	landing_spot = _value(village, "village", "landing_spot", TYPE_VECTOR2I, Vector2i.ZERO)
+	workplace_spots = _value(village, "village", "workplace_spots", TYPE_DICTIONARY, {})
 	siel = _value(village, "village", "siel", TYPE_RECT2I, Rect2i())
 	for section: String in sections:
 		var parts := section.split(".", true, 1)
@@ -221,8 +229,11 @@ func _read_section(kind: String, id: String, section: String, values: Dictionary
 		"pond":
 			ponds.append(_value(values, section, "rect", TYPE_RECT2I, Rect2i()))
 		"building":
+			var residents: Array[String] = []
+			residents.assign(values.get("residents", []))
 			var building := {
 				"id": id,
+				"residents": residents,
 				"type": StringName(_value(values, section, "type", TYPE_STRING, "")),
 				"style": StringName(values.get("style", "")),
 				"origin": _value(values, section, "origin", TYPE_VECTOR2I, Vector2i.ZERO),
@@ -391,7 +402,7 @@ func _square_problems(blocked: Dictionary[Vector2i, bool]) -> Array[String]:
 	for tile in _tiles_of(square) + _tiles_of(mill_spot):
 		if blocked.has(tile):
 			found.append("the square or the mill's spot is not free at %s" % tile)
-	for spot in [meeting_spot, landing_spot]:
+	for spot: Vector2i in [meeting_spot] + workplace_spots.values():
 		if blocked.has(spot):
 			found.append("the spot %s is blocked" % spot)
 	return found

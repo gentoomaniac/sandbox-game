@@ -34,9 +34,10 @@ func spot_of(npc: Npc, target: String, day: int) -> Vector2:
 			spot = spot_of(npc, "home", day) if npc.workplace == null else npc.workplace.spot()
 		"field":
 			spot = _field_of(npc)
-		"church", "meeting":
-			# Until the village names a meeting place (task 234) the villagers meet at the church.
+		"church":
 			spot = _church_yard_near(npc, _rules.search_tiles(target))
+		"meeting":
+			spot = _meeting_spot_near(npc, _rules.search_tiles(target))
 		"friend":
 			spot = _friend_yard_of(npc, day)
 		"wild":
@@ -46,13 +47,16 @@ func spot_of(npc: Npc, target: String, day: int) -> Vector2:
 	return spot
 
 
-## The nearest tilled tile within `search_tiles` of their home; with none, a workplace that is a
-## spot (the fields have no building); with none, nowhere.
+## The nearest tilled tile or field of the village within `search_tiles` of their home; with none,
+## a workplace that is a spot (the fields have no building); with none, nowhere.
 func _field_of(npc: Npc) -> Vector2:
 	var home := _home_point(npc)
 	var nearest := NOWHERE
 	var nearest_distance := _rules.search_tiles("field")
-	for tile in _world.tilled_tiles():
+	var tiles := _world.tilled_tiles()
+	if _world.village != null:
+		tiles.append_array(_world.village.field_spots)
+	for tile in tiles:
 		var centre := Vector2(tile) + Vector2(0.5, 0.5)
 		if centre.distance_to(home) <= nearest_distance:
 			nearest = centre
@@ -60,6 +64,15 @@ func _field_of(npc: Npc) -> Vector2:
 	if nearest == NOWHERE and npc.workplace != null and npc.workplace.building == null:
 		return npc.workplace.spot()
 	return nearest
+
+
+## The meeting spot of the village if it is within `search` of their home; else, where the world has
+## no village, the yard of the church.
+func _meeting_spot_near(npc: Npc, search: float) -> Vector2:
+	if _world.village == null:
+		return _church_yard_near(npc, search)
+	var spot := Vector2(_world.village.meeting_spot) + Vector2(0.5, 0.5)
+	return spot if spot.distance_to(_home_point(npc)) <= search else NOWHERE
 
 
 func _church_yard_near(npc: Npc, search: float) -> Vector2:

@@ -71,6 +71,16 @@ func test_the_field_is_the_nearest_tilled_tile_to_home() -> void:
 	assert_eq(_spot(_antje, "field"), Vector2(home + Vector2i(0, 7)) + Vector2(0.5, 0.5))
 
 
+func test_the_field_is_also_the_nearest_field_the_village_keeps() -> void:
+	var home := Vector2i(_house.yard().floor())
+	var village := Village.new()
+	village.field_spots = [home + Vector2i(20, 0), home + Vector2i(0, 30)]
+	_state.world.village = village
+	assert_eq(_spot(_antje, "field"), Vector2(home + Vector2i(20, 0)) + Vector2(0.5, 0.5))
+	_till(home + Vector2i(0, 7))
+	assert_eq(_spot(_antje, "field"), Vector2(home + Vector2i(0, 7)) + Vector2(0.5, 0.5))
+
+
 func test_a_field_too_far_from_home_is_none() -> void:
 	var values := DataFile.read_sections(ActivityRules.DEFAULT_PATH)
 	values["rules"]["search_tiles"]["field"] = 5
@@ -86,12 +96,27 @@ func test_with_no_tilled_tile_the_field_is_the_workplace_if_that_is_a_spot() -> 
 	assert_eq(_spot(_antje, "field"), Vector2(3.5, 4.5))
 
 
-func test_church_and_meeting_are_the_yard_of_the_church_nearest_home() -> void:
+func test_the_church_is_the_yard_of_the_church_nearest_home() -> void:
 	assert_eq(_spot(_antje, "church"), NOWHERE)
-	assert_eq(_spot(_antje, "meeting"), NOWHERE)
 	var church := _place(BuildingTypes.CHURCH, Vector2i(10, 10))
 	assert_eq(_spot(_antje, "church"), church.yard())
+
+
+func test_without_a_village_the_meeting_is_the_yard_of_the_church() -> void:
+	assert_eq(_spot(_antje, "meeting"), NOWHERE)
+	var church := _place(BuildingTypes.CHURCH, Vector2i(10, 10))
 	assert_eq(_spot(_antje, "meeting"), church.yard())
+
+
+func test_the_meeting_is_the_villages_meeting_spot_when_it_is_near_enough() -> void:
+	var village := Village.new()
+	village.meeting_spot = Vector2i(_house.yard().floor()) + Vector2i(30, 0)
+	_state.world.village = village
+	_place(BuildingTypes.CHURCH, Vector2i(10, 10))
+	assert_eq(_spot(_antje, "meeting"), Vector2(village.meeting_spot) + Vector2(0.5, 0.5))
+
+	village.meeting_spot += Vector2i(300, 0)
+	assert_eq(_spot(_antje, "meeting"), NOWHERE, "too far, and the church is not asked")
 
 
 func test_a_church_too_far_is_none() -> void:

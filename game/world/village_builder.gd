@@ -34,7 +34,7 @@ static func _build(
 	if refusal != "":
 		return refusal
 	var generator := WorldGenerator.new(world.world_seed)
-	var loaded := _load_chunks(
+	var loaded := load_chunks(
 		world, generator, land.grow_individual(BIG_OBJECT_REACH.x, BIG_OBJECT_REACH.y, 0, 0)
 	)
 	_clear_inland(world, site, plan)
@@ -68,6 +68,8 @@ static func _put_up_buildings(world: World, site: VillageSite, plan: VillagePlan
 	village.meeting_spot = site.to_world(plan.meeting_spot)
 	village.square = Rect2i(site.to_world(plan.square.position), plan.square.size)
 	village.mill_spot = Rect2i(site.to_world(plan.mill_spot.position), plan.mill_spot.size)
+	for field in plan.fields:
+		village.field_spots.append(site.to_world(plan.field_spot(field)))
 	for entry in plan.buildings:
 		var origin := site.to_world(entry["origin"])
 		if world.place_building(entry["type"], origin, entry["style"]) == null:
@@ -110,9 +112,9 @@ static func _refusal(world: World, land: Rect2i) -> String:
 
 
 ## Loads the chunks of the land that are not loaded, with the edits replayed on them, and returns
-## their coordinates, to be unloaded again when the village is built (the streaming loads what the
-## player is near).
-static func _load_chunks(world: World, generator: WorldGenerator, land: Rect2i) -> Array[Vector2i]:
+## their coordinates, to be unloaded again when the work there is done (the streaming loads what
+## the player is near).
+static func load_chunks(world: World, generator: WorldGenerator, land: Rect2i) -> Array[Vector2i]:
 	var loaded: Array[Vector2i] = []
 	var first := Chunk.world_to_chunk(land.position)
 	var last := Chunk.world_to_chunk(land.end - Vector2i.ONE)

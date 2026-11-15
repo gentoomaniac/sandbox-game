@@ -74,8 +74,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   when such a villager comes into the world (`spawn npc`), they get the house of the type where
   family of theirs lives, else the nearest one of the type with room, and as workplace their own
   house if it is of the type, else the nearest building of it they may work in, within `home_search`
-  tiles (`data/npcs.cfg`). Where none stands (there is no village yet, task 234; the mill house is
-  no building yet) they have none until given, and a spot has no place in the world until given.
+  tiles (`data/npcs.cfg`). Where none stands they have none until given, and a spot has no place in the world until
+  given. Wehlsbüll's eight are spawned at their doors when a new game builds the village, with the
+  houses and spots of `data/village_plan.cfg` (`VillagePeople`; the mill house is no building type,
+  so the plan names it as Ocke's and Gesche's house).
   Made-up villagers have neither at first. A sheet may also name `home_interior`, the map of the
   inside of its house (task 237, [routines.md](routines.md)). For what they do in a day it names
   `work_set`, `activities`, `skips` and `church_feasts_only` (a made-up villager has the set of

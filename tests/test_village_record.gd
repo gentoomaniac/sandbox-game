@@ -19,6 +19,7 @@ func _state_with_a_village() -> GameState:
 	village.square = Rect2i(5, 5, 13, 6)
 	village.mill_spot = Rect2i(30, 20, 7, 7)
 	village.kept_worn_tiles = [Vector2i(0, 12), Vector2i(1, 12)]
+	village.field_spots = [Vector2i(20, 20)]
 	village.building_origins = [origin]
 	state.world.village = village
 	return state
@@ -48,6 +49,7 @@ func test_the_record_survives_a_save_and_a_load() -> void:
 	assert_eq(village.village_name, "Wehlsbüll")
 	assert_eq(village.area, Rect2i(-20, -10, 80, 60))
 	assert_eq(village.kept_worn_tiles, state.world.village.kept_worn_tiles)
+	assert_eq(village.field_spots, [Vector2i(20, 20)] as Array[Vector2i])
 	assert_true(village.is_populated)
 
 
@@ -105,3 +107,10 @@ func test_a_record_of_the_wrong_shape_is_named() -> void:
 
 	assert_string_contains(reason, "world village name: should be text")
 	assert_string_contains(reason, "world village: no kept_worn_tiles")
+
+
+func test_field_spots_that_are_not_tiles_are_named() -> void:
+	var game := _saved_village()
+	game["world"]["village"]["field_spots"] = [[1, 2], "far"]
+
+	assert_string_contains(_refusal_of(game).reason, "field_spots should be a list of [x, y]")

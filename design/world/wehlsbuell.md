@@ -1,7 +1,8 @@
 # Wehlsbüll in the world
 
-[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6 of
-section 14 are built** (each step's note says what changed from this plan); the rest is plan. This page says what is built and what
+[#9](https://github.com/gentoomaniac/sandbox-game/issues/9) (task 234). **Status: steps 1 to 6
+and 8 of section 14 are built** (each step's note says what changed from this plan); the rest is
+plan. This page says what is built and what
 will be: where the village stands, its buildings, fields and
 people, how it gets into the world, and in which steps. The user's answers
 ([#73](https://github.com/gentoomaniac/sandbox-game/issues/73),
@@ -24,7 +25,7 @@ river) and fits the routines plan (#7, [../villagers/routines.md](../villagers/r
   walls and fences. 19 buildings, all of types that exist; where none fits, a stand-in.
 - **A worn track** from the camp to the village is laid at the start (section 7).
 - **Who:** the eight villagers of `data/villagers.cfg` are spawned once, at their doors, with their
-  homes and workplaces. The other houses stay empty.
+  homes and workplaces (built, step 8). The other houses stay empty.
 - **The village is not the player's:** its land is a record in the world. Building there costs
   goodwill, its houses can't be taken down, and build mode shows the land's edge.
 - **Finding it:** the handbook and a console command `village` say where it is.
@@ -297,8 +298,10 @@ villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
 ## 10. The eight villagers
 
 Spawned once, in `GameState.new_game`, after the village is built, each at its door with
-`Npcs.spawn_villager`. `Households.settle` then finds the house of their sheet's type nearest to where
-they stand, so Boy and Antje join Hinrich's hall house and each workplace is the nearest of its type.
+`Npcs.spawn_villager` (`VillagePeople.move_in`). `Households.settle` then finds the house of their
+sheet's type nearest to where they stand, so Boy and Antje join Hinrich's hall house and each
+workplace is the nearest of its type. The plan says who lives where: each building of
+`data/village_plan.cfg` has `residents`, the ids of the villagers spawned at its door.
 
 | Villager | Home (building type) | Workplace | Interior |
 |---|---|---|---|
@@ -311,13 +314,15 @@ they stand, so Boy and Antje join Hinrich's hall house and each workplace is the
 | Ocke Hansen | `kate`, style `geest` (**stand-in mill house**) | spot "the post mill" (at the free spot) | the type's room |
 | Gesche Hansen | the same | the same spot | the type's room |
 
-- **Sheet changes:** Ocke and Gesche get `workplace_spot="the post mill"` (the plan gives the spot its
-  tile, as it does for the landing). Their `home_building` stays empty: `spawn npc ocke` must not put
-  them into Kerrin's kate. The village plan names their house instead.
+- **Sheet changes:** Ocke and Gesche get `workplace_spot="the post mill"`. The plan gives each spot
+  its tile (`workplace_spots` of `[village]`, which replaced the landing's `landing_spot`): the jetty's
+  root and the middle of the mill's free spot. Their `home_building` stays empty: `spawn npc ocke`
+  must not put them into Kerrin's kate. The plan names their house instead (`residents` of the mill
+  house), and `VillagePeople` moves them in.
 - **Interiors (task 237):** only the Boysens have their own map; the others use the room of their house
   type. More maps are Tiled work, not this task.
 - **Once:** the spawn is in `new_game` only. A save holds the villagers, so a load never spawns them
-  again. The record's flag `populated` guards against a second spawn.
+  again. The record's flag `is_populated` guards against a second spawn.
 - **Home search:** `home_search` is 40 tiles. The villagers spawn at their own doors.
 - **The empty houses** (six cottages, two farms) stay empty (#76). The made-up villagers and `spawn npc N`
   are not part of this task.
@@ -447,7 +452,7 @@ The user can stop after step 5 and have the village standing, empty.
   commit of its own before. Tests: `tests/test_village_record.gd`. The record holds the name, the land (`area`),
   `meeting_spot`, `square`, `mill_spot`, `lane_tiles` (step 6), `building_origins` (step 5) and
   `is_populated` (step 8), all in world tiles. The flag is in already so that step 8 needs no save version of
-  its own.
+  its own. (Step 8 added `field_spots`, see there.)
 - **Step 5.** `VillageBuilder.build` (the land, then the 19 buildings, then the record in `world.village`;
   `build_land` stays for the map tool and the land tests); `GameState.new_game(seed, with_village)` builds the
   village when `with_village` is true, which the game's two new games in `main.gd` say. **Changed from the plan:**
@@ -467,6 +472,18 @@ The user can stop after step 5 and have the village standing, empty.
   version. `world.gd` reached the 1 000 lines the lint allows, so the making of its save data moved to
   `WorldSave` (step 9). The map tool draws the buildings and the worn ground. Tests:
   `tests/test_village_lanes.gd`.
+
+- **Step 8.** `VillagePeople.move_in` (`game/state/village_people.gd`), called by `GameState.new_game` after
+  the build: each resident of the plan is spawned at the door of their building, `Households.settle`
+  does the rest by their sheets, and what the sheets cannot say the plan does (the mill house, the
+  tile of a spot). It loads the chunks round each door and unloads them again
+  (`VillageBuilder.load_chunks` is public for it). **Changed from the plan:** the plan did not say how
+  the `field` target finds the village's fields, and `ActivityPlaces` has no site or plan to ask. The
+  record got `field_spots` (the middle of each field's ring), in the same save version 46 (not
+  released), and the nearest of the tilled tiles and the village's fields is the field of the villager
+  (the plan had "with none"; routines.md has the new words). `meeting` is the record's `meeting_spot`,
+  within `search_tiles.meeting` of home, and the church yard only in a world with no village. Tests:
+  `tests/test_village_people.gd`, `tests/test_activity_places.gd`.
 
 ## 15. Screenshots
 

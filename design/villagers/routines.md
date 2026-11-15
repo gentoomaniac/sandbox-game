@@ -383,12 +383,12 @@ priority=5
   so it is the same spot all day and tomorrow's is another; only the tiles of loaded chunks are
   known, so a villager far from the player has none and the entry is skipped, as for a target that
   is gone: built in `ActivityPlaces`).
-- **`field`** is the nearest cluster of tilled tiles within `search_tiles.field` of their home; with
-  none, the workplace if it is a field spot (the sheet's `workplace_spot`), else the activity is
-  not offered to the villager. Fields have no owner; a villager works the one nearest to them,
-  which is the player's field too when it is nearest (the user's answer, #87). In Wehlsbüll the
-  fields are enclosures that are not tilled (`design/world/wehlsbuell.md` on `plan/9-village-v2`,
-  #9), so a field is also the nearest one of the village's fields, as the village keeps them.
+- **`field`** is the nearest tilled tile or the middle of the nearest field of the village
+  (`Village.field_spots`) within `search_tiles.field` of their home; with none, the workplace if it
+  is a field spot (the sheet's `workplace_spot`), else the activity is not offered to the villager.
+  Fields have no owner; a villager works the one nearest to them, which is the player's field too
+  when it is nearest (the user's answer, #87). In Wehlsbüll the fields are enclosures that are not
+  tilled ([../world/wehlsbuell.md](../world/wehlsbuell.md), #9), hence the village's own.
 - **The first activities,** written once, tuned in play: `sleep` (home, still, 21:30),
   `breakfast`, `dinner`, `supper` (home, still, 05:30, 12:00, 18:00), `rest` (home, walk_about,
   20:00), `work` (workplace, 06:30 and 13:00), `tend_field`, `water_field` (field, spring and
@@ -780,13 +780,13 @@ village: they run on the camp's villagers and on the test worlds of the road tes
 **What depends on the village (#9, built after the map rework #60):** only the targets that point
 at it, and the play test.
 
-- `meeting` reads the village's `meeting_spot` and `field` its fields, in `ActivityPlaces`; one
-  line each and their tests, a commit after both are in. Until then `meeting` is the church yard
-  and `field` the tilled tiles, so everything above works and a villager with no such place just
-  has fewer activities.
+- `meeting` reads the village's `meeting_spot` and `field` its fields, in `ActivityPlaces`
+  (**built** with #9 step 8: the record's `meeting_spot` and `field_spots`). Without a village
+  `meeting` is the church yard and `field` the tilled tiles, so everything above works and a villager
+  with no such place just has fewer activities.
 - The church is the village's church; Momme's feasts, the Krug and the landing's walks (about 65
   tiles, an hour) are then looked at in play, with `search_tiles`, `spread_minutes` and the radius
   tuned.
-- `VillageBuilder` spawns the eight villagers with their homes and workplaces
-  (`Households.settle`); nothing of the planner changes, they get their sets from their sheets.
+- `VillagePeople` spawns the eight villagers with their homes and workplaces (`Households.settle`,
+  **built**); nothing of the planner changes, they get their sets from their sheets.
 - The save version: whichever of #7, #60 and #9 is built next takes the next free one.
