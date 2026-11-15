@@ -22,6 +22,10 @@ var music_player := Callable()
 ## Fades the music out.
 var music_stopper := Callable()
 
+## Opens the world map, or closes it when it is open: returns the line to show. Set by the game
+## scene, which has the map screen.
+var map_toggler := Callable()
+
 ## Has the model plan a villager's rest of the day: takes them, returns what to say (set by main).
 var replanner := Callable()
 

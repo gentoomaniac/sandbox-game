@@ -18,6 +18,8 @@ const WILD_RABBIT := "wild_rabbit"
 const ROOSTER := "rooster"
 ## What `play` and `stop` say when the game scene gave the console no music.
 const NO_MUSIC := "No music here"
+## What `map` says when the game scene gave the console no map.
+const NO_MAP := "No map here"
 ## The snow values Tab offers; any number from 0 to 1 works.
 const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## The kinds of `spawn npc` and `killall npc`: they take the id of a villager written by hand (see

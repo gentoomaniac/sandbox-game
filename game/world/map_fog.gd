@@ -12,8 +12,8 @@ extends RefCounted
 ## How much of its colour the fog takes from the land, 0 to 1.
 const DESATURATION := 0.65
 ## How far the fogged land is pulled to the fog's grey, 0 to 1: the dimming.
-const GREYING := 0.4
-const FOG_GREY := 0.32
+const GREYING := 0.5
+const FOG_GREY := 0.27
 ## The fog's edge reaches this many tiles each side of a tile, a box of 2 * SOFT_RADIUS + 1.
 const SOFT_RADIUS := 2
 ## A chunk with its window of SOFT_RADIUS more tiles all round.

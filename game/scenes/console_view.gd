@@ -81,13 +81,14 @@ func _fit_height() -> void:
 ## `wildlife_spawner` puts animals in view for the `spawn` command and `wildlife_clearer` takes
 ## them away for `killall` (see Console). `music` is what `play` and `stop` drive, and the log says
 ## when a piece, rendered after the command ran, begins. `replanner` has the model plan a villager's
-## day for `replan`.
+## day for `replan`, and `map_toggler` opens and closes the world map for `map`.
 func show_state(
 	state: GameState,
 	wildlife_spawner := Callable(),
 	wildlife_clearer := Callable(),
 	music: MusicPlayer = null,
-	replanner := Callable()
+	replanner := Callable(),
+	map_toggler := Callable()
 ) -> void:
 	_console = Console.new(state)
 	if music != null:
@@ -96,6 +97,7 @@ func show_state(
 		_console.context.music_stopper = music.stop
 		music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
 	_console.context.replanner = replanner
+	_console.context.map_toggler = map_toggler
 	_console.context.wildlife_spawner = wildlife_spawner
 	_console.context.wildlife_clearer = wildlife_clearer
 
@@ -118,15 +120,17 @@ func close() -> void:
 	_input.release_focus()
 
 
-## Runs a line as if it was typed: it is logged, remembered and answered.
-func run_line(line: String) -> void:
+## Runs a line as if it was typed: it is logged, remembered and answered. Returns the answer.
+func run_line(line: String) -> Array[String]:
 	_log_lines.append("> " + line)
-	_log_lines.append_array(_console.run(line))
+	var answer := _console.run(line)
+	_log_lines.append_array(answer)
 	_show_log()
 	if _history.is_empty() or _history[-1] != line:
 		_history.append(line)
 	_history_index = _history.size()
 	command_ran.emit()
+	return answer
 
 
 func _log_line(text: String) -> void:

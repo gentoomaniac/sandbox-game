@@ -73,6 +73,7 @@ var _storage_screen := StorageScreen.new(_hotbar)
 var _process_screen := ProcessScreen.new(_hotbar)
 var _fire_screen := CampfireScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
+var _map_screen := MapScreen.new()
 var _chat_screen := ChatScreen.new()
 var _npc_name_tag := NpcNameTag.new()
 var _action_hint := ActionHintView.new()
@@ -226,6 +227,7 @@ func _make_views() -> void:
 	add_child(_bag_screen)
 	add_child(_character_screen)
 	add_child(_crafting_screen)
+	add_child(_map_screen)
 	add_child(_storage_screen)
 	add_child(_process_screen)
 	add_child(_fire_screen)
@@ -315,8 +317,16 @@ func _connect_state_and_views() -> void:
 	_character_screen.show_player(_state.player)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
+	_map_screen.show_state(_state)
+	_map_screen.teleporter = func(tile: Vector2i) -> Array[String]:
+		return _console_view.run_line("tp %d %d" % [tile.x, tile.y])
 	_console_view.show_state(
-		_state, _wildlife.spawn_in_view, _wildlife.remove_kind, _music, day_planner.replan
+		_state,
+		_wildlife.spawn_in_view,
+		_wildlife.remove_kind,
+		_music,
+		day_planner.replan,
+		_map_screen.toggled
 	)
 	# A teleport moves the player far: the camera jumps with them instead of gliding.
 	_console_view.command_ran.connect(
@@ -326,6 +336,9 @@ func _connect_state_and_views() -> void:
 			if _state.current_map != _shown_map:
 				_show_current_map()
 			_show_clock()
+			# The map takes the keys the console would.
+			if _map_screen.is_open():
+				_console_view.close()
 	)
 	_menu.save_and_quit_requested.connect(_save_and_quit)
 	_menu.load_requested.connect(_load_dialog.open_saves.bind(_options.save_path))
