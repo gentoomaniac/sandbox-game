@@ -223,6 +223,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 61 stone_path (3 variants of 16, the same)
 # 62 way_edge (16, one per mask of the sides with a way beside them: not an object, drawn on the free tiles beside ways, see ways.py)
 # 63 market_stall (1, see stall.py)
+# 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -284,6 +285,7 @@ def object_atlas():
         ("stone_path", ways.stone_path_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
         ("way_edge", ways.way_edge_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
         ("market_stall", [standing_outdoors(stall.market_stall())]),
+        *snags.rows(),
     ]
 
 
@@ -325,7 +327,7 @@ def write_seasonal_art():
         "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
         "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
-    }
+    } | snags.redraws()
     houses = {}
     for name, draw in (buildings.PICTURES | church.PICTURES | yard.PICTURES).items():
         houses[name] = draw(is_lit=False)
@@ -349,18 +351,6 @@ def write_seasonal_art():
     atlas.save_sheets("decorations", [*layers, "flowers"], seasons.GROUND_LOOKS, decorations_by_look, GAME_TILE, GAME_TILE)
     objects_by_look |= cover.object_cover_looks(objects_by_look)
     atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS + cover.COVER_LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
-
-
-def write_snags():
-    """The dead and the half-dead trees of every kind (snags.py, issue #102): a sheet each in
-    objects/, as the object atlas's entities have (a row per look, the snow and frost covers
-    included, a cell per variant), but not yet rows of the atlas, whose rows each need an object
-    type. To place them, add `snags.rows()` to `object_atlas` (new rows at the end) and
-    `snags.redraws()` to its winter redraws."""
-    rows = snags.rows()
-    by_look = {look: seasons.object_rows(look, rows, snags.redraws()) for look in seasons.LOOKS}
-    by_look |= cover.object_cover_looks(by_look)
-    atlas.save_entity_sheets("objects", [kind for kind, _ in rows], seasons.LOOKS + cover.COVER_LOOKS, by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)
 
 
 def write_character():
@@ -441,7 +431,6 @@ def write_items():
 
 def main():
     write_seasonal_art()
-    write_snags()
     cover.write_textures(GAME_TILE)
     write_character()
     write_interior()

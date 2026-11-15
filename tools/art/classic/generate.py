@@ -240,6 +240,7 @@ def object_atlas():
         ("stone_path", ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("way_edge", ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("market_stall", [standing_outdoors(stall.market_stall())]),
+        *snags.rows(),
     ]
 
 
@@ -252,20 +253,11 @@ def write_objects():
         "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
         "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
         "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
-    }
+    } | snags.redraws()
     objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
     objects_by_look |= cover.object_cover_looks(objects_by_look)
     atlas.save_sheets("objects", [kind for kind, _ in objects], object_looks.LOOKS + cover.COVER_LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
     save_picture(camp.bedroll_cover(), "bedroll_cover.png")
-
-
-def write_snags():
-    """The dead and the half-dead trees (snags.py, issue #102): a sheet each in objects/ as the
-    atlas's entities have, not yet rows of the atlas (see write_snags in tools/art/generate.py)."""
-    rows = snags.rows()
-    by_look = {look: object_looks.object_rows(look, rows, snags.redraws()) for look in object_looks.LOOKS}
-    by_look |= cover.object_cover_looks(by_look)
-    atlas.save_entity_sheets("objects", [kind for kind, _ in rows], object_looks.LOOKS + cover.COVER_LOOKS, by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
 
 
 def write_crops():
@@ -306,7 +298,6 @@ def main():
     cover.write_textures(TILE)
     write_buildings()
     write_objects()
-    write_snags()
     write_crops()
     write_interior()
     write_items()

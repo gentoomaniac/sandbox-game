@@ -64,3 +64,17 @@ plank_walk 64
 stone_path 48
 way_edge 16
 market_stall 1
+dead_oak 3
+dead_beech 3
+dead_birch 3
+dead_alder 3
+dead_willow 3
+dead_pine 3
+dead_spruce 3
+half_dead_oak 2
+half_dead_beech 2
+half_dead_birch 2
+half_dead_alder 2
+half_dead_willow 2
+half_dead_pine 2
+half_dead_spruce 2
