@@ -29,6 +29,13 @@ const WORKPLACE_BUILDING_KEY := "workplace_building"
 const WORKPLACE_SPOT_KEY := "workplace_spot"
 ## The Tiled map of the inside of their home, instead of its building type's default (task 237).
 const HOME_INTERIOR_KEY := "home_interior"
+## The keys a sheet may add for what they do in a day (see ActivityRules): the set of activities of
+## their work, more activities, activities they never do, and whether they go to church only on
+## the feasts.
+const WORK_SET_KEY := "work_set"
+const ACTIVITIES_KEY := "activities"
+const SKIPS_KEY := "skips"
+const CHURCH_FEASTS_ONLY_KEY := "church_feasts_only"
 ## A villager's sample lines: the cut-down sheet tells this many.
 const MIN_SAMPLES := 2
 ## The kinds of people a villager may name in `people`: the sex of the one named ("" for
@@ -106,6 +113,7 @@ func problems() -> Array[String]:
 		if not people is Dictionary or not people.values().all(_is_kind_and_text):
 			found.append("[%s] people is not a dictionary of [kind, what they think]" % id)
 		found.append_array(_place_problems(id, villager))
+		found.append_array(_activity_problems(id, villager))
 		found.append_array(_interior_problems(id, villager))
 		var look: Variant = villager.get("look")
 		if not look is Dictionary or not look.has(str(Appearance.BODY)):
@@ -203,6 +211,24 @@ func _place_problems(id: String, villager: Dictionary) -> Array[String]:
 	return found
 
 
+## What is wrong with what a sheet says about the activities: its `work_set` is a set of the
+## activities file, `activities` and `skips` are activities of it.
+func _activity_problems(id: String, villager: Dictionary) -> Array[String]:
+	var found: Array[String] = []
+	var activities := ActivityRules.default_rules()
+	var work_set: Variant = villager.get(WORK_SET_KEY)
+	if work_set != null and not (work_set is String and activities.has_set(work_set)):
+		found.append("[%s] %s is not a set of the activities" % [id, WORK_SET_KEY])
+	for key in [ACTIVITIES_KEY, SKIPS_KEY]:
+		var list: Variant = villager.get(key)
+		if list != null and not (list is Array and list.all(_is_activity)):
+			found.append("[%s] %s is not a list of activities" % [id, key])
+	var is_feasts_only: Variant = villager.get(CHURCH_FEASTS_ONLY_KEY)
+	if is_feasts_only != null and not is_feasts_only is bool:
+		found.append("[%s] %s is not true or false" % [id, CHURCH_FEASTS_ONLY_KEY])
+	return found
+
+
 ## What is wrong with the map a sheet names for the inside of its home: it needs a home, it exists,
 ## and its room is as big as the home's default and has its door in the same place, so that it fits
 ## the building (whose footprint and door the type fixes).
@@ -240,6 +266,10 @@ func home_interiors(building_type: StringName) -> Array[String]:
 			if not maps.has(sheet[HOME_INTERIOR_KEY]):
 				maps.append(sheet[HOME_INTERIOR_KEY])
 	return maps
+
+
+static func _is_activity(value: Variant) -> bool:
+	return value is String and ActivityRules.default_rules().has(value)
 
 
 static func _is_text(value: Variant) -> bool:

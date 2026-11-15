@@ -98,6 +98,39 @@ func test_a_house_or_workplace_that_is_not_a_building_is_reported() -> void:
 	assert_has(problems, "[anna] has both a workplace_building and a workplace_spot")
 
 
+func test_activities_of_a_sheet_that_the_file_does_not_have_are_reported() -> void:
+	var anna := _villager("female", 30, "the farm", {})
+	anna[VillagerRules.WORK_SET_KEY] = "pirate"
+	anna[VillagerRules.ACTIVITIES_KEY] = ["visit_friend", "plunder"]
+	anna[VillagerRules.SKIPS_KEY] = "sleep"
+	anna[VillagerRules.CHURCH_FEASTS_ONLY_KEY] = "yes"
+	var problems := VillagerRules.new({"anna": anna}).problems()
+	assert_has(problems, "[anna] work_set is not a set of the activities")
+	assert_has(problems, "[anna] activities is not a list of activities")
+	assert_has(problems, "[anna] skips is not a list of activities")
+	assert_has(problems, "[anna] church_feasts_only is not true or false")
+
+
+func test_every_written_villager_names_the_set_of_their_work() -> void:
+	var villagers := VillagerRules.default_rules()
+	for id in villagers.ids():
+		assert_true(
+			villagers.villager(id).has(VillagerRules.WORK_SET_KEY), "%s has no work_set" % id
+		)
+
+
+func test_every_trade_of_the_tables_has_a_known_set() -> void:
+	var rules := NpcRules.default_rules()
+	var values := DataFile.read_sections(NpcRules.DEFAULT_PATH)
+	for sex in NpcRules.SEXES:
+		for entry: Array in values[str(sex)]["trades"]:
+			assert_true(
+				ActivityRules.default_rules().has_set(entry[2]), "%s: %s" % [entry[0], entry[2]]
+			)
+			assert_eq(rules.work_set_of_trade(entry[0]), entry[2])
+	assert_eq(rules.work_set_of_trade("a pirate"), "")
+
+
 func test_a_couple_names_the_same_house() -> void:
 	var antje := _villager("female", 38, "the farm", {"hinrich": ["husband", "Steady."]})
 	var hinrich := _villager("male", 42, "the farm", {"antje": ["wife", "Warm."]})
@@ -141,7 +174,10 @@ func test_a_made_up_villager_has_a_trade_of_their_sex_and_a_sheet() -> void:
 	for seed_value in 30:
 		var npc := Npc.create(seed_value, Vector2.ZERO, _state.npcs.rules)
 		assert_eq(npc.id, "")
-		assert_has(file.get_value(str(npc.sex), "trades"), [npc.trade, npc.day])
+		assert_has(
+			file.get_value(str(npc.sex), "trades"),
+			[npc.trade, npc.day, _state.npcs.rules.work_set_of_trade(npc.trade)]
+		)
 		assert_between(npc.age, 18, 70)
 		for text in [npc.personality, npc.home, npc.speech, npc.likes, npc.wants, npc.habits]:
 			assert_false(text.is_empty())
@@ -183,7 +219,7 @@ func test_missing_background_tables_are_reported() -> void:
 	assert_has(problems, "[background] ages is not [youngest, oldest]")
 
 
-func test_trades_without_their_day_and_speeches_without_samples_are_reported() -> void:
+func test_trades_without_their_day_and_set_and_speeches_without_samples_are_reported() -> void:
 	var values := DataFile.read_sections(NpcRules.DEFAULT_PATH)
 	values["male"]["trades"] = ["a farmhand"]
 	values["background"]["speeches"] = [["Talks fast.", ["Moin!"]]]
@@ -191,7 +227,7 @@ func test_trades_without_their_day_and_speeches_without_samples_are_reported() -
 		NpcRules.new(values).problems(),
 		(
 			[
-				"[male] trades is not a list of [trade, day]",
+				"[male] trades is not a list of [trade, day, set of activities]",
 				"[background] speeches is not a list of [manner, [2 or more lines]]",
 			]
 			as Array[String]

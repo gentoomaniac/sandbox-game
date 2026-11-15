@@ -121,8 +121,8 @@ func problems() -> Array[String]:
 	if not found.is_empty():
 		return found
 	for sex in SEXES:
-		if not _values[str(sex)]["trades"].all(_is_trade_and_day):
-			found.append("[%s] trades is not a list of [trade, day]" % sex)
+		if not _values[str(sex)]["trades"].all(_is_trade_day_and_set):
+			found.append("[%s] trades is not a list of [trade, day, set of activities]" % sex)
 	if not _values["background"]["speeches"].all(_is_manner_and_samples):
 		found.append(
 			(
@@ -152,6 +152,16 @@ func travel(key: String) -> float:
 func pick_seconds(key: String, rng: RandomNumberGenerator) -> float:
 	var range_seconds: Array = _values["behaviour"][key]
 	return rng.randf_range(range_seconds[0], range_seconds[1])
+
+
+## The set of activities (see ActivityRules) of a trade, or "" for a trade the tables do not have
+## (a saved game's villager whose trade was taken out of them).
+func work_set_of_trade(trade: String) -> String:
+	for sex in SEXES:
+		for entry: Array in _values[str(sex)]["trades"]:
+			if entry[0] == trade:
+				return entry[2]
+	return ""
 
 
 ## A first name for the sex and a surname, such as "Elke Lorenzen".
@@ -227,8 +237,13 @@ func _pick(section: String, key: String, rng: RandomNumberGenerator) -> Variant:
 	return list[rng.randi_range(0, list.size() - 1)]
 
 
-static func _is_trade_and_day(value: Variant) -> bool:
-	return value is Array and value.size() == 2 and value.all(_is_text)
+static func _is_trade_day_and_set(value: Variant) -> bool:
+	return (
+		value is Array
+		and value.size() == 3
+		and value.all(_is_text)
+		and ActivityRules.default_rules().has_set(value[2])
+	)
 
 
 static func _is_manner_and_samples(value: Variant) -> bool:

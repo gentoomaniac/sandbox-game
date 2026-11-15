@@ -73,7 +73,10 @@ Task 86 (2026-11-06) added who they are, words from a language model and memory.
   tiles (`data/npcs.cfg`). Where none stands (there is no village yet, task 234; the mill house is
   no building yet) they have none until given, and a spot has no place in the world until given.
   Made-up villagers have neither at first. A sheet may also name `home_interior`, the map of the
-  inside of its house (task 237, [routines.md](routines.md)). The player gives and moves them with
+  inside of its house (task 237, [routines.md](routines.md)). For what they do in a day it names
+  `work_set`, `activities`, `skips` and `church_feasts_only` (a made-up villager has the set of
+  their trade, the third entry of the trades of `data/npcs.cfg`; `VillagerActivities`, issue #7).
+  The player gives and moves them with
   the console (`home` and `work`, `HomeCommands`) and the hammer's menu on a house (middle click on
   it with the hammer in hand: `BuildMode` asks, `HouseMenu` shows a `ChoiceDialog` of
   `Households.offers`: the villagers within `give_reach` tiles that the house may hold, "Give to
