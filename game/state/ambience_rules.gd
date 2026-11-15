@@ -59,6 +59,24 @@ const REQUIRED_KEYS := {
 	"flying_geese": ["idle_chance"],
 	"crows": ["idle_chance"],
 	"bees": ["max_loops", "level", "hear_tiles"],
+	"sea":
+	[
+		"level",
+		"reach_tiles",
+		"near_tiles",
+		"curve",
+		"look_seconds",
+		"fade_seconds",
+		"search_step_tiles",
+		"pan_max",
+		"pan_full_tiles",
+		"pan_width_tiles",
+		"indoors_share",
+		"low_water_share",
+		"flooded_mud_is_sea",
+		"storm_gain",
+		"storm_reach",
+	],
 }
 const SEASON_COUNT := 4
 ## Day, dawn and dusk, night.
@@ -117,11 +135,31 @@ func problems() -> Array[String]:
 		bad.append("[bees] hear_tiles must be above 0")
 	if value("frogs", "warm_temperature") <= value("frogs", "cold_temperature"):
 		bad.append("[frogs] warm_temperature must be above cold_temperature")
+	bad.append_array(_sea_problems())
 	for section in ["birds", "frogs", "frog_chorus"]:
 		if _values[section]["season_factors"].size() != SEASON_COUNT:
 			bad.append("[%s] season_factors must have %d entries" % [section, SEASON_COUNT])
 		if _values[section]["phase_weights"].size() != PHASE_COUNT:
 			bad.append("[%s] phase_weights must have %d entries" % [section, PHASE_COUNT])
+	return bad
+
+
+func _sea_problems() -> Array[String]:
+	var bad: Array[String] = []
+	for key in ["reach_tiles", "curve", "look_seconds", "fade_seconds", "search_step_tiles"]:
+		if value("sea", key) <= 0.0:
+			bad.append("[sea] %s must be above 0" % key)
+	if (
+		value("sea", "near_tiles") < 0.0
+		or value("sea", "near_tiles") >= value("sea", "reach_tiles")
+	):
+		bad.append("[sea] near_tiles must be at least 0 and below reach_tiles")
+	for key in ["level", "pan_max", "indoors_share", "low_water_share"]:
+		if value("sea", key) < 0.0 or value("sea", key) > 1.0:
+			bad.append("[sea] %s must be from 0 to 1" % key)
+	for key in ["pan_full_tiles", "pan_width_tiles", "storm_gain", "storm_reach"]:
+		if value("sea", key) < 0.0:
+			bad.append("[sea] %s must not be below 0" % key)
 	return bad
 
 
@@ -219,3 +257,40 @@ func _activity(section: String, season: GameClock.Season, phase: WildlifeRules.P
 	var season_factors: Array = _values[section]["season_factors"]
 	var phase_weights: Array = _values[section]["phase_weights"]
 	return float(season_factors[season]) * float(phase_weights[phase])
+
+
+## How far the waves are heard in this weather, in tiles: further in a storm.
+func sea_reach(weather: WeatherSample) -> float:
+	var storm := clampf(weather.storm, 0.0, 1.0)
+	return value("sea", "reach_tiles") * (1.0 + value("sea", "storm_reach") * storm)
+
+
+## How loud the waves of the shore are (a share of the loop's volume, 0 to 1) for water `distance`
+## tiles from the player, the tide's level (`Tide.level`, 0 low water, 1 high water), the weather,
+## and whether the player is inside a building: full at the edge, falling to nothing at the reach,
+## less at low water, louder in a storm. A distance of INF (no water found) is silent.
+func sea_level(
+	distance: float, tide_level: float, weather: WeatherSample, is_inside: bool
+) -> float:
+	var reach := sea_reach(weather)
+	var near := value("sea", "near_tiles")
+	if distance >= reach:
+		return 0.0
+	var share := 1.0 - clampf((distance - near) / (reach - near), 0.0, 1.0)
+	var tide := lerpf(value("sea", "low_water_share"), 1.0, clampf(tide_level, 0.0, 1.0))
+	var storm := 1.0 + value("sea", "storm_gain") * clampf(weather.storm, 0.0, 1.0)
+	var level := value("sea", "level") * pow(share, value("sea", "curve")) * tide * storm
+	if is_inside:
+		level *= value("sea", "indoors_share")
+	return minf(level, 1.0)
+
+
+## How far to one side the waves sound, -1 (left) to 1 (right), for the way to the water in tiles
+## (x east, y south): towards the side it is on, none when it is due north or south, and less the
+## closer it is (right at the edge there is no side).
+func sea_pan(to_water: Vector2) -> float:
+	var length := to_water.length()
+	if length == 0.0:
+		return 0.0
+	var steady := minf(length / maxf(value("sea", "pan_full_tiles"), 0.001), 1.0)
+	return clampf(to_water.x / length, -1.0, 1.0) * steady * value("sea", "pan_max")

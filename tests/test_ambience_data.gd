@@ -68,3 +68,12 @@ func test_phase_weights_of_the_wrong_length_are_bad() -> void:
 	_assert_bad(
 		_rules_with("frogs", "phase_weights", [1.0, 1.0, 1.0, 1.0]), "[frogs] phase_weights"
 	)
+
+
+func test_sea_values_that_make_no_sense_are_bad() -> void:
+	_assert_bad(_rules_with("sea", "curve", 0.0), "curve")
+	_assert_bad(_rules_with("sea", "near_tiles", 80.0), "near_tiles")
+	_assert_bad(_rules_with("sea", "search_step_tiles", 0), "search_step_tiles")
+	_assert_bad(_rules_with("sea", "indoors_share", 1.5), "indoors_share")
+	_assert_bad(_rules_with("sea", "low_water_share", -0.1), "low_water_share")
+	_assert_bad(_rules_with("sea", "pan_max", 2.0), "pan_max")
