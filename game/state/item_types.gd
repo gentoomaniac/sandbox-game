@@ -83,6 +83,7 @@ const NET_FRAME := &"net_frame"
 const EEL_TRAPS := &"eel_traps"
 # The farm yard (task 122).
 const DRAW_WELL := &"draw_well"
+const NOTICE_BOARD := &"notice_board"
 const TROUGH := &"trough"
 const HAY_RACK := &"hay_rack"
 const FEED_TROUGH := &"feed_trough"
@@ -477,6 +478,14 @@ const _OTHER_TYPES := {
 		"weight": 40.0,
 		"stack_limit": 1,
 		"places": WorldObjectTypes.DRAW_WELL,
+	},
+	NOTICE_BOARD:
+	{
+		"name": "Notice board",
+		"description": "A board under a little roof for the village's notices. It stands outdoors.",
+		"weight": 12.0,
+		"stack_limit": 1,
+		"places": WorldObjectTypes.NOTICE_BOARD,
 	},
 	EGG:
 	{

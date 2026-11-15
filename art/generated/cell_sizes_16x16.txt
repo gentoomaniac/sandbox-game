@@ -299,6 +299,7 @@ objects/kiln_16x16.png 48 80
 objects/knick_16x16.png 48 80
 objects/market_stall_16x16.png 48 80
 objects/net_frame_16x16.png 48 80
+objects/notice_board_16x16.png 48 80
 objects/oak_16x16.png 48 80
 objects/oak_short_trunk_16x16.png 48 80
 objects/oak_trunk_16x16.png 48 80

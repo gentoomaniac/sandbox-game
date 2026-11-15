@@ -337,6 +337,7 @@ objects/kiln_32x32.png 96 160
 objects/knick_32x32.png 96 160
 objects/market_stall_32x32.png 96 160
 objects/net_frame_32x32.png 96 160
+objects/notice_board_32x32.png 96 160
 objects/oak_32x32.png 96 160
 objects/oak_short_trunk_32x32.png 96 160
 objects/oak_trunk_32x32.png 96 160

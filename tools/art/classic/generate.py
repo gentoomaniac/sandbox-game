@@ -47,6 +47,7 @@ import item_icons  # noqa: E402
 import landing  # noqa: E402
 import livestock  # noqa: E402
 import meadow  # noqa: E402
+import notice_board  # noqa: E402
 import object_looks  # noqa: E402
 import pen  # noqa: E402
 import reeds  # noqa: E402
@@ -92,6 +93,7 @@ def write_character():
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
+    save_picture(notice_board.quest_mark(), "effects/quest_mark.png")
     # The prints are drawn by the new art's module, at this tile size (see footprints.py).
     save(footprints.sheet(TILE), "effects/footprints.png", TILE)
 
@@ -241,6 +243,7 @@ def object_atlas():
         ("way_edge", ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
+        ("notice_board", [standing_outdoors(notice_board.notice_board())]),
     ]
 
 
@@ -280,7 +283,7 @@ def write_interior():
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon()} | ways.icons(TILE, yard.icon_of)
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon(), "notice_board": yard.icon_of(notice_board.notice_board())} | ways.icons(TILE, yard.icon_of)
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

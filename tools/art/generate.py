@@ -46,6 +46,8 @@ it.
 assets/effects/sleep_z.png: the "z" that rises from a sleeping figure.
 assets/effects/pet_heart.png and pet_annoyed.png: what rises over an animal that is petted, awake
 or asleep.
+assets/effects/quest_mark.png: the "!" over the notice board (and a quest giver) while a quest is
+posted: notice_board.BOB_FRAMES cells side by side, for its bob.
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
 its bell frame in church.py) at the game's tile (not doubled), as wide as its footprint and as
@@ -118,6 +120,7 @@ import items
 import landing
 import livestock
 import meadow
+import notice_board
 import pen
 import portraits
 import reeds
@@ -224,6 +227,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 62 way_edge (16, one per mask of the sides with a way beside them: not an object, drawn on the free tiles beside ways, see ways.py)
 # 63 market_stall (1, see stall.py)
 # 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
+# 78 notice_board (1, see notice_board.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -286,6 +290,7 @@ def object_atlas():
         ("way_edge", ways.way_edge_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
+        ("notice_board", [standing_outdoors(notice_board.notice_board())]),
     ]
 
 
@@ -373,6 +378,7 @@ def write_character():
     save_picture(character.sleep_z(), "effects/sleep_z.png")
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
+    save_picture(notice_board.quest_mark(), "effects/quest_mark.png")
     save(footprints.sheet(GAME_TILE), "effects/footprints.png", GAME_TILE)
 
 
@@ -421,7 +427,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | ways.icons(GAME_TILE, items.icon_of)
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | {"notice_board": items.icon_of(notice_board.notice_board())} | ways.icons(GAME_TILE, items.icon_of)
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

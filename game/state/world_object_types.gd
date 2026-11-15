@@ -168,8 +168,10 @@ const PEN_GATE_OPEN := &"pen_gate_open"
 const PIG_SHELTER := &"pig_shelter"
 ## The player's scarecrow (task 226): keeps the crows off the crops round it.
 const SCARECROW := &"scarecrow"
-## The village's own objects (see WorldObjectVillage): the stall of the shop on the town square.
+## The village's own objects (see WorldObjectVillage): the stall of the shop on the town square,
+## and the notice board where the villagers post their quests (issue #12).
 const MARKET_STALL := &"market_stall"
+const NOTICE_BOARD := &"notice_board"
 
 ## Values of a type's `seasonal` entry.
 const DORMANCY := &"dormancy"

@@ -498,6 +498,21 @@ along its foot.
   at 16 px), the cuffs' straw blown back into the left sleeve and out of the right one; the pole,
   head and hat stay. Snow lies on the hat (at 32 px also on the lit shoulders). The ghost and the icon are the still picture; the classic icon is drawn small
   (14x16 px) on its own.
+- **The notice board** (issue #12, tools/art/notice_board.py, 36x56 px on 1x1 tiles, and at 16 px
+  classic/notice_board.py, 18x28 px), as one stood by the church door or the Krug: upright oak
+  planks (`soil_mid`, seams `soil`) in a frame lit on its top and left, on two oak posts, under a
+  little gable of weathered oak barge boards (`bare_light` on the lit slope, `bare`, `mud_dark`
+  under them) with a knob on the peak and the gable's boards in the shade. Four notes are pinned
+  to it, each with its nail: a big one with a heading (`stone_dark`) and lines of writing in 2-3 px
+  words (`mud`), an older one yellowed (`sand_light`, `sand`), one sealed in red wax (`ember`,
+  `rust_dark`) and a small one; paper is `cream` shaded `sand_light` on its right and bottom edge
+  and casts a pixel of `soil_dark` shadow on the planks (32 px). Rimmed in `soil_dark`, the roof in
+  `mud_dark`; snow lies along the barge boards. The icon is its picture.
+- **The quest mark** (issue #12, the same modules, assets/effects/quest_mark.png): a "!" over the
+  notice board (and a quest giver) while a quest is posted, `gold` lit `cream` on its upper left,
+  shaded `ochre` (`ochre_dark` under the dot), rimmed in `ink` like the other marks over figures:
+  10x19 px at 32 px (a wedge 6 px wide at the top), 6x12 px at 16 px. Two cells side by side for a
+  slow bob, the mark 2 px (1 px at 16 px) lower in the second.
 - Details worth having: a bench by the door, a **stork's nest** on the ridge, a date or initials in iron wall anchors, a sod-roofed
   outhouse, a draw well with a sweep.
 
