@@ -85,7 +85,7 @@ var topics: Array[String] = []
 ## then), `is_judged` (whether StoryJudge has settled its line, its change of their opinion and
 ## whether it is personal), `weight` (a MemoryWeight) and `personal` (whether it touches them).
 var stories: Array[Dictionary] = []
-## What they think of the player, in points (see GossipRules `opinion_word`). It stays when the
+## What they think of the player, in points (see FriendshipRules `level_of`). It stays when the
 ## stories and memories behind it fade, so `forget_all_but_knowledge` leaves it.
 var opinion := 0
 ## The day `opinion_moved_today` counts, and how far the opinion has moved since that day began:

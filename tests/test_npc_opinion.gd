@@ -1,7 +1,7 @@
 extends GutTest
 ## What a villager thinks of the player (Npc `opinion`, in points): moved by the points of a
-## change up to a cap a day, kept between its bounds, told to the language model in words, and
-## shown and set by the console's `opinion`.
+## change up to a cap a day, kept between its bounds, told to the language model in words by its
+## level, and shown and set by the console's `opinion`.
 
 var _rules := GossipRules.default_rules()
 var _antje: Npc
@@ -62,28 +62,23 @@ func test_the_opinion_stays_between_its_bounds() -> void:
 	assert_eq(_antje.opinion, _rules.opinion_min())
 
 
-func test_the_opinion_has_a_word() -> void:
-	assert_eq(_rules.opinion_word(0), &"neutral")
-	assert_eq(_rules.opinion_word(_rules.opinion_warm_from()), &"warm")
-	assert_eq(_rules.opinion_word(_rules.opinion_warm_from() - 1), &"neutral")
-	assert_eq(_rules.opinion_word(_rules.opinion_cold_below()), &"neutral")
-	assert_eq(_rules.opinion_word(_rules.opinion_cold_below() - 1), &"cold")
-
-
-func test_the_prompt_tells_the_opinion_in_words_not_numbers() -> void:
-	assert_string_contains(_prompt_tells(0), "no strong feelings")
-	assert_string_contains(_prompt_tells(77), "thinks well of this neighbour")
-	assert_false(_prompt_tells(77).contains("77"))
-	assert_string_contains(_prompt_tells(-50), "thinks ill of this neighbour")
+func test_the_prompt_tells_the_line_of_each_level_in_words_not_numbers() -> void:
+	var friendship := FriendshipRules.default_rules()
+	var talk := NpcTalkRules.default_rules()
+	for level in range(1, FriendshipRules.LEVEL_COUNT + 1):
+		var told := _prompt_tells(friendship.first_point_of(level))
+		var line: String = talk.value("prompt", "level_%d" % level)
+		assert_string_contains(told, line.format({"first_name": "Antje"}), "level %d" % level)
+	assert_false(_prompt_tells(777).contains("777"))
 
 
 func test_the_console_shows_the_opinion() -> void:
 	_antje.opinion = 30
-	assert_eq(_console.run("opinion antje"), ["Antje Boysen: warm (30 points)"])
+	assert_eq(_console.run("opinion antje"), ["Antje Boysen: Acquaintance, level 4 (30 points)"])
 
 
 func test_the_console_sets_the_opinion_within_its_bounds() -> void:
-	assert_eq(_console.run("opinion antje -30"), ["Antje Boysen: cold (-30 points)"])
+	assert_eq(_console.run("opinion antje -30"), ["Antje Boysen: Mistrusted, level 2 (-30 points)"])
 	assert_eq(_antje.opinion, -30)
 	_console.run("opinion antje 99999")
 	assert_eq(_antje.opinion, _rules.opinion_max())
@@ -93,3 +88,10 @@ func test_the_console_asks_for_a_villager_and_whole_points() -> void:
 	assert_eq(_console.run("opinion"), ["Usage: opinion <villager> [points]"])
 	assert_eq(_console.run("opinion antje lots"), ["Usage: opinion <villager> [points]"])
 	assert_string_contains(_console.run("opinion nobody")[0], "nobody")
+
+
+func test_a_level_without_a_prompt_line_is_a_problem() -> void:
+	var values := DataFile.read_sections(NpcTalkRules.DEFAULT_PATH)
+	values["prompt"].erase("level_7")
+	var problems := NpcTalkRules.new(values).problems()
+	assert_eq(problems.filter(func(p: String) -> bool: return "level_7" in p).size(), 1)

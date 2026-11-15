@@ -105,6 +105,8 @@
   is told by its template line, or, once the judge has had the model put it in the villager's own
   words (task 128, in the background, one request at a time, its own temperature 0.2; see
   [gossip.md](gossip.md), The judge), by that line.
+  What the villager thinks of the player is told in the last turn as the line of their friendship
+  level (`level_1` to `level_10`, [relationships.md](relationships.md)), never as points.
   The same sheets, opinion and stories feed the bubbles over villagers' heads (task 130, a request
   of its own, asked quietly in the background at the chat's temperature; see
   [gossip.md](gossip.md), Bubbles); what a bubble says is not added to the chat or remembered.

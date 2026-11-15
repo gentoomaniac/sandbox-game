@@ -75,8 +75,7 @@ static func reply_messages(
 	if not moment.shop.is_empty():
 		last.append(shop_text(moment.shop, words, rules))
 	last.append(_said(rules, "neighbour", words))
-	var opinion_word := GossipRules.default_rules().opinion_word(npc.opinion)
-	last.append(_said(rules, "opinion_" + opinion_word, words))
+	last.append(_said(rules, level_key(npc), words))
 	last.append(_said(rules, "says", _with_message(words, message)))
 	var language := NpcLanguage.name_of(message, history, rules)
 	last.append(_said_in(rules, "language", _with_message(words, message), language))
@@ -541,6 +540,12 @@ static func _with_message(words: Dictionary, message: String) -> Dictionary:
 	var with_message := words.duplicate()
 	with_message["message"] = message
 	return with_message
+
+
+## The key of `[prompt]` of the line that tells how the villager thinks of the player: `level_1`
+## to `level_10`.
+static func level_key(npc: Npc) -> String:
+	return "level_%d" % FriendshipRules.default_rules().level_of(npc.opinion)
 
 
 ## The label the last turn ends with, which names the `language` of `message` ("" if unknown, see

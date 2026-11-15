@@ -75,8 +75,8 @@ func subject_for(npc: Npc, player_feet: Vector2) -> Subject:
 func scripted_line(npc: Npc, moment: NpcMoment, subject: Subject) -> String:
 	var list: Array
 	if subject == Subject.PLAYER:
-		var opinion := GossipRules.default_rules().opinion_word(npc.opinion)
-		list = rules.value("bubble_lines", "near_player")[opinion]
+		var mood := FriendshipRules.default_rules().mood_of(npc.opinion)
+		list = rules.value("bubble_lines", "near_player")[mood]
 	else:
 		list = _weather_lines(moment.weather)
 		if list.is_empty():
@@ -97,8 +97,7 @@ func request(npc: Npc, moment: NpcMoment, subject: Subject, full_sheets: bool) -
 	]
 	if subject == Subject.PLAYER:
 		turn.append(rules.value("prompt", "neighbour").format(words))
-		var opinion := GossipRules.default_rules().opinion_word(npc.opinion)
-		turn.append(rules.value("prompt", "opinion_" + opinion).format(words))
+		turn.append(rules.value("prompt", NpcPrompt.level_key(npc)).format(words))
 		var newest := npc.stories.slice(-int(rules.value("bubble", "stories_told")))
 		turn.append_array(GossipRules.default_rules().story_lines(newest, moment.clock.day))
 		turn.append(rules.value("bubble", "about_player").format(words))

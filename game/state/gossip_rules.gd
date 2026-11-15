@@ -50,8 +50,6 @@ const REQUIRED_KEYS := {
 		"min_points",
 		"max_points",
 		"daily_cap_points",
-		"cold_below",
-		"warm_from",
 	],
 	"places": ["house", "village_land"],
 	"village_land": [],
@@ -120,8 +118,6 @@ func problems() -> Array[String]:
 		bad.append("[log] keep_days must be at least 1")
 	if opinion_min() > 0 or opinion_max() < 0:
 		bad.append("[opinion] min_points must not be above 0 nor max_points below it")
-	if opinion_cold_below() > opinion_warm_from():
-		bad.append("[opinion] cold_below must not be above warm_from")
 	for kind in KINDS:
 		if absi(opinion_change(kind)) > MAX_CHANGE:
 			bad.append("[%s] change must be from -%d to %d" % [kind, MAX_CHANGE, MAX_CHANGE])
@@ -166,23 +162,6 @@ func opinion_max() -> int:
 ## The most points the opinion of a villager moves in a day, up or down.
 func opinion_daily_cap() -> int:
 	return int(_values["opinion"]["daily_cap_points"])
-
-
-## Below this many points the villager is cold towards the player.
-func opinion_cold_below() -> int:
-	return int(_values["opinion"]["cold_below"])
-
-
-## From this many points the villager is warm towards the player.
-func opinion_warm_from() -> int:
-	return int(_values["opinion"]["warm_from"])
-
-
-## The opinion in a word (`cold`, `neutral` or `warm`), which the chat prompt tells.
-func opinion_word(points: int) -> StringName:
-	if points < opinion_cold_below():
-		return &"cold"
-	return &"warm" if points >= opinion_warm_from() else &"neutral"
 
 
 ## The kind of deed that helping with a quest worth `steps` steps of opinion (1 or 2) is.

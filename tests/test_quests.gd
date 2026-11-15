@@ -70,7 +70,7 @@ func test_a_giver_picked_at_random_is_one_who_is_in_the_world() -> void:
 
 func test_a_cold_villager_gives_no_quest() -> void:
 	_use_rules({"a": {"giver": ANTJE}})
-	_state.npcs.find(ANTJE).opinion = GossipRules.default_rules().opinion_cold_below() - 1
+	_state.npcs.find(ANTJE).opinion = FriendshipRules.default_rules().first_point_of(3) - 1
 
 	_pass_days(2)
 

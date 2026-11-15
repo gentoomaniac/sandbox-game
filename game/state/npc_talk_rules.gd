@@ -43,9 +43,16 @@ const KEYS := {
 		"memory": TYPE_STRING,
 		"moment": TYPE_STRING,
 		"neighbour": TYPE_STRING,
-		"opinion_cold": TYPE_STRING,
-		"opinion_neutral": TYPE_STRING,
-		"opinion_warm": TYPE_STRING,
+		"level_1": TYPE_STRING,
+		"level_2": TYPE_STRING,
+		"level_3": TYPE_STRING,
+		"level_4": TYPE_STRING,
+		"level_5": TYPE_STRING,
+		"level_6": TYPE_STRING,
+		"level_7": TYPE_STRING,
+		"level_8": TYPE_STRING,
+		"level_9": TYPE_STRING,
+		"level_10": TYPE_STRING,
 		"says": TYPE_STRING,
 		"reply": TYPE_STRING,
 		"language": TYPE_STRING,
@@ -194,7 +201,6 @@ const TYPE_NAMES := {
 	TYPE_ARRAY: "a list",
 }
 const PARTS_OF_DAY: Array[String] = ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
-const OPINION_WORDS: Array[String] = ["cold", "neutral", "warm"]
 
 static var _default: NpcTalkRules
 
@@ -298,7 +304,7 @@ func words_for(key: String, amount: float) -> String:
 	return words
 
 
-## What is wrong with [bubble_lines]: every part of the day and every opinion word needs lines, a
+## What is wrong with [bubble_lines]: every part of the day and every mood needs lines, a
 ## weather with lines must be one of [weather] conditions, and a line must be a text within
 ## [bubble] max_length.
 func _bubble_line_problems() -> Array[String]:
@@ -311,7 +317,7 @@ func _bubble_line_problems() -> Array[String]:
 	for key: String in PARTS_OF_DAY:
 		if not lines["part_of_day"].has(key):
 			found.append("[bubble_lines] part_of_day has no %s" % key)
-	for key: String in OPINION_WORDS:
+	for key in FriendshipRules.MOODS:
 		if not lines["near_player"].has(key):
 			found.append("[bubble_lines] near_player has no %s" % key)
 	for key: String in ["weather", "part_of_day", "near_player"]:

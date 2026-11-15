@@ -297,12 +297,12 @@ func _givers_of(id: String) -> Array[String]:
 				candidates.append(npc.id)
 	else:
 		candidates.append(named)
-	var cold_below := GossipRules.default_rules().opinion_cold_below()
+	var friendship := FriendshipRules.default_rules()
 	var found: Array[String] = []
 	for giver in candidates:
 		var npc := _npcs.find(giver)
 		var has_quest := _open.any(func(entry: Dictionary) -> bool: return entry["giver"] == giver)
-		if npc != null and npc.opinion >= cold_below and not has_quest:
+		if npc != null and friendship.mood_of(npc.opinion) != &"cold" and not has_quest:
 			found.append(giver)
 	return found
 

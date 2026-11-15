@@ -116,12 +116,12 @@ talks to someone before a rumour has reached them, they simply don't know yet, w
   it has moved that day), `Npc.change_opinion` moves it by points up to the daily cap (the sum of
   the day's moves stays within it either way; also clamped to the bounds), `[opinion]` of
   `data/gossip.cfg` has the bounds (-100 to 1000), the cap (20) and the thresholds of the words
-  (cold below -20, warm from 20, else neutral; the levels of [relationships](relationships.md)
-  come with the plan of that page, decided 2026-11-15: ten levels over these points, from
-  `data/friendship.cfg`, which replace the three words). The chat prompt tells the word, `opinion_cold`, `opinion_neutral`
-  or `opinion_warm` of `[prompt]` of `data/npc_talk.cfg`, in the last turn after the line that
-  the player is a newcomer. `/clear` leaves it. The console's `opinion <villager> [points]` shows
-  or sets it.
+  (the three words cold, neutral and warm of the first build are the levels of
+  [relationships](relationships.md) now: ten levels over these points, `data/friendship.cfg`). The
+  chat prompt tells the level's line, `level_1` to `level_10` of `[prompt]` of
+  `data/npc_talk.cfg`, in the last turn after the line that the player is a newcomer; the bubbles
+  take the level's mood. `/clear` leaves it. The console's `opinion <villager> [points]` shows
+  or sets it, and names the level.
 - **As built (task 128, the judge):** `StoryJudge` (`GameState.judge`) and `StoryJudging`, a node
   of Main that works through the queue. The queue is the stories with `is_judged` false (saved
   with them), the one learned first first: each story is judged once, when it comes (a deed seen,

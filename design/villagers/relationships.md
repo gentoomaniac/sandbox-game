@@ -8,7 +8,12 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
 **As built so far**
 
 - Step 1: the ten levels are data (`data/friendship.cfg`, `[levels]`) and `FriendshipRules` says
-  `level_of(points)`, `level_name`, `mood_of` and `first_point_of`. Nothing uses them yet.
+  `level_of(points)`, `level_name`, `mood_of` and `first_point_of`.
+- Step 2: the prompt, the bubbles and the console use the levels. `cold_below`, `warm_from` and
+  `GossipRules.opinion_word` are gone; `NpcPrompt` tells the line `level_<n>` of `[prompt]` of
+  `data/npc_talk.cfg` (`NpcTalkRules` checks all ten are there), the bubbles take the level's mood,
+  quests are not posted by a villager of a cold mood (levels 1 and 2), and the console's
+  `opinion` names the level.
 
 ## The user's words
 

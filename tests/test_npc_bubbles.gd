@@ -146,7 +146,9 @@ func test_the_line_in_fair_weather_is_about_the_part_of_the_day() -> void:
 
 func test_the_line_about_the_player_follows_what_the_villager_thinks_of_them() -> void:
 	var lines: Dictionary = _rules.value("bubble_lines", "near_player")
-	for opinion_and_word in [[-50, "cold"], [0, "neutral"], [50, "warm"]]:
+	for opinion_and_word in [
+		[-100, "cold"], [-30, "cold"], [0, "neutral"], [50, "warm"], [1000, "warm"]
+	]:
 		_antje.opinion = opinion_and_word[0]
 		var line := _bubbles.scripted_line(_antje, _moment(0.3), NpcBubbles.Subject.PLAYER)
 		assert_has(lines[opinion_and_word[1]], line)
@@ -203,7 +205,7 @@ func test_a_request_about_the_player_tells_the_opinion_and_the_newest_stories() 
 		_antje.stories.append(_story(12, place))
 	var asked := _asked(NpcBubbles.Subject.PLAYER)
 	assert_string_contains(asked, "does not know their name")
-	assert_string_contains(asked, "thinks well of this neighbour")
+	assert_string_contains(asked, "is friendly towards them")
 	assert_string_contains(asked, "something about them")
 	assert_false(asked.contains("by the old ash"))
 	assert_string_contains(asked, "by the mill")

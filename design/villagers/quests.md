@@ -85,7 +85,7 @@ above.
   `repeat_after_days` after it was done or went away.
 - **How a quest is picked:** the quests whose prerequisites hold now with a giver who may give it:
   the villager its file names or, with `giver="any"`, any villager of the world. Neither one who is
-  cold to the player (`cold_below` of `data/gossip.cfg`) nor one who has a quest gives one. A quest
+  cold to the player (the mood `cold` of the levels, [relationships](relationships.md): Shunned and Mistrusted) nor one who has a quest gives one. A quest
   is picked at random of those, then its giver.
 - **How long:** `days` from the day it was posted, taken or not: the last day it stays is the posting
   day plus `days` less one, and on the morning after it is gone. Nothing else happens: no opinion is

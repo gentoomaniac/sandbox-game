@@ -11,8 +11,8 @@ func usage() -> String:
 
 func help() -> String:
 	return (
-		"Show what a villager thinks of you, or set it in points (-100 to 1000; below -20 is"
-		+ " cold, from 20 warm)."
+		"Show what a villager thinks of you, as a level and in points, or set it in points (-100"
+		+ " to 1000)."
 	)
 
 
@@ -20,7 +20,7 @@ func argument_kinds() -> Array[StringName]:
 	return [&"villager", &"number"]
 
 
-## What a villager thinks of the player, in a word and in points; with `points` it sets them.
+## What a villager thinks of the player, as a level and in points; with `points` it sets them.
 func run(arguments: PackedStringArray) -> Array[String]:
 	var is_setting := arguments.size() == 2
 	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
@@ -32,4 +32,11 @@ func run(arguments: PackedStringArray) -> Array[String]:
 	var rules := context.state.deeds.rules
 	if is_setting:
 		npc.opinion = clampi(int(arguments[1]), rules.opinion_min(), rules.opinion_max())
-	return ["%s: %s (%d points)" % [npc.name, rules.opinion_word(npc.opinion), npc.opinion]]
+	var friendship := FriendshipRules.default_rules()
+	var level := friendship.level_of(npc.opinion)
+	return [
+		(
+			"%s: %s, level %d (%d points)"
+			% [npc.name, friendship.level_name(level), level, npc.opinion]
+		)
+	]
