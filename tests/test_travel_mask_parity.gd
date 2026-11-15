@@ -75,3 +75,21 @@ func test_the_last_chunk_of_the_world_is_made_from_its_neighbours() -> void:
 func test_a_chunk_outside_the_world_has_no_mask() -> void:
 	assert_null(masks.mask_of(Vector2i(-World.MAX_SIZE_CHUNKS / 2 - 1, 0)))
 	assert_null(masks.wait_for_mask(Vector2i(0, World.MAX_SIZE_CHUNKS / 2)))
+
+
+func test_chunks_of_the_village_equal_the_loaded_chunks() -> void:
+	make_world(1)
+	var site := VillageSite.find(1)
+	var plan := VillagePlan.default_plan()
+	assert_eq(VillageBuilder.build(world, site, plan), "")
+	var coords_of_places: Dictionary[Vector2i, bool] = {}
+	for place: Vector2i in [
+		plan.meeting_spot, plan.main_lane_end(), plan.field_spot(plan.fields[0])
+	]:
+		coords_of_places[Chunk.world_to_chunk(site.to_world(place))] = true
+	for entry in plan.buildings:
+		coords_of_places[Chunk.world_to_chunk(site.to_world(entry["origin"]))] = true
+	for coords in coords_of_places:
+		load_chunk_and_neighbours(coords)
+	for coords in coords_of_places:
+		assert_parity(coords, "village chunk %s" % coords)

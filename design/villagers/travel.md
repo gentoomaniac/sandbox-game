@@ -537,7 +537,9 @@ moment's stand for a visible one). Until 239, a console `goto` is lost over a sa
 
 Whatever the village puts into the world must come from `generate_chunk` or be an edit or a building
 of `World`, never set on loaded chunks only, so the far view sees it. Its lanes (worn or a lane
-terrain, #61 and #62) then cost what they cost near. The parity test gets a village case.
+terrain, #61 and #62) then cost what they cost near. The parity test has a village case (**built**,
+`test_chunks_of_the_village_equal_the_loaded_chunks`: the chunks of the church, the square, the fields
+and the buildings of Wehlsbüll's seed 1).
 
 ## The steps (each a commit that passes on its own, with its tests and doc lines)
 
