@@ -3,9 +3,9 @@ extends SceneTree
 ## design/tech/pathfinding.md).
 ## `send=<n>` villagers of a save (default all) walk to a tile REACH tiles away that a way leads to,
 ## over loaded ground and unloaded, while `Npcs.update` runs frame after frame at 60 frames per
-## real second (paced, since the workers work in real time). Two scenarios, each run first with cold
-## masks (made as the searches ask) and then with warm ones (the same trips again, over what the
-## first run left):
+## real second (paced, since the workers work in real time). Three scenarios, each run first with
+## cold masks (made as the searches ask) and then with warm ones (the same trips again, over what
+## the first run left):
 ## - once: all leave in the same frame; `once=<seconds>` (default 90).
 ## - day: each leaves at a random moment of the first half, then goes to and fro between home and
 ##   goal, resting up to REST_SECONDS at each end; `day=<seconds>` (default 300).
@@ -36,6 +36,8 @@ const SLOW_FRAME_MS := 16.7
 const REACH := Vector2i(100, 300)
 const GOAL_TRIES := 60
 const BASELINE_SECONDS := 30.0
+## Long enough for every first leg to have its way before the skip: the last cold one of 155
+## villagers came at 33 s.
 const SKIP_WALK_SECONDS := 45.0
 const PROBE_TILES := 512
 const PROBE_LOOKUPS := 4000

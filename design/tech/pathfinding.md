@@ -368,7 +368,12 @@ for something inside a pool task (a task that waits for a mask can block every w
     It prints the trips completed and blocked (the clock moves in the scenarios, so a tide closes
     some ways) and the searches a second; compare the 99th percentile and the longest frame with a
     run without (run each a few times: the scenes are noisy).
-  - `tools/bench/paths.gd` (task 238, #68 step 6): 10, 30 or 155 villagers sent 100 to 300 tiles at once, through a day and into a time skip, masks cold and warm, in real time. The main thread's time in `Npcs.update` split into walking, `Pathfinder.tick`, `TravelMasks.update` and sending, a fixed probe to see whether the workers get in the main thread's way, the wait for the first leg, the searches, the snapshot and the memory. `speed=20` is the stress of #70. Numbers: travel.md, Measured, step 6.
+  - `tools/bench/paths.gd` (task 238, #68 step 6): 10, 30 or 155 villagers sent 100 to 300 tiles
+    at once, through a day and into a time skip, masks cold and warm, in real time. The main
+    thread's time in `Npcs.update` split into walking, `Pathfinder.tick`, `TravelMasks.update` and
+    sending, a fixed probe to see whether the workers get in the main thread's way, the wait for
+    the first leg, the searches, the snapshot and the memory. `speed=20` is the stress of #70.
+    Numbers: travel.md, Measured, step 6.
 
   Run them with `taskset -c 0-10 nice -n 19` to leave the machine alone, and with fewer cores to
   see what a small machine does.

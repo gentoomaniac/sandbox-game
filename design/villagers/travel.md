@@ -67,7 +67,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   day are the caller's, never the clock.
 - **`TravelMasks`** (one per `World`, held by `NpcTravel`, which makes it with its first search over
   that world and calls `update` once a frame; `game/state/travel_masks.gd`): an LRU of masks (1024,
-  about 1.6 MB) and an LRU of raw chunks (16, about 5 MB). The two numbers are `far_masks_kept` and
+  about 1.6 MB) and an LRU of raw chunks (32, about 10 MB). The two numbers are `far_masks_kept` and
   `far_chunks_kept` of `[travel]` in data/npcs.cfg (`TravelMasks.for_world(world, rules)`; the
   constructor takes the numbers). A raw chunk is what the generator makes and
   nothing else: no edit is ever applied to it, so it never goes stale (the seed does not change).
@@ -353,7 +353,7 @@ As built before the tuning (`far_masks_kept=256`):
 |---|---|---|---|
 | `far_masks_kept` | 256 | 1024 | 155 once, warm: first leg 6.7 / 10.4 s -> 2.1 / 4.1 s; skip 6.0 s -> 0.3 s; the stress below. The trips touched 376 masks, so 256 dropped what the skip and the next search needed. 4096 (with 128 raw chunks) gave the same and 20 MB more. |
 | `far_chunks_kept` | 32 | 32 | 128: no gain, 20 MB more. |
-| `skip_masks_ahead` | 8 | 8 | 2, 8 and 32: the same skip (0.24 to 0.33 s). |
+| `skip_masks_ahead` | 8 | 8 | 2, 8 and 32: the same skip (0.25 to 0.33 s). |
 | `search_tasks` | 1 | 1 | 2 in the stress: waits no shorter (they are mask-bound), main thread no better (p99 7.1 to 10.6 ms, against 5.2 to 6.0 with one task and 1024 masks). |
 | `snapshot_seconds` | 2 | 2 | 10: p99 10.5 and 5.9 ms in two runs against 10.4 and 11.7: the noise is larger than the effect. |
 | `blocked_give_up_seconds`, `retries`, `max_legs`, `max_nodes` | | unchanged | The bench has no fence: nothing was blocked by a step (only `NO_WAY` in the game's frames bench). Left as the user chose them. |
@@ -373,9 +373,11 @@ villagers, 90 s; 7.6 searches a second with 256 masks, 10 with 1024, 15 to 17 in
 | first leg wait mean / last | 3.4-3.8 / 26-31 s | 0.03-0.24 / 0.08-8 s |
 | trips completed in 90 s | 430-447 | 582-594 |
 
-Most of the main-thread cost of the heavy search load was the masks of 155 trips being dropped and
-made again (an LRU of 256 against 380 in use), not the searches: with 1024 it is gone. What is left
-at 155 walkers is the walking itself.
+The masks of 155 trips being dropped and made again (an LRU of 256 against 380 in use), not the
+searches, were most of the tail of the heavy search load and of the waits: with 1024, p99 about
+halves (9 to 12 ms down to 5 to 6), the longest frames drop a lot, and the mean drops by about a
+third (3.0 to 3.7 ms down to 2.4), with more trips done in the same time. What is left at 155
+walkers is the walking itself.
 
 **What #70 starts from.** A frame of the game (`frames.gd`, headless, walking scenario, ms; none, 30
 and 155 far walkers at 20 times the pace, two runs each, `far_masks_kept=1024`): mean 7.1 / 7.1-7.2 /
