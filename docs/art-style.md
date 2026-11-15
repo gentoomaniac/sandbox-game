@@ -270,8 +270,14 @@ their upper left, rimmed in their darkest leaves; a tile draws the bushes standi
 ground whole, so they never break at a seam); the wattle fence rods 2 px thick woven in and out
 round stakes; the fieldstone wall squat granite domes in two courses with grain and moss; the
 dyke a turfed bank with a flat crest and a sheep track along it, bending round each corner in a
-quarter circle, so a dyke on the slant is one bank winding along rather than terraces (the art
-review), and green in autumn like the marsh. The camp's fireplace: a ring of rounded field
+quarter circle (the art review), and green in autumn like the marsh. Where it steps like a stair
+it runs on the diagonal (issue #94, slants.py): a corner whose neighbour across a side turns the
+other way crosses that side at 45 degrees through its middle, so a stair of single steps is one
+straight bank from corner to corner, and a corner slanted on one side only bends from straight
+into the diagonal; its 12 pictures follow the 16 of the connection masks in the dyke's row, in
+both arts. On the diagonal the bank is narrower across (its foot half the tile's diagonal from
+the crest line, not half the tile), so it comes down to the ground in the notches of the stair
+and stays on its own tiles. The camp's fireplace: a ring of rounded field
 stones, ash with embers and three split logs with pale cut ends; the bedroll a quilted sack of
 linen ticking with the grey blanket rolled at its head. The chest of oak planks with iron bands
 and a brass lock, the carved chest painted blue-green with tulips, the workbench with its vice

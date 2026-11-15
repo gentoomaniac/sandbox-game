@@ -180,7 +180,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 27 knick (3 variants of 16, one per connection mask, see boundaries.py)
 # 28 wattle_fence (16, one per connection mask)
 # 29 stone_wall (3 variants of 16)
-# 30 dyke (16)
+# 30 dyke (16, one per connection mask, then 12 corners crossing a side on the slant, see slants.py)
 # 31 willow (3)
 # 32 beech (3)
 # 33 beech_trunk (2)

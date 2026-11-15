@@ -219,7 +219,8 @@ by topic. Where is a thing drawn?
 | `crops.py`, `crop_icons.py` | Crop sheets (growth stages and the dead one), seed bag and produce icons. |
 | `items.py`, `tool_icons.py` | Item icons, the slot frames and the tools; `icon_of` makes the icon of an item that places a world object from its picture. |
 | `chest.py` | The chest at 32 px, one picture outdoors, indoors and for its icon. |
-| `boundaries.py` | The lines across the land at 32 px, drawn as solids tile by tile with a picture per connection mask: the Knick (its bushes leafy domes on the bank), the wattle fence, the fieldstone wall and the dyke (bending round its corners). |
+| `boundaries.py` | The lines across the land at 32 px, drawn as solids tile by tile with a picture per connection mask: the Knick (its bushes leafy domes on the bank), the wattle fence, the fieldstone wall and the dyke (bending round its corners, and on the diagonal where it steps like a stair). |
+| `slants.py` | The skeleton of the dyke's slanted corners, shared by both arts: the diagonal through a stair of corners and the bends into it (issue #94). |
 | `coast.py` | The things of the Wadden coast: the Ewer lying on the mud, at 32 px, a picture three object cells wide. |
 | `landing.py` | The fisherman's landing at 32 px: the jetty (a picture per connection mask), the rowing boat, the net frame and the eel traps, and their icons. |
 | `yard.py` | The farm yard at 32 px (task 122): the draw well with its sweep, the trough, the hay rack and the chicken coop, and the icons of the items that place them. The classic art has its own `classic/yard.py` at 16 px (drawn new for the yard, not copied from history). |

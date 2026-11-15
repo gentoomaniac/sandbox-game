@@ -64,6 +64,9 @@ extends RefCounted
 ## - connects: it is a line across the land (a Knick, a wall, a dyke), drawn tile by tile: it
 ##   joins the neighbours on its 4 sides whose `connects` is the same, and each of its variants
 ##   has a picture per connection mask (see World `connections`) in its atlas row;
+## - slants: a line that runs on the diagonal where it steps like a stair (the dyke): its variants
+##   also have a picture of each corner for the sides it crosses on the slant (see LineSlants and
+##   `connection_look`);
 ## - placed_on: the player places it on these terrains (and only on them) instead of on ground
 ##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
@@ -230,6 +233,12 @@ const _PEN_GATE_OPEN_ROW := 58
 const _SCARECROW_ROW := 59
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
+## The connection masks of a corner, a line joined on two sides that meet, in the order of their
+## slanted pictures (tools/art/slants.py draws them in this order).
+const CORNER_MASKS: Array[int] = [0b0011, 0b0110, 0b1001, 0b1100]
+## The more pictures of each variant of a type that `slants`, after its CONNECTION_LOOKS: each
+## corner slanted on its lower side (in the bits of the mask), on its higher side and on both.
+const SLANTED_LOOKS := 12
 
 const _OTHER_TYPES := {
 	OAK:
@@ -484,6 +493,7 @@ const _OTHER_TYPES := {
 	DYKE:
 	{
 		"connects": &"dyke",
+		"slants": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,
@@ -908,6 +918,21 @@ static var TYPES := _build_types()  # gdlint: ignore=class-variable-name
 ## The type of the trunk a felled tree leaves: the long one on 2x1 tiles, or the short one on 1x1.
 static func trunk_type(tree: StringName, is_short: bool) -> StringName:
 	return StringName("%s_%s" % [tree, "short_trunk" if is_short else "trunk"])
+
+
+## The picture of a line object's variant for its `connections` (see World `connections`) and the
+## sides it crosses on the slant (see LineSlants, none for a type that doesn't `slants`).
+static func connection_look(connections: int, slanted := 0) -> int:
+	if slanted == 0:
+		return connections
+	var low_side := connections & -connections
+	var slant := (1 if slanted & low_side else 0) + (2 if slanted & ~low_side else 0)
+	return CONNECTION_LOOKS + 3 * CORNER_MASKS.find(connections) + slant - 1
+
+
+## How many pictures each variant of a line type has (see `connection_look`).
+static func connection_looks(object_type: Dictionary) -> int:
+	return CONNECTION_LOOKS + (SLANTED_LOOKS if object_type.get("slants", false) else 0)
 
 
 static func _with_crops(other_types: Dictionary) -> Dictionary:

@@ -56,6 +56,23 @@ const CORNER_OFFSETS: Array[Vector2i] = [
 	Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)
 ]
 
+## The tiles whose line objects may look different once an object on a tile changes: those beside
+## it, and for a line that slants (see LineSlants) the others up to two steps away.
+const _LINE_REDRAW_OFFSETS: Array[Vector2i] = [
+	Vector2i(0, -1),
+	Vector2i(1, 0),
+	Vector2i(0, 1),
+	Vector2i(-1, 0),
+	Vector2i(-1, -1),
+	Vector2i(1, -1),
+	Vector2i(1, 1),
+	Vector2i(-1, 1),
+	Vector2i(0, -2),
+	Vector2i(2, 0),
+	Vector2i(0, 2),
+	Vector2i(-2, 0),
+]
+
 ## Visual-only noise, seeded from the world seed with an offset far from the generator's.
 ## Variety: grass turns lush or dry over patches about this many tiles across.
 const VARIETY_SEED_OFFSET := 7919
@@ -373,13 +390,15 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 		else:
 			_crown_tiles.erase(world_pos)
 		_cover_map.redraw_around(world_pos)
-	# The lines beside it may join it now, or no longer.
-	for side in World.CONNECTION_SIDES:
-		var neighbour := world.object_at(world_pos + side)
+	# The lines beside it may join it now, or no longer; a line that slants also turns on the
+	# slant or straight again two tiles away (see LineSlants).
+	for offset in _LINE_REDRAW_OFFSETS:
+		var neighbour := world.object_at(world_pos + offset)
 		if (
 			neighbour != null
-			and neighbour.pos == world_pos + side
+			and neighbour.pos == world_pos + offset
 			and neighbour.type_data().has("connects")
+			and (offset in World.CONNECTION_SIDES or neighbour.type_data().get("slants", false))
 		):
 			_drop_object_sprite(neighbour.pos)
 			_draw_object(neighbour.pos)
@@ -772,8 +791,14 @@ func _picture_size(object: WorldObject) -> Vector2i:
 
 ## The object's cell in its source as it looks now (see ObjectTileset.atlas_cell).
 func _atlas_cell(object: WorldObject) -> Vector2i:
-	var connections := world.connections(object) if object.type_data().has("connects") else 0
-	return ObjectTileset.atlas_cell(object, world.is_bare(object), connections, _scarecrow_frame)
+	var object_type := object.type_data()
+	var connections := world.connections(object) if object_type.has("connects") else 0
+	var slanted := (
+		LineSlants.slanted_sides(world, object) if object_type.get("slants", false) else 0
+	)
+	return ObjectTileset.atlas_cell(
+		object, world.is_bare(object), connections, _scarecrow_frame, slanted
+	)
 
 
 ## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.

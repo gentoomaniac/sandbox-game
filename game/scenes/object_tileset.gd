@@ -148,7 +148,7 @@ func _show_crop_sheet(crop_id: StringName) -> void:
 ## picture per connection mask of each. A picture spans `cells_wide` cells.
 static func looks_count(object_type: Dictionary) -> int:
 	if object_type.has("connects"):
-		return object_type["variants"] * WorldObjectTypes.CONNECTION_LOOKS
+		return object_type["variants"] * WorldObjectTypes.connection_looks(object_type)
 	if object_type.has("stock_capacity"):
 		return WorldObjectTypes.STOCK_LOOKS
 	if object_type.has("sway_frames"):
@@ -176,12 +176,13 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 ## The cell for an object in its source: a crop's is its growth stage, or the dead one; for the
 ## others the variant comes from the position, so it is stable but neighbours differ. A line
 ## object (one that `connects`) has the picture of its variant for its connection mask,
-## `connections` (see World `connections`). A trough or a hay rack has the picture of how full it is
+## `connections` (see World `connections`), and the sides it crosses on the slant, `slanted` (see
+## LineSlants). A trough or a hay rack has the picture of how full it is
 ## (see ObjectStock `look`). A scarecrow has the picture of `sway_frame`, how the wind blows it
 ## (see AmbientMotion `scarecrow_frame`). A picked bush has its variant's picked look, and so
 ## does a bush that is `is_bare` (out of its fruit season).
 static func atlas_cell(
-	object: WorldObject, is_bare := false, connections := 0, sway_frame := 0
+	object: WorldObject, is_bare := false, connections := 0, sway_frame := 0, slanted := 0
 ) -> Vector2i:
 	if object.is_crop():
 		return Vector2i(CropLife.look(object), 0)
@@ -193,7 +194,10 @@ static func atlas_cell(
 	var variant_tile := WorldObjectWays.variant_tile(object, connections)
 	var variant: int = PositionHash.of(variant_tile) % int(object_type["variants"])
 	if object_type.has("connects"):
-		var column := variant * WorldObjectTypes.CONNECTION_LOOKS + connections
+		var column := (
+			variant * WorldObjectTypes.connection_looks(object_type)
+			+ WorldObjectTypes.connection_look(connections, slanted)
+		)
 		return Vector2i(column, object_type["atlas_row"])
 	if object.is_picked() or is_bare or Campfire.is_out(object):
 		variant += object_type["variants"]

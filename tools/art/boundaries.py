@@ -21,6 +21,7 @@ import math
 import random
 
 import items
+import slants
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_TILE, blank
 
 TILE = GAME_TILE
@@ -523,10 +524,15 @@ def dyke_skeleton_distance(mask, x, y):
 
 
 def _dyke_layers(mask, x, y):
-    distance = dyke_skeleton_distance(mask, x + 0.5, y + 0.5)
-    if distance >= DYKE_FOOT:
+    return _dyke_bank(dyke_skeleton_distance(mask, x + 0.5, y + 0.5), DYKE_FOOT)
+
+
+def _dyke_bank(distance, foot):
+    """The layers on a ground pixel `distance` px from the skeleton where the foot is `foot` px
+    out from it."""
+    if distance >= foot:
         return []
-    slope = max(0.0, distance - DYKE_CREST) / (DYKE_FOOT - DYKE_CREST)
+    slope = max(0.0, distance - DYKE_CREST) / (foot - DYKE_CREST)
     height = round(DYKE_HEIGHT * (math.cos(math.pi * slope) + 1) / 2)
     if height < 1:
         return []
@@ -546,13 +552,22 @@ def _dyke_outline(material):
     return None
 
 
-def dyke(mask):
-    return draw_line(mask, _dyke_layers, _dyke_colour, _dyke_outline, has_faces=False)
+def dyke(mask, slanted=0):
+    """The dyke on a tile with connection `mask`; a corner with `slanted` sides crosses them on
+    the slant (see slants.py)."""
+    if not slanted:
+        return draw_line(mask, _dyke_layers, _dyke_colour, _dyke_outline, has_faces=False)
+    skeleton = slants.Skeleton(mask, slanted, TILE, DYKE_FOOT)
+
+    def layers(_mask, x, y):
+        return _dyke_bank(*skeleton.at(x + 0.5, y + 0.5))
+
+    return draw_line(mask, layers, _dyke_colour, _dyke_outline, has_faces=False)
 
 
 def dyke_row():
-    """The atlas row of the dyke: one picture per connection mask."""
-    return [dyke(mask) for mask in MASKS]
+    """The atlas row of the dyke: one picture per connection mask, then the slanted corners."""
+    return [dyke(mask) for mask in MASKS] + [dyke(mask, slanted) for mask, slanted in slants.SLANTED]
 
 
 def one_tile(picture):

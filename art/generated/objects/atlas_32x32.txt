@@ -30,7 +30,7 @@ chest 1
 knick 48
 wattle_fence 16
 stone_wall 48
-dyke 16
+dyke 28
 willow 3
 beech 3
 beech_trunk 2
