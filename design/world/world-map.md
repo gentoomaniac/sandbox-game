@@ -53,7 +53,7 @@ does not pause the game: the villagers move on the map, and the console can be o
 type `map` again. The console's `map` command is one file (`map_command.gd`) that calls the hook
 `ConsoleContext.map_toggler`, which the game scene sets to `MapScreen.toggled`; opening the map
 closes the console. `MapView` draws the chunk textures at 2 to 24 pixels a tile, the village's
-name, each villager as a dot with their name (one inside a house is at its door; a name that would cover another is moved down a line below it), and the player
+name, each villager as a dot (one inside a house is at its door), their name shown in a dark box when the pointer is on the dot (the names of all the dots within reach of it, nearest first; the village's name in the same box), and the player
 as an arrow in their facing. It pans by a drag (left button, or the arrow keys) and zooms about the
 pointer by the wheel. A click that is not a drag offers "Teleport to x, y?" on the spot; "Teleport"
 runs the console's `tp x y` (so the same checks and the same words), and the map closes when the

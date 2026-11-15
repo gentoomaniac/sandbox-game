@@ -89,17 +89,19 @@ func test_the_chunks_in_view_are_in_the_world_and_the_nearest_come_first() -> vo
 	assert_true(chunks.all(World.is_chunk_in_bounds))
 
 
-func test_a_name_that_would_cover_another_is_moved_below_it() -> void:
-	var first := Rect2(Vector2(10, 10), Vector2(80, MapView.LABEL_SIZE))
-	var second := Rect2(Vector2(30, 12), Vector2(60, MapView.LABEL_SIZE))
-	var third := Rect2(Vector2(20, 14), Vector2(70, MapView.LABEL_SIZE))
+func test_the_names_show_for_the_villagers_under_the_pointer_the_nearest_first() -> void:
+	var near := _state.npcs.spawn_villager("antje", _state.player.position, _state.world)
+	var nearer := _state.npcs.spawn_villager("kerrin", _state.player.position, _state.world)
+	near.position = _state.player.position + Vector2(1, 0)
+	nearer.position = _state.player.position
+	var at := _view._point_of_villager(nearer)
 
-	var placed: Array[Rect2] = [first]
-	var moved := MapView.free_spot(second, placed)
-	placed.append(moved)
-	var moved_again := MapView.free_spot(third, placed)
+	var under := _view.villagers_at(at + Vector2(1, 0))
 
-	assert_false(moved.intersects(first))
-	assert_false(moved_again.intersects(first))
-	assert_false(moved_again.intersects(moved))
-	assert_eq(MapView.free_spot(Rect2(Vector2(200, 10), Vector2(50, 11)), placed).position.y, 10.0)
+	assert_eq(under.size(), 2, "both dots are within reach at this zoom")
+	assert_eq(under[0], nearer)
+	assert_eq(under[1], near)
+	assert_true(
+		_view.villagers_at(at + Vector2(200, 200)).is_empty(), "nobody far from the pointer"
+	)
+	assert_true(_view.villagers_at(MapView.NO_POINTER).is_empty(), "no pointer on the map")
