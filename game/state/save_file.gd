@@ -3,7 +3,7 @@ extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_34` and so on). Older ones are refused.
+## (see `_upgrade_from_version_35` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -23,8 +23,9 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 44
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back, for the next version (#60) makes its
+## step the tenth.
+const OLDEST_VERSION := VERSION - 9
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -219,8 +220,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 34:
-		_upgrade_from_version_34(game)
 	if version <= 35:
 		_upgrade_from_version_35(game)
 	if version <= 36:
@@ -239,25 +238,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_42(game)
 	if version <= 43:
 		_upgrade_from_version_43(game)
-
-
-## Version 34 had memories as plain lines and stories of the deed alone (task 126): the memories
-## are of medium weight now, and of no known day; the stories were seen by the villager on the day
-## of the deed, and weigh medium.
-static func _upgrade_from_version_34(game: Dictionary) -> void:
-	for npc: Dictionary in game["npcs"]:
-		for story: Dictionary in npc["stories"]:
-			story["how"] = "seen"
-			story["told_by"] = ""
-			story["seen_by"] = npc["name"]
-			story["hops"] = 0
-			story["learned"] = story["day"]
-			story["line"] = ""
-			story["weight"] = "medium"
-			story["personal"] = false
-		npc["memories"] = npc["memories"].map(
-			func(text: String) -> Dictionary: return {"day": 0, "text": text, "weight": "medium"}
-		)
 
 
 ## Version 35 had stories without an origin and learned on a day (task 127): a story is named by

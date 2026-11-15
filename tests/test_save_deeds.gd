@@ -1,6 +1,6 @@
 extends SaveValidationCase
 ## The deed log and the stories of the villagers are saved; saves from before their later
-## changes (version 34 on) are upgraded.
+## changes (version 35 on) are upgraded.
 
 
 func _state_with_a_deed_seen_by_antje() -> GameState:
@@ -47,26 +47,6 @@ func test_a_story_heard_is_kept_with_who_told_it() -> void:
 
 	assert_eq(heard, momme.stories[0])
 	assert_eq([heard["how"], heard["told_by"], heard["hops"]], [GossipRules.HEARD, antje.name, 1])
-
-
-func test_a_version_34_save_loads_its_stories_as_seen_and_medium() -> void:
-	var game := _current_game()
-	var saved: Dictionary = JSON.parse_string(
-		JSON.stringify(Npc.create(42, Vector2.ZERO, NpcRules.default_rules()).to_dict())
-	)
-	saved["stories"] = [
-		{"day": 4, "minute": 600, "kind": "felled", "count": 3, "place": "out on the geest"}
-	]
-	game["npcs"] = [saved]
-	_write_save(34, game)
-
-	var story := SaveFile.read(SAVE_PATH).npcs.all()[0].stories[0]
-
-	assert_eq(story["how"], GossipRules.SEEN)
-	assert_eq(story["seen_by"], saved["name"])
-	assert_eq([story["hops"], story["learned_at"], story["personal"]], [0, 3 * 1440 + 600, false])
-	assert_eq(story["origin"], "4|felled|out on the geest")
-	assert_eq(story["weight"], MemoryWeight.MEDIUM)
 
 
 func test_a_version_35_save_loads_its_stories_with_an_origin_and_the_minute_learned() -> void:
