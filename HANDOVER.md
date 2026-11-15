@@ -205,7 +205,7 @@ opinions from other models (normally the untracked `second-opinions.md`) is
 - [ ] 217: F3: the last line shows the frames per second (60 by default); move the Game settings frame rate slider and watch it follow.
 - [ ] 218: The Windows binary (sandbox-game.exe from the release zip) on a Windows machine: never tried.
 - [ ] 185: In autumn and winter the grass is a darker green, not yellow or grey (still in the old patches until the overlay step lands); the dry heath grass has a little straw in autumn.
-- [ ] 185 step 4: The ground changes evenly through the seasons; fallen leaves build up in autumn, frost on cold mornings, snow lies and thaws as an overlay (not in tile patches). Dykes, hedges, trees and houses still use the old looks until the next steps.
+- [ ] 185 step 4: The ground changes evenly through the seasons; fallen leaves build up in autumn, frost on cold mornings, snow lies and thaws as an overlay (not in tile patches). Hedges, trees and houses still use the old looks until the next steps; the dyke turns with the ground.
 - [ ] 185 step 4: New start options --frost=0..1 and --melt=0..1 next to --snow.
 - [ ] 185 step 5: Trees, bushes, stones, fences, dykes and hedges get snow from the top down and frost as an overlay; no white specks on trees in summer.
 - [ ] 185 step 6: Snow on house roofs builds from the ridge to the eaves and thaws evenly (Kate, longhouse, hall house; lit at night; the see-through fade near a snowy roof), both arts.

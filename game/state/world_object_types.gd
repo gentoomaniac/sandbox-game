@@ -67,6 +67,8 @@ extends RefCounted
 ## - slants: a line that runs on the diagonal where it steps like a stair (the dyke): its variants
 ##   also have a picture of each corner for the sides it crosses on the slant (see LineSlants and
 ##   `connection_look`);
+## - turf: it is turf like the ground (the dyke), so it takes the colour the ground has now, all
+##   its tiles at once, not a look of its own tile's day like a plant (see WorldView);
 ## - placed_on: the player places it on these terrains (and only on them) instead of on ground
 ##   that can be built on (see Tile `is_buildable`): the jetty over water and mud, the boat;
 ## - deck: it is walked on, whatever the ground under it (the jetty over water), and drawn under
@@ -494,6 +496,7 @@ const _OTHER_TYPES := {
 	{
 		"connects": &"dyke",
 		"slants": true,
+		"turf": true,
 		"footprint": Vector2i(1, 1),
 		"blocks_walking": false,
 		"harvest_level": 0,

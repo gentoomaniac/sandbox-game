@@ -124,6 +124,14 @@ func ground_mix(day: int) -> GroundMix:
 	return mix
 
 
+## The look of the turf objects (the dyke) on a day: the ground's colour, rounded to the look it
+## is nearer to. A picture has one look, not a blend, so the dyke changes over with the ground in
+## one step, never a tile at a time as plants do.
+func turf_look(day: int) -> Look:
+	var mix := ground_mix(day)
+	return mix.to if mix.share >= 0.5 else mix.from
+
+
 ## How many fallen leaves lie about on a day, 0 (none) to 1 (all the trees gave): they build up
 ## through the autumn, lie through the first of winter and thin out to nothing (see [litter]).
 func litter(day: int) -> float:

@@ -131,6 +131,15 @@ func test_the_ground_colour_changes_a_little_every_day_without_a_jump() -> void:
 		previous = at
 
 
+func test_the_turf_has_the_look_the_ground_is_nearer_to() -> void:
+	assert_eq(_blend.turf_look(53), L.SUMMER)
+	assert_eq(_blend.turf_look(125), L.BARE)
+	for day in range(1, GameClock.DAYS_PER_YEAR + 1):
+		var mix := _blend.ground_mix(day)
+		var expected := mix.to if mix.share >= 0.5 else mix.from
+		assert_eq(_blend.turf_look(day), expected, "day %d" % day)
+
+
 func test_the_ground_colour_is_one_for_the_whole_year_cycle() -> void:
 	var first := _blend.ground_mix(36)
 	var next_year := _blend.ground_mix(36 + GameClock.DAYS_PER_YEAR)

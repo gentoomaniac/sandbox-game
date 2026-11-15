@@ -81,6 +81,21 @@ func test_trees_turn_one_by_one_across_autumn() -> void:
 	assert_gt(_foliage_looks(WOOD).size(), 1, "a mix in autumn")
 
 
+func test_a_dyke_turns_with_the_ground_all_at_once() -> void:
+	_residency.load_chunk(Vector2i.ZERO)
+	_view.finish_drawing()
+	for x in 30:
+		_view.world.remove_object(Vector2i(x, 5))
+		_view.world.add_object(WorldObject.new(WorldObjectTypes.DYKE, Vector2i(x, 5)))
+	# Spring, where the ground mixes from winter, and the days around its midpoint.
+	for day in [1, 3, 5, 8, 12, SUMMER, WINTER]:
+		_show(day)
+		var looks := {}
+		for x in 30:
+			looks[_view._objects.get_cell_source_id(Vector2i(x, 5))] = true
+		assert_eq(looks.keys(), [SeasonBlend.new(SEED).turf_look(day)], "day %d" % day)
+
+
 func _foliage_looks(coords: Vector2i) -> Dictionary:
 	var looks := {}
 	for object in _view.world.chunk_at(coords).objects():

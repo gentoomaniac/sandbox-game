@@ -135,6 +135,8 @@ var _is_cover_missing := false
 ## The day that the decorations, plants and houses are drawn for.
 var _look_day := -1
 var _conditions: SeasonBlend.Conditions
+## The look of the turf objects (the dyke): the ground's, the same for all of them.
+var _turf_look: SeasonBlend.Look
 ## The terrain layer of each tile of a loaded chunk (see TerrainTileset.Layer), by tile index
 ## (local y * CHUNK_SIZE + x). It comes from the variety noise, the slowest part of drawing a cell.
 var _chunk_layers: Dictionary[Vector2i, PackedInt32Array] = {}
@@ -250,6 +252,7 @@ func show_world(residency: ChunkResidency) -> void:
 	decorations.day = world.clock.day
 	_conditions = _blend.conditions(decorations.day)
 	_look_day = decorations.day
+	_turf_look = _blend.turf_look(decorations.day)
 	_buildings.set_looks(_blend, _conditions)
 	show_ground_cover(decorations.day, 0.0, 0.0, 0.0)
 	_sync_cover_focus()
@@ -278,6 +281,7 @@ func refresh_looks(day: int) -> void:
 	_look_day = day
 	decorations.day = day
 	_conditions = _blend.conditions(day)
+	_turf_look = _blend.turf_look(day)
 	_refresh_queue.assign(world.loaded_chunk_coords())
 	var focus := _residency.focus_chunk
 	_refresh_queue.sort_custom(
@@ -693,8 +697,11 @@ func _object_source(object: WorldObject) -> int:
 
 
 ## The look of an object: of the foliage of its season, which each tree and bush changes to on a
-## day of its own (see SeasonBlend). The frost and snow lie over it by the shader.
+## day of its own (see SeasonBlend); turf has the ground's. The frost and snow lie over it by the
+## shader.
 func _object_look(object: WorldObject) -> SeasonBlend.Look:
+	if object.type_data().get("turf", false):
+		return _turf_look
 	return _look_at(object.pos)
 
 
