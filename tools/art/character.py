@@ -19,6 +19,7 @@ from collections import namedtuple
 import forms
 import tool_grades
 from canvas import NEIGHBOURS, blank
+from held_maps import AXE_HEAD, CAN, HAMMER_HEAD, HOE_HEAD, PICK_HEAD, SCYTHE_BLADE, SCYTHE_NIB, SPADE_BLADE, SPADE_GRIP
 
 CHARACTER_WIDTH = 32
 CHARACTER_HEIGHT = 64
@@ -677,69 +678,6 @@ def head(canvas, x, top, outward, rows, handle_column, grade):
         rows = [row[::-1] for row in rows]
         handle_column = len(rows[0]) - 2 - handle_column
     tool_grades.stamp(canvas, x - handle_column, top, rows, grade)
-
-
-# fmt: off
-HOE_HEAD = (
-    "..mmmmme",
-    "kkssssse",
-)
-SPADE_GRIP = ("lwwd",)
-SPADE_BLADE = (
-    ".kssk.",
-    ".mssk.",
-    "mssssk",
-    "mssssk",
-    "mssssk",
-    "mssssk",
-    "mssssk",
-    "mssssk",
-    "eeeeek",
-    ".eeee.",
-    "..ee..",
-)
-SCYTHE_BLADE = (
-    "..mmmm..",
-    "kkeessm.",
-    "....eesm",
-    "......ee",
-)
-SCYTHE_NIB = (
-    "..lw",
-    "..ld",
-)
-AXE_HEAD = (
-    "....mme",
-    "kssssse",
-    "kssssse",
-    "kssssse",
-    "....kke",
-)
-PICK_HEAD = (
-    "..mmmmm..",
-    ".mskkssm.",
-    "ks.....sk",
-    "e.......e",
-)
-HAMMER_HEAD = (
-    "emmmmme",
-    "essssse",
-    "essssse",
-    "ekkkkke",
-)
-CAN = (
-    "..kk.....",
-    ".kkkk....",
-    ".mmmm..mm",
-    "mkkkkk.sk",
-    "mssssk..s",
-    "mkkkkk.s.",
-    "mssssks..",
-    "mssssk...",
-    "mssssk...",
-    ".kkkk....",
-)
-# fmt: on
 
 
 def hoe(canvas, x, y, outward, grade):
