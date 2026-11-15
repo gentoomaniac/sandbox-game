@@ -184,8 +184,8 @@ func is_rest_time(day: int, minute: int) -> bool:
 
 ## Sends a villager to a tile of `map`, instead of wherever it was going: it finds its way (round
 ## what is in it, along lanes, through gates), `trip_arrived` comes when it is there, and
-## `trip_blocked` when no way is found. `trip_arrived` comes at once too if it is there already. The
-## way is found over chunks that are not loaded too; walking it there is not done yet (#68).
+## `trip_blocked` when no way is found. `trip_arrived` comes at once too if it is there already. It
+## finds its way and walks it over chunks that are not loaded too (#68).
 func walk_to(npc: Npc, tile: Vector2i, map: GameMap) -> void:
 	_travel.start(npc, tile, map)
 
@@ -230,8 +230,9 @@ func cancel_trip(npc: Npc) -> void:
 	_travel.cancel(npc)
 
 
-## Lets `delta` seconds pass for every villager on `map` (only those in loaded chunks with
-## `only_loaded`) at the time of the game clock.
+## Lets `delta` seconds pass for every villager on `map` at the time of the game clock: the ones on
+## a trip walk it wherever they are, the others stroll (only those in loaded chunks with
+## `only_loaded`).
 ## Villagers stop short of the player's feet. `may_search` is false in the minutes of a skip that
 ## are walked through: they look for no way then, those on a trip go on as far as they know it.
 func update(
@@ -247,13 +248,15 @@ func update(
 	if may_search:
 		_travel.tick()
 	for npc in _npcs:
-		if only_loaded and not _is_in_loaded_chunk(npc, map):
-			continue
-		if npc.free_body_tiles == Rect2i():
+		var is_loaded := _is_in_loaded_chunk(npc, map)
+		if is_loaded and npc.free_body_tiles == Rect2i():
 			_step_off_buildings(npc, map)
-		# Where it was sent it goes, day and night: when to send it is for the routine to say.
+		# Where it was sent it goes, day and night, over chunks that are not loaded too: when to
+		# send it is for the routine to say.
 		if npc.trip != null:
 			_travel.update(npc, delta, player_feet, _fits)
+			continue
+		if only_loaded and not is_loaded:
 			continue
 		if is_resting:
 			npc.activity = Npc.Activity.IDLE

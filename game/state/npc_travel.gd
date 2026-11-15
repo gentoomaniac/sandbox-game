@@ -230,7 +230,12 @@ func _finish_path(npc: Npc) -> void:
 
 
 ## Steps along the path, if it may: it waits while the player talks to it or stands too close, and
-## is stuck when its body does not fit on the next tile.
+## is stuck when the step is not free. Where the world answers for by itself (`_is_step_whole`) the
+## step is checked live, with the body (`fits`); elsewhere, far from the player, only the tile it
+## enters is checked, against the mask of its chunk at the time of entry (the tide, the season), and
+## a tile whose mask is not there yet (an edit dropped it) is waited for. Both ways move towards the
+## same tile centre at the same speed, so the position does not jump when a chunk loads or unloads
+## between two centres.
 func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void:
 	var trip := npc.trip
 	if trip.pause_seconds > 0.0:
@@ -238,7 +243,8 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		trip.state = NpcTrip.State.WAITING
 		npc.activity = Npc.Activity.IDLE
 		return
-	var target := Vector2(trip.path[trip.next_index]) + Vector2(0.5, 0.5)
+	var next_tile := trip.path[trip.next_index]
+	var target := Vector2(next_tile) + Vector2(0.5, 0.5)
 	var to_target := target - npc.position
 	var reach := rules.behaviour("walk_speed") * delta
 	var feet := (
@@ -248,12 +254,16 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		trip.state = NpcTrip.State.WAITING
 		npc.activity = Npc.Activity.IDLE
 		return
-	if not fits.call(npc, feet, trip.map):
-		_be_stuck(npc, delta)
+	var world := trip.map as World
+	if _is_step_whole(world, feet, next_tile):
+		if not fits.call(npc, feet, trip.map):
+			_be_stuck(npc, delta)
+			return
+		Npcs.wear_step(trip.map, feet, npc.tile())
+	elif not _may_enter_far_tile(npc, world, feet, delta):
 		return
 	trip.state = NpcTrip.State.WALKING
 	trip.stuck_seconds = 0.0
-	Npcs.wear_step(trip.map, feet, npc.tile())
 	npc.position = feet
 	if not to_target.is_zero_approx():
 		npc.facing = Npc.facing_of(to_target)
@@ -264,6 +274,61 @@ func _walk(npc: Npc, delta: float, player_feet: Vector2, fits: Callable) -> void
 		trip.retries = 0
 		if trip.next_index == trip.path.size():
 			_finish_path(npc)
+
+
+## Whether the world answers for a step to `feet`, towards `next_tile`, by itself: for the tile and
+## for every tile the body touches there. The body reaches a little over the edge of its tile, so
+## it can touch ground that is not loaded while the tile is.
+static func _is_step_whole(world: World, feet: Vector2, next_tile: Vector2i) -> bool:
+	if not _is_whole(world, next_tile):
+		return false
+	var body := PlayerState.body_tiles(feet)
+	for y in range(body.position.y, body.end.y):
+		for x in range(body.position.x, body.end.x):
+			if not _is_whole(world, Vector2i(x, y)):
+				return false
+	return true
+
+
+## Whether the world answers for the tile by itself: its chunk and the ones a big object can reach
+## it from are loaded. On the rim of the loaded area a tile whose west or north neighbour is not
+## loaded is left to the mask, which has those objects, as the live answer has not.
+static func _is_whole(world: World, tile: Vector2i) -> bool:
+	var coords := Chunk.world_to_chunk(tile)
+	for step in TravelMasks.SOURCE_STEPS:
+		if not world.is_chunk_loaded(coords + step):
+			return false
+	return true
+
+
+## The far step of `_walk`: whether the walker may move to `feet`. Only entering a new tile asks
+## anything, and wears it (a loaded tile as the near step does, one that is not loaded where the
+## mask says grass wears). A tile that is closed makes it stuck; one whose mask is being made
+## makes it stand and wait, which is not being stuck.
+func _may_enter_far_tile(npc: Npc, world: World, feet: Vector2, delta: float) -> bool:
+	# The body is checked afresh when it is on loaded ground again.
+	npc.free_body_tiles = Rect2i()
+	var tile := Vector2i(feet.floor())
+	if tile == npc.tile():
+		return true
+	var coords := Chunk.world_to_chunk(tile)
+	var mask := _masks_of(world).mask_of(coords)
+	if mask == null:
+		npc.activity = Npc.Activity.IDLE
+		return false
+	var minutes := world.clock.total_minutes()
+	var local := Chunk.local_pos(tile)
+	if (
+		world.building_at(tile) != null
+		or not mask.is_free(local, Tide.level(minutes), GameClock.day_of(minutes))
+	):
+		_be_stuck(npc, delta)
+		return false
+	if world.is_chunk_loaded(coords):
+		Npcs.wear_step(world, feet, npc.tile())
+	elif mask.wears(local):
+		world.wear_unloaded(tile, PathRules.default_rules().villager_step())
+	return true
 
 
 ## No free step: after `blocked_give_up_seconds` it looks for another way, `retries` times, and

@@ -148,6 +148,16 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   walk, seen or not. 238's NOT_LOADED goes: a far trip searches; an unknown tile waits. (**Step 2 done**: `Block.NOT_LOADED`
   and its checks are gone and a far trip searches; until step 3 walks it, a villager on ground that is
   not loaded finds its way and then stands, stuck, for the retries, as the body does not fit there.)
+  **Step 3 (2026-11-15)**, with these departures from the text above: the choice of way is
+  made at each update, not once: a step is live when the tile it moves to and every tile the body
+  touches there have their own chunk and W, N and NW loaded (the body reaches a little over the edge
+  of its tile, so a villager on the last loaded tile can touch ground that is not), else on the
+  masks. This is the rim rule, **mask-aware, not a handover**: a loaded tile whose W, N or NW chunk
+  is not loaded is answered by the mask, which has the big object that the world does not see. On
+  the masks only the tile it enters is asked, with the building (live) and the mask at the
+  clock's minute (a dropped mask is waited for, which is not being stuck). Far feet wear by the mask's
+  WEARS bit. The code is in `NpcTravel._walk`, not
+  `NpcTrip`, which only holds the state.
 - **`Npcs.update`** moves every trip, near and far; `only_loaded` only keeps the strolls to the loaded
   chunks. `Npcs.catch_up(map, seed, minutes)` learns the minutes of the skip (below).
 - **`NpcViews`** makes a view only for a villager whose chunk is loaded, so after a jump (a loaded

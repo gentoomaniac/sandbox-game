@@ -728,9 +728,20 @@ func wear_tile(world_pos: Vector2i, steps := 1.0) -> void:
 	if tile == null or not tile.wears() or building_at(world_pos) != null:
 		return
 	var stage := wear_stage(world_pos)
-	_wear[world_pos] = minf(_wear.get(world_pos, 0.0) + steps, PathRules.default_rules().most())
+	_add_wear(world_pos, steps)
 	if wear_stage(world_pos) != stage:
 		tile_changed.emit(world_pos)
+
+
+## `wear_tile` for a tile of a chunk that is not loaded, where the ground and the building cannot
+## be asked: the caller knows that the grass there wears (see TravelMask `wears`) and that no
+## building stands on it. Nothing is drawn, so no signal comes.
+func wear_unloaded(world_pos: Vector2i, steps: float) -> void:
+	_add_wear(world_pos, steps)
+
+
+func _add_wear(world_pos: Vector2i, steps: float) -> void:
+	_wear[world_pos] = minf(_wear.get(world_pos, 0.0) + steps, PathRules.default_rules().most())
 
 
 ## How worn the grass of a tile is (see PathRules).

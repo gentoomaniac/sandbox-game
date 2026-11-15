@@ -1,7 +1,7 @@
 # Pathfinding: how villagers find their way
 
 How a villager's way from one tile to another is found and walked, as it is built (tasks 238 and
-#68, steps 1 and 2). The plan and the reasons for it are in
+#68, steps 1 to 3). The plan and the reasons for it are in
 [../villagers/travel.md](../villagers/travel.md) (the decision record, with the measurements) and
 [../villagers/routines.md](../villagers/routines.md) (task 238's plan); this page says what the
 code does and how to change it without breaking it. What is **not built yet** is marked so.
@@ -13,7 +13,8 @@ A search for a way is an A\* over tiles that runs on a **worker thread**. It nev
 it starts: a `TravelMask` for each chunk (one byte of flags per tile) and a `TravelSnapshot` (the
 buildings and the wear of the grass). The main thread only starts searches, hands over what a
 search waits for, and collects the results. A villager stands while its search runs, then walks the
-way it found, checking each step against the live world as it goes.
+way it found, checking each step as it goes: against the live world where the player is, against
+the masks far away.
 
 ## The pieces and who owns what
 
@@ -30,7 +31,7 @@ flowchart LR
     PF -- one task each --> PS
     PS -- FOUND / LEG / FAILED --> PF
     PF -- is_finished --> NT
-    NT -- trip: path, state --> NP[Npc / NpcTrip<br/>walks, live step check]
+    NT -- trip: path, state --> NP[Npc / NpcTrip<br/>walks, live or mask step check]
 ```
 
 | Piece | File (in `game/state/`) | Owns | Thread |
@@ -157,19 +158,38 @@ thrown away. Freeing the Pathfinder waits for the tasks that run.
   the world has changed (not sooner than `blocked_min_seconds`) and anyway every
   `blocked_fallback_seconds` (the tide changes without an edit). `trip_blocked` is told once.
 
-Walking is **live and on the main thread**: before each step the body's tiles are checked by
-`Npcs._fits` (the player's body rule, never a building tile, with the exception that someone
-standing in flooded mud may wade out). A step that does not fit makes the villager **stand and
-think**: after `blocked_give_up_seconds` (0.5) it makes a new search from where it stands, which
-sees every edit (an edit drops the masks, so the new search waits for the new ones), at most
-`retries` (2) times in a row, and is then `BLOCKED` as `STUCK`. A LEG ends in a new search from its
-end. Other walkers are ignored (no collisions); the player is stood off by `personal_space`.
-`NpcTravel.tick()` runs the masks' `update()` and the Pathfinder's `tick()` once per
-`Npcs.update`.
+Walking is **on the main thread**, one of two ways at each update, both towards the same tile
+centre at `walk_speed`, so the position never jumps when chunks load or unload between two centres:
 
-**Not built yet (step 3 and on):** walking over chunks that are not loaded (far walking in
-`NpcTrip`, far wear), time skips, and trips while the player is inside. Until step 3 a villager on
-ground that is not loaded finds its way and then stands stuck.
+- **Live**, where the world answers by itself: the tile the villager moves to, and every tile its
+  body touches there, have their own chunk and the ones W, N and NW of it (`TravelMasks.SOURCE_STEPS`)
+  loaded. Before each step the body's tiles are checked by `Npcs._fits` (the player's body rule,
+  never a building tile, with the exception that someone standing in flooded mud may wade out), and
+  the tile it enters wears.
+- **On the masks**, everywhere else (far away, and on the rim of the loaded area): only the tile it
+  *enters* is asked, once, when its feet cross into it: a building tile closes it, else the mask of
+  its chunk at the clock's minute (the tide and the season of that moment, not the world: a dropped
+  mask is waited for, the villager stands, which is not being stuck). Grass that is not loaded wears
+  by the mask's `WEARS` bit (`World.wear_unloaded`). No body is fitted. This is the **rim rule**:
+  a loaded tile whose W, N or NW chunk is not loaded may be covered by a big object that the world
+  does not see (`World._stored_object_at` reads the object of its own chunk), so it is answered by
+  the mask, which has it, and never live. A body that touches such a tile is on the masks too, so
+  walking in from far or out of the loaded area switches at a tile edge and nothing else changes.
+
+A step that is not free (live: it does not fit; masks: the tile is closed, as when the tide has
+risen over the path) makes the villager **stand and think**: after `blocked_give_up_seconds` (0.5)
+it makes a new search from where it stands, which sees every edit (an edit drops the masks, so the
+new search waits for the new ones) and the tide of the minute it starts at, so it does not get the
+route it was stopped on, at most `retries` (2) times in a row, and is then `BLOCKED` as `STUCK` (or
+`NO_WAY`, when the search finds none). The search of a stuck villager on loaded ground is urgent
+(the Pathfinder starts it before the others). A LEG ends in a new search from its end. Other
+walkers are ignored (no collisions); the player is stood off by `personal_space`.
+`NpcTravel.tick()` runs the masks' `update()` and the Pathfinder's `tick()` once per
+`Npcs.update`. `Npcs.update` moves every trip wherever it is; `only_loaded` keeps only the strolls
+of villagers with no trip to loaded chunks. A far walker costs a few float operations a frame, and a
+dictionary lookup per chunk asked and a mask lookup when it enters a tile; it allocates nothing.
+
+**Not built yet (steps 4 and 5):** time skips, and trips while the player is inside.
 
 ## The life of one trip
 
@@ -191,7 +211,7 @@ sequenceDiagram
     PF->>W: add_task(search.step) again
     W-->>PF: FOUND
     PF-->>NT: is_finished
-    NT->>NT: WALKING, each step a live body check
+    NT->>NT: WALKING, each step a live or a mask check
     NT->>NT: a blocked step: stand, 0.5 s, new search
     NT-->>R: trip_arrived
 ```
@@ -206,7 +226,8 @@ sequenceDiagram
    search is run again where it left off.
 4. `FOUND` or `LEG`: the trip walks `path`, first to the middle of the tile it stands on. `FAILED`:
    `BLOCKED` (`NO_WAY`).
-5. Each step is checked live. A blocked step: stand, after 0.5 s search again from here.
+5. Each step is checked, live or against the mask (see above). A blocked step: stand, after 0.5 s
+   search again from here.
 6. The end of the path: `trip_arrived` (or the next leg's search).
 
 ## Threading rules

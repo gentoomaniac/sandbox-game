@@ -1,7 +1,7 @@
 extends NpcCase
 ## What a trip does where the world is not loaded (off-screen travel is #68): it is searched over
-## the masks, and walking it there is not done yet; and the ends of a trip that is not walked:
-## `place`, a door, a skip.
+## the masks; and the ends of a trip that is not walked: `place`, a door, a skip. Walking it there
+## is in test_npc_far_walk.gd.
 
 const SECONDS := 20
 
@@ -23,11 +23,6 @@ func _unload_chunk_of(tile: Vector2i) -> void:
 	_world.remove_chunk(Chunk.world_to_chunk(tile))
 
 
-func _load_chunk_of(tile: Vector2i) -> void:
-	var coords := Chunk.world_to_chunk(tile)
-	_world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
-
-
 ## Lets frames go by, the masks made on their worker meanwhile, until the villager has its way (or
 ## is blocked): the trip is not searching any more.
 func _run_until_searched(npc: Npc) -> void:
@@ -37,6 +32,17 @@ func _run_until_searched(npc: Npc) -> void:
 		_step()
 		OS.delay_msec(2)
 	fail_test("the search did not end")
+
+
+## Lets frames go by, the masks of the ground it walks on made on their worker meanwhile, until the
+## villager's trip is over.
+func _run_until_arrived(npc: Npc) -> void:
+	for _i in 2000:
+		if not npc.is_travelling():
+			return
+		_step()
+		OS.delay_msec(2)
+	fail_test("the villager did not arrive")
 
 
 ## A tile of grass with nothing on it in a chunk of the generator, loaded or not.
@@ -51,7 +57,7 @@ func _free_tile_in(coords: Vector2i) -> Vector2i:
 	return Vector2i.ZERO
 
 
-func test_an_unloaded_villager_searches_over_the_masks_and_walks_when_its_chunk_loads() -> void:
+func test_an_unloaded_villager_searches_over_the_masks_and_walks_there() -> void:
 	watch_signals(_npcs)
 	var npc := _add_villager(_centre_of(_tile_at(0, 0)), _yard_middle())
 	_unload_chunk_of(_tile_at(0, 0))
@@ -61,8 +67,7 @@ func test_an_unloaded_villager_searches_over_the_masks_and_walks_when_its_chunk_
 	assert_eq(npc.trip.state, NpcTrip.State.WALKING, "it has its way")
 	assert_gt(npc.trip.path.size(), 0)
 	assert_signal_emit_count(_npcs, "trip_blocked", 0)
-	_load_chunk_of(_tile_at(0, 0))
-	_run(SECONDS)
+	_run_until_arrived(npc)
 	assert_signal_emit_count(_npcs, "trip_arrived", 1)
 	assert_eq(npc.tile(), _tile_at(3, 3))
 
