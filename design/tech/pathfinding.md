@@ -135,7 +135,9 @@ The start tile is not asked: someone in a doorway or on mud must be able to leav
    `WAITING` is **parked**;
 2. for each parked search calls its `provide` Callable; when it says everything is there, the
    search goes back to the queue;
-3. starts queued searches, oldest first, as tasks (`WorkerThreadPool.add_task`, one each) while
+3. starts queued searches, oldest first, but the **urgent** ones before the rest (`queue(search,
+   provide, is_urgent)`: a stuck villager on loaded ground, whose standing the player may see; a
+   far one waits behind it), as tasks (`WorkerThreadPool.add_task`, one each) while
    fewer than `max_tasks` (`search_tasks`) run.
 
 A search that waits **never blocks a pool thread**: it comes back from its task as `WAITING` and is

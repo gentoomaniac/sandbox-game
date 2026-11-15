@@ -242,6 +242,8 @@ stands) and walks on. As built:
   runs again when `TravelView.provide` has the mask: no pool thread ever waits. The scheduler of
   near and far queues, the frame budget (`searches_per_frame`, `search_usec_per_frame`),
   `far_every_frames` and the half-budget rule are gone.
+- A stuck villager on loaded ground gets its new search before the others (`Pathfinder.queue`'s
+  `is_urgent`; the player may be looking at it), the oldest first among those.
 - The stuck delay is `blocked_give_up_seconds` 0.5 (it was 2.0): a blocked step stands and searches
   again soon. A new search sees every edit, as an edit drops the masks it touches and the search
   waits for the new ones.

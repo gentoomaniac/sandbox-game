@@ -150,3 +150,27 @@ func test_a_pathfinder_freed_while_searches_run_waits_for_them() -> void:
 	pathfinder.tick()
 	pathfinder = null
 	assert_eq(search.state, PathSearch.State.FOUND, "the task was done when it was freed")
+
+
+func test_an_urgent_search_is_started_before_the_ones_queued_earlier() -> void:
+	var pathfinder := Pathfinder.new(1)
+	var holding := _blocking_search(20)
+	pathfinder.queue(holding)
+	pathfinder.tick()
+	_entered.wait()
+	var plain := _search(20)
+	var urgent := _blocking_search(20)
+	pathfinder.queue(plain)
+	pathfinder.queue(urgent, Callable(), true)
+	_gate.post()
+	for _i in 3000:
+		pathfinder.tick()
+		if pathfinder.is_finished(holding):
+			break
+		OS.delay_msec(1)
+	_entered.wait()
+	assert_false(pathfinder.is_finished(plain), "the urgent one took the only worker")
+	assert_eq(pathfinder.running(), 1)
+	_gate.post()
+	assert_true(_wait_until_finished(pathfinder, urgent))
+	assert_true(_wait_until_finished(pathfinder, plain))

@@ -8,8 +8,9 @@ extends RefCounted
 ## A search that has to wait for a tile that is not known (a mask not made yet) comes back from its
 ## task as WAITING, never blocks the pool: it is parked until its `provide` Callable says that what
 ## it waits for is there, and is then run again. At most `max_tasks` run at once, so a burst of
-## searches does not fill the pool; the others queue, the oldest first. `tick` is called once a
-## frame, on the main thread.
+## searches does not fill the pool; the others queue, the oldest first, those that are urgent (a
+## villager the player can see, who is stuck) before the rest. `tick` is called once a frame, on the
+## main thread.
 ##
 ## How it all works: design/tech/pathfinding.md.
 
@@ -21,6 +22,8 @@ class Job:
 	## `() -> bool` on the main thread: gives the search what it waits for, and says whether that is
 	## all of it. Without one a waiting search is run again at once.
 	var provide: Callable
+	## Whether it is started before the searches that are not (a stuck villager the player sees).
+	var is_urgent := false
 	var task_id := -1
 	var is_dropped := false
 
@@ -46,18 +49,19 @@ func _notification(what: int) -> void:
 			WorkerThreadPool.wait_for_task_completion(job.task_id)
 
 
-## Queues a search. `provide` is described at `Job`.
-func queue(search: PathSearch, provide := Callable()) -> void:
+## Queues a search. `provide` and `is_urgent` are described at `Job`.
+func queue(search: PathSearch, provide := Callable(), is_urgent := false) -> void:
 	if search.is_over():
 		_finished[search] = true
 		return
 	var job := Job.new()
 	job.search = search
 	job.provide = provide
+	job.is_urgent = is_urgent
 	if search.state == PathSearch.State.WAITING:
 		_parked.append(job)
 	else:
-		_queued.append(job)
+		_enqueue(job)
 
 
 ## Whether the search is over and its result can be read. The state of a search that is not is not
@@ -107,11 +111,22 @@ func tick() -> void:
 	for job in _parked.duplicate():
 		if not job.provide.is_valid() or job.provide.call():
 			_parked.erase(job)
-			_queued.append(job)
+			_enqueue(job)
 	while _running.size() < max_tasks and not _queued.is_empty():
 		var job: Job = _queued.pop_front()
 		job.task_id = WorkerThreadPool.add_task(_run.bind(job.search))
 		_running.append(job)
+
+
+## Puts the job last among the queued ones of its kind: an urgent job goes in front of the ones that
+## are not.
+func _enqueue(job: Job) -> void:
+	var at := _queued.size()
+	if job.is_urgent:
+		at = _queued.find_custom(func(queued: Job) -> bool: return not queued.is_urgent)
+		if at < 0:
+			at = _queued.size()
+	_queued.insert(at, job)
 
 
 ## Runs on the worker.

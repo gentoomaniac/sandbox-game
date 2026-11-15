@@ -103,7 +103,8 @@ static func text_of(npc: Npc) -> String:
 	)
 
 
-func _begin_search(npc: Npc) -> void:
+## `is_urgent`: the Pathfinder starts it before the others (a stuck villager the player can see).
+func _begin_search(npc: Npc, is_urgent := false) -> void:
 	var trip := npc.trip
 	var map := trip.map
 	var world := map as World
@@ -125,7 +126,7 @@ func _begin_search(npc: Npc) -> void:
 	trip.seconds_since_search = 0.0
 	trip.change_count_at_search = map.change_count
 	# The queued search holds the view, which its Callables do not.
-	_pathfinder.queue(trip.search, func() -> bool: return view.provide(masks))
+	_pathfinder.queue(trip.search, func() -> bool: return view.provide(masks), is_urgent)
 	npc.activity = Npc.Activity.IDLE
 
 
@@ -279,4 +280,4 @@ func _be_stuck(npc: Npc, delta: float) -> void:
 		_block(npc, NpcTrip.Block.STUCK)
 		return
 	trip.legs = 0
-	_begin_search(npc)
+	_begin_search(npc, (trip.map as World).is_chunk_loaded(Chunk.world_to_chunk(npc.tile())))
