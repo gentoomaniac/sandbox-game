@@ -77,7 +77,7 @@ says so, and whether to pick a free hotbar slot or to move an item off a full ho
 | F4 | Show the path of the villager nearest you that is on a trip (send one with the console's `goto`). |
 | F7 | Switch between the new and the classic art. |
 | F9 | Quick save: save now, in the background. |
-| F8 | Quick load: go back to the last save at once. "No save to load" if there is none; a save holding things the game no longer has asks first. |
+| F8 | Quick load: go back to the newest save at once. "No save to load" if there is none; a save holding things the game no longer has asks first. |
 
 ## Settings
 

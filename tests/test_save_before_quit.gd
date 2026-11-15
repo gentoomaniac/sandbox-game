@@ -22,7 +22,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	get_tree().paused = false
-	DirAccess.remove_absolute(PATH + ".tmp")
+	DirAccess.remove_absolute(SaveList.next_path(PATH) + ".tmp")
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -45,9 +45,9 @@ func _is_quit_allowed() -> bool:
 
 ## A good save is there, and a folder where the temporary file goes, so the next write fails.
 func _break_saving() -> String:
-	assert_true(_saves.save_and_wait(_state, PATH))
-	var before := FileAccess.get_file_as_string(PATH)
-	DirAccess.make_dir_recursive_absolute(PATH + ".tmp")
+	assert_true(_saves.save_and_wait(_state, PATH, SaveHeader.Kind.QUIT))
+	var before := FileAccess.get_file_as_string(SaveList.newest_path(PATH))
+	DirAccess.make_dir_recursive_absolute(SaveList.next_path(PATH) + ".tmp")
 	_state.player.position = Vector2(20.5, 20.5)
 	return before
 
@@ -68,7 +68,9 @@ func test_a_failed_save_asks_and_keeping_on_playing_does_not_quit() -> void:
 
 	assert_false(is_allowed)
 	assert_eq(_questions.size(), 1)
-	assert_eq(FileAccess.get_file_as_string(PATH), before, "the previous save stays")
+	assert_eq(
+		FileAccess.get_file_as_string(SaveList.newest_path(PATH)), before, "the previous save stays"
+	)
 	assert_push_error_count(1)
 
 
@@ -89,7 +91,7 @@ func test_the_player_can_choose_to_quit_without_saving() -> void:
 	var is_allowed: bool = await _is_quit_allowed()
 
 	assert_true(is_allowed)
-	assert_eq(FileAccess.get_file_as_string(PATH), before)
+	assert_eq(FileAccess.get_file_as_string(SaveList.newest_path(PATH)), before)
 	assert_push_error_count(1)
 
 
@@ -97,7 +99,7 @@ func test_trying_again_saves_once_the_trouble_is_gone() -> void:
 	_break_saving()
 	_dialog.opened.connect(
 		func() -> void:
-			DirAccess.remove_absolute(PATH + ".tmp")
+			DirAccess.remove_absolute(SaveList.next_path(PATH) + ".tmp")
 			_dialog._buttons.get_child(SaveBeforeQuit.TRY_AGAIN).pressed.emit.call_deferred(),
 		CONNECT_ONE_SHOT
 	)

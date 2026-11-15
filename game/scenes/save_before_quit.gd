@@ -35,7 +35,7 @@ func _init(saves: SaveService, state: GameState, path: String, dialog: ChoiceDia
 ## Saves, asking what to do for as long as it fails. Returns whether the game may quit.
 func is_quit_allowed() -> bool:
 	while true:
-		_saves.save_and_wait(_state, _path)
+		_saves.save_and_wait(_state, _path, SaveHeader.Kind.QUIT)
 		if _saves.last_succeeded:
 			return true
 		_dialog.ask(TITLE, TEXT % _saves.last_error, CHOICES, KEEP_PLAYING)

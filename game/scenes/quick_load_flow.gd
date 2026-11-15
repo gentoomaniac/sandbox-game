@@ -1,6 +1,6 @@
 class_name QuickLoadFlow
 extends RefCounted
-## What F8 does in the game scene: puts the player into the last save, without asking (but for a
+## What F8 does in the game scene: puts the player into the newest save, without asking (but for a
 ## save that holds content the game no longer has: then the player decides, and Cancel keeps the
 ## game they are in). The whole scene starts again from it, which leaves no view, window or paused
 ## state of the game before behind. Waits for a save that runs, so the file read is the newest.
@@ -27,6 +27,13 @@ func _init(
 	_tree = tree
 
 
+## Loads the newest save of the world at `base`.
+func run_newest(base: String) -> void:
+	_saves.wait()
+	await run(SaveList.newest_path(base))
+
+
+## Loads the save in the file `save_path`.
 func run(save_path: String) -> void:
 	_saves.wait()
 	var outcome := QuickLoad.prepare(save_path)

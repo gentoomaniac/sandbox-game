@@ -626,7 +626,7 @@ func _autosave_on_time(delta: float) -> void:
 	_autosave_timer.tick(delta)
 	var is_free := not _blackout.is_in_transition and not _is_any_screen_open()
 	if is_free and _autosave_timer.is_due(_settings.autosave_minutes):
-		_saves.save_in_background(_state, _options.save_path)
+		_saves.save_in_background(_state, _options.save_path, SaveHeader.Kind.AUTOSAVE)
 
 
 ## Real time to whole game minutes; the fraction carries over to the next frame.
@@ -772,33 +772,35 @@ func _start_sounds() -> void:
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 
 
-## The game F8 has just loaded, else the saved game, or a new one if there is no save or
-## `--new-game` is given. The first autosave after `--new-game` replaces the old save. A save
-## that is refused is moved aside, the player is told, and a new game starts. A save that holds
-## content the game no longer has is up to the player: null if they cancel (the game then quits,
-## with the file as it was).
+## The game F8 has just loaded, else the newest save that can be loaded, or a new one if there is
+## none or `--new-game` is given. A save that is refused is moved aside, the player is told, and
+## the save before it is tried. A save that holds content the game no longer has is up to the
+## player: null if they cancel (the game then quits, with the file as it was).
 func _load_or_start_game() -> GameState:
 	if _resumed_state != null:
 		return _resumed_state
 	if _options.new_game:
 		return GameState.new_game(WORLD_SEED)
-	var loaded := SaveFile.load_game(_options.save_path)
-	match loaded.outcome:
-		LoadResult.Outcome.READY:
-			return loaded.state
-		LoadResult.Outcome.REFUSED:
-			push_error("Can't load %s: %s" % [_options.save_path, "; ".join(loaded.problems)])
-			var moved_to := SaveFile.move_aside(_options.save_path)
-			await _save_questions.tell_refused(loaded.reason, moved_to)
-		LoadResult.Outcome.ASK:
-			if await _save_questions.is_missing_content_loaded(
-				loaded.missing, loaded.backup_path, "Cancel and quit the game"
-			):
-				var dropped := loaded.load_dropping_missing()
-				if dropped == null:
-					await _save_questions.tell_copy_failed(loaded.copy_error)
-				return dropped
-			return null
+	var paths := SaveList.paths_newest_first(_options.save_path)
+	for index in paths.size():
+		var loaded := SaveFile.load_game(paths[index])
+		match loaded.outcome:
+			LoadResult.Outcome.READY:
+				return loaded.state
+			LoadResult.Outcome.REFUSED:
+				push_error("Can't load %s: %s" % [paths[index], "; ".join(loaded.problems)])
+				var moved_to := SaveFile.move_aside(paths[index])
+				var has_older_save := index < paths.size() - 1
+				await _save_questions.tell_refused(loaded.reason, moved_to, has_older_save)
+			LoadResult.Outcome.ASK:
+				if await _save_questions.is_missing_content_loaded(
+					loaded.missing, loaded.backup_path, "Cancel and quit the game"
+				):
+					var dropped := loaded.load_dropping_missing()
+					if dropped == null:
+						await _save_questions.tell_copy_failed(loaded.copy_error)
+					return dropped
+				return null
 	return GameState.new_game(WORLD_SEED)
 
 
@@ -828,7 +830,7 @@ func _show_save_result(succeeded: bool) -> void:
 ## F9 saves now, F8 loads; whether it was one of those keys. Both work with a window open too.
 func _quick_save_or_load(event: InputEvent) -> bool:
 	if event.is_action_pressed("quick_save"):
-		_saves.save_in_background(_state, _options.save_path)
+		_saves.save_in_background(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE)
 	elif event.is_action_pressed("quick_load"):
 		_quick_load()
 	else:
@@ -836,9 +838,9 @@ func _quick_save_or_load(event: InputEvent) -> bool:
 	return true
 
 
-## F8: puts the player into the last save (see QuickLoadFlow).
+## F8: puts the player into the newest save (see QuickLoadFlow).
 func _quick_load() -> void:
-	await QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree()).run(
+	await QuickLoadFlow.new(_saves, _save_questions, _notifications, get_tree()).run_newest(
 		_options.save_path
 	)
 

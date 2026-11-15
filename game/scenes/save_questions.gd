@@ -3,13 +3,10 @@ extends RefCounted
 ## What the player is told and asked about a save they load, in a ChoiceDialog: that a save is
 ## refused, and whether to load one without the content the game no longer has.
 
-const REFUSED_TEXT := (
-	"%s\n\nThe file was moved to %s and is not changed. A new game starts, and the next save"
-	+ " makes a new save file."
-)
-const REFUSED_NOT_MOVED_TEXT := (
-	"%s\n\nThe file could not be moved away, so the next save replaces it." + " A new game starts."
-)
+const REFUSED_TEXT := "%s\n\nThe file was moved to %s and is not changed. %s"
+const REFUSED_NOT_MOVED_TEXT := "%s\n\nThe file could not be moved away and stays where it is. %s"
+const THEN_OLDER_SAVE := "The save before it is loaded instead."
+const THEN_NEW_GAME := "A new game starts."
 const MISSING_CONTENT_TEXT := (
 	"These are not in the game any more:\n%s\n\nYou can load the save anyway: they are left out."
 	+ " Playing on may run into problems. The save file only changes when the game next saves"
@@ -24,14 +21,17 @@ func _init(dialog: ChoiceDialog) -> void:
 
 
 ## Says why a save is refused (`reason`) and where it was moved ("" if it could not be moved), and
-## returns when the player has read it.
-func tell_refused(reason: String, moved_to: String) -> void:
+## that the save before it is loaded instead (`has_older_save`) or a new game starts. Returns when
+## the player has read it.
+func tell_refused(reason: String, moved_to: String, has_older_save: bool) -> void:
+	var then := THEN_OLDER_SAVE if has_older_save else THEN_NEW_GAME
 	var text := (
-		REFUSED_TEXT % [reason, moved_to.get_file()]
+		REFUSED_TEXT % [reason, moved_to.get_file(), then]
 		if moved_to != ""
-		else REFUSED_NOT_MOVED_TEXT % reason
+		else REFUSED_NOT_MOVED_TEXT % [reason, then]
 	)
-	_dialog.ask("The save can't be loaded", text, ["Start a new game"] as Array[String], 0)
+	var button := "Load the save before it" if has_older_save else "Start a new game"
+	_dialog.ask("The save can't be loaded", text, [button] as Array[String], 0)
 	await _dialog.answered
 
 

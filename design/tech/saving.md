@@ -4,16 +4,34 @@
   taken today, and how long tilled soil has lain fallow) + buildings with their interiors (and the
   items lying on their floors) +
   player state (position, current map, home, appearance, inventory) + clock. One JSON
-  file per world under `user://saves/`.
+  file per save under `user://saves/`, see the next point.
+- **The newest ten saves are kept** (#16, the user, 2026-11-14: "not just one save file but maybe
+  ten rising, first in first out"). Every save (autosave, quick save, sleep, quit) writes a new
+  file, `world.000001.json`, `world.000002.json`, and so on, written as before (a temporary file,
+  flushed, renamed; `SaveFile.store`), and then the files beyond the newest ten go, the oldest
+  first (`SaveList.prune`). The count is `[keep] saves` in `data/saves.cfg`. The numbers only go
+  up, so the order of the files is the order of the saves. A save that fails to write changes
+  nothing: the other saves stay, and so does the oldest. The backups of unusable saves
+  (`.bak`, below) are not saves of this list and are never pruned.
+- **A header beside each save** (`SaveHeader`, the file `world.000001.json.info`): the game day
+  and minute, the real time (seconds since 1970) and what made it (autosave, quick save, sleep,
+  save and quit), and the save's version, so that the list is made without parsing ten worlds.
+  The header is written before the save and removed again if the save fails, so a save is never
+  listed without one. A save without a header (the single `world.json` of the game before this,
+  which is the oldest of the list, "an earlier save") gets one made of its own data and file
+  time the first time it is listed. A save whose header is missing and can't be made, or is of a
+  version the game does not read, is listed as one that can't be loaded (`SaveEntry.problem`).
 - **Autosave when the player sleeps, passes out and when the game quits, and on a timer** (task
   145): every `autosave_minutes` of play (Settings → Game, "Autosave every", 10 to 60 in steps of
   10, default 10), counted by `AutosaveTimer` from `Main._process`, so time the game is paused
   for (pause menu, chat) does not count. A save that comes due during a fade, a sleep, a collapse
   or while a window or the console is open waits for the next frame free of them. Any save
   starting restarts the count.
-- On start, the game loads the save if there is one, otherwise it starts a new game (`--new-game` forces
-  one).
-- **Quick save and quick load** (task 145): F9 saves now in the background; F8 loads the last
+- On start, the game loads the newest save that can be loaded, otherwise it starts a new game
+  (`--new-game` forces one). A save that is refused is moved aside and told about, and the one
+  before it is tried. `--save-path` names the world's save path (`world.json`); its saves are
+  named after it.
+- **Quick save and quick load** (task 145): F9 saves now in the background; F8 loads the newest
   save file without asking (the user: "quick load generally doesn't ask in games"; only a save
   with content the game no longer has asks, see below), after
   waiting for a save that runs. Both are rebindable actions (`quick_save`, `quick_load`) in the
@@ -56,7 +74,6 @@
   in a commit of its own titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`.
   To rescue an older save, find that commit with `git log --grep '^Save: drop'`, check out
   its parent (which still upgrades it), load and save the game there, then move on.
-- No save menu or multiple slots yet; revisit when there is a main menu.
 - **A save is checked before anything is built from it** (task 140, review R2). After the upgrades,
   `SaveValidator` walks the whole game data once: field types, counts and stack limits of every
   item slot (inventory, chests), the selected hotbar slot, equipment slots, object, building and

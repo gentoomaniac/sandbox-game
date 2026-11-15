@@ -1,6 +1,7 @@
 class_name SaveFile
 extends RefCounted
-## The save on disk: one JSON file per world, `{"version": VERSION, "game": <GameState.to_dict>}`.
+## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
+## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
 ## (see `_upgrade_from_version_34` and so on). Older ones are refused.
 ##
@@ -24,6 +25,7 @@ extends RefCounted
 const VERSION := 44
 ## The oldest version we still upgrade.
 const OLDEST_VERSION := VERSION - 10
+## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
@@ -36,9 +38,11 @@ const DAY_STAMP_KEYS := [
 const MINUTE_STAMP_KEYS := ["follow_until_minute", "start_minute", "done_minute", "learned_at"]
 
 
-## Writes the game to `path`. Returns whether it worked.
-static func write(state: GameState, path: String = DEFAULT_PATH) -> bool:
-	return write_text(encode(state), path) == ""
+## Writes the game as a new save of the world at `base`. Returns whether it worked.
+static func write(
+	state: GameState, base: String = DEFAULT_PATH, kind := SaveHeader.Kind.QUICK_SAVE
+) -> bool:
+	return store(encode(state), SaveHeader.of(state, kind), base) == ""
 
 
 ## The game of this moment, copied so that it shares nothing with the running game: another thread
@@ -59,6 +63,23 @@ static func text_of(snapshot_data: Dictionary) -> String:
 ## The game as the text of a save file, all on this thread.
 static func encode(state: GameState) -> String:
 	return text_of(snapshot(state))
+
+
+## Writes the text of a save as a new save of the world at `base`, with its `header`, and deletes
+## the saves beyond the newest few. Returns what went wrong, or "" when it is written. Safe to
+## call from a thread. The header goes first and the save last, so a save is never listed without
+## its header; whatever fails, the saves that were there stay as they were.
+static func store(text: String, header: SaveHeader, base: String) -> String:
+	var save_path := SaveList.next_path(base)
+	var error := write_text(header.to_text(), SaveList.header_path_of(save_path))
+	if error != "":
+		return error
+	error = write_text(text, save_path)
+	if error != "":
+		DirAccess.remove_absolute(SaveList.header_path_of(save_path))
+		return error
+	SaveList.prune(base)
+	return ""
 
 
 ## Writes the text of a save to `path`. Returns what went wrong, or "" when it is written (also
@@ -95,7 +116,7 @@ static func _write_failed(problem: String) -> String:
 ## Reads the save at `path` and checks it (see SaveValidator). The file is not changed: what
 ## becomes of a refused one is the caller's to decide (`move_aside`). A save that is whole but
 ## holds things the game no longer has is told apart from a refused one (see LoadResult).
-static func load_game(path: String = DEFAULT_PATH) -> LoadResult:
+static func load_game(path: String) -> LoadResult:
 	if not FileAccess.file_exists(path):
 		return LoadResult.no_save()
 	# Not parse_string: it prints an engine error of its own for broken text.
@@ -128,19 +149,22 @@ static func load_game(path: String = DEFAULT_PATH) -> LoadResult:
 	return LoadResult.ready(GameState.from_dict(game))
 
 
-## The saved game, or null if there is no save, it is refused or it holds content the game no
-## longer has (`load_game` tells these apart, for a caller that asks the player). A save that
-## gives no game is reported and moved aside (`move_aside`): the caller starts a new game.
-static func read(path: String = DEFAULT_PATH) -> GameState:
-	var result := load_game(path)
-	match result.outcome:
-		LoadResult.Outcome.REFUSED:
-			push_error("Can't load %s: %s" % [path, "; ".join(result.problems)])
-			move_aside(path)
-		LoadResult.Outcome.ASK:
-			push_error("Can't load %s: it holds %s" % [path, "; ".join(result.missing)])
-			move_aside(path)
-	return result.state
+## The newest save of the world at `base` that gives a game, or null if there is none. A save
+## that gives no game, or holds content the game no longer has (`load_game` tells these apart, for
+## a caller that asks the player), is reported and moved aside (`move_aside`), and the one before
+## it is tried.
+static func read(base: String = DEFAULT_PATH) -> GameState:
+	for path in SaveList.paths_newest_first(base):
+		var result := load_game(path)
+		match result.outcome:
+			LoadResult.Outcome.READY:
+				return result.state
+			LoadResult.Outcome.REFUSED:
+				push_error("Can't load %s: %s" % [path, "; ".join(result.problems)])
+			LoadResult.Outcome.ASK:
+				push_error("Can't load %s: it holds %s" % [path, "; ".join(result.missing)])
+		move_aside(path)
+	return null
 
 
 ## Where a backup of the save at `path` goes, named with the date and time so that backups sort
@@ -169,14 +193,16 @@ static func backups_of(path: String) -> Array[String]:
 	return found
 
 
-## Renames a save we can't use out of the way, so that it is never overwritten silently. Returns
-## where it went, or "" if it could not be moved.
+## Renames a save we can't use out of the way, so that it is never overwritten silently (its
+## header is deleted: the backup is not in the list). Returns where it went, or "" if it could not
+## be moved.
 static func move_aside(path: String) -> String:
 	var backup := free_backup_path(path)
 	var error := DirAccess.rename_absolute(path, backup)
 	if error != OK:
 		push_error("Can't move %s to %s: %s" % [path, backup, error_string(error)])
 		return ""
+	DirAccess.remove_absolute(SaveList.header_path_of(path))
 	return backup
 
 

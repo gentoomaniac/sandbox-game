@@ -368,7 +368,9 @@ There is no base class: each rules class is plain, so copy one that is shaped li
 
 ## Saving
 
-`SaveFile` writes one JSON file (`user://saves/world.json`) with a `version`. Every state
+`SaveFile` writes a new JSON file for every save (`user://saves/world.000001.json` and so on;
+`SaveList` finds them and keeps the newest ten, `SaveHeader` is the small file beside each) with a
+`version`. Every state
 class that is saved has an explicit `to_dict` and a strict `from_dict` (`data["x"]`, never
 `data.get(...)` with a default). When the format changes, raise `SaveFile.VERSION` and add an
 upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`, which

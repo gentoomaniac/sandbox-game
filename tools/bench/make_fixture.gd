@@ -57,5 +57,6 @@ func _init() -> void:
 		" object removals ",
 		removed
 	)
-	print("saved ", SaveFile.write(state, out))
+	# The one file `out`, which the Makefile asks for; the game takes it as its oldest save.
+	print("saved ", SaveFile.write_text(SaveFile.encode(state), out) == "")
 	quit()

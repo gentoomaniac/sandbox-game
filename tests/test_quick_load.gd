@@ -31,16 +31,17 @@ func test_the_saved_game_is_kept_for_the_new_scene_and_given_once() -> void:
 	var state := GameState.new_game(7)
 	state.player.position = Vector2(12.5, 9.5)
 	assert_true(SaveFile.write(state, PATH))
-	assert_eq(QuickLoad.prepare(PATH), QuickLoad.Outcome.READY)
+	assert_eq(QuickLoad.prepare(SaveList.newest_path(PATH)), QuickLoad.Outcome.READY)
 	assert_eq(QuickLoad.take().player.position, Vector2(12.5, 9.5))
 	assert_null(QuickLoad.take())
 
 
 func test_a_failed_prepare_drops_a_game_kept_before() -> void:
 	SaveFile.write(GameState.new_game(7), PATH)
-	QuickLoad.prepare(PATH)
-	DirAccess.remove_absolute(PATH)
-	QuickLoad.prepare(PATH)
+	var save_path := SaveList.newest_path(PATH)
+	QuickLoad.prepare(save_path)
+	DirAccess.remove_absolute(save_path)
+	QuickLoad.prepare(save_path)
 	assert_null(QuickLoad.take())
 
 

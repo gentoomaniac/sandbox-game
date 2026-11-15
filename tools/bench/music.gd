@@ -126,7 +126,9 @@ func _process(_delta: float) -> bool:
 				_end_scenario()
 		Scenario.SAVING:
 			if scenario_frame == 10:
-				save_started = main._saves.save_in_background(main._state, main._options.save_path)
+				save_started = main._saves.save_in_background(
+					main._state, main._options.save_path, SaveHeader.Kind.AUTOSAVE
+				)
 				last_frame_did += " the save started"
 			if save_started and save_ended_frame < 0 and not main._saves.is_running():
 				save_ended_frame = scenario_frame

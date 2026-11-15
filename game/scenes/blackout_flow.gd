@@ -65,7 +65,7 @@ func pass_out() -> void:
 	show_current_map.call()
 	# The sleep takes some frames and the save one, under the black screen.
 	await get_tree().process_frame
-	await saves.save_without_stalling(state, save_path)
+	await saves.save_without_stalling(state, save_path, SaveHeader.Kind.SLEEP)
 	await fade_screen.show_message(PassOutMessage.text(state, was_up_too_late, minutes_slept))
 	await fade_screen.fade_in()
 	is_in_transition = false
@@ -85,7 +85,7 @@ func try_sleep() -> void:
 			_hold_world(false)
 			show_clock.call()
 			await get_tree().process_frame
-			await saves.save_without_stalling(state, save_path)
+			await saves.save_without_stalling(state, save_path, SaveHeader.Kind.SLEEP)
 			return state.clock.date_text()
 	)
 
