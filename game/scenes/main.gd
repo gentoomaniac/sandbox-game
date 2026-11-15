@@ -10,8 +10,6 @@ extends Node2D
 
 ## Debug speed-up, toggled with F2: a game day in 16 real seconds.
 const FAST_FORWARD_FACTOR := 60.0
-## What the player is told when they try on horseback what needs them on foot.
-const GET_OFF_FIRST := "Get off the horse first."
 ## What the note says about a use of the held item, for the uses that have one.
 const USE_NOTES := {
 	ToolUse.Use.GIVE_BONE: "The dog follows you.",
@@ -19,7 +17,7 @@ const USE_NOTES := {
 	ToolUse.Use.UNSADDLE: "You take the saddle off.",
 	ToolUse.Use.FILL_CAN: "You fill the watering can.",
 	ToolUse.Use.CAN_EMPTY: "The watering can is empty: fill it at a well or at fresh water.",
-	ToolUse.Use.RIDING: GET_OFF_FIRST,
+	ToolUse.Use.RIDING: ScreenKeys.GET_OFF_FIRST,
 	ToolUse.Use.NO_ROOM: "Not enough room in the inventory.",
 	ToolUse.Use.STANDING_ON: "Step off it first.",
 	ToolUse.Use.THE_VILLAGES: GameState.THE_VILLAGES,
@@ -84,10 +82,10 @@ var _weather: WeatherSample
 var _snow_cover := 0.0
 var _frost := 0.0
 var _fast_forward := false
-## The mouse wheel's turns not yet a whole hotbar slot (see HotbarWheel).
-var _wheel_progress := 0.0
 var _fade_screen := FadeScreen.new()
 var _blackout: BlackoutFlow
+var _screen_keys: ScreenKeys
+var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _debug: DebugRunner
 var _pending_minutes := 0.0
@@ -239,7 +237,6 @@ func _make_views() -> void:
 	add_child(_chat_screen)
 	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
 	_trade_screen.talk_requested.connect(_open_chat)
-	_hotbar.crafting_requested.connect(_on_crafting_requested)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_load_dialog)
@@ -305,6 +302,11 @@ func _connect_state_and_views() -> void:
 	speech.is_nonstop = _options.bubbles
 	speech.show_for(_state, _chat_screen.dialogue, _camera.view_rect, _camera.world_to_ui)
 	_builder = Builder.new(_state)
+	_hotbar_keys = HotbarKeys.new(_state.player.inventory, _builder)
+	_screen_keys = ScreenKeys.new(
+		_state, _bag_screen, _character_screen, _crafting_screen, _harvest_hud
+	)
+	_hotbar.crafting_requested.connect(_screen_keys.on_crafting_requested)
 	_build_mode.world = _state.world
 	_build_mode.builder = _builder
 	_build_mode.camera = _camera
@@ -463,29 +465,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _console_view.is_open():
 		return
 	var can_use := _can_use()
-	# The art switches with a screen open too, so the character screen shows the switch.
-	if _switch_art_set(event) or _session.quick_save_or_load(event) or _screens_take(event):
+	# The art switches with a screen open too, so the character screen shows the switch. An open
+	# screen takes all the input: the player neither walks nor acts.
+	if (
+		_switch_art_set(event)
+		or _session.quick_save_or_load(event)
+		or _screen_keys.take(event)
+		or _is_any_screen_open()
+	):
 		return
 	# A SubViewport only gets the events that are pushed into it. That does not mark the
 	# event as handled here, so Main still sees what BuildMode consumed.
 	_world.push_input(event)
-	var hotbar_slot := _hotbar_slot_of(event)
 	if event.is_action_pressed("toggle_coordinates"):
 		_coordinates_hud.toggle()
 	elif event.is_action_pressed("toggle_paths"):
 		_paths_hud.toggle()
 	elif event.is_action_pressed("toggle_fast_forward"):
 		_fast_forward = not _fast_forward
-	elif hotbar_slot != -1:
-		_state.player.inventory.select(hotbar_slot)
-		_builder.resume()
-	elif HotbarWheel.is_hotbar_wheel(event):
-		_wheel_progress = HotbarWheel.turned(_wheel_progress, HotbarWheel.turn_of(event))
-		var steps := HotbarWheel.whole_slots(_wheel_progress)  # the rest waits for more turning
-		_wheel_progress -= steps
-		if steps != 0:
-			_state.player.inventory.select_next(steps)
-			_builder.resume()
+	elif _hotbar_keys.take(event):
+		pass
 	elif event.is_action_pressed("drop_item") and can_use:
 		_state.drop_from_inventory(_state.player.inventory.selected_slot)
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
@@ -577,7 +576,7 @@ func _process(delta: float) -> void:
 		_player_view.is_trotting = _state.is_trotting()
 		_state.walk(direction, delta, _player_view.walk_speed)
 		if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
-			_harvest_hud.show_note(GET_OFF_FIRST)
+			_harvest_hud.show_note(ScreenKeys.GET_OFF_FIRST)
 		_state.collect_ground_items(delta)
 		_interior_view.cover_bed(_state.player.bed_lying_in)
 		_object_cover.cover(_state.player.bed_lying_in)
@@ -629,14 +628,6 @@ func _can_open_console() -> bool:
 
 func _can_use() -> bool:
 	return not _blackout.is_in_transition and not _build_mode.is_active()
-
-
-## The hotbar slot (0 to 7) whose key `event` presses, or -1.
-func _hotbar_slot_of(event: InputEvent) -> int:
-	for slot in Inventory.HOTBAR_SIZE:
-		if event.is_action_pressed("hotbar_%d" % (slot + 1)):
-			return slot
-	return -1
 
 
 ## Holding the use key or the mouse button swings again as soon as the swing is over. A click on a
@@ -712,39 +703,6 @@ func _switch_art_set(event: InputEvent) -> bool:
 
 func _toggle_classic_art() -> void:
 	_settings.set_classic_art(not ArtSet.is_classic)
-
-
-## The crafting button beside the bag button does what the crafting key does.
-func _on_crafting_requested() -> void:
-	if _crafting_screen.can_open_on_key():
-		_toggle_crafting()
-
-
-func _toggle_crafting() -> void:
-	# On horseback only the inventory and eating are possible; an open screen still closes.
-	if _crafting_screen.is_open() or _state.player.horse == null:
-		_crafting_screen.toggle()
-	else:
-		_harvest_hud.show_note(GET_OFF_FIRST)
-
-
-## Opens and closes the windows on their keys; a window's key does nothing while another window is
-## open (see Modal.can_open_on_key). Returns whether a window took the event: one that is open
-## takes all the input, so the player neither walks nor acts.
-func _screens_take(event: InputEvent) -> bool:
-	if event.is_action_pressed("crafting") and _crafting_screen.can_open_on_key():
-		_toggle_crafting()
-		return true
-	if event.is_action_pressed("inventory") and _bag_screen.can_open_on_key():
-		_bag_screen.toggle()
-		return true
-	if event.is_action_pressed("character", false, true) and _character_screen.can_open_on_key():
-		_character_screen.toggle_tab(CharacterScreen.Tab.CHARACTER)
-		return true
-	if event.is_action_pressed("skills") and _character_screen.can_open_on_key():
-		_character_screen.toggle_tab(CharacterScreen.Tab.SKILLS)
-		return true
-	return _is_any_screen_open()
 
 
 ## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in

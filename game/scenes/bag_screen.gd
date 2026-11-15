@@ -85,7 +85,7 @@ func _on_close() -> void:
 	_refresh()
 
 
-## The bag button on the hotbar does what the bag's key does (see Main `_screens_take`).
+## The bag button on the hotbar does what the bag's key does (see ScreenKeys `take`).
 func _on_bag_requested() -> void:
 	if can_open_on_key():
 		toggle()
