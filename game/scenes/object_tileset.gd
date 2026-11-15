@@ -183,7 +183,8 @@ static func atlas_cell(
 		return Vector2i(ObjectStock.look(object), object_type["atlas_row"])
 	if object_type.has("sway_frames"):
 		return Vector2i(sway_frame, object_type["atlas_row"])
-	var variant: int = PositionHash.of(object.pos) % int(object_type["variants"])
+	var variant_tile := WorldObjectWays.variant_tile(object, connections)
+	var variant: int = PositionHash.of(variant_tile) % int(object_type["variants"])
 	if object_type.has("connects"):
 		var column := variant * WorldObjectTypes.CONNECTION_LOOKS + connections
 		return Vector2i(column, object_type["atlas_row"])

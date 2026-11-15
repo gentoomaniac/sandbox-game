@@ -425,11 +425,22 @@ along its foot.
   4 px diamond meshes so the ground shows through, cork floats along the hem; wicker eel
   traps (`straw`, `sand_light`, `sand`, `mud`, hoops and outline `mud_dark`). Snow covers
   the deck and the boat's floor (a remap, as the planks lie flat), and caps the rest.
-- **Ways** (#62, tools/art/ways.py, 32 and 16 px from one module): a plank walk of weathered
-  boards across the tile (`bare_light` worn edges, `bare` faces, gaps `mud_dark`, a darker `mud`
+- **Ways** (#62, #84, tools/art/ways.py, 32 and 16 px from one module): a plank walk of weathered
+  boards across the way (`bare_light` worn edges, `bare` faces, gaps `mud_dark`, a darker `mud`
   board here and there, nails and knots at 32 px only) and a stone path of rounded cobbles set in
   `mud_dark` earth (cool `stone`, warm `bare` and brown `sand`/`mud` ramps, dome-shaded at 32 px).
-  Full-tile pieces with no connection masks: every variant meets every other at the seams. Low
+  Full-tile pieces with a picture per connection mask (as the fences have): beside another way of
+  either kind a piece runs on flush, every variant meeting every other at the seam, so a road can
+  be any width with no edge inside it; with no way beside a side the edge is ragged. Planks: boards
+  3 to 5 px wide in a pattern per variant (adding up to the tile, so the next tile's boards go on
+  from the gap), their loose ends stopping 0 to 4 px short (the right ends 1 more, for the shadow)
+  with a corner sawn off here and there, a chipped outer board, a knot (a `mud_dark` eye in a ring
+  of `mud`) in some tiles, and a butt joint where two boards meet at a seam; the boards lie across
+  the way (see design/building/ways.md for the rule at corners and crossings); a boards' tile is
+  turned over its diagonal for a way that runs east to west. Stones: a kerb of edging stones along a
+  side with no way beside it, each 4 to 5 px deep (2 at 16 px) at its own distance from the edge, its
+  outer corners rounded, lit top and left, shaded bottom and right, in `stone`, `bare` and `sand`
+  ramps with the earth in its joints. One pixel of `shadow` falls right of and below the edge. Low
   contrast, so a long way reads as one. Snow lies evenly over both, the gaps showing as
   `snow_shadow`.
 - **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,

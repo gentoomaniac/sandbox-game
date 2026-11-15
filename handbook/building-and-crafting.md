@@ -176,7 +176,9 @@ Press Shift+C for the crafting menu (C is the character window).
 - Ways: a plank walk (workbench, 2 planks make 2 pieces, woodworking 5) and a stone path (by hand,
   2 stone a piece, masonry 5). Lay them tile by tile on grass (planks also on mud and the salt
   marsh, never on tilled soil or water). The axe takes up planks, the pickaxe stones, and you get
-  the piece back.
+  the piece back. Ways join up: lay one beside another and there is no edge between them, so a
+  road can be as wide as you like; the outer edges are ragged, the stones have a kerb, and the
+  boards always lie across the road.
 - The menu lists what you can make with what you carry. A recipe you can't afford is greyed with
   the missing materials marked.
 - With a full bag a craft still goes ahead: what doesn't fit drops at your feet.

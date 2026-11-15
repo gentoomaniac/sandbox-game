@@ -21,8 +21,37 @@ can be fixed. Made and placed a piece a tile like the fence and wall pieces
   the axe for the plank walk (2 hits), the pickaxe for the stone path (3 hits). A piece never gives
   back more than it cost. Unlike the jetty (over water), a way can be taken up from under the
   player's feet: it has ground under it.
-- **Art:** both in both art sets, atlas rows 60 and 61 (`tools/art/ways.py`): full-tile pieces with
-  no connection masks, 2 variants of the planks and 3 of the cobbles, in every season's look.
+- **Art:** both in both art sets, atlas rows 60 and 61 (`tools/art/ways.py`), in every season's
+  look. A way is a line object (`connects`: the group `way`, so either kind joins the other, see
+  [fences-and-walls.md](fences-and-walls.md)): a picture per connection mask of the 4 sides, 4
+  variants of the planks and 3 of the cobbles. The mask is computed at draw time from the world
+  (nothing is saved) and the piece is drawn again when a way beside it is laid or taken up (the
+  view redraws the 4 sides of a changed tile, as for the fences). The diagonals do not count.
+- **Edges** (#84, the user's verdict on the first look): a way is not a straight band.
+  - Beside another way a piece runs on flush, no edge and no gap: laying a second way along the
+    first makes a road of any width that still has a clean edge on both outer sides.
+  - On a side with no way the edge is irregular: the plank walk's boards stop a pixel or three short
+    of the side, each its own length, some with a corner sawn off, and the outer board is chipped;
+    the stone path has a kerb of edging stones (each its own depth from the edge, the corners
+    rounded) that holds the cobbles together.
+  - Planks vary: 3 to 5 px wide, patterns per variant, a butt joint here and there and a knot (the
+    eye of a branch) in some tiles. The widths of every variant add up to the tile, so the boards
+    of tiles above and below meet at their gap. The variant is picked by the row (or column) the
+    boards lie in, not by the tile (`WorldObjectWays.variant_tile`), so the boards of a road two
+    tiles wide have the same widths side by side and line up across the seam.
+- **Which way the boards lie** (#84, rule chosen): across the way, perpendicular to the road's
+  direction, worked out from the neighbours (`WorldObjectWays.boards_lie_east_west`, the same rule
+  in the art for every mask):
+  - a way runs along the axis that has more neighbours on it. A run north to south has boards
+    lying east to west; a run east to west has boards lying north to south;
+  - a way's end (one neighbour) lies as its run does;
+  - a T lies as the run it is on does: the tile where the stem leaves has two neighbours on one axis
+    and one on the other, so the axis with two wins;
+  - with as many on both axes (a corner, a crossing, a tile alone) the boards lie east to west. A
+    tile alone has no direction to be across (it is not saved which way it was laid from), so it
+    takes this default; the next piece laid beside it gives it one.
+  A way of the other kind counts as a neighbour: where a plank walk leaves a stone road, the road
+  joins it flush.
 - **They never wear and never turn to mud, and are walked a little faster** (chosen: 1.1, `[way]`
   of data/paths.cfg, a reward for the work, not much). Laying one clears the wear beneath. How is in
   [desire-paths.md](../world/desire-paths.md#ways). A way over flooded mud (the plank walk) is walked

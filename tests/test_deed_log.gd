@@ -219,6 +219,8 @@ func test_the_finished_actions_that_are_deeds() -> void:
 		[ActionOutcome.HIT, WorldObjectTypes.OAK, {}, &""],
 		[ActionOutcome.PLACE, WorldObjectTypes.WATTLE_FENCE, {}, GossipRules.FENCED],
 		[ActionOutcome.PLACE, WorldObjectTypes.CHEST, {}, &""],
+		[ActionOutcome.PLACE, WorldObjectTypes.PLANK_WALK, {}, &""],
+		[ActionOutcome.PLACE, WorldObjectTypes.STONE_PATH, {}, &""],
 		[ActionOutcome.TAKE_DOWN, WorldObjectTypes.CHEST, {}, &""],
 		[ActionOutcome.BUILD, BuildingTypes.KATE, {}, GossipRules.BUILT],
 		[ActionOutcome.DEMOLISH, BuildingTypes.KATE, {}, GossipRules.TOOK_DOWN],

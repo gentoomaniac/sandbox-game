@@ -210,8 +210,8 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 57 pig_shelter (1)
 # 58 pen_gate_open (16, the gate swung open)
 # 59 scarecrow (3 frames: still, then blown by the wind, see scarecrow.py)
-# 60 plank_walk (2, full-tile ground pieces that meet at every seam, see ways.py)
-# 61 stone_path (3, the same)
+# 60 plank_walk (4 variants of 16, one per connection mask: full-tile ground pieces that run on into the ways beside them, see ways.py)
+# 61 stone_path (3 variants of 16, the same)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""

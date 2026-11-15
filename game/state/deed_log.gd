@@ -50,7 +50,9 @@ static func kind_of(outcome: ActionOutcome) -> StringName:
 		ActionOutcome.BREAK:
 			return GossipRules.FELLED if object_data.has("trunk") else &""
 		ActionOutcome.PLACE:
-			return GossipRules.FENCED if object_data.has("connects") else &""
+			# A way connects too, but it fences nothing.
+			var is_line: bool = object_data.has("connects") and not object_data.has("way")
+			return GossipRules.FENCED if is_line else &""
 		ActionOutcome.BUILD:
 			return GossipRules.BUILT
 		ActionOutcome.DEMOLISH:
