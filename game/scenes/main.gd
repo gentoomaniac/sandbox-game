@@ -645,7 +645,7 @@ func _hotbar_slot_of(event: InputEvent) -> int:
 ## Holding the use key or the mouse button swings again as soon as the swing is over. A click on a
 ## bell frame rang it once when it was pressed: it does not ring again, nor swing.
 func _repeat_held_use() -> void:
-	if not _can_use() or _console_view.is_open():
+	if not _can_use() or _is_any_screen_open():
 		return
 	var target := _use_highlight.targeting()
 	var is_click_held := (
