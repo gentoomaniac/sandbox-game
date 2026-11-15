@@ -104,9 +104,48 @@ campfire nearest to where they came. You walk through them, so they never shut y
 - Each villager has an opinion of you from -100 to 1000, starting at 0 and moving at most 20
   points a day. They answer cold (below -20), neutral or warm (20 or more).
 - Felling a tree is -1, building a house +1 and taking one down -2 (a step is 10 points); what
-  they only heard counts half.
+  they only heard counts half. Handing in a quest is a deed too, "helped": +1 or +2.
 - With a model, it also words the story in the villager's voice and judges how they take it.
 - `deeds`, `gossip <villager>` and `opinion` in the console show all this.
+
+## Quests
+
+Villagers ask for small things: five fibre for the bean rows, eight berries for the pot, a stool for
+the loom, five turnips, six pieces of wattle fence by a garden. Nothing is lost by letting one go.
+
+- **The notice board.** Wehlsbüll has one on the town square. A bobbing "!" hangs over it while a
+  quest is posted that you have not taken. Press E at the board for the rough lines of the new
+  quests and whom to see ("Fibre is wanted for the bean rows. Go and see Antje Boysen, a farmer's
+  wife."). Reading it gives you nothing yet. A world without a board (one made before it) tells you
+  by a message instead ("Antje Boysen has something for you."). You can put a board up yourself,
+  anywhere outdoors, with `give notice_board` in the [console](console.md); the axe takes it down
+  for the item again.
+- **Taking one.** Press E on that villager: they tell you what they need, one line each in the
+  chat, and the quest is yours. It is then in the quests tab (J) of the character window, with who
+  gave it, what it asks, how far you are, the days left, and the reward as a tooltip. Press E on them
+  again to be reminded. You can take at most 10 at once ("Your quest log is full.").
+- **Handing in.** Hold the item in your hand (the selected hotbar slot) and press E on the villager.
+  With enough, the whole count is taken, they thank you and the reward is yours (what does not fit in
+  the bag falls at your feet). With too little they say how far you are. A building quest (fence by
+  their garden) needs no item: the pieces you put up since it was posted, near their home, are
+  counted when you speak to them, and stay yours.
+- **Time.** A quest is posted at the start of a day, at most one a day and at most 10 open at once.
+  It stays a number of days from the day it was posted (8 to 12), taken or not, then it goes away
+  with a message, and nothing else happens. The first day of a new game posts a starter, so you
+  meet someone early.
+- **Rewards** are things the shop does not sell (wax for candles, and seeds on the first help), and
+  goodwill: handing in is a deed, "helped", that the village hears of (see
+  [gossip and opinions](#gossip-and-opinions)): +1 on the villager's opinion for a step, +2 for
+  a big favour.
+- **With a model** the villager says each line in their own words, if the profile's Quest lines
+  switch is on; the game decides everything, the model only words it, and without a model or if it
+  fails the lines are the fixed ones.
+- **Writing a quest.** A quest is one file in `data/quests/` (its name is its id); see the header
+  of `data/quests/fibre_for_beans.cfg` for every key: who gives it, how long it stays, the rough
+  notice, the lines, what is asked (`bring` or `build`), prerequisites (opinion of a villager,
+  a skill, the season, the day, an earlier quest done) and the reward. `data/quests/_limits.cfg` has
+  the limits. The console's `quest` posts and hands in quests for you. Quest lines of the same
+  design: [design/villagers/quests.md](../design/villagers/quests.md).
 
 ## Setting up a language model
 
@@ -160,7 +199,7 @@ keep several (say Gemini flash and pro). The key belongs to the provider.
 | Lines a villager keeps | 24 | 2 to 200. More lines make answers slower and dearer. |
 | Random speech | on | Whether villagers' bubbles to each other and passing remarks ask the model. Off: they say the fixed lines they use without a model. |
 | Day plans | on | Whether the evening and newcomer day plans ask the model. Off: villagers keep the default day and nothing is asked; the console's `replan` still asks. |
-| Quest lines | on | Whether villagers voice quest lines with the model. Stored for now: it does nothing until quests are voiced. |
+| Quest lines | on | Whether villagers say the lines of a quest (asking, a reminder, thanks) in their own words with the model. Off: they say the fixed lines of the quest file. |
 | Key | empty | Only for endpoints that need one. Sent only to that provider. |
 | Max tokens per answer | empty | 1 to 32000. Empty is 60 for a line (1000 with Claude). Give a thinking model a few hundred. |
 | Temperature | empty | 0 to 2: lower is steadier. Empty is 0.5. Claude takes none. |

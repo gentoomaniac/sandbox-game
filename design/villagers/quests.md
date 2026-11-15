@@ -1,7 +1,7 @@
 # Quests: small goals from the villagers
 
-**Decided (the user, 2026-11-15); built step by step** (#12; needs #11 seeds, #7 routines, #9 gossip;
-it fits the shop of #10). This page says what is built; each step adds its section.
+**Decided (the user, 2026-11-15) and built** (#12; needs #11 seeds, #7 routines, #9 gossip;
+it fits the shop of #10). This page says what is built.
 
 Why: the first days have nothing to work towards before the first turnips are ripe (nine good
 days), and production needs a reason. A quest is a reason that fits the village: a neighbour is
@@ -192,3 +192,29 @@ stands again).
 - **With a model** and the switch on (#107): the villager says each in their own words, one line for
   each fixed line, the fixed lines as the fallback. The game decides everything and the model only
   voices it: see [dialogue.md](dialogue.md), "Quest lines". The board's rough lines are not voiced.
+
+## The numbers, and the play-test
+
+All in data: `data/quests/_limits.cfg` (10 open per source, 10 taken in all, one posted a day, a quest
+rests 20 days after it was done or went away, 8 days by default) and each quest's file.
+
+| Quest | Asks | Needs | Days | Reward |
+|---|---|---|---|---|
+| `fibre_for_beans` (starter) | 5 fibre | none | 8 | 10 turnip seeds, 1 step |
+| `berries_for_the_pot` (starter) | 8 berries | not winter | 8 | 8 turnip seeds, 1 step |
+| `stool_for_the_loom` | a stool | day 4 | 12 | 2 wax, 1 step |
+| `turnips_for_the_pot` | 5 turnips | day 12 (the first turnips are ripe) | 10 | 2 wax, 2 steps |
+| `wattle_for_the_garden` | 6 wattle fence by the home, radius 8 | day 10, not winter, opinion 0 | 10 | 2 wax, 2 steps |
+
+Against the shop of #10 (buys at 60%, sells at 125% of a worth, rounded): 5 fibre are 5 Pfennig to
+the stall and the 10 seeds of the first quest cost 30 there, a loan to start the farm that the player
+does only once; the starters ask only for what lies about from the first hour. The other rewards are
+wax, which the shop does not sell (two wax make about two candles, 20 Pfennig each at the stall),
+for work that costs more than that: a stool is 3 planks and skill 10, the fence 3 logs and 12 fibre.
+So no quest is a better deal than the stall.
+
+`tests/test_quest_playthrough.gd` plays the first days in a new game with the village and the real
+files: day 1 posts a starter that is read on the board, taken, handed in and paid with its deed told;
+a quest comes each day within the limits and one nobody takes goes away; the fence quest is done by
+putting fence up by Gesche's house.
+

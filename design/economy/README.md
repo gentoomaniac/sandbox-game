@@ -24,6 +24,13 @@ So there are three ways to turn what the player makes into something else:
 - Seeds came from the console (`give`) and one seed comes back with each harvest
   ([crops.md](../farming/crops.md)). "Until a shop exists" was the standing promise: the first shop
   exists now ([shop.md](shop.md), #10) and sells the seeds of every crop (#11).
+- **Quests are not barter** (#12, [../villagers/quests.md](../villagers/quests.md)): a neighbour asks
+  for a small thing and is glad of it, with no price in Pfennig. Their rewards are what the shop does
+  not sell (wax, seeds only for the first help) and goodwill, so a quest is never a better deal than
+  the stall: five fibre are worth 5 Pfennig to the shop, and the 10 turnip seeds the first quest gives
+  would cost 30 there, once, to start the farm; the other rewards are two wax (a candle is 2 wax and a
+  fibre for two, and the shop sells one at 20 Pfennig) for a stool, the turnips and the fence, which
+  cost the player more work than that.
 - The village sheet (`data/village.cfg`, the `[money]` topic) already tells every villager the
   prices of 1750: "People reckon in Mark and Schilling: 16 Schilling make a Mark, and 3 Mark a
   Reichstaler." A pound of butter is 4 Schilling, a dozen eggs 2, a loaf of rye bread 1, a measure
