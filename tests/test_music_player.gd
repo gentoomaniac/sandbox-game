@@ -110,11 +110,25 @@ func test_a_real_piece_renders_and_plays_its_first_section_in_a_loop() -> void:
 	assert_almost_eq(_music.loop_seconds, 128 * 6 * 1040 / 44100.0, 0.001)
 
 
-func test_a_piece_switches_on_its_own_beat() -> void:
+func test_a_piece_switches_on_its_own_bar() -> void:
 	_music.play("tiny")
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
-	# Six rows of 6 ticks of 882 frames at 44.1 kHz, the beat the sections file gives.
-	assert_almost_eq(_music._crossfade._beat_seconds, 6 * 6 * 882 / 44100.0, 0.0001)
+	# Two beats of six rows of 6 ticks of 882 frames at 44.1 kHz, the bar the sections file gives.
+	assert_almost_eq(_music._crossfade._beat_seconds, 2 * 6 * 6 * 882 / 44100.0, 0.0001)
+
+
+func test_a_piece_plays_its_form_round_and_round() -> void:
+	_music.rules = MusicRules.new({"piece.tiny": {"form": ["loop", "loop", "loop"]}})
+	_music.play("tiny")
+	await wait_for_signal(_music.started, PATIENCE_SECONDS)
+	assert_almost_eq(_music.loop_seconds, 3 * 6 * 882 / 44100.0, 0.0001, "three rows")
+
+
+func test_a_form_the_piece_does_not_allow_is_not_played() -> void:
+	_music.rules = MusicRules.new({"piece.tiny": {"form": ["loop", "fill"]}})
+	assert_eq(_music.play("tiny"), "Can't play tiny")
+	assert_push_error_count(1)
+	assert_eq(_music.wanted_track(), "")
 
 
 func test_a_render_is_kept_in_the_cache() -> void:

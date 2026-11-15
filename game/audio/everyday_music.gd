@@ -2,16 +2,16 @@ class_name EverydayMusic
 extends Node
 ## The music that plays when nothing else asks for it: the everyday pieces of data/music.cfg one
 ## after the other, round and round. It has the MusicPlayer start the first, and once a piece has
-## looped `loops_before_switch` times it asks for the next: that renders in the background while
-## the piece goes on looping, and crossfades in on the next beat when done. Whatever the player
+## played `switch_seconds` it asks for the next: that renders in the background while the piece
+## goes on looping, and crossfades in on the next bar when done. Whatever the player
 ## plays (the console's `play`) is followed the same way, going on with the first everyday piece
 ## when it isn't one; a player stopped (the console's `stop`) stays quiet. The music director of
 ## task 171 will choose the pieces by the time of day and the weather instead.
 
 var _player: MusicPlayer
 var _rules: MusicRules
-## Fires when the piece that plays has looped as often as the rules say.
-var _loops_timer := Timer.new()
+## Fires when the piece that plays has played as long as the rules say.
+var _switch_timer := Timer.new()
 
 
 ## Whether the game plays music by itself: not when it is muted (the tests and benchmarks
@@ -25,9 +25,9 @@ func _init(player: MusicPlayer, rules := MusicRules.default_rules()) -> void:
 	_rules = rules
 	# The music goes on while the game is paused, and so does what steers it.
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_loops_timer.one_shot = true
-	_loops_timer.timeout.connect(_play_next)
-	add_child(_loops_timer)
+	_switch_timer.one_shot = true
+	_switch_timer.timeout.connect(_play_next)
+	add_child(_switch_timer)
 
 
 func _ready() -> void:
@@ -36,7 +36,7 @@ func _ready() -> void:
 
 
 func _on_started(_track: String) -> void:
-	_loops_timer.start(_rules.loops_before_switch() * _player.loop_seconds)
+	_switch_timer.start(_rules.switch_seconds())
 
 
 func _play_next() -> void:

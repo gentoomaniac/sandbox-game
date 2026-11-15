@@ -1,6 +1,6 @@
 extends GutTest
 ## EverydayMusic on tiny pieces (one row of silence, a loop of 0.12 s) in a folder of their own: it
-## starts the first piece, goes on to the next after the loops the rules say, keeps to what the
+## starts the first piece, goes on to the next after the time the rules say, keeps to what the
 ## player was told to play, and stays quiet once stopped. Master is muted meanwhile.
 
 const DIR := "user://test_everyday_music"
@@ -14,7 +14,7 @@ const SECTIONS := (
 	+ '[loop]\norder=0\nrows=1\nexits=["loop"]\n'
 )
 const RULES := {
-	"everyday": {"pieces": ["first", "second"], "loops_before_switch": 2},
+	"everyday": {"pieces": ["first", "second"], "switch_seconds": 0.3},
 	"fades": {"crossfade_seconds": 0.05, "stop_seconds": 0.05},
 	"cache": {"max_megabytes": 10},
 }
@@ -99,14 +99,13 @@ func test_it_goes_on_to_the_next_piece_and_round_to_the_first() -> void:
 	assert_eq(order, ["first", "second", "first", "second"] as Array[String])
 
 
-func test_it_switches_after_the_loops_and_not_before() -> void:
+func test_it_switches_after_its_time_and_not_before() -> void:
 	_start_everyday()
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
-	var loop_seconds := _music.loop_seconds
 	var started_at := Time.get_ticks_msec()
 	await wait_for_signal(_music.started, PATIENCE_SECONDS)
 	var seconds := (Time.get_ticks_msec() - started_at) / 1000.0
-	assert_gte(seconds, 2 * loop_seconds, "two loops of the piece")
+	assert_gte(seconds, 0.3, "the switch time of the rules")
 
 
 func test_a_piece_the_console_played_goes_on_with_the_first_everyday_piece() -> void:

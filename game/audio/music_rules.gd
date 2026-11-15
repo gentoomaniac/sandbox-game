@@ -1,14 +1,17 @@
 class_name MusicRules
 extends RefCounted
 ## What the music does, read from data/music.cfg (see there for what every key means): which
-## pieces play when nothing else asks, how often they loop before the next one comes in, how long
-## the fades are and how much disk the cache of renders may take.
+## pieces play when nothing else asks, how long one plays before the next comes in, the form each
+## piece plays in (a [piece.<name>] section of its own), how long the fades are and how much disk
+## the cache of renders may take.
 
 const DEFAULT_PATH := "res://data/music.cfg"
 const BYTES_PER_MEGABYTE := 1000 * 1000
+## A piece's own section is this and its name: [piece.sketch_tide].
+const PIECE_SECTION := "piece."
 
 const REQUIRED_KEYS := {
-	"everyday": ["pieces", "loops_before_switch"],
+	"everyday": ["pieces", "switch_seconds"],
 	"fades": ["crossfade_seconds", "stop_seconds"],
 	"cache": ["max_megabytes"],
 }
@@ -49,8 +52,16 @@ func problems() -> Array[String]:
 		return bad
 	if everyday_pieces().is_empty():
 		bad.append("[everyday] pieces must name a piece")
-	if loops_before_switch() < 1:
-		bad.append("[everyday] loops_before_switch must be at least 1")
+	for section: String in _values:
+		if section.begins_with(PIECE_SECTION):
+			var form: Variant = _values[section].get("form", [])
+			if (
+				not form is Array
+				or form.any(func(part: Variant) -> bool: return part is not String)
+			):
+				bad.append("[%s] form must be a list of section names" % section)
+	if switch_seconds() <= 0.0:
+		bad.append("[everyday] switch_seconds must be above 0")
 	for key in ["crossfade_seconds", "stop_seconds"]:
 		if number("fades", key) <= 0.0:
 			bad.append("[fades] %s must be above 0" % key)
@@ -70,8 +81,17 @@ func everyday_pieces() -> Array[String]:
 	return pieces
 
 
-func loops_before_switch() -> int:
-	return int(number("everyday", "loops_before_switch"))
+## How long a piece plays before the next comes in, in seconds.
+func switch_seconds() -> float:
+	return number("everyday", "switch_seconds")
+
+
+## The sections `piece` plays one after the other, round and round (see MusicPiece.parts): its
+## section's `form`, or none (its first section alone).
+func form(piece: String) -> Array[String]:
+	var sections: Array[String] = []
+	sections.assign(_values.get(PIECE_SECTION + piece, {}).get("form", []))
+	return sections
 
 
 func crossfade_seconds() -> float:

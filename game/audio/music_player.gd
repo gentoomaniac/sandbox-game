@@ -1,11 +1,12 @@
 class_name MusicPlayer
 extends Node
 ## Plays the pieces of assets/music/ (made by tools/music/generate.py) on the Music bus, each
-## looping its first section, when asked: `play` and `stop` are the console's commands and
-## EverydayMusic's. A piece is rendered by a ModuleRenderer on a WorkerThreadPool thread (or
-## loaded from the MusicCache there), so the main thread only takes the finished stream, and never
-## waits for one: what plays goes on looping until the next is done; `started` tells when the
-## music begins. Another piece while one plays is crossfaded to on the beat.
+## looping its form (its sections one after the other, see MusicRules.form), when asked: `play`
+## and `stop` are the console's commands and EverydayMusic's. A piece is rendered by a
+## ModuleRenderer on a WorkerThreadPool thread (or loaded from the MusicCache there), so the main
+## thread only takes the finished stream, and never waits for one: what plays goes on looping
+## until the next is done; `started` tells when the music begins. Another piece while one plays
+## is crossfaded to on the bar.
 ##
 ## A piece is called by its file name without the extension (see Console for the short names).
 
@@ -19,11 +20,13 @@ const CACHE_DIR := "user://music_cache"
 const MIX_RATE := 44100
 
 var music_dir := MUSIC_DIR
+## The form each piece plays in.
+var rules := MusicRules.default_rules()
 ## How long `stop` takes to fade the music out, and a crossfade between two pieces to fade.
 var stop_seconds := MusicRules.default_rules().stop_seconds()
 var crossfade_seconds := MusicRules.default_rules().crossfade_seconds()
 var cache := MusicCache.new(CACHE_DIR, MusicRules.default_rules().cache_bytes())
-## How long the loop that plays lasts, in seconds, once `started` was emitted.
+## How long the loop that plays (its form once round) lasts, in seconds, once `started` was emitted.
 var loop_seconds := 0.0
 
 var _crossfade := MusicCrossfade.new(AudioService.MUSIC)
@@ -39,6 +42,7 @@ var _is_playing := false
 class Render:
 	var track: String
 	var renderer: ModuleRenderer
+	var bar_beats: int
 
 
 func _init() -> void:
@@ -95,13 +99,19 @@ func play(track: String) -> String:
 	var piece := MusicPiece.read(music_dir, track)
 	if piece == null:
 		return "Can't play %s" % track
+	var form := rules.form(track)
+	var problem := piece.form_problem(form)
+	if problem != "":
+		push_error("MusicPlayer: the form of %s" % problem)
+		return "Can't play %s" % track
 	_wanted = track
 	var render := Render.new()
 	render.track = track
+	render.bar_beats = piece.bar_beats
 	render.renderer = ModuleRenderer.new(piece.module, MIX_RATE, true)
 	render.renderer.rows_per_beat = piece.beat_rows
 	render.renderer.cache = cache
-	render.renderer.start([piece.loop_section().part()], true)
+	render.renderer.start(piece.parts(form), true)
 	_renders.append(render)
 	return "Rendering %s..." % track
 
@@ -122,9 +132,10 @@ func stop() -> void:
 
 func _start(render: Render, stream: AudioStreamWAV) -> void:
 	loop_seconds = stream.get_length()
+	var bar_seconds := render.renderer.beat_seconds * render.bar_beats
 	if _is_playing:
-		_crossfade.crossfade(stream, render.renderer.beat_seconds, crossfade_seconds)
+		_crossfade.crossfade(stream, bar_seconds, crossfade_seconds)
 	else:
-		_crossfade.play(stream, render.renderer.beat_seconds)
+		_crossfade.play(stream, bar_seconds)
 	_is_playing = true
 	started.emit(render.track)

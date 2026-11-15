@@ -114,10 +114,16 @@ in data/music.cfg):
   data/music.cfg).
 - **Sections** are read from the `<name>.cfg` the generator writes (speed, tempo, meter, each
   section's place, rows and exits); the piece's first section loops. The exits are read and kept
-  for the director of task 171.
+  for the director of task 171 (since then a piece's form is checked against them).
 - **The switch:** a piece loops `loops_before_switch` times (3: Tide 96 s, Harbour 72 s), then the
   next is asked for, rendered in the background, and crossfaded in over 4 s starting on the
-  piece's next beat (a beat of 6 rows for Tide's 6/8 sway, 4 for Harbour). Off with `--mute` and
+  piece's next beat (a beat of 6 rows for Tide's 6/8 sway, 4 for Harbour). **Since task 171** a
+  piece plays its form (`form` of its [piece.<name>] in data/music.cfg: its sections one after the
+  other, round and round, rendered as one looping stream, so a fill comes on the bar to the sample
+  and the wrap is seamless), the next comes after `switch_seconds` (90 s), and the crossfade starts
+  on the next bar (Tide 4 s, Harbour 3 s). Harbour evening's form, three loops and the fill (75 s),
+  is 13.2 MB at 44.1 kHz stereo and renders in about 4 s (main thread, load from other work; twice
+  its length, as it loops), against 1.6 s for Tide. Off with `--mute` and
   under the Dummy driver.
 
 ## Memory

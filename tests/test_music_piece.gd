@@ -81,3 +81,27 @@ func test_a_sections_file_that_does_not_fit_its_module_is_refused() -> void:
 		assert_null(MusicPiece.read(DIR, "made_up"), cases[sections])
 		errors += 1
 		assert_push_error_count(errors)
+
+
+func test_a_form_plays_its_sections_one_after_the_other() -> void:
+	var piece := MusicPiece.read(MusicPlayer.MUSIC_DIR, "sketch_harbour")
+	var form: Array[String] = ["loop", "loop", "fill"]
+	assert_eq(piece.form_problem(form), "")
+	assert_eq(
+		piece.parts(form), [Vector2i(0, 128), Vector2i(0, 128), Vector2i(2, 16)] as Array[Vector2i]
+	)
+	assert_eq(piece.parts([] as Array[String]), [Vector2i(0, 128)] as Array[Vector2i], "the loop")
+
+
+func test_a_form_the_sections_do_not_allow_is_a_problem() -> void:
+	var piece := MusicPiece.read(MusicPlayer.MUSIC_DIR, "sketch_harbour")
+	assert_eq(
+		piece.form_problem(["loop", "bridge"] as Array[String]),
+		"sketch_harbour has no section bridge"
+	)
+	assert_eq(
+		piece.form_problem(["fill", "fill"] as Array[String]),
+		"sketch_harbour: section fill doesn't exit to fill"
+	)
+	var tide := MusicPiece.read(MusicPlayer.MUSIC_DIR, "sketch_tide")
+	assert_eq(tide.form_problem(["loop"] as Array[String]), "")

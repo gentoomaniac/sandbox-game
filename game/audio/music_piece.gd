@@ -58,6 +58,32 @@ func loop_section() -> Section:
 	return sections[0]
 
 
+## What ModuleRenderer renders to play `form`, the sections named one after the other (and round
+## to the first again); an empty form is the first section alone. See `form_problem` first.
+func parts(form: Array[String]) -> Array[Vector2i]:
+	var played: Array[Vector2i] = []
+	if form.is_empty():
+		played.append(loop_section().part())
+	for section_name in form:
+		played.append(section_named(section_name).part())
+	return played
+
+
+## What is wrong with `form` (see `parts`): a section it names that the piece hasn't, or a section
+## followed by one it doesn't exit to (its last by its first, as the form goes round); "" for
+## nothing.
+func form_problem(form: Array[String]) -> String:
+	for section_name in form:
+		if section_named(section_name) == null:
+			return "%s has no section %s" % [name, section_name]
+	for index in form.size():
+		var section := section_named(form[index])
+		var after := form[(index + 1) % form.size()]
+		if not section.exits.has(after):
+			return "%s: section %s doesn't exit to %s" % [name, section.name, after]
+	return ""
+
+
 ## The section called `section_name`, or null.
 func section_named(section_name: String) -> Section:
 	for section in sections:

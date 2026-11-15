@@ -1,6 +1,6 @@
 extends SceneTree
 ## Measures what the game's everyday music costs (task 170): each piece of data/music.cfg rendered on
-## a worker thread as the game renders it (44.1 kHz stereo, its first section looping) into a fresh
+## a worker thread as the game renders it (44.1 kHz stereo, its form looping) into a fresh
 ## MusicCache, and then loaded from the cache, with how long each takes from the start to the
 ## stream being ready, the longest frame the main thread had meanwhile (it must never stall) and
 ## what the main thread spends taking the finished stream. Headless and silent: nothing is played.
@@ -25,19 +25,21 @@ func _initialize() -> void:
 		for run in RUNS:
 			var cache := MusicCache.new(CACHE_DIR, rules.cache_bytes())
 			_remove_cache()
-			await _measure(piece, cache, "render")
-			await _measure(piece, cache, "cache")
+			await _measure(piece, rules.form(name), cache, "render")
+			await _measure(piece, rules.form(name), cache, "cache")
 	_remove_cache()
 	quit()
 
 
-## One render of the piece's loop on a worker, polled each frame as the player does.
-func _measure(piece: MusicPiece, cache: MusicCache, source: String) -> void:
+## One render of the piece's form on a worker, polled each frame as the player does.
+func _measure(
+	piece: MusicPiece, form: Array[String], cache: MusicCache, source: String
+) -> void:
 	var renderer := ModuleRenderer.new(piece.module, MusicPlayer.MIX_RATE, true)
 	renderer.rows_per_beat = piece.beat_rows
 	renderer.cache = cache
 	var started := Time.get_ticks_usec()
-	renderer.start([piece.loop_section().part()], true)
+	renderer.start(piece.parts(form), true)
 	var longest_frame := 0
 	var frame_start := started
 	while not renderer.is_done():
