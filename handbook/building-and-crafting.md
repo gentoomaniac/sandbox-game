@@ -53,7 +53,8 @@ bush](../docs/screenshots/bush-replanted-classic.png).
    styles shows them in a column above it (up and down arrows or a click).
 3. The picture beside it lists the materials against what you carry.
 4. A ghost follows the mouse: green where it fits. A note by the pointer says why a spot doesn't
-   work, for example unsafe wetland.
+   work, for example unsafe wetland. Nothing is built over you, a villager or a farm animal:
+   step off the spot first.
 5. Click or press Space to build; the materials are taken.
 6. Press Escape, right click or hold something else to stop.
 

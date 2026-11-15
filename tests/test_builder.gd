@@ -14,7 +14,7 @@ func _open_origin() -> Vector2i:
 	for y in range(-24, 25):
 		for x in range(-24, 25):
 			var origin := _state.player.tile() + Vector2i(x, y)
-			if _world.placement_blockers(_builder.choice, origin).is_empty():
+			if _builder.placement_blockers(origin).is_empty():
 				return origin
 	fail_test("no room for a %s near the camp" % _builder.choice)
 	return Vector2i.ZERO

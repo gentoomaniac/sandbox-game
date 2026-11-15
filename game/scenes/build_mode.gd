@@ -218,7 +218,7 @@ func _process(delta: float) -> void:
 	_texture = load(
 		ArtSet.path(SeasonalArt.house_path(builder.type_data()["sprite"], SeasonBlend.Look.SUMMER))
 	)
-	_blockers = world.placement_blockers(builder.choice, _origin)
+	_blockers = builder.placement_blockers(_origin)
 	_show_message()
 	queue_redraw()
 

@@ -104,10 +104,7 @@ func shortfalls() -> Dictionary:
 ## its materials.
 ## Returns it, or null if the land is blocked or something is missing.
 func place(origin: Vector2i) -> Building:
-	if (
-		not shortfalls().is_empty()
-		or not _state.world.placement_blockers(choice, origin).is_empty()
-	):
+	if not shortfalls().is_empty() or not placement_blockers(origin).is_empty():
 		return null
 	if not _state.cheats.is_cost_off:
 		var is_paid := _state.player.inventory.exchange(costs(), {})
@@ -115,6 +112,25 @@ func place(origin: Vector2i) -> Building:
 	var building := _state.world.place_building(choice, origin, style)
 	_state.report(ActionOutcome.BUILD, origin, choice, {} if _state.cheats.is_cost_off else costs())
 	return building
+
+
+## The tiles that stop the chosen building at `origin`, and why: the world's (see
+## `World.placement_blockers`), and also every footprint tile the body of the player or a villager
+## touches, or a farm animal stands on: they would be shut in its walls.
+func placement_blockers(origin: Vector2i) -> Dictionary[Vector2i, World.Blocked]:
+	var blockers := _state.world.placement_blockers(choice, origin)
+	var bodies: Array[Rect2i] = [PlayerState.body_tiles(_state.player.position)]
+	for npc in _state.npcs.all():
+		bodies.append(PlayerState.body_tiles(npc.position))
+	for animal in _state.livestock.all():
+		bodies.append(Rect2i(animal.tile(), Vector2i.ONE))
+	for tile in Building.footprint_tiles(choice, origin):
+		if (
+			not blockers.has(tile)
+			and bodies.any(func(body: Rect2i) -> bool: return body.has_point(tile))
+		):
+			blockers[tile] = World.Blocked.OCCUPIED
+	return blockers
 
 
 ## What the hammer would take down on a tile, or null if there is nothing to take down. A bush
