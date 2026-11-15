@@ -138,7 +138,7 @@ func test_oystercatchers_all_year_dunlin_in_the_migration() -> void:
 
 func test_the_waders_can_be_spawned_from_the_console() -> void:
 	var console := Console.new(_state)
-	console.wildlife_spawner = func(_kind: StringName, count: int) -> int: return count
+	console.context.wildlife_spawner = func(_kind: StringName, count: int) -> int: return count
 	assert_eq(console.run("spawn oystercatcher 2"), ["Spawned 2 of 2 oystercatcher"])
 	assert_eq(console.run("spawn dunlin"), ["Spawned 1 of 1 dunlin"])
 	var listed := " ".join(console.run("spawn"))

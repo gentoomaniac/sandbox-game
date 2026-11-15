@@ -51,7 +51,7 @@ func test_the_removed_are_not_in_the_save_that_is_loaded() -> void:
 
 func test_a_wild_animal_is_cleared_by_the_view_and_the_answer_says_it_may_return() -> void:
 	var asked := []
-	_console.wildlife_clearer = func(kind: StringName) -> int:
+	_console.context.wildlife_clearer = func(kind: StringName) -> int:
 		asked.append(kind)
 		return 4
 	var lines := _console.run("killall deer")
@@ -62,7 +62,7 @@ func test_a_wild_animal_is_cleared_by_the_view_and_the_answer_says_it_may_return
 
 func test_the_wild_rabbit_is_the_wild_kind_and_rabbit_the_tame_one() -> void:
 	var asked := []
-	_console.wildlife_clearer = func(kind: StringName) -> int:
+	_console.context.wildlife_clearer = func(kind: StringName) -> int:
 		asked.append(kind)
 		return 1
 	_console.run("spawn rabbit")

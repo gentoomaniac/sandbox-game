@@ -30,7 +30,7 @@ func test_spawn_puts_farm_animals_near_the_player() -> void:
 
 func test_a_rabbit_is_a_tame_one_and_a_wild_rabbit_is_wildlife() -> void:
 	var asked := []
-	_console.wildlife_spawner = func(kind: StringName, count: int) -> int:
+	_console.context.wildlife_spawner = func(kind: StringName, count: int) -> int:
 		asked.append([kind, count])
 		return count
 	_console.run("spawn rabbit")
@@ -78,7 +78,7 @@ func test_help_spawn_lists_what_can_be_spawned() -> void:
 
 func test_a_long_list_wraps_into_lines_that_fit_the_log() -> void:
 	for line in _console.run("spawn"):
-		assert_lte(line.length(), Console.LIST_LINE_LENGTH)
+		assert_lte(line.length(), ConsoleHelper.LIST_LINE_LENGTH)
 
 
 func test_help_lists_the_names_of_every_command_that_takes_names() -> void:

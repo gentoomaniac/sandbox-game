@@ -142,7 +142,7 @@ func test_a_plan_for_the_rest_of_the_day_is_told_as_such() -> void:
 func test_replan_has_the_planner_plan_the_villager_and_says_what_it_said() -> void:
 	var npc := _resident("hinrich")
 	var planned: Array[Npc] = []
-	_console.replanner = func(villager: Npc) -> String:
+	_console.context.replanner = func(villager: Npc) -> String:
 		planned.append(villager)
 		return "Asking the model"
 	assert_eq(_console.run("replan hinrich"), ["Asking the model"] as Array[String])

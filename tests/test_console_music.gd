@@ -11,12 +11,12 @@ func before_each() -> void:
 	_played.clear()
 	_stops = 0
 	_console = Console.new(_state)
-	_console.music_tracks = func() -> Array[String]:
+	_console.context.music_tracks = func() -> Array[String]:
 		return ["sketch_harbour", "sketch_tide", "test_reel"]
-	_console.music_player = func(track: String) -> String:
+	_console.context.music_player = func(track: String) -> String:
 		_played.append(track)
 		return "Rendering %s..." % track
-	_console.music_stopper = func() -> void: _stops += 1
+	_console.context.music_stopper = func() -> void: _stops += 1
 
 
 func test_a_known_track_is_played_by_its_whole_name_or_without_its_first_word() -> void:
@@ -52,7 +52,8 @@ func test_stop_fades_the_music_out() -> void:
 
 
 func test_the_player_s_answer_is_shown() -> void:
-	_console.music_player = func(track: String) -> String: return "Already playing %s" % track
+	_console.context.music_player = func(track: String) -> String:
+		return "Already playing %s" % track
 	assert_eq(_console.run("play reel"), ["Already playing test_reel"] as Array[String])
 
 

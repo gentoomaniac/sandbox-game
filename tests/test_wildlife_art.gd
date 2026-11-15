@@ -37,7 +37,7 @@ func test_the_spawn_command_asks_for_animals() -> void:
 	var console := Console.new(state)
 	assert_eq(console.run("spawn deer 2"), ["No animals here"])
 	var asked := []
-	console.wildlife_spawner = func(kind: StringName, count: int) -> int:
+	console.context.wildlife_spawner = func(kind: StringName, count: int) -> int:
 		asked.append([kind, count])
 		return count
 	assert_eq(console.run("spawn deer 2"), ["Spawned 2 of 2 deer"])
@@ -49,7 +49,7 @@ func test_the_spawn_command_asks_for_animals() -> void:
 
 func test_mice_and_frogs_can_be_spawned() -> void:
 	var console := Console.new(GameState.new_game(1))
-	console.wildlife_spawner = func(_kind: StringName, count: int) -> int: return count
+	console.context.wildlife_spawner = func(_kind: StringName, count: int) -> int: return count
 	assert_eq(console.run("spawn mouse 3"), ["Spawned 3 of 3 mouse"])
 	assert_eq(console.run("spawn frog"), ["Spawned 1 of 1 frog"])
 	assert_string_contains(" ".join(console.run("spawn")), "frog")

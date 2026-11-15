@@ -16,10 +16,10 @@ func test_crows_with_no_flocks_says_so_and_what_they_ate() -> void:
 
 func test_spawn_and_killall_crows_go_to_the_wildlife_of_the_view() -> void:
 	var asked := []
-	_console.wildlife_spawner = func(kind: StringName, count: int) -> int:
+	_console.context.wildlife_spawner = func(kind: StringName, count: int) -> int:
 		asked.append(["spawn", kind, count])
 		return count
-	_console.wildlife_clearer = func(kind: StringName) -> int:
+	_console.context.wildlife_clearer = func(kind: StringName) -> int:
 		asked.append(["clear", kind])
 		return 2
 	assert_eq(_console.run("spawn crows 2"), ["Spawned 2 of 2 crows"] as Array[String])

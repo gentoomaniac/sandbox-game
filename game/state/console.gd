@@ -16,7 +16,6 @@ const COMMANDS := {
 	"noneeds": ["noneeds", "Toggle: the farm animals' hunger and thirst do not rise."],
 	"noclip": ["noclip", "Toggle: walk through anything (indoors within the room)."],
 	"freeze": ["freeze", "Toggle: time stands still (you and the animals still move)."],
-	"reset": ["reset", "Put you in your bed, the one you wake in (inside or out)."],
 	"spawn":
 	[
 		"spawn <kind> [count]",
@@ -140,7 +139,7 @@ const COMMANDS := {
 }
 ## The kind of each argument a command takes, in order, for Tab completion (see candidates).
 ## Numbers have no candidates; commands not listed take no arguments. `help <command>` and a
-## missing or unknown name list the candidates of the kinds in LISTED_KINDS.
+## missing or unknown name list the candidates of the kinds in ConsoleHelper.LISTED_KINDS.
 const ARGUMENTS := {
 	"help": [&"command"],
 	"tp": [&"number", &"number"],
@@ -163,64 +162,31 @@ const ARGUMENTS := {
 ## The commands that take an animal kind, or `npc` and the id of a villager written by hand (see
 ## VillagerRules): `spawn` puts them in the world and `killall` takes them out.
 const KIND_COMMANDS: Array[String] = ["spawn", "killall"]
-## `spawn npc` takes the id of a villager written by hand where the other kinds take a count, or a
-## count; `killall npc` takes that id.
-const NPC_ARGUMENTS: Array[StringName] = [&"animal", &"villager"]
-## The argument kinds whose candidates `_candidates_text` lists: the names a command takes. Items
-## are too many to list (Tab completes them) and the other kinds are numbers.
-const LISTED_KINDS: Array[StringName] = [&"animal", &"villager", &"weather", &"snow", &"track"]
-## What `home` and `work` take after the villager.
-const PLACE_WORDS: Array[String] = ["here", "none"]
-## The word of `goto` for the tile the player stands on.
-const HERE := "here"
-## The word of `routine` for the whole day.
-const WHOLE_DAY := "day"
-## The most characters of a listed line, so the log shows it whole.
-const LIST_LINE_LENGTH := 70
 ## Minutes per unit of the `skip` command, and the longest skip (a year).
 const SKIP_UNITS := {"m": 1, "h": GameClock.MINUTES_PER_HOUR, "d": GameClock.MINUTES_PER_DAY}
 const MAX_SKIP_MINUTES := GameClock.DAYS_PER_YEAR * GameClock.MINUTES_PER_DAY
-## The snow values Tab offers; any number from 0 to 1 works.
-const SNOW_CANDIDATES: Array[String] = ["auto", "0", "0.5", "1"]
 ## How far (in tiles) the `friendship` command looks for an animal.
 const FRIENDSHIP_SEARCH_RADIUS := 3.0
-## What `spawn` calls a villager (see Npcs).
-const NPC := "npc"
-## What `spawn` calls the wild rabbit (WildlifeRules.RABBIT): a plain rabbit is a tame one of the
-## livestock.
-const WILD_RABBIT := "wild_rabbit"
-## What `spawn` and `killall` call the rooster: the chicken of LivestockRules.ROOSTER_LOOK.
-const ROOSTER := "rooster"
-## What `play` and `stop` say when the game scene gave the console no music.
-const NO_MUSIC := "No music here"
-## Item ids this similar to a misspelt one (see String.similarity) are offered as a guess.
-const CLOSE_MATCH_SIMILARITY := 0.4
 
-## Puts animals in view: takes a kind and a count, returns how many it placed. Set by the game
-## scene, which has the animals; the console is plain logic.
-var wildlife_spawner := Callable()
-## Takes the wild animals of a kind away: takes a kind, returns how many it took. Set by the game
-## scene, as the spawner is.
-var wildlife_clearer := Callable()
-
-## The names of the pieces `play` takes: returns an Array[String]. Set by the game scene, which
-## finds the music; the console is plain logic.
-var music_tracks := Callable()
-## Starts a piece of music: takes its name (one of `music_tracks`), returns the line to show.
-var music_player := Callable()
-## Fades the music out.
-var music_stopper := Callable()
-
-## Has the model plan a villager's rest of the day: takes them, returns what to say (set by main).
-var replanner := Callable()
+## What the commands work on, and the hooks the game scene sets (see ConsoleContext).
+var context: ConsoleContext
 
 var _state: GameState
 var _home_commands: HomeCommands
+## The loaded commands by name.
+var _commands := {}
 
 
 func _init(state: GameState) -> void:
 	_state = state
 	_home_commands = HomeCommands.new(state)
+	context = ConsoleContext.new(state)
+	var problems: Array[String] = []
+	context.commands = ConsoleLoader.load_commands(ConsoleLoader.script_paths(), context, problems)
+	for problem in problems:
+		push_error("Console command: %s" % problem)
+	for command in context.commands:
+		_commands[command.name()] = command
 
 
 ## Runs a line such as "give logs 5" (a leading "/" is optional) and returns the output.
@@ -229,6 +195,8 @@ func run(line: String) -> Array[String]:
 	if words.is_empty():
 		return []
 	var arguments := words.slice(1)
+	if _commands.has(words[0]):
+		return _commands[words[0]].run(arguments)
 	var cheats := _state.cheats
 	var output: Array[String]
 	match words[0]:
@@ -240,40 +208,41 @@ func run(line: String) -> Array[String]:
 			output = _give(arguments)
 		"god":
 			cheats.is_god = not cheats.is_god
-			output = [_toggle_message("God mode", cheats.is_god)]
+			output = [ConsoleHelper.toggle_message("God mode", cheats.is_god)]
 		"nodrain":
 			cheats.is_drain_off = not cheats.is_drain_off
-			output = [_toggle_message("No drain", cheats.is_drain_off)]
+			output = [ConsoleHelper.toggle_message("No drain", cheats.is_drain_off)]
 		"noweight":
 			cheats.is_weight_off = not cheats.is_weight_off
-			output = [_toggle_message("No weight", cheats.is_weight_off)]
+			output = [ConsoleHelper.toggle_message("No weight", cheats.is_weight_off)]
 		"nocost":
 			cheats.is_cost_off = not cheats.is_cost_off
-			output = [_toggle_message("No cost", cheats.is_cost_off)]
+			output = [ConsoleHelper.toggle_message("No cost", cheats.is_cost_off)]
 		"nolate":
 			cheats.is_late_off = not cheats.is_late_off
-			output = [_toggle_message("No late", cheats.is_late_off)]
+			output = [ConsoleHelper.toggle_message("No late", cheats.is_late_off)]
 		"noneeds":
 			cheats.are_needs_off = not cheats.are_needs_off
-			output = [_toggle_message("No needs", cheats.are_needs_off)]
+			output = [ConsoleHelper.toggle_message("No needs", cheats.are_needs_off)]
 		"noclip":
 			cheats.is_noclip = not cheats.is_noclip
-			output = [_toggle_message("No clip", cheats.is_noclip)]
+			output = [ConsoleHelper.toggle_message("No clip", cheats.is_noclip)]
 			# Off inside a lake or a wall: onto the nearest ground they fit on.
 			if not cheats.is_noclip and not _state.put_player_on_free_ground():
 				output.append("No free ground near you: walk out, or turn noclip on again")
 		"freeze":
 			cheats.is_time_stopped = not cheats.is_time_stopped
-			output = [_toggle_message("Time stopped", cheats.is_time_stopped)]
-		"reset":
-			_state.go_to_home_bed()
-			output = ["Back in bed"]
+			output = [ConsoleHelper.toggle_message("Time stopped", cheats.is_time_stopped)]
 		"killall":
 			output = _killall(arguments)
 		"spawn":
 			if arguments.is_empty():
 				output = _candidates_text("spawn")
-			elif arguments.size() == 2 and arguments[0] == NPC and not arguments[1].is_valid_int():
+			elif (
+				arguments.size() == 2
+				and arguments[0] == ConsoleHelper.NPC
+				and not arguments[1].is_valid_int()
+			):
 				output = _spawn_villager(arguments[1])
 			elif arguments.size() == 1 and _state.npcs.villagers.has(arguments[0]):
 				output = _spawn_villager(arguments[0])
@@ -317,11 +286,11 @@ func run(line: String) -> Array[String]:
 		"play":
 			output = _play(arguments)
 		"stop":
-			if music_stopper.is_valid():
-				music_stopper.call()
+			if context.music_stopper.is_valid():
+				context.music_stopper.call()
 				output = ["Music fading out"]
 			else:
-				output = [NO_MUSIC]
+				output = [ConsoleHelper.NO_MUSIC]
 		_:
 			output = ["Unknown command: %s (try help)" % words[0]]
 	return output
@@ -334,60 +303,35 @@ func complete(line: String) -> String:
 	var is_new_word := line.ends_with(" ")
 	var word_index := words.size() if is_new_word else maxi(words.size() - 1, 0)
 	var typed := "" if is_new_word or words.is_empty() else words[-1]
+	var command: ConsoleCommand = _commands.get(words[0]) if not words.is_empty() else null
 	var kind := &"command"  # Past the last argument the kind stays empty: nothing to offer.
 	if word_index > 0:
 		var kinds: Array = ARGUMENTS.get(words[0], [])
-		if words[0] in KIND_COMMANDS and words.size() > 1 and words[1] == NPC:
-			kinds = NPC_ARGUMENTS
+		if command != null:
+			kinds = command.argument_kinds_for(words.slice(1))
+		elif words[0] in KIND_COMMANDS and words.size() > 1 and words[1] == ConsoleHelper.NPC:
+			kinds = ConsoleHelper.NPC_ARGUMENTS
 		kind = kinds[word_index - 1] if word_index <= kinds.size() else &""
 	var offered := candidates(kind)
-	if word_index == 1 and words[0] in KIND_COMMANDS:
+	var takes_villager_ids := words[0] in KIND_COMMANDS if not words.is_empty() else false
+	if command != null:
+		takes_villager_ids = command.takes_villager_ids()
+	if word_index == 1 and takes_villager_ids:
 		offered.append_array(candidates(&"villager"))  # `spawn antje` as well as `spawn npc antje`
 	offered = offered.filter(func(name: String) -> bool: return name.begins_with(typed))
 	if offered.is_empty():
 		return line
-	var completed := offered[0] + " " if offered.size() == 1 else _common_prefix(offered)
+	var completed := (
+		offered[0] + " " if offered.size() == 1 else ConsoleHelper.common_prefix(offered)
+	)
 	return line.substr(0, line.length() - typed.length()) + completed
 
 
 ## What Tab offers for an argument of this kind (see ARGUMENTS).
 func candidates(kind: StringName) -> Array[String]:
-	var values: Array[String] = []
-	match kind:
-		&"command":
-			values.assign(COMMANDS.keys())
-		&"item":
-			values = _item_ids()
-		&"animal":
-			values.append(NPC)
-			for species in LivestockRules.SPECIES:
-				values.append(String(species))
-			values.append(ROOSTER)
-			for animal in WildlifeRules.KINDS:
-				values.append(WILD_RABBIT if animal == WildlifeRules.RABBIT else String(animal))
-		&"villager":
-			values = _state.npcs.villagers.ids()
-		&"place":
-			values.assign(PLACE_WORDS)
-		&"destination":
-			values.append(HERE)
-		&"routine_view":
-			values.append(WHOLE_DAY)
-		&"weather":
-			for condition in Weather.FORCEABLE:
-				values.append(String(condition))
-			values.append("auto")
-		&"snow":
-			values.assign(SNOW_CANDIDATES)
-		&"skill":
-			for skill in _state.player.skills.rules.skill_ids():
-				values.append(String(skill))
-		&"attribute":
-			for attribute in _state.player.attributes.rules.attribute_ids():
-				values.append(String(attribute))
-		&"track":
-			if music_tracks.is_valid():
-				values.assign(music_tracks.call())
+	var values := ConsoleHelper.candidates(kind, context)
+	if kind == &"command":
+		values.append_array(COMMANDS.keys())
 	return values
 
 
@@ -400,6 +344,11 @@ func _help(arguments: PackedStringArray) -> Array[String]:
 	if arguments.size() > 1:
 		return ["Usage: %s" % COMMANDS["help"][0]]
 	if arguments.size() == 1:
+		if _commands.has(arguments[0]):
+			var command: ConsoleCommand = _commands[arguments[0]]
+			lines.append("%s: %s" % [command.usage(), command.help()])
+			lines.append_array(ConsoleHelper.candidates_text(command, context))
+			return lines
 		if not COMMANDS.has(arguments[0]):
 			return ["Unknown command: %s (try help)" % arguments[0]]
 		var entry: Array = COMMANDS[arguments[0]]
@@ -408,32 +357,22 @@ func _help(arguments: PackedStringArray) -> Array[String]:
 		return lines
 	for entry: Array in COMMANDS.values():
 		lines.append("%s: %s" % [entry[0], entry[1]])
+	for command in context.commands:
+		lines.append("%s: %s" % [command.usage(), command.help()])
 	return lines
 
 
-## The names the command takes, from the same candidates Tab completes, one line per kind of
-## argument (a long list continues on the next lines).
+## The names the command takes, from the same candidates Tab completes (see ConsoleHelper).
 func _candidates_text(command: String) -> Array[String]:
+	if _commands.has(command):
+		return ConsoleHelper.candidates_text(_commands[command], context)
 	var lines: Array[String] = []
 	var kinds: Array = ARGUMENTS.get(command, [])
 	if command in KIND_COMMANDS:
 		kinds = kinds + [&"villager"]
 	for kind: StringName in kinds:
-		if LISTED_KINDS.has(kind):
-			lines.append_array(_candidates_lines(kind))
-	return lines
-
-
-## The names of one kind of argument, wrapped into lines that fit the log.
-func _candidates_lines(kind: StringName) -> Array[String]:
-	var lines: Array[String] = []
-	var line := "%s:" % kind
-	for name in candidates(kind):
-		if line.length() + name.length() + 2 > LIST_LINE_LENGTH:
-			lines.append(line)
-			line = " "
-		line += " %s," % name
-	lines.append(line.trim_suffix(","))
+		if ConsoleHelper.LISTED_KINDS.has(kind):
+			lines.append_array(ConsoleHelper.candidates_lines(kind, context))
 	return lines
 
 
@@ -473,7 +412,7 @@ func _give(arguments: PackedStringArray) -> Array[String]:
 		return ["Usage: %s" % COMMANDS["give"][0]]
 	var item := StringName(arguments[0])
 	if not ItemTypes.TYPES.has(item):
-		return _unknown_item(arguments[0])
+		return ConsoleHelper.unknown_item(arguments[0])
 	var count := 1 if arguments.size() < 2 else int(arguments[1])
 	var left := _state.player.inventory.add(item, count)
 	var lines: Array[String] = []
@@ -552,26 +491,30 @@ func _spawn(arguments: PackedStringArray) -> Array[String]:
 	var word := arguments[0]
 	var count := 1 if arguments.size() < 2 else int(arguments[1])
 	# Farm animals and villagers stay in the world: they are part of the state.
-	if word == NPC or word == ROOSTER or LivestockRules.SPECIES.has(StringName(word)):
+	if (
+		word == ConsoleHelper.NPC
+		or word == ConsoleHelper.ROOSTER
+		or LivestockRules.SPECIES.has(StringName(word))
+	):
 		if _state.is_inside():
-			return ["No %s here" % ("villagers" if word == NPC else "animals")]
+			return ["No %s here" % ("villagers" if word == ConsoleHelper.NPC else "animals")]
 		var near := _state.player.position
 		var spawned := 0
-		if word == NPC:
+		if word == ConsoleHelper.NPC:
 			spawned = _state.npcs.spawn(count, near, _state.world)
-		elif word == ROOSTER:
+		elif word == ConsoleHelper.ROOSTER:
 			spawned = _state.livestock.spawn(
 				LivestockRules.CHICKEN, count, near, _state.world, LivestockRules.ROOSTER_LOOK
 			)
 		else:
 			spawned = _state.livestock.spawn(StringName(word), count, near, _state.world)
 		return ["Spawned %d of %d %s" % [spawned, count, word]]
-	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
+	var kind := WildlifeRules.RABBIT if word == ConsoleHelper.WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
 		return _unknown("animal", word, "spawn")
-	if _state.is_inside() or not wildlife_spawner.is_valid():
+	if _state.is_inside() or not context.wildlife_spawner.is_valid():
 		return ["No animals here"]
-	var placed: int = wildlife_spawner.call(kind, count)
+	var placed: int = context.wildlife_spawner.call(kind, count)
 	return ["Spawned %d of %d %s" % [placed, count, word]]
 
 
@@ -606,11 +549,11 @@ func _killall(arguments: PackedStringArray) -> Array[String]:
 	if arguments.is_empty():
 		return _candidates_text("killall")
 	var word := arguments[0]
-	if arguments.size() > 2 or (arguments.size() == 2 and word != NPC):
+	if arguments.size() > 2 or (arguments.size() == 2 and word != ConsoleHelper.NPC):
 		return ["Usage: %s" % COMMANDS["killall"][0]]
-	if word == NPC and arguments.size() == 1:
+	if word == ConsoleHelper.NPC and arguments.size() == 1:
 		return _kill_made_up_villagers()
-	if word == NPC:
+	if word == ConsoleHelper.NPC:
 		return _kill_villager(arguments[1])
 	if _state.npcs.villagers.has(word):
 		return _kill_villager(word)
@@ -618,7 +561,7 @@ func _killall(arguments: PackedStringArray) -> Array[String]:
 
 
 func _kill_animals(word: String) -> Array[String]:
-	if word == ROOSTER:
+	if word == ConsoleHelper.ROOSTER:
 		var roosters := _state.livestock.remove_species(
 			LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK
 		)
@@ -628,10 +571,12 @@ func _kill_animals(word: String) -> Array[String]:
 		if horse != null and horse.species == StringName(word):
 			return ["You are riding a %s: get off first" % word]
 		return [_removed_text(_state.livestock.remove_species(StringName(word)), word)]
-	var kind := WildlifeRules.RABBIT if word == WILD_RABBIT else StringName(word)
+	var kind := WildlifeRules.RABBIT if word == ConsoleHelper.WILD_RABBIT else StringName(word)
 	if not WildlifeRules.KINDS.has(kind):
 		return _unknown("animal", word, "killall")
-	var cleared: int = wildlife_clearer.call(kind) if wildlife_clearer.is_valid() else 0
+	var cleared: int = (
+		context.wildlife_clearer.call(kind) if context.wildlife_clearer.is_valid() else 0
+	)
 	return [_removed_text(cleared, word) + " (wild animals are not saved: more may come)"]
 
 
@@ -644,7 +589,9 @@ func _kill_made_up_villagers() -> Array[String]:
 			removed += 1
 		else:
 			named.append(npc.id)
-	var line := _removed_text(removed, NPC) + " (the named villagers stay: killall npc <id>"
+	var line := (
+		_removed_text(removed, ConsoleHelper.NPC) + " (the named villagers stay: killall npc <id>"
+	)
 	return [line + (", here: %s)" % ", ".join(named) if not named.is_empty() else ")")]
 
 
@@ -748,7 +695,7 @@ func _deeds() -> Array[String]:
 func _gossip(arguments: PackedStringArray) -> Array[String]:
 	if arguments.size() != 1:
 		return ["Usage: %s" % COMMANDS["gossip"][0]]
-	var npc := _npc_named(arguments[0])
+	var npc := ConsoleHelper.npc_named(arguments[0], context)
 	if npc == null:
 		return _unknown("villager", arguments[0], "gossip")
 	var rules := _state.deeds.rules
@@ -809,7 +756,7 @@ func _opinion(arguments: PackedStringArray) -> Array[String]:
 	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
 	if is_usage_wrong or (is_setting and not arguments[1].is_valid_int()):
 		return ["Usage: %s" % COMMANDS["opinion"][0]]
-	var npc := _npc_named(arguments[0])
+	var npc := ConsoleHelper.npc_named(arguments[0], context)
 	if npc == null:
 		return _unknown("villager", arguments[0], "opinion")
 	var rules := _state.deeds.rules
@@ -821,11 +768,11 @@ func _opinion(arguments: PackedStringArray) -> Array[String]:
 ## `home` or `work` (`command`): shows the house or workplace of a villager, or sets or frees it.
 func _home_or_work(command: String, arguments: PackedStringArray) -> Array[String]:
 	var is_usage_wrong := arguments.is_empty() or arguments.size() > 2
-	if arguments.size() == 2 and arguments[1] not in PLACE_WORDS:
+	if arguments.size() == 2 and arguments[1] not in ConsoleHelper.PLACE_WORDS:
 		is_usage_wrong = true
 	if is_usage_wrong:
 		return ["Usage: %s" % COMMANDS[command][0]]
-	var npc := _npc_named(arguments[0])
+	var npc := ConsoleHelper.npc_named(arguments[0], context)
 	if npc == null:
 		return _unknown("villager", arguments[0], command)
 	var where := arguments[1] if arguments.size() == 2 else ""
@@ -839,15 +786,15 @@ func _home_or_work(command: String, arguments: PackedStringArray) -> Array[Strin
 func _routine_or_replan(command: String, arguments: PackedStringArray) -> Array[String]:
 	var most_arguments := 2 if command == "routine" else 1
 	var is_usage_wrong := arguments.is_empty() or arguments.size() > most_arguments
-	if arguments.size() == 2 and arguments[1] != WHOLE_DAY:
+	if arguments.size() == 2 and arguments[1] != ConsoleHelper.WHOLE_DAY:
 		is_usage_wrong = true
 	if is_usage_wrong:
 		return ["Usage: %s" % COMMANDS[command][0]]
-	var npc := _npc_named(arguments[0])
+	var npc := ConsoleHelper.npc_named(arguments[0], context)
 	if npc == null:
 		return _unknown("villager", arguments[0], command)
 	if command == "replan":
-		return [replanner.call(npc) if replanner.is_valid() else "No planner here"]
+		return [context.replanner.call(npc) if context.replanner.is_valid() else "No planner here"]
 	return RoutineReport.lines(_state, npc, arguments.size() == 2)
 
 
@@ -856,11 +803,11 @@ func _goto(arguments: PackedStringArray) -> Array[String]:
 	var usage: Array[String] = ["Usage: %s" % COMMANDS["goto"][0]]
 	if arguments.size() != 2:
 		return usage
-	var npc := _npc_named(arguments[0])
+	var npc := ConsoleHelper.npc_named(arguments[0], context)
 	if npc == null:
 		return _unknown("villager", arguments[0], "goto")
 	var tile := _state.player.tile()
-	if arguments[1] == HERE:
+	if arguments[1] == ConsoleHelper.HERE:
 		if _state.is_inside():
 			return ["Go outside first: villagers walk in the world"]
 	else:
@@ -885,19 +832,9 @@ func _tiles_between(npc: Npc, tile: Vector2i) -> int:
 	return roundi(npc.position.distance_to(Vector2(tile) + Vector2(0.5, 0.5)))
 
 
-func _npc_named(word: String) -> Npc:
-	var npc := _state.npcs.find(word)
-	if npc != null:
-		return npc
-	for each in _state.npcs.all():
-		if each.name.get_slice(" ", 0).to_lower() == word:
-			return each
-	return null
-
-
 func _play(arguments: PackedStringArray) -> Array[String]:
-	if not music_player.is_valid():
-		return [NO_MUSIC]
+	if not context.music_player.is_valid():
+		return [ConsoleHelper.NO_MUSIC]
 	if arguments.size() != 1:
 		var lines: Array[String] = ["Usage: %s" % COMMANDS["play"][0]]
 		lines.append_array(_candidates_text("play"))
@@ -905,7 +842,7 @@ func _play(arguments: PackedStringArray) -> Array[String]:
 	var track := track_named(arguments[0], candidates(&"track"))
 	if track.is_empty():
 		return _unknown("track", arguments[0], "play")
-	var line: String = music_player.call(track)
+	var line: String = context.music_player.call(track)
 	return [line]
 
 
@@ -942,33 +879,3 @@ func _crows(arguments: PackedStringArray) -> Array[String]:
 	var lines := _state.crop_raids.describe()
 	lines.append_array(_state.scarecrows.describe())
 	return lines
-
-
-func _unknown_item(typed: String) -> Array[String]:
-	var close: Array[String] = []
-	for item in _item_ids():
-		if item.similarity(typed) >= CLOSE_MATCH_SIMILARITY:
-			close.append(item)
-	var lines: Array[String] = ["Unknown item: %s" % typed]
-	if not close.is_empty():
-		lines.append("Did you mean: %s" % ", ".join(close))
-	return lines
-
-
-func _item_ids() -> Array[String]:
-	var ids: Array[String] = []
-	for item: StringName in ItemTypes.TYPES:
-		ids.append(String(item))
-	return ids
-
-
-func _toggle_message(cheat: String, is_on: bool) -> String:
-	return "%s %s" % [cheat, "on" if is_on else "off"]
-
-
-func _common_prefix(texts: Array[String]) -> String:
-	var prefix := texts[0]
-	for text in texts:
-		while not text.begins_with(prefix):
-			prefix = prefix.substr(0, prefix.length() - 1)
-	return prefix

@@ -65,13 +65,13 @@ func show_state(
 ) -> void:
 	_console = Console.new(state)
 	if music != null:
-		_console.music_tracks = music.tracks
-		_console.music_player = music.play
-		_console.music_stopper = music.stop
+		_console.context.music_tracks = music.tracks
+		_console.context.music_player = music.play
+		_console.context.music_stopper = music.stop
 		music.started.connect(func(track: String) -> void: _log_line("Playing %s" % track))
-	_console.replanner = replanner
-	_console.wildlife_spawner = wildlife_spawner
-	_console.wildlife_clearer = wildlife_clearer
+	_console.context.replanner = replanner
+	_console.context.wildlife_spawner = wildlife_spawner
+	_console.context.wildlife_clearer = wildlife_clearer
 
 
 func is_open() -> bool:

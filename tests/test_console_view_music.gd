@@ -35,4 +35,4 @@ func test_without_a_player_play_says_there_is_no_music() -> void:
 	add_child_autofree(bare)
 	bare.show_state(_state)
 	bare.run_line("play tide")
-	assert_string_contains(bare._log.text, Console.NO_MUSIC)
+	assert_string_contains(bare._log.text, ConsoleHelper.NO_MUSIC)
