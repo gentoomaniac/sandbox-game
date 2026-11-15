@@ -23,7 +23,7 @@ IMPORT := $(GODOT) --headless --quiet --import
 # reproducible, and it keeps third-party code out of our history and diffs.
 # The cost is that a fresh clone needs `make setup` (and network) before it runs.
 
-.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music music-latency weather-probe music-check lint format export clean llm-up llm-down llm-check \
+.PHONY: help setup venv art classic-art assets contrast-sheet run screenshot test test-changed test-tools bench bench-music music-latency weather-probe world-map music-check lint format export clean llm-up llm-down llm-check \
 	llm-pull llm-models llm-rm llm-eval llm-gpu-setup
 
 help:
@@ -38,6 +38,7 @@ help:
 	@echo "  test-tools  Run only the tests of the Python tools (tools/ and its art, llm and music folders, test_*.py)."
 	@echo "  bench       Time a heavy save headless (start-up, nodes, frame times standing and walking, pile pick-up, save); see tools/README.md."
 	@echo "  weather-probe  Print a year of weather per seed: wet share, longest spell, wet hours per season, snow days and a day-by-day strip. WEATHER_PROBE_ARGS=\"2 1 5\" picks the strip's season (0-3) and the seeds."
+	@echo "  world-map   Draw a top-down PNG map of a seed's generated land (headless, no save). SEED, AT, MAP_SIZE, MAP_SCALE, MAP_OUT."
 	@echo "  bench-music Time the music renderer: renders on their own, then frame times in the game while it renders, then the everyday pieces rendered and loaded from the cache (headless, muted)."
 	@echo "  music-latency  Time how late the music crossfade starts after the beat on the real audio driver (AUDIO_DRIVER, default PulseAudio), silent: the master bus is muted."
 	@echo "  music-check Render every piece with the game's prototype music renderer and compare it with libmodplug's (headless, silent)."
@@ -66,6 +67,10 @@ help:
 	@echo "  TEST_TIMEOUT test: seconds before a hung run is stopped (default: 600)."
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
+	@echo "  SEED        world-map: the world seed (default: 1)."
+	@echo "  MAP_SIZE    world-map: tiles per side (default: 320)."
+	@echo "  MAP_SCALE   world-map: pixels per tile (default: 3)."
+	@echo "  MAP_OUT     world-map: file to write (default: build/world-map.png). AT is the middle tile, e.g. AT=0,0."
 	@echo "  ZOOM        screenshot: camera zoom, 0.5 (the widest, 40x22 tiles, as the game starts) to 2 (the closest); 1 is 20x11 tiles."
 	@echo "  SIZE        screenshot: picture size in pixels, e.g. SIZE=1000x1040 (default: the window as it is)."
 	@echo "  OUT         screenshot: file to write (default: build/screenshot.png)."
@@ -312,6 +317,18 @@ weather-probe: assets
 	@mkdir -p build/user-data
 	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
 	$(BENCH_GODOT) -s tools/bench/weather_probe.gd -- $(WEATHER_PROBE_ARGS)
+
+# A top-down map of a seed's generated land (tools/world_map.gd), e.g.
+# make world-map SEED=42 AT=0,0 MAP_OUT=/tmp/map.png. AT is the middle tile of the map.
+SEED ?= 1
+MAP_SIZE ?= 320
+MAP_SCALE ?= 3
+MAP_OUT ?= $(CURDIR)/build/world-map.png
+
+world-map:
+	$(IMPORT)
+	mkdir -p $(dir $(MAP_OUT))
+	$(GODOT) --headless --path . -s tools/world_map.gd -- --seed=$(SEED) --center=$(if $(AT),$(AT),0,0) --size=$(MAP_SIZE) --scale=$(MAP_SCALE) --out=$(MAP_OUT)
 
 # The game's prototype music renderer (task 169) against libmodplug, an independent player: the
 # pieces rendered headless into build/music/, then compared by tools/music/check.py.
