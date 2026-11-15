@@ -39,6 +39,17 @@ can be fixed. Made and placed a piece a tile like the fence and wall pieces
     of tiles above and below meet at their gap. The variant is picked by the row (or column) the
     boards lie in, not by the tile (`WorldObjectWays.variant_tile`), so the boards of a road two
     tiles wide have the same widths side by side and line up across the seam.
+- **The road edge** (#84): a free tile beside a way gets a small overlay along the side next to the
+  way, a rim of trodden earth that thins out into specks in the grass (atlas row 62, a picture per
+  mask of the sides that have a way beside the tile; `WayEdges`). It is no object and nothing is
+  saved: the view works it out from the ways around the tile (`World.type_standing_at`, so also from
+  a chunk that is not loaded) and draws it on a layer of its own over the ground and under the
+  objects. When a way is laid or taken up the view draws the edges of that tile and the 4 beside it
+  again. Laying a way on the tile takes its edge
+  away, so a road widened by a way along it has no rim inside and a new rim beside the new way;
+  taking the way up brings the rim back. Only on grass, a Warft and the floodplain: not on tilled
+  soil (a way beside a field), the flats or water. A tile beside a way's corner only (a diagonal)
+  has none. The edge has the look of its tile's season, as the ways do, and snow lies over it.
 - **Which way the boards lie** (#84, rule chosen): across the way, perpendicular to the road's
   direction, worked out from the neighbours (`WorldObjectWays.boards_lie_east_west`, the same rule
   in the art for every mask):

@@ -7,6 +7,9 @@ extends RefCounted
 
 const _PLANK_WALK_ROW := 60
 const _STONE_PATH_ROW := 61
+## The atlas row of the road edge (see WayEdges): not an object's, it has no type. A picture per
+## mask of the sides that have a way beside them.
+const EDGE_ROW := 62
 ## The bits of a connection mask (see World `connections`) as the art draws them.
 const _NORTH := 1
 const _EAST := 2

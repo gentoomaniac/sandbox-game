@@ -75,7 +75,11 @@ func test_the_atlas_rows_are_those_of_the_art_generator() -> void:
 				"%s cells" % type_name
 			)
 	for row: int in rows:
-		assert_true(types_by_row.has(row), "row %d (%s) has a type" % [row, rows[row]["kind"]])
+		if row == WorldObjectWays.EDGE_ROW:
+			assert_eq(rows[row]["kind"], "way_edge", "the road edge has a row, and no type")
+			assert_eq(rows[row]["looks"], WorldObjectTypes.CONNECTION_LOOKS)
+		else:
+			assert_true(types_by_row.has(row), "row %d (%s) has a type" % [row, rows[row]["kind"]])
 
 
 ## Row -> {kind, looks}, from lines like `13 tall_grass 6` that the art generator writes.

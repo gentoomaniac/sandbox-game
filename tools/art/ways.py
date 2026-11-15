@@ -20,6 +20,10 @@ and the stone path has a kerb of edging stones there.
   variant (so the stones run on across the seams, with no straight line along them) and only the
   inner stones differ. A side with no way beside it has a kerb: edging stones set in a row, each
   at its own distance from the edge, which hold the cobbles together.
+- The road edge (`way_edge`): what a free tile beside a way gets on its side next to the way,
+  trodden earth that thins out into the grass. It is no object: the game draws it over the ground
+  where a way lies beside a free tile and takes it off when a way is laid there, so a road made
+  wider has no rim inside it.
 
 Light from the top left, as everywhere.
 """
@@ -196,6 +200,11 @@ def _chip_long_sides(picture, mask, rng, tile):
         if side == SOUTH:
             picture[y] = [None] * width
 
+
+# The earth of the road edge, as it thins out from the way: the share of the pixels at each
+# distance from the way that are earth, so the edge is trodden bare close to the way and breaks up
+# into specks of earth in the grass further out.
+EDGE_DENSITY = {32: (0.7, 0.85, 0.8, 0.6, 0.4, 0.2, 0.1), 16: (0.75, 0.8, 0.45, 0.2)}
 
 # --- The stone path ---
 
@@ -445,6 +454,24 @@ def stone_path(tile, variant, mask=ALL_SIDES):
     return _cast_shadows(picture)
 
 
+def way_edge(tile, mask):
+    """What a free tile gets whose neighbours on the sides of `mask` are ways, `tile` px square:
+    along each of those sides the earth the way's edge is trodden into, thinning out into specks
+    of earth in the grass, so it has no line of its own along the way's ragged edge."""
+    picture = blank(tile)
+    for side in (NORTH, EAST, SOUTH, WEST):
+        if not mask & side:
+            continue
+        rng = random.Random(f"way_edge-{tile}-{side}")
+        for along in range(tile):
+            for depth, density in enumerate(EDGE_DENSITY[tile]):
+                is_earth, roll = rng.random() < density, rng.random()
+                x, y = _tile_place(side, along, depth, tile)
+                if is_earth and picture[y][x] is None:
+                    picture[y][x] = "mud" if roll < 0.5 else "sand" if roll < 0.8 else "mud_dark"
+    return picture
+
+
 def in_cell(picture, cell_width, cell_height):
     """A tile's picture at the bottom middle of its object cell, where its tile is."""
     canvas = blank(cell_width, cell_height)
@@ -462,6 +489,11 @@ def plank_walk_row(tile, cell_width, cell_height):
 
 def stone_path_row(tile, cell_width, cell_height):
     return [in_cell(stone_path(tile, variant, mask), cell_width, cell_height) for variant in range(STONE_VARIANTS) for mask in range(CONNECTION_LOOKS)]
+
+
+def way_edge_row(tile, cell_width, cell_height):
+    """The atlas row of the road edge: one picture per mask of the sides that have a way beside them."""
+    return [in_cell(way_edge(tile, mask), cell_width, cell_height) for mask in range(CONNECTION_LOOKS)]
 
 
 def plank_walk_piece(tile):

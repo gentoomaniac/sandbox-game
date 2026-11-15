@@ -176,5 +176,40 @@ class PlankWalkTest(unittest.TestCase):
             self.assertEqual(along, [list(column) for column in zip(*across)])
 
 
+class WayEdgeTest(unittest.TestCase):
+    @staticmethod
+    def drawn(picture):
+        return {(x, y) for y, row in enumerate(picture) for x, colour in enumerate(row) if colour is not None}
+
+    def test_a_tile_with_no_way_beside_it_has_no_edge(self):
+        for tile in TILES:
+            self.assertEqual(self.drawn(ways.way_edge(tile, 0)), set(), f"{tile} px")
+
+    def test_the_edge_lies_along_the_side_with_the_way(self):
+        for tile in TILES:
+            reach = len(ways.EDGE_DENSITY[tile])
+            for side in SIDES:
+                for x, y in self.drawn(ways.way_edge(tile, side)):
+                    depth = {NORTH: y, SOUTH: tile - 1 - y, WEST: x, EAST: tile - 1 - x}[side]
+                    self.assertLess(depth, reach, f"{tile} px, side {side}")
+
+    def test_the_edges_of_the_sides_add_up(self):
+        for tile in TILES:
+            for mask in range(ways.CONNECTION_LOOKS):
+                expected = set().union(*(self.drawn(ways.way_edge(tile, side)) for side in SIDES if mask & side))
+                self.assertEqual(self.drawn(ways.way_edge(tile, mask)), expected, f"{tile} px, mask {mask}")
+
+    def test_the_edge_thins_out_away_from_the_way(self):
+        for tile in TILES:
+            picture = ways.way_edge(tile, WEST)
+            by_depth = [sum(picture[y][depth] is not None for y in range(tile)) for depth in range(len(ways.EDGE_DENSITY[tile]))]
+            self.assertGreater(max(by_depth), 2 * by_depth[-1], f"{tile} px")
+            self.assertGreater(by_depth[0], tile // 2, f"{tile} px")
+
+    def test_the_edge_is_the_same_wherever_it_is_laid(self):
+        for tile in TILES:
+            self.assertEqual(ways.way_edge(tile, WEST | NORTH)[tile // 2], ways.way_edge(tile, WEST)[tile // 2], f"{tile} px")
+
+
 if __name__ == "__main__":
     unittest.main()

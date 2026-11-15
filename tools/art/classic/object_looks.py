@@ -307,6 +307,8 @@ _SNOWED_COBBLES = {
     "stone": "snow", "bare": "snow", "mud": "snow",
     "stone_dark": "snow_shadow", "mud_dark": "snow_shadow",
 }
+# The road edge (ways.py) under snow: the trodden earth is as snow-covered as the ways it lies along.
+_SNOWED_EDGE = {"mud_dark": "snow_shadow", "mud": "snow", "sand": "snow_light"}
 _TRUNK_WINTER = {"frost_only": _FROST_STONE, "snow": _SNOW_TRUNK}
 _WINTER_LOOKS = {
     "spruce": {"frost": _FROST_CONIFER, "snow": _SNOW_CONIFER},
@@ -401,6 +403,7 @@ _WINTER_LOOKS = {
     # The ways lie flat on the ground: a frost rimes their lit edges in specks, snow covers them.
     "plank_walk": {"specks": {"bare_light"}, "snow_remap": _SNOWED_WALK},
     "stone_path": {"specks": {"stone_light", "bare_light", "sand"}, "snow_remap": _SNOWED_COBBLES},
+    "way_edge": {"specks": {"sand"}, "snow_remap": _SNOWED_EDGE},
 }
 
 

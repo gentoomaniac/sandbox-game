@@ -269,6 +269,7 @@ objects/stump_32x32.png 96 160
 objects/tall_grass_32x32.png 96 160
 objects/trough_32x32.png 96 160
 objects/wattle_fence_32x32.png 96 160
+objects/way_edge_32x32.png 96 160
 objects/willow_32x32.png 96 160
 objects/willow_short_trunk_32x32.png 96 160
 objects/willow_trunk_32x32.png 96 160

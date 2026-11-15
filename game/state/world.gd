@@ -269,15 +269,16 @@ func connections(object: WorldObject) -> int:
 	var group: StringName = object.type_data()["connects"]
 	var mask := 0
 	for side in CONNECTION_SIDES.size():
-		var type := _type_standing_at(object.pos + CONNECTION_SIDES[side])
+		var type := type_standing_at(object.pos + CONNECTION_SIDES[side])
 		if type != &"" and WorldObjectTypes.TYPES[type].get("connects") == group:
 			mask |= 1 << side
 	return mask
 
 
 ## The type of the object whose own tile this is, &"" for none: in a loaded chunk what stands
-## there, elsewhere the edit or else what the generator puts there.
-func _type_standing_at(world_pos: Vector2i) -> StringName:
+## there, elsewhere the edit or else what the generator puts there (the view asks it which ways lie
+## beside a tile, see WayEdges).
+func type_standing_at(world_pos: Vector2i) -> StringName:
 	var chunk := chunk_at(Chunk.world_to_chunk(world_pos))
 	var object: WorldObject
 	if chunk != null:

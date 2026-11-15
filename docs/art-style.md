@@ -442,7 +442,11 @@ along its foot.
   outer corners rounded, lit top and left, shaded bottom and right, in `stone`, `bare` and `sand`
   ramps with the earth in its joints. One pixel of `shadow` falls right of and below the edge. Low
   contrast, so a long way reads as one. Snow lies evenly over both, the gaps showing as
-  `snow_shadow`.
+  `snow_shadow`. The **road edge** on a free tile beside a way (a picture per mask of the sides with
+  a way beside them, atlas row 62, no object): specks of `mud`, `sand` and `mud_dark` on the side
+  next to the way, 70 to 85 percent of the pixels in the first 3 (2 at 16 px), thinning to 10
+  percent over 7 (4 at 16 px), so it frays into the grass with no line of its own; snow remaps it
+  to `snow`, `snow_light` and `snow_shadow`.
 - **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,
   22x33 px): a little taller than the player. A driftwood pole (`bare_light`, `bare`, `mud_dark`)
   with the crossbar in the sleeves of an old coat of faded indigo linen (the `water` ramp, folds

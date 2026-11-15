@@ -101,6 +101,8 @@ var _layers: Array[TileMapLayer] = []
 var _soil_wetness := SoilWetness.new()
 var _footprint_view := FootprintView.new()
 var _objects := TileMapLayer.new()
+## The rims of trodden earth beside the ways, under the objects.
+var _way_edges: WayEdges
 ## The light of each shining object, by tile.
 var _lights: Dictionary[Vector2i, ObjectLight] = {}
 var _light_strength := 1.0
@@ -167,6 +169,8 @@ func _ready() -> void:
 	add_child(_footprint_view)
 	add_child(decorations)
 	add_child(RainSplashes.new(ambient_motion))
+	_way_edges = WayEdges.new(_object_tileset.tile_set, _ground_look.objects)
+	add_child(_way_edges.layer)
 	_objects.name = "Objects"
 	_objects.tile_set = _object_tileset.tile_set
 	_objects.y_sort_enabled = true
@@ -205,6 +209,7 @@ func show_world(residency: ChunkResidency) -> void:
 	world = residency.world
 	# The view was made before Main chose the art set.
 	show_art_set()
+	_way_edges.show_world(world, _look_at)
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	_cover_map.show_world(world)
@@ -348,6 +353,7 @@ func redraw_tile(world_pos: Vector2i) -> void:
 		_redraw_cell(world_pos - offset)
 	if world.is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
 		decorations.redraw(world_pos, _layer_at(world_pos))
+	_way_edges.draw(world_pos)
 
 
 ## Called for every tile an object covers; it is drawn from its own tile only.
@@ -357,6 +363,9 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
 	decorations.redraw(world_pos, _layer_at(world_pos))
+	# A way laid or taken up changes the edges of the free tiles beside it.
+	if object == null or object.type_data().has("way"):
+		_way_edges.draw_around(world_pos)
 	var is_crown := object != null and object.type in GroundCover.CROWNED
 	if is_crown != _crown_tiles.has(world_pos):
 		if is_crown:
@@ -482,6 +491,7 @@ func _draw_chunk_step(drawing: ChunkDrawing) -> void:
 	elif drawing.step == Chunk.CHUNK_SIZE + 1:
 		for object in chunk.objects():
 			_draw_object(object.pos)
+		_way_edges.draw_chunk(chunk)
 	else:
 		# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
 		# while it was missing. Now they can blend properly.
@@ -543,6 +553,7 @@ func _refresh_chunk(coords: Vector2i) -> void:
 	var origin := Chunk.to_world(coords, Vector2i.ZERO)
 	for index in Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE:
 		decorations.refresh(origin + Vector2i(index % Chunk.CHUNK_SIZE, index / Chunk.CHUNK_SIZE))
+	_way_edges.refresh_chunk(coords)
 	for object in chunk.objects():
 		if _object_states.get(object.pos, DORMANT) != _object_state(object):
 			_on_objects_changed(object.pos)
@@ -576,6 +587,7 @@ func _on_chunk_unloaded(chunk: Chunk) -> void:
 	_refresh_queue.erase(coords)
 	_cover_map.forget_chunk(coords)
 	_footprint_view.forget_chunk(coords)
+	_way_edges.forget_chunk(coords)
 	for y in Chunk.CHUNK_SIZE:
 		for x in Chunk.CHUNK_SIZE:
 			for tile_map in _layers:
@@ -663,7 +675,12 @@ func _object_source(object: WorldObject) -> int:
 ## The look of an object: of the foliage of its season, which each tree and bush changes to on a
 ## day of its own (see SeasonBlend). The frost and snow lie over it by the shader.
 func _object_look(object: WorldObject) -> SeasonBlend.Look:
-	return _conditions.foliage_season_look(_blend.season_threshold(object.pos))
+	return _look_at(object.pos)
+
+
+## The look of whatever is drawn at a tile, which changes on a day of its own for each tile.
+func _look_at(world_pos: Vector2i) -> SeasonBlend.Look:
+	return _conditions.foliage_season_look(_blend.season_threshold(world_pos))
 
 
 ## What an object is drawn as: its look, with a flag if it is out of its fruit season, or

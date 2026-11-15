@@ -7,6 +7,9 @@ extends RefCounted
 ## cell's bottom on the footprint's bottom, so it is drawn from its own (top left) tile
 ## shifted accordingly.
 ##
+## The road edge (see WayEdges) has a row of its own, a picture per mask of the sides with a way
+## beside them (WorldObjectWays `EDGE_ROW`); it is no object.
+##
 ## Every crop has a sheet of its own, a source of its own in the same TileSet, built from the
 ## crop's `sheet` in data/crops.cfg: a growth stage per cell and then the dead one, side by
 ## side. Its cells are as tall as the sheet and as wide as the sheet is wide over the number of
@@ -54,6 +57,10 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 		# The motion shaders find a pixel's place in its cell from its texture coordinates.
 		source.use_texture_padding = false
 		tile_set.add_source(source, look)
+		for mask in WorldObjectTypes.CONNECTION_LOOKS:
+			var edge_cell := Vector2i(mask, WorldObjectWays.EDGE_ROW)
+			source.create_tile(edge_cell)
+			source.get_tile_data(edge_cell, 0).texture_origin = cell_origin(Vector2i.ONE)
 		for type: StringName in WorldObjectTypes.TYPES:
 			var object_type: Dictionary = WorldObjectTypes.TYPES[type]
 			if not object_type.has("atlas_row"):

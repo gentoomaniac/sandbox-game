@@ -62,3 +62,4 @@ pen_gate_open 16
 scarecrow 3
 plank_walk 64
 stone_path 48
+way_edge 16

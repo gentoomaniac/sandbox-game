@@ -221,6 +221,7 @@ def object_atlas():
         # The ways are drawn by the new art's module, at this tile size (see ways.py).
         ("plank_walk", ways.plank_walk_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
         ("stone_path", ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
+        ("way_edge", ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
     ]
 
 
