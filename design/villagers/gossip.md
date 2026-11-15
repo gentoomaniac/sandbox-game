@@ -277,7 +277,7 @@ Short lines over a villager's head, now and then:
   and the head over which the bubble sits being in the part of the world the camera shows. One
   in view is drawn at random, but not one who is answering the player. A villager within
   `near_tiles` (6) of the player speaks of the player with the chance `chance_about_player`
-  (0.5), else of the moment. Without a model the line is one of `[bubble_lines]`: for the player
+  (0.5), else of the moment. Without a model, or with the profile's random speech switch off (`uses_model_for`), the line is one of `[bubble_lines]`: for the player
   by the opinion word (cold, neutral, warm), for the moment by the weather if something falls or
   hangs in the air (thunder, storm, snow, rain, fog), else by the part of the day. A line of more
   than `max_length` (60) characters is dropped; the data file is checked for it.

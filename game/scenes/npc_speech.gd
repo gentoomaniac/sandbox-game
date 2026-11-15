@@ -3,7 +3,8 @@ extends Node
 ## Has a villager in view say a line in a bubble over their head now and then (see NpcBubbles for
 ## who, when and what, and design/villagers/gossip.md, Bubbles). The line is asked of the language
 ## model in the background, quietly like the judge's (see StoryJudging), and shown when it comes,
-## unless the villager is out of view by then; without a model it is a scripted one at once. A
+## unless the villager is out of view by then; without a model, or with random speech switched off
+## in the profile (see LanguageModelProfiles `uses_model_for`), it is a scripted one at once. A
 ## model that fails or gives no usable line means no bubble this time. At most one bubble is on
 ## screen, and none is asked for while one is. Nothing of it is saved or remembered.
 
@@ -64,7 +65,7 @@ func _speak() -> void:
 	var moment := NpcMoment.of(_state, speaker, _bubbles.rules.value("place", "reach"))
 	var subject := _bubbles.subject_for(speaker, _state.player.position)
 	var line := ""
-	if _dialogue.has_model():
+	if _dialogue.has_model_for(&"random_speech"):
 		var request := _bubbles.request(speaker, moment, subject, _dialogue.has_full_sheets())
 		_is_asking = true
 		var answer := await _dialogue.ask(_dialogue.request_at_chat_temperature(request), true)

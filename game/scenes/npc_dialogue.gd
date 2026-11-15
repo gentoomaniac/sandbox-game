@@ -49,6 +49,12 @@ func has_model() -> bool:
 	return _settings.profiles.active["endpoint"] != ""
 
 
+## Whether the model is asked for `use` (one of LanguageModelProfiles `USES`): one is set and the
+## profile in use has that use on. Otherwise the caller does without, like with no model.
+func has_model_for(use: StringName) -> bool:
+	return has_model() and _settings.profiles.uses_model_for(use)
+
+
 ## The row of GameSettings `LANGUAGE_MODEL_PROVIDERS` of the provider set.
 func _provider() -> Dictionary:
 	return GameSettings.LANGUAGE_MODEL_PROVIDERS[_settings.profiles.active["provider"]]

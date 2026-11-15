@@ -106,6 +106,15 @@ func test_the_model_is_asked_quietly_at_the_chat_temperature_and_its_line_is_sho
 	assert_eq(_chat.requests[0]["temperature"], 1.4)
 
 
+func test_with_random_speech_switched_off_a_model_is_not_asked_and_the_line_is_scripted() -> void:
+	_with_model()
+	_settings.profiles.set_uses_model_for(&"random_speech", false)
+	_chat.answers = ['"Not asked."']
+	_speech._process(MINUTE)
+	assert_has(_scripted_lines(), _speech.shown_line())
+	assert_eq(_chat.requests.size(), 0)
+
+
 func test_no_second_request_is_made_while_one_is_out() -> void:
 	_with_model()
 	_chat.seconds = 0.3
