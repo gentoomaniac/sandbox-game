@@ -129,3 +129,20 @@ func test_minutes_until_a_time_of_day_past_midnight() -> void:
 func test_minutes_until_the_time_it_shows_now_is_a_whole_day() -> void:
 	_clock.set_time(6, 30)
 	assert_eq(_clock.minutes_until(6 * 60 + 30), GameClock.MINUTES_PER_DAY)
+
+
+func test_day_1_is_a_monday_and_every_7th_day_a_sunday() -> void:
+	assert_eq(_clock_on(1).weekday_name(), "Monday")
+	assert_eq(_clock_on(1).weekday(), 0)
+	assert_eq(_clock_on(7).weekday_name(), "Sunday")
+	assert_eq(_clock_on(7).weekday(), 6)
+	assert_eq(_clock_on(8).weekday_name(), "Monday")
+	assert_eq(_clock_on(14).weekday_name(), "Sunday")
+
+
+func test_the_week_runs_on_over_the_turn_of_a_year() -> void:
+	var last_day := GameClock.DAYS_PER_YEAR
+	assert_eq(GameClock.weekday_of(last_day + 1), (last_day) % GameClock.DAYS_PER_WEEK)
+	assert_eq(_clock_on(last_day + 1).day_of_year(), 1)
+	assert_eq(_clock_on(last_day).day_of_year(), last_day)
+	assert_eq(_clock_on(2 * last_day + 1).day_of_year(), 1)

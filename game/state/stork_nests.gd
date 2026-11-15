@@ -140,8 +140,7 @@ func _hatching(origin: Vector2i, year: int) -> float:
 
 ## The day of the year with the part of it that has passed: day 1 at midnight is 1.0.
 func _time_of_year(day: int, minute: int) -> float:
-	var day_of_year := (day - 1) % GameClock.DAYS_PER_YEAR + 1
-	return day_of_year + float(minute) / GameClock.MINUTES_PER_DAY
+	return GameClock.day_of_year_of(day) + float(minute) / GameClock.MINUTES_PER_DAY
 
 
 func _days(key: String) -> float:

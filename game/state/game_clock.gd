@@ -20,6 +20,12 @@ const DAYS_PER_SEASON := 30
 const DAYS_PER_YEAR := DAYS_PER_SEASON * 4
 const SEASON_NAMES := ["Spring", "Summer", "Autumn", "Winter"]
 
+const DAYS_PER_WEEK := 7
+## Day 1 is a Monday: the first weekday is index 0.
+const WEEKDAY_NAMES := [
+	"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+]
+
 var day := 1
 ## Minutes since midnight, `0 <= minute_of_day < MINUTES_PER_DAY`.
 var minute_of_day := START_MINUTE
@@ -66,6 +72,21 @@ func day_of_season() -> int:
 	return day_of_season_of(day)
 
 
+## 1 to DAYS_PER_YEAR.
+func day_of_year() -> int:
+	return day_of_year_of(day)
+
+
+## 0 (Monday) to 6 (Sunday).
+func weekday() -> int:
+	return weekday_of(day)
+
+
+## "Monday"
+func weekday_name() -> String:
+	return WEEKDAY_NAMES[weekday()]
+
+
 ## Starts at 1.
 func year() -> int:
 	return year_of(day)
@@ -83,6 +104,14 @@ static func season_of(of_day: int) -> Season:
 
 static func day_of_season_of(of_day: int) -> int:
 	return (of_day - 1) % DAYS_PER_SEASON + 1
+
+
+static func day_of_year_of(of_day: int) -> int:
+	return (of_day - 1) % DAYS_PER_YEAR + 1
+
+
+static func weekday_of(of_day: int) -> int:
+	return (of_day - 1) % DAYS_PER_WEEK
 
 
 static func year_of(of_day: int) -> int:
