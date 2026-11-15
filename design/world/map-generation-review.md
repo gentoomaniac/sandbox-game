@@ -160,7 +160,7 @@ any order.
 
 ## 4. What was built
 
-Each step is one commit (or two) that passes `make test` and `make lint` on its own.
+Each step is one commit that passes `make test` and `make lint` on its own.
 
 1. **`make world-map`.** `tools/world_map.gd` (made in this review) goes into the Makefile and
    `docs/development.md`, so every step can make its after-pictures.
@@ -168,21 +168,43 @@ Each step is one commit (or two) that passes `make test` and `make lint` on its 
    and the willows and reeds beside ditches. `FieldLayout` and `[fields]`, `[kinds]`, `[ditches]`
    of `data/landscape.cfg` are deleted: the villages will lay their own fields. The dykes stay.
    The marsh keeps its reach (`[marsh]`), which still decides which trees stand on wet ground.
-3. **Woods.** The per-tile roll becomes a wood shape (`game/world/wood_layout.gd`, numbers in
-   `[woods]`):
-   - a wood mask from the forest noise warped by a second noise, thresholded so the woods are
-     about 15 % of the Geest, with no wood in the marsh;
-   - the depth inside the mask gives an edge of shrubs and young trees and a core of trees spaced
-     by a jittered tile in every 2 x 2 cell;
-   - clearings carved into the core by a high-frequency noise, with grass and bushes only;
-   - no lone trees outside a wood;
-   - pine and spruce stay as patches in the woods of the Geest.
-4. **A river that winds, and creeks.** The river's centre line gets a second, finer bend and a
-   width that changes. Creeks (Bäche) are 1 to 2 tiles wide, run from a wetland patch to the
-   river, wind, and are few. A ford is a tile of the creek that a walker can cross.
+   The willow, which stood beside the ditches, is now a tree of wet ground (weight 2).
+3. **Woods** (`game/world/wood_layout.gd`, numbers in `[woods]`):
+   - a wood mask from the forest noise read at a position pushed up to 8 tiles by a warp noise,
+     above 0.27, which makes about 15 % of the Geest wood; none in the marsh (the warp makes the
+     marsh edge wavy, not a line along the river);
+   - the depth inside the mask gives an edge of shrubs and few young trees (a tuft where the noise
+     barely clears the threshold has no trees at all: the minimum size) and a core: a tile holds
+     a trunk with a chance of 0.15 at the edge to 0.55 in the core (not above about 0.6, so a
+     walker gets through); the forest noise has a wavelength of about 80 tiles;
+   - clearings carved into the core by a fine noise, with grass and bushes only;
+   - no lone trees outside a wood (the lone tree chance is gone);
+   - pine and spruce stay as patches inside the woods of the Geest.
+4. **A river that winds, and creeks** (`game/world/river_line.gd`, `creek_layout.gd`, `[creeks]`):
+   - the river's centre line gets a second, finer bend (5 tiles at most; both noises with two octaves, so the
+     meanders are smooth and the line moves under 1.5 tiles per column) and a width that changes
+     (up to 2 tiles more per bank); the distance from it is measured with the widening taken
+     off, so the half width, the floodplain and the dykes are the same numbers everywhere;
+   - creeks: one in 60 % of the bands of 160 tiles along x, from the river north or south for 50
+     to 130 tiles, from a small wetland (the source) down through the floodplain and the dyke, 2
+     tiles wide, in S-bends of about 35 tiles up to 22 tiles either side of the band's middle; where
+     the line moves more than a tile per row a row's water spans to the rows beside it, so the
+     water is always joined (tested); a **ford** of 2 rows (floodplain terrain, a
+     walkable muddy crossing; stone-bed art can come later) once in every 36 tiles.
 5. **Docs, save version and release note.** `design/world/generation.md`, `coast.md`, the
    handbook and the after-pictures; the save version goes up and the release note says the land
    of old saves is new.
+
+### What changed from the first plan
+
+- The plan's land-use cells, farms, lanes and marsh parcels (steps 4 to 6 of the first plan) are
+  not built: #73 put fields and lanes with the villages (#9) and ditches with the player (#86).
+- The save freeze (step 1 of the first plan) is not built either (#71): old saves load, and the
+  land they did not edit is the new generator's.
+- Creeks come from wetland sources they bring themselves (a small patch at the creek's head), not
+  from the existing wetland blobs: those stay as they are. The creeks are one per band of x
+  rather than a search, so a tile asks only its own band.
+- A ford is floodplain terrain: a new terrain would need art, tile sets and rules in many places.
 
 ## 5. Not built here
 
@@ -196,5 +218,35 @@ change.
 
 ## 6. Before and after
 
-Before (the generator as it was) and after maps of the same seeds are in
-`docs/screenshots/map-generation/`, made by `make world-map`.
+The same seeds and places as the before maps of section 1, made by `make world-map` (see
+[docs/development.md](../../docs/development.md); the commands are in the file names: seed, place).
+The before maps are in `docs/screenshots/map-generation/before-*.png`, the after maps beside them.
+
+Seed 42, 320 x 320 tiles around the middle of the world:
+
+![Before](../../docs/screenshots/map-generation/before-seed42.png)
+![After](../../docs/screenshots/map-generation/after-seed42.png)
+
+Seed 42, 100 x 100 tiles (before: loose fences and walls, a ditch grid; the place of the after
+map is 45 tiles north of the middle, as the before map's place was not kept):
+
+![Before](../../docs/screenshots/map-generation/before-seed42-close.png)
+![After](../../docs/screenshots/map-generation/after-seed42-close.png)
+
+Seed 7, the coast and the river, around x = -200 (two creeks run into the river):
+
+![Before](../../docs/screenshots/map-generation/before-seed7-coast.png)
+![After](../../docs/screenshots/map-generation/after-seed7-coast.png)
+
+Seed 1234, around (300, -200):
+
+![Before](../../docs/screenshots/map-generation/before-seed1234.png)
+![After](../../docs/screenshots/map-generation/after-seed1234.png)
+
+Seed 1, 240 x 240 tiles around (-80, 0): a creek from its source to the river, with a ford (the
+yellow gap):
+
+![A creek](../../docs/screenshots/map-generation/after-seed1-creek.png)
+
+The maps show trunks only, as dark green dots; the crowns are about 3 tiles wide in the game, so a
+wood reads denser there. Tall grass is not drawn.
