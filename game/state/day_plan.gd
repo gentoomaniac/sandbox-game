@@ -27,17 +27,31 @@ func _init(plan_day: int, plan_entries: Array[DayEntry], whole_day: bool, minute
 	made_at = minute_made
 
 
-## The entries of the day with this plan: its own, with the entries of `default_day` before them if
-## it is for the rest of the day.
-func over(default_day: Array[DayEntry]) -> Array[DayEntry]:
-	if is_whole_day:
-		return entries
+## The entries of the day with this plan: its own, with the entries of `default_day` before it if
+## it is for the rest of the day. `fixed` are the default entries the plan may not move or drop:
+## they are put back, and the plan's entries that start while one is on are left out.
+func over(default_day: Array[DayEntry], fixed: Array[DayEntry]) -> Array[DayEntry]:
 	var merged: Array[DayEntry] = []
-	for entry in default_day:
-		if entry.minute < entries[0].minute:
+	if not is_whole_day:
+		for entry in default_day:
+			if entry.minute < entries[0].minute:
+				merged.append(entry)
+	for entry in entries:
+		var is_in_fixed := fixed.any(
+			func(kept: DayEntry) -> bool:
+				return entry.minute >= kept.minute and entry.minute < kept.minute + kept.minutes
+		)
+		if not is_in_fixed:
 			merged.append(entry)
-	merged.append_array(entries)
+	for entry in fixed:
+		if not merged.has(entry):
+			merged.append(entry)
+	merged.sort_custom(_is_earlier)
 	return merged
+
+
+static func _is_earlier(first: DayEntry, second: DayEntry) -> bool:
+	return first.minute < second.minute
 
 
 ## The plan as save data: `{"day", "whole_day", "made_at", "entries": [[activity, minute, why]]}`.

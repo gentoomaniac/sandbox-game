@@ -36,7 +36,7 @@ const DAY_KINDS: Array[String] = ["weekday", "saturday", "sunday", "feast"]
 const SEASONS: Array[String] = ["spring", "summer", "autumn", "winter"]
 const REQUIRED_KEYS: Array[String] = ["verb", "target", "doing"]
 const TEXT_KEYS: Array[String] = ["verb"]
-const FLAG_KEYS: Array[String] = ["needs_daylight", "needs_dry", "inside"]
+const FLAG_KEYS: Array[String] = ["needs_daylight", "needs_dry", "fixed", "inside"]
 ## The targets with a building whose door they can go in by (`inside`).
 const TARGETS_WITH_DOOR: Array[String] = ["home", "workplace", "church", "friend"]
 
@@ -153,6 +153,12 @@ func day_kinds(day: int) -> Array[String]:
 	if feast_days().has(GameClock.day_of_year_of(day)):
 		kinds.append("feast")
 	return kinds
+
+
+## Whether the model's plan may not move or drop the activity (`fixed`): its default starts stand
+## in every day, whatever is planned.
+func is_fixed(id: String) -> bool:
+	return _values[id].get("fixed", false)
 
 
 ## Whether the activity can be planned on `day`: its `days` and `seasons`, which hold always when

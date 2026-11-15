@@ -373,6 +373,8 @@ needs_daylight=true
 needs_dry=true
 ; Of two default entries that fall within `min_gap_minutes`, the higher priority stays.
 priority=5
+; The model's plan may not move or drop it (the shop hours, #10): it is in every day at its `at`.
+fixed=true
 ```
 
 - **Targets** are `home` (the yard of their house), `workplace` (`Workplace.spot()`; with none:
@@ -396,10 +398,15 @@ priority=5
   dry, daylight, 15:00), `go_to_church` (church, Sunday 09:30 for 90 minutes),
   `meet_at_the_krug` (meeting, walk_about, Saturday 18:30 for three and a half hours, on weekdays
   19:00 for an hour for some), `visit_friend` (friend, Sunday 14:00), `walk_the_village`
-  (meeting).
+  (meeting), and `keep_shop` (workplace, stand, 07:00 and 13:00 for five hours each, Monday to
+  Saturday, `fixed`; see [../economy/shop.md](../economy/shop.md)).
+- **`fixed`** (#10) is a flag of an activity: its default entries stand in every day, whatever the
+  model plans. `ActivityUpkeep.entries_of` puts them back into a plan (`DayPlan.over`), an entry
+  the plan starts while a fixed one is on (its length) is dropped, and `offers_of` leaves a fixed
+  activity out, so the model is never offered it.
 - **Sets** (`[sets]`) name a list each: `base` (sleep, the three meals, rest; everybody), `farmer`
   (work, tend_field, water_field, meet_at_the_krug), `fisher` (work, mend_nets, ...), `miller`,
-  `keeper_of_the_house` (milk, tend_animals, ...), `shopkeeper` (work, for #240). A villager's
+  `keeper_of_the_house` (milk, tend_animals, ...), `shopkeeper` (keep_shop, meet_at_the_krug; #10). A villager's
   activities are `base` plus the set of their work plus their sheet's own extras, minus `skips`.
 - **What an activity may change in the world: nothing, in the first version.** An activity says
   where the villager is and how they stand there, with the footprints their feet make anyway.

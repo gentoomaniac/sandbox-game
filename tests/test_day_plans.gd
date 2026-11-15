@@ -118,10 +118,14 @@ func test_a_villager_with_no_plan_has_the_default_day() -> void:
 # --- DayPlan ---
 
 
+func _fixed_shop_hours() -> Array[DayEntry]:
+	return [DayEntry.new("keep_shop", 7 * 60, 300), DayEntry.new("keep_shop", 13 * 60, 300)]
+
+
 func test_over_gives_its_own_entries_for_the_whole_day() -> void:
 	var entries: Array[DayEntry] = [_entry("breakfast", 5)]
 	var default_day: Array[DayEntry] = [_entry("sleep", 1)]
-	assert_eq(_plan(DAY, entries).over(default_day), entries)
+	assert_eq(_plan(DAY, entries).over(default_day, []), entries)
 
 
 func test_over_puts_a_part_after_the_default_entries_that_start_before_it() -> void:
@@ -132,7 +136,35 @@ func test_over_puts_a_part_after_the_default_entries_that_start_before_it() -> v
 		_entry("supper", 14, 30),
 		_entry("sleep", 21)
 	]
-	var merged := _plan(DAY, entries, false).over(default_day)
+	var merged := _plan(DAY, entries, false).over(default_day, [])
 	assert_eq(
 		_activities_of(merged), ["05:00 breakfast", "14:29 work", "14:30 rest"] as Array[String]
 	)
+
+
+func test_over_keeps_the_fixed_entries_a_plan_leaves_out() -> void:
+	var entries: Array[DayEntry] = [_entry("breakfast", 5), _entry("rest", 19), _entry("sleep", 21)]
+	var merged := _plan(DAY, entries).over([], _fixed_shop_hours())
+	assert_eq(
+		_activities_of(merged),
+		["05:00 breakfast", "07:00 keep_shop", "13:00 keep_shop", "19:00 rest", "21:00 sleep"]
+	)
+
+
+func test_over_drops_what_a_plan_starts_while_a_fixed_entry_is_on() -> void:
+	var entries: Array[DayEntry] = [
+		_entry("breakfast", 5), _entry("rest", 9), _entry("dinner", 12), _entry("sleep", 21)
+	]
+	var merged := _plan(DAY, entries).over([], _fixed_shop_hours())
+	assert_eq(
+		_activities_of(merged),
+		["05:00 breakfast", "07:00 keep_shop", "12:00 dinner", "13:00 keep_shop", "21:00 sleep"]
+	)
+
+
+func test_over_has_the_fixed_entries_after_a_part_of_the_day_but_not_before_it() -> void:
+	var fixed := _fixed_shop_hours()
+	var default_day: Array[DayEntry] = [fixed[0], _entry("dinner", 12), fixed[1]]
+	var entries: Array[DayEntry] = [_entry("rest", 10)]
+	var merged := _plan(DAY, entries, false).over(default_day, fixed)
+	assert_eq(_activities_of(merged), ["07:00 keep_shop", "13:00 keep_shop"])
