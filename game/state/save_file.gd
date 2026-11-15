@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 46
-## The oldest version we still upgrade. Nine steps back, for the next version (#7) makes its step
-## the tenth.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 47
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -238,6 +237,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_44(game)
 	if version <= 45:
 		_upgrade_from_version_45(game)
+	if version <= 46:
+		_upgrade_from_version_46(game)
 
 
 ## Version 37 had no topics of the village (task 129): the villagers of data/villagers.cfg know
@@ -357,6 +358,13 @@ static func _upgrade_from_version_44(_game: Dictionary) -> void:
 ## Version 45 had no village (#9): the world has none, and keeps the land it has.
 static func _upgrade_from_version_45(game: Dictionary) -> void:
 	game["world"]["village"] = null
+
+
+## Version 46 had no plans of the villagers' days from the language model (#7): every villager has
+## the default day until the planner asks.
+static func _upgrade_from_version_46(game: Dictionary) -> void:
+	for npc: Dictionary in game["npcs"]:
+		npc["day_plans"] = []
 
 
 static func _give_lanterns_a_candle(data: Variant) -> void:

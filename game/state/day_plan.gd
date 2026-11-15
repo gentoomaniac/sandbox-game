@@ -38,3 +38,24 @@ func over(default_day: Array[DayEntry]) -> Array[DayEntry]:
 			merged.append(entry)
 	merged.append_array(entries)
 	return merged
+
+
+## The plan as save data: `{"day", "whole_day", "made_at", "entries": [[activity, minute, why]]}`.
+## A planned entry has no length (`minutes` is 0), so none is saved.
+func to_dict() -> Dictionary:
+	return {
+		"day": day,
+		"whole_day": is_whole_day,
+		"made_at": made_at,
+		"entries":
+		entries.map(
+			func(entry: DayEntry) -> Array: return [entry.activity, entry.minute, entry.why]
+		),
+	}
+
+
+static func from_dict(data: Dictionary) -> DayPlan:
+	var plan_entries: Array[DayEntry] = []
+	for saved: Array in data["entries"]:
+		plan_entries.append(DayEntry.new(saved[0], int(saved[1]), 0, saved[2]))
+	return DayPlan.new(int(data["day"]), plan_entries, data["whole_day"], int(data["made_at"]))

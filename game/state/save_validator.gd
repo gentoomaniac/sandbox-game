@@ -571,6 +571,7 @@ func _check_npc(npc: Variant, path: String) -> void:
 	_check_deeds(npc, "stories", path, false)
 	_check_stories(npc, path)
 	_check_texts(npc, "topics", path)
+	_check_day_plans(npc, path)
 	for key in ["chat_history", "uncompacted_lines"]:
 		var lines: Variant = _field(npc, key, Kind.LIST, path)
 		if lines != null:
@@ -622,6 +623,43 @@ func _check_stories(npc: Dictionary, path: String) -> void:
 		var weight: Variant = _field(story, "weight", Kind.TEXT, story_path)
 		if weight != null and not MemoryWeight.WORDS.has(weight):
 			_report(story_path, "unknown weight %s" % weight)
+
+
+## The model's plans for the days of a villager: each with at least one entry `[activity, minute,
+## why]`. An activity that data/activities.cfg no longer has takes its plan out.
+func _check_day_plans(npc: Dictionary, path: String) -> void:
+	var plans: Variant = _field(npc, "day_plans", Kind.LIST, path)
+	if plans == null:
+		return
+	var rules := ActivityRules.default_rules()
+	for index in plans.size():
+		var plan_path := "%s day_plans %d" % [path, index]
+		var plan: Variant = plans[index]
+		if not plan is Dictionary:
+			_report(plan_path, "should be a dictionary")
+			continue
+		_field(plan, "day", Kind.WHOLE, plan_path)
+		_field(plan, "whole_day", Kind.BOOL, plan_path)
+		_field(plan, "made_at", Kind.WHOLE, plan_path)
+		var entries: Variant = _field(plan, "entries", Kind.LIST, plan_path)
+		if entries == null:
+			continue
+		if entries.is_empty():
+			_report(plan_path, "has no entries")
+		for entry: Variant in entries:
+			var is_whole: bool = entry is Array and entry.size() == 3
+			if not (
+				is_whole
+				and _is_kind(entry[0], Kind.TEXT)
+				and _is_kind(entry[1], Kind.WHOLE)
+				and _is_kind(entry[2], Kind.TEXT)
+			):
+				_report(plan_path, "an entry should be [activity, minute, why]")
+			elif entry[1] < 0 or entry[1] >= GameClock.MINUTES_PER_DAY:
+				_report(plan_path, "entry minute %d is not in the day" % entry[1])
+			elif not rules.has(entry[0]):
+				_add_missing("activity %s" % entry[0], plan_path, _removing(plans, plan))
+				break
 
 
 func _check_memories(npc: Dictionary, path: String) -> void:

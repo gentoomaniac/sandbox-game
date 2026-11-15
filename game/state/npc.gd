@@ -111,7 +111,7 @@ var free_body_tiles := Rect2i()
 ## whoever sent them sends them again.
 var trip: NpcTrip
 ## The plans the language model made for their days, `{game day: DayPlan}`: today's and tomorrow's,
-## and yesterday's for the next prompt. Not saved yet. A day without one has the default day.
+## and yesterday's for the next prompt. A day without one has the default day.
 var day_plans := {}
 ## Where the asking of the model for a day's plan stands, `{game day: DayPlan.WAITING or
 ## DayPlan.FAILED}`, for the days with no plan: a day is asked for once. Not saved.
@@ -311,6 +311,8 @@ func to_dict() -> Dictionary:
 		"opinion_moved_today": opinion_moved_today,
 		"stories": stories.map(_story_to_saved),
 		"topics": topics.duplicate(),
+		"day_plans":
+		day_plans.values().map(func(plan: DayPlan) -> Dictionary: return plan.to_dict()),
 	}
 
 
@@ -347,6 +349,9 @@ static func from_dict(data: Dictionary) -> Npc:
 	for story: Dictionary in data["stories"]:
 		npc.stories.append(_story_from_saved(story))
 	npc.topics.assign(data["topics"])
+	for saved: Dictionary in data["day_plans"]:
+		var plan := DayPlan.from_dict(saved)
+		npc.day_plans[plan.day] = plan
 	npc.opinion = int(data["opinion"])
 	npc.opinion_day = int(data["opinion_day"])
 	npc.opinion_moved_today = int(data["opinion_moved_today"])
