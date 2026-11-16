@@ -16,25 +16,18 @@ extends Modal
 ## `drop_from_inventory`).
 signal drop_requested(slot: int)
 
-## Which side of the screen a slot is on.
-const INVENTORY := 0
-const CHEST := 1
-
 const SLOT_GAP := 2
 const PANEL_GAP := 16
 const COLUMNS := 5
-## The backpack is 5 slots wide and 4 rows high.
-const INVENTORY_COLUMNS := 5
-const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 
-var _hotbar: HotbarHud
 var _inventory: Inventory
 var _chest: ItemSlots
 ## Moves the goods and tells what was taken out of the chest.
 var _transfers: ChestTransfers
-## The slot views of each side, by slot.
-var _views := {INVENTORY: {}, CHEST: {}}
+var _backpack: BackpackGrid
+## The chest's slot views, by slot.
+var _chest_views := {}
 ## What the chest's grid of slots is swapped in and out of: the part that grows.
 var _chest_holder := VBoxContainer.new()
 var _trash_can := TrashCan.new()
@@ -43,20 +36,20 @@ var _trash_can := TrashCan.new()
 func _init(hotbar: HotbarHud) -> void:
 	super()
 	close_actions = [&"interact"]
-	_hotbar = hotbar
-	_drop_outside_panel(_hotbar, _on_dropped_outside)
+	_drop_outside_panel(hotbar, _on_dropped_outside)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var inventory_column := _new_column(BACKPACK_ICON)
-	inventory_column.add_child(
-		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
-	)
+	var inventory_column := VBoxContainer.new()
+	inventory_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backpack = BackpackGrid.new(hotbar)
+	_backpack.quick_move_requested.connect(_on_backpack_quick_move_requested)
+	inventory_column.add_child(_backpack)
 	_trash_can.destroy_rule = _destroy
 	inventory_column.add_child(_trash_can)
 	row.add_child(inventory_column)
-	var chest_column := _new_column(CHEST_ICON)
+	var chest_column := _new_chest_column()
 	_chest_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chest_column.add_child(_scrolling(_chest_holder))
 	row.add_child(chest_column)
@@ -75,16 +68,14 @@ func open_chest(chest: WorldObject, state: GameState) -> void:
 
 
 func _on_open() -> void:
-	if _views[CHEST].size() != _chest.slots.size():
+	if _chest_views.size() != _chest.slots.size():
 		_show_chest_slots(_chest.slots.size())
-	for side: int in _views:
-		for slot: int in _views[side]:
-			_views[side][slot].bind_to(_slots_of(side), slot)
+	for slot: int in _chest_views:
+		_chest_views[slot].bind_to(_chest, slot)
 	_inventory.changed.connect(_refresh)
 	_chest.changed.connect(_refresh)
 	_trash_can.keep()
-	_hotbar.acquire(self)
-	_hotbar.slot_quick_move_requested.connect(_on_hotbar_slot_quick_move_requested)
+	_backpack.bind(_inventory)
 	_refresh()
 
 
@@ -93,10 +84,7 @@ func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
 	_trash_can.keep()
-	# The hotbar may have been freed first, when the whole scene goes.
-	if is_instance_valid(_hotbar):
-		_hotbar.release(self)
-		_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
+	_backpack.unbind()
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
@@ -104,49 +92,40 @@ func _on_close() -> void:
 func _show_chest_slots(slot_count: int) -> void:
 	for grid in _chest_holder.get_children():
 		grid.free()
-	_views[CHEST] = {}
-	_chest_holder.add_child(_new_grid(CHEST, 0, slot_count, COLUMNS))
+	_chest_views.clear()
+	var grid := GridContainer.new()
+	grid.columns = COLUMNS
+	grid.add_theme_constant_override("h_separation", SLOT_GAP)
+	grid.add_theme_constant_override("v_separation", SLOT_GAP)
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for slot in slot_count:
+		var view := SlotView.new()
+		view.tooltip_id = "chest_%d" % slot
+		view.quick_move_requested.connect(_on_chest_slot_quick_move_requested.bind(slot))
+		view.move_rule = _move
+		grid.add_child(view)
+		_chest_views[slot] = view
+	_chest_holder.add_child(grid)
 
 
-## A column with an icon at the top.
-func _new_column(icon: Texture2D) -> VBoxContainer:
+## The chest's column: its icon over the grid that scrolls.
+func _new_chest_column() -> VBoxContainer:
 	var column := VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var header := TextureRect.new()
-	header.texture = icon
+	header.texture = CHEST_ICON
 	header.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(header)
 	return column
 
 
-## A grid of the slots `first` to `last` - 1 of a side.
-func _new_grid(side: int, first: int, last: int, columns: int) -> GridContainer:
-	var grid := GridContainer.new()
-	grid.columns = columns
-	grid.add_theme_constant_override("h_separation", SLOT_GAP)
-	grid.add_theme_constant_override("v_separation", SLOT_GAP)
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for slot in range(first, last):
-		var view := SlotView.new()
-		view.tooltip_id = "%s_%d" % ["inventory" if side == INVENTORY else "chest", slot]
-		view.quick_move_requested.connect(_on_slot_quick_move_requested.bind(side, slot))
-		if side == CHEST:
-			view.move_rule = _move
-		grid.add_child(view)
-		_views[side][slot] = view
-	return grid
+func _on_chest_slot_quick_move_requested(slot: int) -> void:
+	_transfers.take_to_backpack(slot)
 
 
-func _slots_of(side: int) -> ItemSlots:
-	return _inventory if side == INVENTORY else _chest
-
-
-func _on_slot_quick_move_requested(side: int, slot: int) -> void:
-	if side == CHEST:
-		_transfers.take_to_backpack(slot)
-	else:
-		_transfers.put_in(slot)
+func _on_backpack_quick_move_requested(slot: int) -> void:
+	_transfers.put_in(slot)
 
 
 ## The move rule of the chest's slots (see SlotView `move_rule`): any drag from or onto them moves.
@@ -164,10 +143,6 @@ func _destroy(source: SlotView) -> void:
 		source.destroy()
 
 
-func _on_hotbar_slot_quick_move_requested(slot: int) -> void:
-	_on_slot_quick_move_requested(INVENTORY, slot)
-
-
 ## Escape answers the trash can's question with Keep, and only then closes the screen.
 func _takes_escape() -> bool:
 	return _trash_can.keep()
@@ -180,9 +155,6 @@ func _on_dropped_outside(source: SlotView) -> void:
 
 
 func _refresh() -> void:
-	for side: int in _views:
-		var slots := _slots_of(side)
-		# The hotbar draws its own slots, which are the first of the backpack's.
-		for slot: int in _views[side]:
-			var is_held := side == INVENTORY and slot == _inventory.selected_slot
-			_views[side][slot].show_stack(slots.slots[slot], is_held)
+	for slot: int in _chest_views:
+		_chest_views[slot].show_stack(_chest.slots[slot], false)
+	_backpack.refresh()

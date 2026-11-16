@@ -125,12 +125,13 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   Windows open together (the bag and the character window) share the bar: it stays lit until the
   last one releases it, and the one that acquired it last answers its clicks (`HotbarWindow`
   checks `is_borrowed_by(self)`; the chest and station screens are never open beside another
-  and connect to the bar's signals directly).
+  and answer the bar's signals without asking, through their `BackpackGrid`).
   A container screen shows the player's backpack with a `BackpackGrid` (the icon, the 5-column
   grid, the hotbar as the quick bar): `bind(inventory)` when it opens, `refresh()` when anything
   changes, `unbind()` when it closes, `quick_move_requested(slot)` for Shift+click on a backpack or
   hotbar slot, and `dims_item` for the rule of what can't be used now. The rules stay the screen's
-  (the campfire's wood, the station's room).
+  (the campfire's wood, the station's room; the chest keeps its own slots, with the transfers
+  in `ChestTransfers`).
   A window whose slots move stacks their own way sets `move_rule` on them (a callable asked whether
   a stack may be let go there and told to move it; a drag uses the rule of the slot it ends on,
   else of the one it came from) and `is_dimmed` for stacks that can't be used now: the process
