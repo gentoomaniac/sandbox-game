@@ -207,12 +207,15 @@ rests 20 days after it was done or went away, 8 days by default) and each quest'
 | `turnips_for_the_pot` | 5 turnips | day 12 (the first turnips are ripe) | 10 | 2 wax, 2 steps |
 | `wattle_for_the_garden` | 6 wattle fence by the home, radius 8 | day 10, not winter, opinion 0 | 10 | 2 wax, 2 steps |
 
-Against the shop of #10 (buys at 60%, sells at 125% of a worth, rounded): 5 fibre are 5 Schilling to
-the stall and the 10 seeds of the first quest cost 30 there, a loan to start the farm that the player
-does only once; the starters ask only for what lies about from the first hour. The other rewards are
-wax, which the shop does not sell (two wax make about two candles, 20 Schilling each at the stall),
-for work that costs more than that: a stool is 3 planks and skill 10, the fence 3 logs and 12 fibre.
-So no quest is a better deal than the stall.
+In Schilling (#49), against the shop of #10 (buys at 60%, sells at 125% of a worth, rounded): 5
+fibre are 5 Schilling to the stall and the 10 seeds of the first quest cost 30 there, a loan to
+start the farm that the player does only once (the start purse of 32 buys the same); the starters
+ask only for what lies about from the first hour. The other rewards are wax, which the shop does not
+sell (two wax make about two candles, 20 Schilling each at the stall), for work that costs more
+than that: a stool is 3 planks and skill 10, the fence 3 logs and 12 fibre. So no quest is a better
+deal than the stall, and none pays coin (open question 3 of the economy plan: items and goodwill
+only). `tests/test_quest_rewards.gd` keeps it so: a starter's reward costs at most the start purse,
+the others pay nothing the stall sells.
 
 `tests/test_quest_playthrough.gd` plays the first days in a new game with the village and the real
 files: day 1 posts a starter that is read on the board, taken, handed in and paid with its deed told;

@@ -142,6 +142,9 @@ The trade screen keeps its two sides (what you get, what you give) and gains the
 
 ## How quest rewards relate
 
+**Built (step 8):** the play-test table is in Schilling and `tests/test_quest_rewards.gd` checks it.
+No code changed, no coin reward.
+
 A quest still pays **items and goodwill, no coin** (default). The play-test table of
 [quests.md](../villagers/quests.md) is re-worded in Schilling and its numbers do not change: 5 fibre
 are 5 Schilling at her rate (1 each), the 10 turnip seeds cost 30 there, wax is not sold and a candle
