@@ -156,7 +156,7 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   closes both (unless the bag's trash can has a question up, which Escape answers first). They don't
   pause the game, and the player keeps playing beside them: walking, the hotbar's number keys and
   wheel, and a click outside the panels (use, target, place) all reach the game. While the mouse is
-  on a panel or a stack is dragged (Main's `is_pointer_on_gui`), the use highlight and the build
+  on a panel or a stack is dragged (`AimViews`' `is_pointer_on_gui`), the use highlight and the build
   ghost are hidden, Space (use) acts on the tile in front of the player as it does without a mouse,
   Space does not place a building, and a hold to take down counts only a press that began on the
   world. A door or a sleep (`BlackoutFlow.fade_through`) closes the windows and cancels a drag.
@@ -206,7 +206,7 @@ pausing window.
 
 The HUDs (hotbar, vitals, harvest notes, notifications, coordinates), tooltips and the build menu are not `Modal`s:
 they are overlays that stay up while the player plays, take no input away from the game and
-need neither a backdrop nor one-at-a-time. The tooltip (`TooltipView`) also shows `world_text` when the mouse is over no control: Main sets it to who lives and works in the building under the mouse (`Households.occupants_text`) or how the crop under it is doing (`GameState.crop_text_at`), so it needs no extra panel and has the same look at every UI scale and art. Where they sit: the hotbar at the bottom centre, with the bag button (`HotbarHud.bag_requested`,
+need neither a backdrop nor one-at-a-time. The tooltip (`TooltipView`) also shows `world_text` when the mouse is over no control: `AimViews` sets it to who lives and works in the building under the mouse (`Households.occupants_text`) or how the crop under it is doing (`GameState.crop_text_at`), so it needs no extra panel and has the same look at every UI scale and art. Where they sit: the hotbar at the bottom centre, with the bag button (`HotbarHud.bag_requested`,
 the same as the bag key) a gap to its right; the
 clock, the harvest note and the notifications at the top left; the energy and health bars
 (`VitalsHud`) at the top right, `VitalsHud.MARGIN` from the edges, and the coordinates (F3)

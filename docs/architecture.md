@@ -48,9 +48,11 @@ Warft and an Ewer here and there.
   chat or trade; the words and the opening of each `Interaction.Kind` are registered in an
   `InteractionRegistry`, which also gives the action hint its words for E), `UseSwing` and
   `UseNotes` (a use of the held item and its note), `ScreenKeys` and `HotbarKeys` (the window and
-  hotbar keys) and `PlayLoop` (what moves each frame and when: the `GameClockTicker`, which turns
+  hotbar keys), `PlayLoop` (what moves each frame and when: the `GameClockTicker`, which turns
   real time into game minutes (F2 speeds it up), `frame_work`, and the villagers, animals and
-  chunk streaming, which stand still indoors and while a sleep is made up for).
+  chunk streaming, which stand still indoors and while a sleep is made up for) and `AimViews` (what
+  the views show of what the player points at each frame: the use highlight, the action hint, the
+  tooltip's world text, the name tag, build mode and its menu).
   A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
   `QuestFlow`, `BarterFlow` and the core screens' `StorageFlow`, `ProcessFlow`, `CraftingFlow`,
   `ChatFlow` and `TradeFlow`): it takes what it needs in `_init`, adds its screens as children,

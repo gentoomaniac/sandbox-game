@@ -71,6 +71,7 @@ var _screen_keys: ScreenKeys
 var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _play_loop: PlayLoop
+var _aim_views: AimViews
 var _interact: InteractFlow
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
@@ -327,6 +328,19 @@ func _connect_state_and_views() -> void:
 	speech.show_for(_state, _chat_flow.dialogue, _camera.view_rect, _camera.world_to_ui)
 	_builder = Builder.new(_state)
 	_hotbar_keys = HotbarKeys.new(_state.player.inventory, _builder)
+	_aim_views = AimViews.new()
+	_aim_views.state = _state
+	_aim_views.settings = _settings
+	_aim_views.options = _options
+	_aim_views.camera = _camera
+	_aim_views.builder = _builder
+	_aim_views.blackout = _blackout
+	_aim_views.use_highlight = _use_highlight
+	_aim_views.build_mode = _build_mode
+	_aim_views.build_menu = _build_menu
+	_aim_views.action_hint = _action_hint
+	_aim_views.tooltip_view = _tooltip_view
+	_aim_views.npc_name_tag = _npc_name_tag
 	_screen_keys = ScreenKeys.new(
 		_state, _bag_screen, _character_screen, _crafting_flow.screen, _harvest_hud
 	)
@@ -388,15 +402,6 @@ func _connect_state_and_views() -> void:
 			_autosave_timer.restart()
 	)
 	_saves.finished.connect(_session.show_save_result)
-
-
-## Where the mouse is, in UI units; with `--mouse-tile`, the middle of that tile.
-func _mouse_in_ui_units() -> Vector2:
-	if _options.mouse_tile == StartupOptions.NO_TILE:
-		return get_viewport().get_mouse_position()
-	return _camera.world_to_ui(
-		(Vector2(_options.mouse_tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE
-	)
 
 
 ## Time passed without being played (a sleep, passing out, the console's skip): the ambient
@@ -550,38 +555,7 @@ func _process(delta: float) -> void:
 				_weather, _state.sun, _state.clock.day, _snow_cover, _frost
 			)
 		)
-	var is_in_play := not _is_any_screen_open()
-	var is_pointer_on_gui := (
-		Modal.is_any_open()
-		and (get_viewport().gui_get_hovered_control() != null or get_viewport().gui_is_dragging())
-	)
-	_use_highlight.is_pointer_on_gui = is_pointer_on_gui
-	_build_mode.is_pointer_on_gui = is_pointer_on_gui
-	_use_highlight.is_enabled = (
-		is_in_play
-		and not is_pointer_on_gui
-		and not _builder.is_building()
-		and not _blackout.is_in_transition
-	)
-	# On horseback E gets off instead.
-	var can_act := is_in_play and not _build_mode.is_active() and not _blackout.is_in_transition
-	var can_chat := can_act and _state.player.horse == null
-	var aim := _use_highlight.targeting()
-	_action_hint.show_for(_state, _settings, aim.tile, can_act)
-	var is_aiming_at_world := is_in_play and not is_pointer_on_gui and not _builder.is_building()
-	_tooltip_view.world_text = WorldHoverText.text_for(_state, aim, is_aiming_at_world)
-	_tooltip_view.world_cursor = (
-		_mouse_in_ui_units()
-		if aim.source == Targeting.Source.MOUSE
-		else _camera.world_to_ui((Vector2(aim.tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE)
-	)
-	_npc_name_tag.show_over(
-		Interaction.npc_to_chat(_state, aim.tile) if can_chat else null, _camera
-	)
-	# Build mode only counts outdoors, in play and not during a transition; it keeps processing,
-	# to clear its message when it goes off.
-	_build_mode.visible = is_in_play and not _state.is_inside() and not _blackout.is_in_transition
-	_build_menu.visible = _build_mode.is_active()
+	_aim_views.update(not _is_any_screen_open())
 	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
 	# that starts so shows the world first.
 	var is_drawn := _view.is_settled or _state.is_inside()
