@@ -90,6 +90,7 @@ func _init(hotbar: HotbarHud) -> void:
 	page_column.add_child(_quests_panel)
 	page_column.add_child(_neighbours_panel)
 	_panel.add_child(page_column)
+	_lists.append(_quests_panel.list)
 	_lists.append(_neighbours_panel.list)
 
 
