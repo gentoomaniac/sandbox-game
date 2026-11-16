@@ -88,6 +88,7 @@ extends RefCounted
 ##   --inventory              open the bag at start
 ##   --character              open the character window at start
 ##   --skills                 open the character window at start, on the skills tab
+##   --neighbours             open the character window at start, on the neighbours tab
 ##   --crafting               open the crafting menu at start
 ##   --load-dialog            open the list of saves to load from at start
 ##   --station                open the crafting menu (or a process station's window) of the
@@ -257,6 +258,7 @@ var sleep := false
 var inventory := false
 var character := false
 var skills := false
+var neighbours := false
 var crafting := false
 var load_dialog := false
 var trade := false
@@ -437,6 +439,8 @@ func _init(args := PackedStringArray()) -> void:
 				character = true
 			"--skills":
 				skills = true
+			"--neighbours":
+				neighbours = true
 			"--crafting":
 				crafting = true
 			"--load-dialog":

@@ -114,9 +114,13 @@ func test_flags_without_a_value() -> void:
 	assert_true(StartupOptions.new(PackedStringArray(["--load-dialog"])).load_dialog)
 	assert_false(options.skills)
 	assert_false(options.character)
-	var screens := StartupOptions.new(PackedStringArray(["--skills", "--station", "--character"]))
+	assert_false(options.neighbours)
+	var screens := StartupOptions.new(
+		PackedStringArray(["--skills", "--station", "--character", "--neighbours"])
+	)
 	assert_true(screens.character)
 	assert_true(screens.skills)
+	assert_true(screens.neighbours)
 	assert_true(screens.station)
 
 

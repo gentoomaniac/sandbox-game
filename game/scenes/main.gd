@@ -417,6 +417,8 @@ func _apply_start_options() -> void:
 		_character_screen.open()
 	if _options.skills:
 		_character_screen.open_tab(CharacterScreen.Tab.SKILLS)
+	if _options.neighbours:
+		_character_screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
 	if _options.crafting:
 		_crafting_screen.open()
 	if not _options.console.is_empty():

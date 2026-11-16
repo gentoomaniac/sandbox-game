@@ -91,12 +91,27 @@ func test_the_points_are_never_in_a_row() -> void:
 
 
 func test_the_marks_are_filled_up_to_the_level_cold_then_warm_then_gilded() -> void:
-	assert_eq(FriendshipMarks.color_of(1, 5), FriendshipMarks.COLD_COLOR)
-	assert_eq(FriendshipMarks.color_of(2, 5), FriendshipMarks.COLD_COLOR)
-	assert_eq(FriendshipMarks.color_of(3, 5), FriendshipMarks.WARM_COLOR)
-	assert_eq(FriendshipMarks.color_of(6, 5), FriendshipMarks.EMPTY_COLOR)
-	assert_eq(FriendshipMarks.color_of(10, 10), FriendshipMarks.GILDED_COLOR)
-	assert_eq(FriendshipMarks.color_of(10, 9), FriendshipMarks.EMPTY_COLOR)
+	assert_eq(FriendshipMarks.look_of(1, 5), FriendshipMarks.Look.COLD)
+	assert_eq(FriendshipMarks.look_of(2, 5), FriendshipMarks.Look.COLD)
+	assert_eq(FriendshipMarks.look_of(3, 5), FriendshipMarks.Look.WARM)
+	assert_eq(FriendshipMarks.look_of(6, 5), FriendshipMarks.Look.EMPTY)
+	assert_eq(FriendshipMarks.look_of(10, 10), FriendshipMarks.Look.GILDED)
+	assert_eq(FriendshipMarks.look_of(10, 9), FriendshipMarks.Look.EMPTY)
+
+
+func test_the_marks_are_cells_of_their_picture_in_both_art_sets() -> void:
+	for classic in [false, true]:
+		var art_set := "the classic art" if classic else "the new art"
+		var marks: Texture2D = load(ArtSet.path_in(FriendshipMarks.MARKS_PATH, classic))
+		assert_eq(marks.resource_path.contains("/classic/"), classic, "%s has its marks" % art_set)
+		assert_eq(
+			marks.get_size(),
+			Vector2(
+				FriendshipMarks.MARK_SIZE.x * FriendshipMarks.Look.size(),
+				FriendshipMarks.MARK_SIZE.y
+			),
+			marks.resource_path
+		)
 
 
 func test_the_tab_lists_the_villagers_with_their_level_names() -> void:

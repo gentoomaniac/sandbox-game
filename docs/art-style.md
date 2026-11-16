@@ -679,6 +679,19 @@ not "generic RPG forest".
   9 x 9 classic). Black is its own outline, so the mark has none; the heart has the ink outline. No
   more than the palette's colours; both drift up and fade in the game (`PetReaction`), so they are
   one picture each.
+- **Friendship** (issue #48, step 14, tools/art/friendship.py and classic/friendship.py): what rises
+  over a villager's head when their opinion of the player moves, rimmed in ink like the marks over
+  the animals, each two cells side by side that take turns while it rises and fades
+  (`FriendshipPopups`). A **heart** (14 x 12 px at 32 px, 9 x 8 classic) of ember red lit
+  `red_light` on its upper left with a cream gleam (petal in the classic art), shaded `rust_dark`
+  on its lower right; in its second cell a size smaller, a heartbeat. A small grey **cloud**
+  of three puffs, `stone_light` on top, `stone`, a flat `stone_dark` underside, with a drizzle
+  under it that falls on in the second cell (each cell 18 x 15 px with the drizzle's rows, 11 x 10
+  classic): drops of two pixels, `foam` over `water_light` (one `foam` pixel in the classic art). The ten
+  **marks** of the Neighbours tab are small hearts of 9 x 8 UI pixels (assets/ui/friendship_marks.png,
+  not doubled in the classic art, which draws them flat without the gleam): the two cold levels
+  in the `water` ramp, the warm ones ember, the tenth gilded (`gold`, `ochre`, a cream gleam), and a
+  mark not reached hollow, a `stone` rim round `stone_dark`.
 
 ## The pixel font
 

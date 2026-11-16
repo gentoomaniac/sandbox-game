@@ -48,6 +48,9 @@ assets/effects/pet_heart.png and pet_annoyed.png: what rises over an animal that
 or asleep.
 assets/effects/quest_mark.png: the "!" over the notice board (and a quest giver) while a quest is
 posted: notice_board.BOB_FRAMES cells side by side, for its bob.
+assets/effects/friendship_heart.png and friendship_cloud.png: what rises over a villager whose
+opinion of the player rises or falls, two cells side by side each (friendship.py).
+assets/ui/friendship_marks.png: the marks of the Neighbours tab, a cell per look (friendship.py).
 
 assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
 its bell frame in church.py) at the game's tile (not doubled), as wide as its footprint and as
@@ -115,6 +118,7 @@ import crops
 import fire
 import flowers
 import footprints
+import friendship
 import interior
 import items
 import landing
@@ -381,6 +385,9 @@ def write_character():
     save_picture(character.pet_heart(), "effects/pet_heart.png")
     save_picture(character.pet_annoyed(), "effects/pet_annoyed.png")
     save_picture(notice_board.quest_mark(), "effects/quest_mark.png")
+    save_picture(friendship.heart(), "effects/friendship_heart.png")
+    save_picture(friendship.cloud(), "effects/friendship_cloud.png")
+    save_picture(friendship.marks(), "ui/friendship_marks.png")
     save(footprints.sheet(GAME_TILE), "effects/footprints.png", GAME_TILE)
 
 
