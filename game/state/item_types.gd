@@ -156,39 +156,6 @@ const TOPICS_DIR := "res://game/state/items"
 const _OWN_SOURCE := "res://game/state/item_types.gd"
 
 const _OTHER_TYPES := {
-	JETTY:
-	{
-		"name": "Jetty",
-		"description":
-		"A piece of plank jetty on oak piles. Laid over water or mud, it is walked on.",
-		"weight": 6.0,
-		"stack_limit": 20,
-		"places": WorldObjectTypes.JETTY,
-	},
-	ROWING_BOAT:
-	{
-		"name": "Rowing boat",
-		"description": "A flat-bottomed boat for the tideways. It lies on water or mud.",
-		"weight": 40.0,
-		"stack_limit": 1,
-		"places": WorldObjectTypes.ROWING_BOAT,
-	},
-	NET_FRAME:
-	{
-		"name": "Net frame",
-		"description": "Two forked posts and a pole, with a fishing net hung on it to dry.",
-		"weight": 8.0,
-		"stack_limit": 5,
-		"places": WorldObjectTypes.NET_FRAME,
-	},
-	EEL_TRAPS:
-	{
-		"name": "Eel traps",
-		"description": "Wicker traps for eels, laid in the tideways at night.",
-		"weight": 2.0,
-		"stack_limit": 10,
-		"places": WorldObjectTypes.EEL_TRAPS,
-	},
 	WATTLE_FENCE:
 	{
 		"name": "Wattle fence",
