@@ -142,7 +142,7 @@ func test_the_chest_in_the_room_of_a_house_opens_with_no_bed_in_reach() -> void:
 
 
 func _through_save() -> GameState:
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Vector2i.ZERO))
 	return restored
 

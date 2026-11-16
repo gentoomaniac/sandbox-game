@@ -140,7 +140,7 @@ func test_a_save_after_taking_a_house_down_loads_and_plays_on() -> void:
 	_state.sleep_in(bed)
 	_go_out()
 	_state.take_down_building(_house)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	assert_eq(restored.world.buildings().size(), 1)
 	assert_eq(restored.world.buildings()[0].origin, other.origin)
 	assert_null(restored.world.building_at(ORIGIN))

@@ -71,7 +71,7 @@ func test_the_wood_and_the_flame_are_kept_when_the_world_is_saved_and_loaded() -
 	var fire := _place(WorldObjectTypes.FIREPLACE)
 	_put_wood(fire, 3)
 	_state.light_campfire(fire)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Chunk.world_to_chunk(_tile)))
 	var kept := restored.world.object_at(_tile)
 	assert_false(Campfire.is_out(kept))

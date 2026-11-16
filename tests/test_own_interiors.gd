@@ -207,7 +207,7 @@ func test_a_home_bed_in_a_house_that_gets_an_own_inside_stays_the_players_home()
 	_state.player.home_bed = bed.pos
 
 	_state.homes.move_in(_villager("antje"), hall)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	restored.go_to_home_bed()
 
 	assert_true(restored.is_inside(), "they wake in the house, at the same bed")

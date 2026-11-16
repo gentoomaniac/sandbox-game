@@ -81,7 +81,7 @@ func test_the_camp_fire_burns_down_in_twelve_hours() -> void:
 func test_the_burning_is_saved_and_goes_on_after_loading() -> void:
 	var fire := _lit_fire(2)
 	_state.pass_awake_time(60)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(Chunk.world_to_chunk(_tile)))
 	restored.pass_awake_time(2 * LOG_MINUTES)
 	assert_true(Campfire.is_out(restored.world.object_at(_tile)))
