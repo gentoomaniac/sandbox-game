@@ -73,7 +73,9 @@ var current_map: GameMap:
 	get:
 		return world if building_inside == null else building_inside.interior
 
-## The building the player is inside, or null when they are out in the world.
+## The building the player is inside, or null when they are out in the world. Set only by
+## PlayerRest (doors, teleports, waking) and GameCodec (a loaded game); setting it also tells the
+## households where the player is.
 var building_inside: Building:
 	set(building):
 		building_inside = building

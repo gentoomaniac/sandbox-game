@@ -33,10 +33,11 @@ var horse: FarmAnimal
 ## that is trotting and not winded (see PlayerTravel `is_sprinting`). Not saved.
 var is_sprint_held := false
 ## Seconds the player has kept moving: a horse trots after a while (see PlayerTravel
-## `is_trotting`). Not saved.
+## `is_trotting`). Only PlayerTravel changes it. Not saved.
 var moving_seconds := 0.0
 ## The ridden horse used up its stamina and may not sprint until some has come back (see
-## `sprint_again_stamina` in data/livestock.cfg). Not saved: the horse's stamina is.
+## `sprint_again_stamina` in data/livestock.cfg). Only PlayerTravel changes it. Not saved: the
+## horse's stamina is.
 var is_horse_winded := false
 
 ## What they are made of: it sets the most energy and health they can have, and the weight they
