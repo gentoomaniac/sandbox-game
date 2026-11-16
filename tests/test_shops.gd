@@ -5,7 +5,7 @@ extends GutTest
 const SHOP := "trienke"
 const SEEDS := ItemTypes.TURNIP_SEEDS
 
-## What she takes most dearly in a day, worth 138 Pf to her: 40 turnip seeds or 6 candles cost 120.
+## What she takes most dearly in a day, worth 138 ß to her: 40 turnip seeds or 6 candles cost 120.
 const PAYMENT := {ItemTypes.LOGS: 10, ItemTypes.CLAY: 10, ItemTypes.FLOUR: 6, ItemTypes.BREAD: 6}
 
 var _clock: GameClock
@@ -90,8 +90,8 @@ func test_offering_what_the_player_does_not_carry_is_refused() -> void:
 
 func test_too_little_value_is_refused_and_says_by_how_much() -> void:
 	_carry(ItemTypes.EGG, 8)
-	_assert_refused({SEEDS: 5}, {ItemTypes.EGG: 8}, "Short by 7 Pf.")
-	_assert_refused({SEEDS: 5}, {}, "Short by 15 Pf.")
+	_assert_refused({SEEDS: 5}, {ItemTypes.EGG: 8}, "Short by 7 Schilling.")
+	_assert_refused({SEEDS: 5}, {}, "Short by 15 Schilling.")
 
 
 func test_what_she_gets_must_fit_the_bag_once_what_she_gives_is_out() -> void:
@@ -165,7 +165,7 @@ func test_cover_gives_the_cheapest_of_the_bag_until_the_goods_are_paid() -> void
 	_carry(ItemTypes.LOGS, 10)
 	var give := _shops.cover(SHOP, {SEEDS: 5}, _bag)
 	assert_eq(
-		give, {ItemTypes.EGG: 10, ItemTypes.FIBRE: 5}, "15 Pf, a Pfennig each, the file's order"
+		give, {ItemTypes.EGG: 10, ItemTypes.FIBRE: 5}, "15 ß, a Schilling each, the file's order"
 	)
 	assert_eq(_shops.trade(SHOP, {SEEDS: 5}, give, _bag), "")
 	assert_eq(_bag.totals(), {SEEDS: 5, ItemTypes.FIBRE: 5, ItemTypes.LOGS: 10})
@@ -174,7 +174,7 @@ func test_cover_gives_the_cheapest_of_the_bag_until_the_goods_are_paid() -> void
 func test_cover_stops_at_what_the_bag_and_the_room_hold() -> void:
 	_carry(ItemTypes.EGG, 20)
 	var give := _shops.cover(SHOP, {SEEDS: 40}, _bag)
-	assert_eq(give, {ItemTypes.EGG: 12}, "the room of a day, though 120 Pf is wanted")
+	assert_eq(give, {ItemTypes.EGG: 12}, "the room of a day, though 120 ß is wanted")
 	assert_eq(_shops.cover(SHOP, {}, _bag), {}, "nothing wanted, nothing to cover")
 
 

@@ -56,7 +56,7 @@ func test_she_sells_the_seeds_of_every_crop() -> void:
 	assert_eq(_seeds().size(), 13)
 	for seed_item in _seeds():
 		assert_true(_rules.is_sold(SHOP, seed_item), "%s is sold" % seed_item)
-		assert_between(_rules.price(SHOP, seed_item), 3, 7, "%s is a few Pfennig" % seed_item)
+		assert_between(_rules.price(SHOP, seed_item), 3, 7, "%s is a few Schilling" % seed_item)
 		assert_eq(_shops.stock_of(SHOP, seed_item), _rules.most_stock(SHOP, seed_item))
 
 
@@ -76,7 +76,7 @@ func test_a_seed_is_refused_when_the_payment_is_short_and_nothing_changes() -> v
 
 	var refusal := _shops.trade(SHOP, {seeds: 2}, {ItemTypes.EGG: 6}, _bag)
 
-	assert_eq(refusal, "Short by 8 Pf.", "2 plants cost 14 Pf, 6 eggs are worth 6")
+	assert_eq(refusal, "Short by 8 Schilling.", "2 plants cost 14 ß, 6 eggs are worth 6")
 	assert_eq(_bag.totals(), {ItemTypes.EGG: 6})
 	assert_eq(_shops.stock_of(SHOP, seeds), 12)
 

@@ -23,7 +23,7 @@ barter: there is no money in the game yet, only what things are worth.
 
 - Stand by her while the shop is open and press E. The game stands still while you trade;
   E or Escape leaves.
-- On the left is what she sells, with its price in Pfennig (Pf) and how much she has left. On the right
+- On the left is what she sells, with its price in Schilling (ß) and how much she has left. On the right
   is what she takes, with its value, how many more she takes today and how many you carry. Press `+`
   and `-` to choose how many of each, `Cover it` to fill what you give with the cheapest of your
   bag until what you get is paid, and `Trade` when the line below says the trade is fair. `Talk`
@@ -37,24 +37,24 @@ barter: there is no money in the game yet, only what things are worth.
 
 | She sells | Price | Has at most | Comes back each day |
 |---|---|---|---|
-| Turnip seeds | 3 Pf | 40 | 10 |
-| Carrot, onion, rye, wheat, buckwheat and flax seeds | 3 Pf | 30 each | 8 each |
-| Cabbage seeds | 4 Pf | 30 | 8 |
-| Pea and bean seeds | 4 Pf | 20 each | 5 each |
-| Seed potatoes | 5 Pf | 25 | 6 |
-| Pumpkin seeds | 5 Pf | 12 | 3 |
-| Strawberry plants | 7 Pf | 12 | 3 |
-| Candle | 20 Pf | 6 | 1 |
+| Turnip seeds | 3 ß | 40 | 10 |
+| Carrot, onion, rye, wheat, buckwheat and flax seeds | 3 ß | 30 each | 8 each |
+| Cabbage seeds | 4 ß | 30 | 8 |
+| Pea and bean seeds | 4 ß | 20 each | 5 each |
+| Seed potatoes | 5 ß | 25 | 6 |
+| Pumpkin seeds | 5 ß | 12 | 3 |
+| Strawberry plants | 7 ß | 12 | 3 |
+| Candle | 20 ß | 6 | 1 |
 
 | She takes | Value | A day |
 |---|---|---|
-| Egg, berries | 1 Pf | 12 each |
-| Turnip | 3 Pf | 10 |
-| Fibre, reeds, hay | 1 Pf | 20 each |
-| Logs | 4 Pf | 10 |
-| Clay | 2 Pf | 10 |
-| Flour | 6 Pf | 6 |
-| Bread | 7 Pf | 6 |
+| Egg, berries | 1 ß | 12 each |
+| Turnip | 3 ß | 10 |
+| Fibre, reeds, hay | 1 ß | 20 each |
+| Logs | 4 ß | 10 |
+| Clay | 2 ß | 10 |
+| Flour | 6 ß | 6 |
+| Bread | 7 ß | 6 |
 
 - Her stock fills up over the days, and what she takes in a day is back to its number the next
   day. A shop you leave alone for a long time is full again when you come back; one you empty

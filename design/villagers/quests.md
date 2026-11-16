@@ -207,10 +207,10 @@ rests 20 days after it was done or went away, 8 days by default) and each quest'
 | `turnips_for_the_pot` | 5 turnips | day 12 (the first turnips are ripe) | 10 | 2 wax, 2 steps |
 | `wattle_for_the_garden` | 6 wattle fence by the home, radius 8 | day 10, not winter, opinion 0 | 10 | 2 wax, 2 steps |
 
-Against the shop of #10 (buys at 60%, sells at 125% of a worth, rounded): 5 fibre are 5 Pfennig to
+Against the shop of #10 (buys at 60%, sells at 125% of a worth, rounded): 5 fibre are 5 Schilling to
 the stall and the 10 seeds of the first quest cost 30 there, a loan to start the farm that the player
 does only once; the starters ask only for what lies about from the first hour. The other rewards are
-wax, which the shop does not sell (two wax make about two candles, 20 Pfennig each at the stall),
+wax, which the shop does not sell (two wax make about two candles, 20 Schilling each at the stall),
 for work that costs more than that: a stool is 3 planks and skill 10, the fence 3 logs and 12 fibre.
 So no quest is a better deal than the stall.
 

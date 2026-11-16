@@ -41,15 +41,15 @@ func test_the_rows_are_what_she_sells_and_what_she_takes() -> void:
 	assert_eq(_screen._sell_rows.size(), 14)
 	assert_eq(_screen._take_rows.size(), 10)
 	assert_eq(_screen._title_label.text, "Trienke Lorenzen, the Höker")
-	assert_eq(_screen._sell_rows[0]._detail_label.text, "3 Pf, 40 left")
-	assert_eq(_screen._sell_rows[-1]._detail_label.text, "20 Pf, 6 left")
+	assert_eq(_screen._sell_rows[0]._detail_label.text, "3 ß, 40 left")
+	assert_eq(_screen._sell_rows[-1]._detail_label.text, "20 ß, 6 left")
 
 
 func test_a_row_is_grey_when_there_is_nothing_to_trade() -> void:
 	_carry(ItemTypes.EGG, 3)
 	_open()
 	assert_eq(_screen._take_rows[0].modulate.a, 1.0, "the eggs in the bag")
-	assert_eq(_screen._take_rows[0]._detail_label.text, "1 Pf, room 12, you have 3")
+	assert_eq(_screen._take_rows[0]._detail_label.text, "1 ß, room 12, you have 3")
 	assert_lt(_screen._take_rows[1].modulate.a, 1.0, "no berries in the bag")
 	assert_eq(_screen._sell_rows[0].modulate.a, 1.0)
 
@@ -76,11 +76,11 @@ func test_the_line_says_what_is_short_and_the_trade_button_is_off() -> void:
 	assert_true(_screen._trade_button.disabled)
 	assert_true(_screen._cover_button.disabled, "nothing wanted, nothing to cover")
 	_screen.step_want(SEEDS, 5)
-	assert_eq(_screen.status_text(), "Short by 15 Pf.")
+	assert_eq(_screen.status_text(), "Short by 15 Schilling.")
 	_screen.step_give(ItemTypes.EGG, 8)
-	assert_eq(_screen.status_text(), "Short by 7 Pf.")
-	assert_eq(_screen._get_label.text, "You get: 5 Turnip seeds (15 Pf)")
-	assert_eq(_screen._give_label.text, "You give: 8 Egg (8 Pf)")
+	assert_eq(_screen.status_text(), "Short by 7 Schilling.")
+	assert_eq(_screen._get_label.text, "You get: 5 Turnip seeds (15 ß)")
+	assert_eq(_screen._give_label.text, "You give: 8 Egg (8 ß)")
 	assert_true(_screen._trade_button.disabled)
 	assert_false(_screen._cover_button.disabled)
 
@@ -112,7 +112,7 @@ func test_an_overpayment_says_what_she_keeps() -> void:
 	_open()
 	_screen.step_want(ItemTypes.CANDLE, 1)
 	_screen.step_give(ItemTypes.LOGS, 6)
-	assert_eq(_screen.status_text(), "She keeps the 4 Pf over.")
+	assert_eq(_screen.status_text(), "She keeps the 4 ß over.")
 	assert_false(_screen._trade_button.disabled)
 
 
@@ -129,7 +129,7 @@ func test_the_trade_button_does_the_deal_and_clears_the_counts() -> void:
 	assert_eq(_screen.give, {})
 	assert_eq(_screen.status_text(), "Done.")
 	_screen.step_want(ItemTypes.CANDLE, 1)
-	assert_eq(_screen.status_text(), "Short by 20 Pf.", "the next change clears the note")
+	assert_eq(_screen.status_text(), "Short by 20 Schilling.", "the next change clears the note")
 
 
 func test_a_sold_out_good_is_grey_and_has_no_plus() -> void:

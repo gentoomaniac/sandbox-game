@@ -162,7 +162,7 @@ func _problem(
 	if not problem.is_empty():
 		return problem
 	if deal.value < deal.price:
-		return "Short by %d Pf." % (deal.price - deal.value)
+		return "Short by %d Schilling." % (deal.price - deal.value)
 	return "" if bag.can_exchange(give, want) else "Your bag is full."
 
 

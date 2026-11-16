@@ -38,12 +38,12 @@ func test_what_she_sells_and_takes_is_listed_in_the_order_of_the_file() -> void:
 
 
 func test_she_sells_at_a_quarter_over_the_worth_rounded_up() -> void:
-	assert_eq(_rules.price(SHOP, ItemTypes.TURNIP_SEEDS), 3, "2 Pf at 125 percent is 2.5")
+	assert_eq(_rules.price(SHOP, ItemTypes.TURNIP_SEEDS), 3, "2 ß at 125 percent is 2.5")
 	assert_eq(_rules.price(SHOP, ItemTypes.CANDLE), 20)
 
 
 func test_she_takes_at_six_tenths_of_the_worth_rounded_down() -> void:
-	assert_eq(_rules.value(SHOP, ItemTypes.EGG), 1, "2 Pf at 60 percent is 1.2")
+	assert_eq(_rules.value(SHOP, ItemTypes.EGG), 1, "2 ß at 60 percent is 1.2")
 	assert_eq(_rules.value(SHOP, ItemTypes.TURNIP), 3, "3.6")
 	assert_eq(_rules.value(SHOP, ItemTypes.LOGS), 4, "4.8")
 	assert_eq(_rules.value(SHOP, ItemTypes.BREAD), 7, "7.2")

@@ -1,7 +1,7 @@
 class_name ShopRules
 extends RefCounted
 ## What the shopkeepers sell and take, read from data/shops.cfg (see there for what each key means):
-## the worth of each good in Pfennig, the percentages that make a price and a value of it, and how
+## the worth of each good in Schilling, the percentages that make a price and a value of it, and how
 ## much she has and takes. `from_file` reports everything wrong with the file, and `is_valid` says
 ## whether anything was.
 
@@ -98,9 +98,9 @@ func is_taken(shop: String, item: StringName) -> bool:
 	return _values.has(_good_section(shop, TAKES, item))
 
 
-## What she asks of the player for one of the item, in Pfennig: its worth at `sell_percent`, rounded
-## up. `standing_percent` is the share of that price the player pays by their friendship with her
-## (see ShopStanding), a whole percent.
+## What she asks of the player for one of the item, in Schilling: its worth at `sell_percent`,
+## rounded up. `standing_percent` is the share of that price the player pays by their
+## friendship with her (see ShopStanding), a whole percent.
 func price(shop: String, item: StringName, standing_percent := 100) -> int:
 	var percent: int = _values[_section(shop)]["sell_percent"]
 	return ceili(worth_of_sold(shop, item) * percent * standing_percent / 10000.0)
@@ -112,7 +112,7 @@ func is_best(shop: String, item: StringName) -> bool:
 	return _values[_good_section(shop, SELLS, item)].get("best", false)
 
 
-## What one of the item the player gives is worth to her, in Pfennig: its worth at `take_percent`,
+## What one of the item the player gives is worth to her, in Schilling: its worth at `take_percent`,
 ## rounded down.
 func value(shop: String, item: StringName) -> int:
 	var percent: int = _values[_section(shop)]["take_percent"]

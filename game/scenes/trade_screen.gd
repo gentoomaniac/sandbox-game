@@ -90,7 +90,7 @@ func _on_open() -> void:
 	give = {}
 	_note = ""
 	_title_label.text = "%s, %s" % [_keeper.name, _keeper.trade]
-	_hint_label.text = "Prices are in Pfennig (Pf)."
+	_hint_label.text = "Prices are in Schilling (ß)."
 	_state.player.inventory.changed.connect(_refresh)
 	_refresh()
 
@@ -135,7 +135,7 @@ func status_text() -> String:
 	if not _quote.is_fair():
 		return _quote.problem
 	if _quote.keeps > 0:
-		return "She keeps the %d Pf over." % _quote.keeps
+		return "She keeps the %d ß over." % _quote.keeps
 	return "A fair trade."
 
 
@@ -192,12 +192,12 @@ func _refresh() -> void:
 	for row in _sell_rows:
 		var stock := shops.stock_of(_shop, row.item)
 		var price := rules.price(_shop, row.item, _standing.price_percent)
-		var detail := "%d Pf, %d left" % [price, stock]
+		var detail := "%d ß, %d left" % [price, stock]
 		row.show_state(detail, want.get(row.item, 0), want.get(row.item, 0) < stock, stock == 0)
 	for row in _take_rows:
 		var room := shops.room_of(_shop, row.item)
 		var carried := bag.count_of(row.item)
-		var detail := "%d Pf, room %d, you have %d" % [rules.value(_shop, row.item), room, carried]
+		var detail := "%d ß, room %d, you have %d" % [rules.value(_shop, row.item), room, carried]
 		var can_add: bool = give.get(row.item, 0) < _most_to_give(row.item)
 		row.show_state(detail, give.get(row.item, 0), can_add, carried == 0 or room == 0)
 	_quote = shops.quote(_shop, want, give, bag, _standing)
@@ -208,11 +208,11 @@ func _refresh() -> void:
 	_trade_button.disabled = not _quote.is_fair()
 
 
-## "5 Turnip seeds (15 Pf)", or "nothing".
+## "5 Turnip seeds (15 ß)", or "nothing".
 static func _counts_text(counts: Dictionary, worth: int) -> String:
 	if counts.is_empty():
 		return "nothing"
 	var parts: Array[String] = []
 	for item: StringName in counts:
 		parts.append("%d %s" % [counts[item], ItemTypes.TYPES[item]["name"]])
-	return "%s (%d Pf)" % [", ".join(parts), worth]
+	return "%s (%d ß)" % [", ".join(parts), worth]

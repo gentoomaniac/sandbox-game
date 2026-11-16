@@ -75,23 +75,23 @@ chest). E on the keeper **out of hours** opens the chat (below).
 |  "Open until 12, then again from 1."                         |
 +------------------------------+-------------------------------+
 |  SHE SELLS         price stock|  SHE TAKES          value room|
-|  Turnip seeds        3 Pf  40 |  Egg                 1 Pf  12 |
-|  Candle             20 Pf   6 |  Turnip              3 Pf  10 |
-|  ...                          |  Fibre               1 Pf  20 |
-|                               |  Logs                4 Pf  10 |
+|  Turnip seeds        3 ß   40 |  Egg                 1 ß   12 |
+|  Candle             20 ß    6 |  Turnip              3 ß   10 |
+|  ...                          |  Fibre               1 ß   20 |
+|                               |  Logs                4 ß   10 |
 |                               |  ...                          |
 +------------------------------+-------------------------------+
-|  You get:  5 Turnip seeds  (15 Pf)                           |
-|  You give: 8 Egg, 7 Fibre  (15 Pf)          [-] [+] per row  |
-|  "Short by 5 Pf."                      [Cover it]  [Trade]   |
+|  You get:  5 Turnip seeds  (15 ß)                            |
+|  You give: 8 Egg, 7 Fibre  (15 ß)           [-] [+] per row  |
+|  "Short by 5 Schilling."               [Cover it]  [Trade]   |
 +--------------------------------------------------------------+
 ```
 
 - Two lists with a `[-] n [+]` on each row. Left rows are what she sells (price, stock); right rows
   are what the player carries that she takes (value, room left today). Rows with nothing in the bag
   or out of stock are grey.
-- A line below says what is wrong or right: "Short by 5 Pf.", "Out of seeds today.", "Your bag
-  is full.", "She has no room for more eggs today.", "She keeps the 2 Pf over." `Trade` is on only
+- A line below says what is wrong or right: "Short by 5 Schilling.", "Out of seeds today.", "Your bag
+  is full.", "She has no room for more eggs today.", "She keeps the 2 ß over." `Trade` is on only
   when the deal is fair; the line says why not otherwise.
 - `Cover it` fills the "give" side with the cheapest takable items from the bag until the goods are
   paid for. It is a help; the player may change the counts.
@@ -99,12 +99,13 @@ chest). E on the keeper **out of hours** opens the chat (below).
 
 ### Barter rules
 
-- Everything has a **worth** in Pfennig (the unit of the economy draft, the village sheet's prices).
+- Everything has a **worth** in Schilling, "ß" in short (the unit of the economy draft; it was
+  called Pfennig before #49).
   In this step the worths are in `data/shops.cfg`; they move to `data/prices.cfg` when money comes.
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
   ratios). The village sheet's money topic names these prices, and a test keeps them in line
   (`tests/test_money_lore.gd`). A deal is fair when the value given is at least the price of
-  what is got. Whole Pfennig throughout, no fractions.
+  what is got. Whole Schilling throughout, no fractions.
 - **No change:** an overpayment is hers and the line says so (open question 4).
 - **Refused:** not enough value; not enough stock; not enough room for what she takes; the player
   does not carry what they offer; what they get does not fit the bag once what they give is out.
@@ -132,9 +133,9 @@ chest). E on the keeper **out of hours** opens the chat (below).
 | Flour | 10 | 6 | 6 |
 | Bread | 12 | 7 | 6 |
 
-  The farm can always start again: **a seed costs 3 Pf, and a day's room for fibre and logs alone is
-  60 Pf**, so a lost harvest still pays for 20 seeds the next morning with wood and fibre found
-  anywhere. One turnip (3 Pf) pays for a seed, and a harvest gives two.
+  The farm can always start again: **a seed costs 3 ß, and a day's room for fibre and logs alone is
+  60 ß**, so a lost harvest still pays for 20 seeds the next morning with wood and fibre found
+  anywhere. One turnip (3 ß) pays for a seed, and a harvest gives two.
 
 ### What "stock filling up over the days" means
 
@@ -194,12 +195,12 @@ goods the save knows and `_worked_out` fills the rest). She sells the seeds of *
 - **Always, in or out of season** (decided here): the calendar does not gate planting (the weather
   does, [../farming/crops.md](../farming/crops.md)), a seed keeps, and a seasonal stock would need a
   `seasons` key and code for little: a player who buys wheat seeds in winter has lost nothing but
-  Pfennig. The worth follows the crop (the heavier and dearer to grow, the dearer), and the price
+  Schilling. The worth follows the crop (the heavier and dearer to grow, the dearer), and the price
   is the usual 125 %.
 - **It always works:** no friendship, no language model, no hours but the shop's. A seed is at
-  most 7 Pf and a day's room for what she takes without any harvest (eggs, berries, fibre,
-  reeds, hay, logs, clay: 144 Pf) pays for **all she has of any one seed** (the most is 25 seed
-  potatoes at 125 Pf). So a lost harvest never ends a farm: the tests run eight rounds of every
+  most 7 ß and a day's room for what she takes without any harvest (eggs, berries, fibre,
+  reeds, hay, logs, clay: 144 ß) pays for **all she has of any one seed** (the most is 25 seed
+  potatoes at 125 ß). So a lost harvest never ends a farm: the tests run eight rounds of every
   crop with the third round lost.
 - **One seed item plants one tile** (as before): the "bag" of the issue is one planting. The stock
   is the number of tiles she can supply a day (`restock`), tuned in play.
