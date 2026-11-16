@@ -2,8 +2,8 @@ extends GutTest
 ## Who says a line in a bubble, when and what (NpcBubbles, [bubble] and [bubble_lines] of
 ## data/npc_talk.cfg): about one a minute, by a villager in view, about the moment or the player.
 
-const HEAD := 62.0
-const TILE := TerrainTileset.TILE_SIZE
+## A bubble's top 62 art pixels over the feet, in tiles.
+const HEAD := 62.0 / 32.0
 
 var _rules := NpcTalkRules.default_rules()
 var _villagers := VillagerRules.default_rules()
@@ -22,7 +22,7 @@ func before_each() -> void:
 
 ## The camera shows 20 by 12 tiles from the tile (5, 5).
 func _region() -> Rect2:
-	return Rect2(Vector2(5, 5) * TILE, Vector2(20, 12) * TILE)
+	return Rect2(Vector2(5, 5), Vector2(20, 12))
 
 
 ## 08:15, a clear sky, light rain if `rain` is above 0.

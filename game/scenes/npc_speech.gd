@@ -55,9 +55,7 @@ func _process(delta: float) -> void:
 
 
 func _speak() -> void:
-	var speaker := _bubbles.pick_speaker(
-		_state.npcs.all(), _view_region.call(), SpeechBubble.TOP_ABOVE_FEET
-	)
+	var speaker := _bubbles.pick_speaker(_state.npcs.all(), _view_tiles(), _head_tiles())
 	# Still due: the next frame looks again for one in view.
 	if speaker == null:
 		return
@@ -79,4 +77,15 @@ func _speak() -> void:
 
 
 func _is_in_view(npc: Npc) -> bool:
-	return NpcBubbles.is_in_view(npc.position, SpeechBubble.TOP_ABOVE_FEET, _view_region.call())
+	return NpcBubbles.is_in_view(npc.position, _head_tiles(), _view_tiles())
+
+
+# The part of the world the camera shows, in tiles, which is what NpcBubbles asks in.
+func _view_tiles() -> Rect2:
+	var region: Rect2 = _view_region.call()
+	return Rect2(region.position / TerrainTileset.TILE_SIZE, region.size / TerrainTileset.TILE_SIZE)
+
+
+# How far the top of a bubble reaches over the feet, in tiles.
+func _head_tiles() -> float:
+	return float(SpeechBubble.TOP_ABOVE_FEET) / TerrainTileset.TILE_SIZE

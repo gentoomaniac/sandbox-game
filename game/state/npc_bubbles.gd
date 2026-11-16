@@ -20,11 +20,10 @@ func _init(
 	restart_wait()
 
 
-## Whether the villager at `feet` (in tiles) and the bubble over their head, `head_pixels` above
-## their feet, are in `region`, the part of the world the camera shows, in art pixels.
-static func is_in_view(feet: Vector2, head_pixels: float, region: Rect2) -> bool:
-	var feet_pixels := feet * TerrainTileset.TILE_SIZE
-	return region.has_point(feet_pixels) and region.has_point(feet_pixels - Vector2(0, head_pixels))
+## Whether the villager at `feet` and the bubble over their head, `head_tiles` above their feet,
+## are in `region`, the part of the world the camera shows. All in tiles.
+static func is_in_view(feet: Vector2, head_tiles: float, region: Rect2) -> bool:
+	return region.has_point(feet) and region.has_point(feet - Vector2(0, head_tiles))
 
 
 ## Waits for the next bubble: `interval_seconds`, give or take `interval_spread` of it.
@@ -47,13 +46,13 @@ func is_due() -> bool:
 
 ## The villager of `npcs` who speaks: one at random out of those in `region` (see `is_in_view`)
 ## that are not answering the player and are not inside a building; null if there is none.
-func pick_speaker(npcs: Array[Npc], region: Rect2, head_pixels: float) -> Npc:
+func pick_speaker(npcs: Array[Npc], region: Rect2, head_tiles: float) -> Npc:
 	var in_view: Array[Npc] = []
 	for npc in npcs:
 		if (
 			npc.inside == null
 			and not npc.is_answering
-			and is_in_view(npc.position, head_pixels, region)
+			and is_in_view(npc.position, head_tiles, region)
 		):
 			in_view.append(npc)
 	return in_view[rng.randi_range(0, in_view.size() - 1)] if not in_view.is_empty() else null
