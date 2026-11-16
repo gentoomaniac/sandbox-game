@@ -183,6 +183,11 @@ func remove_chunk(chunk_coords: Vector2i) -> void:
 	change_count += 1
 
 
+## Whether the sea runs over the dykes at a game minute: the surge holds and the flood is on.
+func is_sea_running(minutes: int) -> bool:
+	return surge.is_holding_at(minutes) and flood.is_active()
+
+
 func is_chunk_loaded(chunk_coords: Vector2i) -> bool:
 	return _chunks.has(chunk_coords)
 

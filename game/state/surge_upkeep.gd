@@ -47,7 +47,7 @@ func advance(_minutes: int, clock: GameClock) -> void:
 		_drown_crops()
 		_roll_ahead(now)
 		if _event.is_stormy_at(now):
-			_event.bell_rung.emit(_event.is_holding_at(now) and _flood.is_active())
+			_event.bell_rung.emit(_world.is_sea_running(now))
 	if is_day_end(clock):
 		var rain_hours := _weather.day_summary(Vector2i.ZERO, clock.day - 1).rain_hours
 		_flood.end_day(rain_hours)

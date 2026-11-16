@@ -8,8 +8,7 @@ extends RefCounted
 signal coming(level: float, start_minute: int)
 ## The church bell rings the alarm, told every hour from the warning on (SurgeUpkeep): three
 ## strokes in the warning, and without a break (`is_continuous`) once the sea runs over the dykes.
-## The sound it needs, `church_bell_alarm` (a big bell, tolled), is for the sound designer to make:
-## nobody plays it yet.
+## GameSounds tolls it (`church_bell_alarm`).
 signal bell_rung(is_continuous: bool)
 
 ## How high the water rises over mean high water, in metres; 0 while no surge is expected or

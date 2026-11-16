@@ -151,6 +151,12 @@ MusicMoment and a key of the piece's section each), and stems (AudioStreamSynchr
   `tools/art/church.py` and `classic/church.py`) draws it as 11 frames leaning 15 degrees left to
   15 right, each row slid sideways so the pixels stay crisp, and the game lays the strip over the
   frame, fading with it. No game effect yet: calling the villagers, gossip and events come later.
+- **The church bell alarm:** `church_bell_alarm` (#103, `bell.church_alarm_stroke`), one stroke of
+  the church's big bell (about A3, 10 s, three variants) heard from far off: the bright partials
+  and the clapper's knock are filtered away, two faint echoes come back off the marsh. Its hum and
+  strike note sit 10 dB over the storm's noise, so it cuts through under it. `GameSounds` tolls it
+  on `SurgeEvent.bell_rung`: three strokes 4.5 s apart in the warning, one every 3 s while the sea
+  runs (it stops when the surge or the flood is over). Not positional; muffled indoors.
 - **Animals:** birds sometimes chirp where they are; frogs croak near rivers and ponds in
   spring and summer, mostly in the evening and at night and when it is warm, louder the
   closer the player is; deer snort now and then and their hooves sound when they bound

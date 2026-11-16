@@ -8,10 +8,19 @@ extends Node
 ## event a happening makes is SoundEvents'; playing it is AudioService's. The state knows nothing
 ## of sound.
 
+## Seconds between the strokes of the church bell: slow in the warning, steady in the flood.
+const WARNING_SECONDS := 4.5
+const CONTINUOUS_SECONDS := 3.0
+
 var _audio: AudioService
 var _state: GameState
 var _view: WorldView
 var _selected_slot := 0
+## The strokes of the church bell still to toll in the warning; whether it tolls without a break
+## (the sea runs); the timer between strokes.
+var _strokes_left := 0
+var _is_tolling := false
+var _toll_timer: Timer
 ## The panels to give an open and close sound: how to ask each if it is open, and whether it was.
 var _panel_checks: Array[Callable] = []
 var _panel_was_open: Array[bool] = []
@@ -40,6 +49,11 @@ func listen(
 	)
 	state.action_done.connect(_on_action_done)
 	state.world.bell_rung.connect(_on_bell_rung)
+	state.world.surge.bell_rung.connect(_on_alarm_rung)
+	_toll_timer = Timer.new()
+	_toll_timer.one_shot = true
+	_toll_timer.timeout.connect(_on_toll_timeout)
+	add_child(_toll_timer)
 	build_mode.placement_refused.connect(func() -> void: _audio.play(&"denied"))
 	state.player.inventory.changed.connect(_on_inventory_changed)
 
@@ -90,6 +104,36 @@ func _on_action_done(outcome: ActionOutcome) -> void:
 ## (its reach is `reach_tiles` in data/sounds.cfg).
 func _on_bell_rung(building: Building) -> void:
 	_audio.play(&"bell_ring", building.centre() * TerrainTileset.TILE_SIZE, true)
+
+
+## The church bell of the storm surge: three strokes an hour in the warning, a toll that goes on
+## while the sea runs over the dykes. A fresh toll sounds its first stroke at once; one that
+## already goes on keeps its rhythm.
+func _on_alarm_rung(is_continuous: bool) -> void:
+	if not _toll_timer.is_stopped():
+		_is_tolling = _is_tolling or is_continuous
+		return
+	_is_tolling = is_continuous
+	if not is_continuous:
+		_strokes_left = 3
+	_toll()
+
+
+func _toll() -> void:
+	_audio.play(&"church_bell_alarm", null, true)
+	if _is_tolling:
+		_toll_timer.start(CONTINUOUS_SECONDS)
+		return
+	_strokes_left -= 1
+	if _strokes_left > 0:
+		_toll_timer.start(WARNING_SECONDS)
+
+
+func _on_toll_timeout() -> void:
+	if _is_tolling and not _state.world.is_sea_running(_state.clock.total_minutes()):
+		_is_tolling = false
+		return
+	_toll()
 
 
 func _on_step() -> void:

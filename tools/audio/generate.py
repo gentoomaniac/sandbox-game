@@ -95,6 +95,9 @@ EVENTS = {
     "fire_crackle_loop": (-8, [fire.fire_crackle_loop] * 2),
     # Heard across the marsh, so loud, and long: the low partials hum for ten seconds.
     "bell_ring": (-9, [bell.bell_strike] * 2),
+    # The alarm of the storm surge (#103): the church's big bell from far off, one stroke; the
+    # game tolls it. Quieter than the bell frame, but its hum cuts through the storm's noise.
+    "church_bell_alarm": (-11, [bell.church_alarm_stroke] * 3),
     "bird_chirp": (-12, [animals.bird_rising, animals.bird_trill, animals.bird_whistle]),
     "frog_croak": (-10, [animals.frog_common, animals.frog_bull, animals.frog_tree]),
     # Under the single croaks, and quiet: it plays on and on through spring and summer evenings.
