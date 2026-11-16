@@ -69,14 +69,17 @@ than `MIN_HEIGHT` (48 UI pixels), so a tiny window crosses the panel's edge rath
 rows. The base puts every list back to the top when the window opens. To swap what is in the
 growing part (a chest with other slots), keep the part as a fixed container and swap its children.
 A list a page builds itself, not through `_scrolling`, is not known to the base. The character
-window puts the lists of its tabs in `_lists` itself, so they are fitted and reset when the window
-opens, and does the same when a tab is shown (a refresh of the rows keeps the place). The pause
+window takes the lists of a tab in `add_page`, so they are fitted and reset when the window
+opens, and again when the tab is shown (a refresh of the rows keeps the place). The pause
 menu finds the lists of the page it shows with `find_children`, puts them back to the top and fits
 them each time the page is shown.
 
-The character window (`CharacterScreen`, C) is another window whose methods take arguments:
-`open_tab(tab)` stores the tab and calls `open()` (or switches tab when the window is open), and
-`toggle_tab(tab)` closes it when it is open on that tab. Its keys (C, K) are Main's, as the bag's
+The character window (`CharacterScreen`, C) is another window whose methods take arguments.
+A new tab is one call, `add_page(id, title, page, lists, on_show)`: the button, the page, the
+scrolling lists in it and what fills it when it is shown (the tabs here are added in `_init`).
+`id` is a `Tab` value for those, any other value for a tab a feature adds.
+`open_tab(id)` stores the tab and calls `open()` (or switches tab when the window is open), and
+`toggle_tab(id)` closes it when it is open on that tab. Its keys (C, K) are Main's, as the bag's
 (`BagScreen`, B); neither registers `close_actions`, so E does nothing while one is open. Both
 extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
 

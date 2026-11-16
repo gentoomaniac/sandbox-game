@@ -14,12 +14,6 @@ extends HotbarWindow
 
 enum Tab { CHARACTER, SKILLS, QUESTS, NEIGHBOURS }
 
-const TAB_NAMES := {
-	Tab.CHARACTER: "Character",
-	Tab.SKILLS: "Skills",
-	Tab.QUESTS: "Quests",
-	Tab.NEIGHBOURS: "Neighbours",
-}
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
 const MAX_PREVIEW_SCALE := 2
@@ -37,10 +31,12 @@ var _preview := CharacterPreview.new()
 var _left_column := VBoxContainer.new()
 var _right_column := VBoxContainer.new()
 var _note_label := Label.new()
-var _tab := Tab.CHARACTER
-## The page of each tab, and the button that shows it.
+var _tab: Variant = Tab.CHARACTER
+## The page of each tab by its id, with its button, lists and on-show (see `add_page`).
 var _pages := {}
-var _tab_buttons := {}
+var _tab_row := HBoxContainer.new()
+var _tab_group := ButtonGroup.new()
+var _page_column := VBoxContainer.new()
 var _skills_panel := SkillsPanel.new()
 var _quests_panel := QuestsPanel.new()
 var _neighbours_panel := NeighboursPanel.new()
@@ -66,33 +62,42 @@ func _init(hotbar: HotbarHud) -> void:
 	character_page.add_child(_attributes_panel)
 	character_page.add_child(_note_label)
 
-	_pages = {
-		Tab.CHARACTER: character_page,
-		Tab.SKILLS: _skills_panel,
-		Tab.QUESTS: _quests_panel,
-		Tab.NEIGHBOURS: _neighbours_panel,
-	}
-	var tabs := HBoxContainer.new()
-	var tab_group := ButtonGroup.new()
-	for tab: Tab in _pages:
-		var button := Button.new()
-		button.text = TAB_NAMES[tab]
-		button.toggle_mode = true
-		button.button_group = tab_group
-		button.pressed.connect(_show_tab.bind(tab))
-		tabs.add_child(button)
-		_tab_buttons[tab] = button
-	var page_column := VBoxContainer.new()
-	page_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	page_column.add_child(tabs)
-	page_column.add_child(character_page)
-	page_column.add_child(_skills_panel)
-	page_column.add_child(_quests_panel)
-	page_column.add_child(_neighbours_panel)
-	_panel.add_child(page_column)
-	_lists.append(_skills_panel.list)
-	_lists.append(_quests_panel.list)
-	_lists.append(_neighbours_panel.list)
+	_page_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_page_column.add_child(_tab_row)
+	_panel.add_child(_page_column)
+	add_page(Tab.CHARACTER, "Character", character_page)
+	add_page(Tab.SKILLS, "Skills", _skills_panel, [_skills_panel.list])
+	add_page(Tab.QUESTS, "Quests", _quests_panel, [_quests_panel.list], _quests_panel.refresh)
+	add_page(
+		Tab.NEIGHBOURS,
+		"Neighbours",
+		_neighbours_panel,
+		[_neighbours_panel.list],
+		_neighbours_panel.refresh
+	)
+
+
+## Adds a tab: its button, titled `title`, and its `page`, shown in place of the others when the
+## button is pressed or `open_tab(id)` is called. `lists` are the scrolling lists in the page, which
+## start at the top and fit the window when it is shown; `on_show` runs after they are fitted, to
+## fill the page. The tabs are in the order they were added. `id` is what `open_tab` takes: a Tab
+## for the tabs here, any other value for a tab a feature adds.
+func add_page(
+	id: Variant,
+	title: String,
+	page: Control,
+	lists: Array[ScrollingList] = [],
+	on_show := Callable()
+) -> void:
+	var button := Button.new()
+	button.text = title
+	button.toggle_mode = true
+	button.button_group = _tab_group
+	button.pressed.connect(_show_tab.bind(id))
+	_tab_row.add_child(button)
+	_page_column.add_child(page)
+	_pages[id] = {"page": page, "button": button, "lists": lists, "on_show": on_show}
+	_lists.append_array(lists)
 
 
 ## Showing another player lets go of the old one.
@@ -124,7 +129,7 @@ func show_neighbours(state: GameState) -> void:
 
 
 ## Opens the window on `tab`, or switches to it when the window is open.
-func open_tab(tab: Tab) -> void:
+func open_tab(tab: Variant) -> void:
 	if visible:
 		_show_tab(tab)
 	else:
@@ -133,32 +138,31 @@ func open_tab(tab: Tab) -> void:
 
 
 ## Closes the window if it is open on `tab`, else opens it there.
-func toggle_tab(tab: Tab) -> void:
+func toggle_tab(tab: Variant) -> void:
 	if visible and _tab == tab:
 		close()
 	else:
 		open_tab(tab)
 
 
-func current_tab() -> Tab:
+func current_tab() -> Variant:
 	return _tab
 
 
-func _show_tab(tab: Tab) -> void:
+func _show_tab(tab: Variant) -> void:
 	_tab = tab
-	for each: Tab in _pages:
-		_pages[each].visible = each == tab
-		_tab_buttons[each].set_pressed_no_signal(each == tab)
+	for id: Variant in _pages:
+		_pages[id]["page"].visible = id == tab
+		_pages[id]["button"].set_pressed_no_signal(id == tab)
 	_use_hotbar(visible and tab == Tab.CHARACTER)
-	# The list of the tab now shown starts at the top. It is sized before the panel refreshes its
-	# rows: new rows change the list's minimum size, which fits it again by itself.
-	for list in _lists:
+	# The list of the tab now shown starts at the top. It is sized before the page is filled:
+	# new rows change the list's minimum size, which fits it again by itself.
+	for list: ScrollingList in _pages[tab]["lists"]:
 		list.scroll_vertical = 0
 	refit()
-	if tab == Tab.QUESTS:
-		_quests_panel.refresh()
-	if tab == Tab.NEIGHBOURS:
-		_neighbours_panel.refresh()
+	var on_show: Callable = _pages[tab]["on_show"]
+	if on_show.is_valid():
+		on_show.call()
 	_refresh()
 	if is_inside_tree():
 		_fit_character()
