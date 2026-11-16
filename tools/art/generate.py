@@ -128,6 +128,7 @@ import notice_board
 import pen
 import portraits
 import reeds
+import sales_cart
 import scarecrow
 import sea_birds
 import seasons
@@ -232,7 +233,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 63 market_stall (1, see stall.py)
 # 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
 # 78 notice_board (1, see notice_board.py)
-# 79 sales_cart (1, the carved chest's look until it has art of its own, see crafts.py)
+# 79 sales_cart (1, see sales_cart.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -296,7 +297,7 @@ def object_atlas():
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
-        ("sales_cart", [standing_outdoors(crafts.carved_chest())]),
+        ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
     ]
 
 
@@ -401,6 +402,7 @@ def write_interior():
     # The stations the player places are no furniture of the maps: they have no marker tile.
     for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
+    save_picture(sales_cart.sales_cart(), "interior/sales_cart.png")
     # The ghosts of the campfire and the bedroll while they are placed (they stand only
     # outdoors).
     save_picture(camp.ghost(camp.fireplace(), 50, 52), "interior/fireplace.png")
@@ -436,7 +438,7 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | {"notice_board": items.icon_of(notice_board.notice_board())} | ways.icons(GAME_TILE, items.icon_of)
+    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | {"notice_board": items.icon_of(notice_board.notice_board()), "sales_cart": items.icon_of(sales_cart.sales_cart())} | ways.icons(GAME_TILE, items.icon_of)
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")

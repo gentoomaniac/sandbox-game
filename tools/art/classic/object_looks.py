@@ -360,7 +360,7 @@ _WINTER_LOOKS = {
     # The scarecrow: snow on the hat.
     "scarecrow": {"frost_only": _FROST_STONE, "snow": ({"soil_mid", "soil"}, set(), 1)},
     # The notice board: snow along the barge boards of its roof.
-    "sales_cart": {"frost_only": _FROST_STONE, "snow": ({"water_light", "foam", "paint_teal"}, set(), 3)},
+    "sales_cart": {"snow": ({"red_light", "bare_light"}, set(), 1)},
     "notice_board": {"frost_only": _FROST_STONE, "snow": ({"bare_light", "bare", "mud_dark"}, set(), 2)},
     "oak_trunk": _TRUNK_WINTER,
     "oak_short_trunk": _TRUNK_WINTER,

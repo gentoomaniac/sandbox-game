@@ -52,6 +52,7 @@ import notice_board  # noqa: E402
 import object_looks  # noqa: E402
 import pen  # noqa: E402
 import reeds  # noqa: E402
+import sales_cart  # noqa: E402
 import scarecrow  # noqa: E402
 import sea_birds  # noqa: E402
 import stall  # noqa: E402
@@ -248,7 +249,7 @@ def object_atlas():
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
-        ("sales_cart", [standing_outdoors(crafts.carved_chest())]),
+        ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
     ]
 
 
@@ -282,13 +283,14 @@ def write_interior():
         save_picture(picture, f"interior/{name}.png")
     for name, picture in crafts.stations().items():
         save_picture(picture, f"interior/{name}.png")
+    save_picture(sales_cart.sales_cart(), "interior/sales_cart.png")
     save_picture(camp.ghost(camp.fireplace(), 25, 26), "interior/fireplace.png")
     save_picture(camp.ghost(camp.bedroll(), 18, 30), "interior/sleeping_bag.png")
     save_picture(graves.graves()[0], "interior/grave.png")
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon(), "notice_board": yard.icon_of(notice_board.notice_board())} | ways.icons(TILE, yard.icon_of)
+    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon(), "notice_board": yard.icon_of(notice_board.notice_board()), "sales_cart": sales_cart.icon()} | ways.icons(TILE, yard.icon_of)
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

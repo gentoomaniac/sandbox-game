@@ -30,8 +30,7 @@ returns it and **Take** empties the till into your purse. You get the whole pric
 While you sleep or are away, the neighbours who need what you have come by on days without much rain:
 a few a day, more of them the better they know you, and they buy only at a price up to a fifth over
 what the thing is worth (a little more from friends). They like it, too: a sale is a little contact
-for friendship, and what a neighbour needed counts for more. The cart's own picture is the carved
-chest's for now.
+for friendship, and what a neighbour needed counts for more.
 
 ## Trading
 

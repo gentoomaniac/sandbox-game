@@ -485,6 +485,19 @@ along its foot.
   with a scalloped hem, lit along the top and shaded along the hem; a sack of seed (`straw`) and two
   candles (`cream`, one lit with `flame`) stand on the counter. Rimmed in `soil_dark`; snow lies on
   the awning.
+- **The sales cart** (issue #49, tools/art/sales_cart.py, 46x40 px on 1x1 tiles, and at 16 px
+  classic/sales_cart.py, 23x20 px): the player's hand cart, seen from the side and a little above.
+  An oak box (`soil` ramp, planks with a seam and grain, battens) with its top rail painted red
+  (`red_light`, `ember`, `rust_dark`), its shafts to the left, the far one higher in the shade, the
+  near one resting on a prop; one big spoked wheel in front of the box, its iron tyre and oak
+  felloe lit on the upper left, eight spokes (four classic) and an iron hub cap. On it, from the
+  left: a slate on a stick with a price in chalk (`stone_dark`, `lime`), a cabbage (the green
+  ramp), a basket of eggs under its handle (`ochre` wicker, `cream` eggs), a round cheese (`gold`,
+  `ochre`) and the till, a little oak box with a coin in the slot of its lid and a brass hasp.
+  Each part is rimmed in the darkest shade of its colours, the eggs in `sand` (classic: the wood in
+  `soil_dark`, the wares in a dark shade of their own); snow lies on the rail and the back board;
+  there is no frost remap, which would rime the cabbage white. The icon and the picture indoors are
+  the cart (the classic icon a smaller map of its own, 14x12 px).
 - **The scarecrow** (task 226, tools/art/scarecrow.py, 42x65 px, and at 16 px classic/scarecrow.py,
   22x33 px): a little taller than the player. A driftwood pole (`bare_light`, `bare`, `mud_dark`)
   with the crossbar in the sleeves of an old coat of faded indigo linen (the `water` ramp, folds

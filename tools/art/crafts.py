@@ -381,8 +381,6 @@ def icons():
         "brick": bricks("rust", "red_light", "rust_dark"),
         "stool": stool(),
         "carved_chest": icon_of(carved_chest()),
-        # The cart of the stall wears the chest until it has art of its own (#49).
-        "sales_cart": icon_of(carved_chest()),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
         "pottage": bowl(("olive", "dry_light", "green_light"), ("ochre", "flame", "cream")),
