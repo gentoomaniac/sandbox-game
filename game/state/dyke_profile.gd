@@ -6,6 +6,14 @@ extends RefCounted
 ## stretch of dyke shares one value and nothing is saved for a dyke nobody changed. The numbers
 ## are in the `[surge]` section of data/landscape.cfg.
 
+## What a dyke the game changed keeps in its object's state, whole numbers so that a save holds no
+## fractions: the height in centimetres and the strength in percent. Without them the dyke is as
+## the generator laid it. The changed object is an edit of the world, saved with the others.
+const HEIGHT_KEY := "height_cm"
+const STRENGTH_KEY := "strength_pct"
+## The tallest dyke a save may hold, in centimetres.
+const MAX_HEIGHT_CM := 400
+
 ## Offsets the noise seeds so they are independent of the generator's noises and each other.
 const HEIGHT_SEED_OFFSET := 41
 const STRENGTH_SEED_OFFSET := 42
@@ -38,6 +46,25 @@ func is_sea_dyke(tile: Vector2i) -> bool:
 	return tile.x - _generator.first_land_x(tile.y) <= WorldGenerator.DYKE_LINE_REACH
 
 
+## The height of a dyke object, as the generator laid it or as the game changed it.
+func height_of(dyke: WorldObject) -> float:
+	return dyke.state[HEIGHT_KEY] / 100.0 if dyke.state.has(HEIGHT_KEY) else height_at(dyke.pos)
+
+
+## The strength of a dyke object, as the generator laid it or as the game changed it.
+func strength_of(dyke: WorldObject) -> float:
+	return (
+		dyke.state[STRENGTH_KEY] / 100.0 if dyke.state.has(STRENGTH_KEY) else strength_at(dyke.pos)
+	)
+
+
+## Gives a dyke object of the world a new height and strength: an edit that outlives its chunk.
+func change(world: World, dyke: WorldObject, height: float, strength: float) -> void:
+	dyke.state[HEIGHT_KEY] = clampi(roundi(height * 100.0), 0, MAX_HEIGHT_CM)
+	dyke.state[STRENGTH_KEY] = clampi(roundi(strength * 100.0), 0, 100)
+	world.change_object(dyke)
+
+
 ## The height of the dyke the generator laid at a tile.
 func height_at(tile: Vector2i) -> float:
 	var kind := "sea" if is_sea_dyke(tile) else "river"
@@ -64,7 +91,9 @@ func strength_at(tile: Vector2i) -> float:
 
 ## What a hover says of a dyke: "Dyke, 2.1 m, well turfed", with "low" or "high" before the height
 ## when it is.
-func words(height: float, strength: float) -> String:
+func words(dyke: WorldObject) -> String:
+	var height := height_of(dyke)
+	var strength := strength_of(dyke)
 	var size := ""
 	if height < _landscape.value("surge", "low_below"):
 		size = "low, "

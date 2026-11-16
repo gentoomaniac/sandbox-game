@@ -334,9 +334,23 @@ func _check_object(object: Variant, path: String, drop: Callable) -> void:
 		return
 	if state != null:
 		_check_object_state(state, WorldObjectTypes.TYPES[StringName(type)], path, drop)
+		if StringName(type) == WorldObjectTypes.DYKE:
+			_check_dyke_state(state, path)
 	var slot_count := WorldObject.storage_slot_count(StringName(type))
 	if slot_count > 0:
 		_check_stacks(object, "storage", slot_count, path)
+
+
+## The height (in centimetres) and strength (in percent) of a dyke the game changed.
+func _check_dyke_state(state: Dictionary, path: String) -> void:
+	for key: String in [DykeProfile.HEIGHT_KEY, DykeProfile.STRENGTH_KEY]:
+		if not state.has(key):
+			continue
+		if not _is_kind(state[key], Kind.WHOLE):
+			_report(path + " state", "%s should be a whole number" % key)
+			continue
+		var most := DykeProfile.MAX_HEIGHT_CM if key == DykeProfile.HEIGHT_KEY else 100
+		_check_between(state[key], 0, most, path + " state", key)
 
 
 func _check_object_state(

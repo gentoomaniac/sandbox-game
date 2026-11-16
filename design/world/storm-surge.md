@@ -173,7 +173,8 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
 1. `Elevation` and the `[surge]` data, with tests. Nothing uses it yet. **Built.**
 2. Height and strength of the generated dykes, the hover hint, the three looks (pixel artist). **Built** without the three looks: the hover says "Dyke, low, 1.2 m, bare"; the pixel art (three heights and a torn crest in the dyke's atlas row) is still to draw.
 3. Dyke edits in the world edits; the save version bump with its upgrade and validator check
-   (then the drop of the oldest upgrade as its own commit).
+   (then the drop of the oldest upgrade as its own commit). **Built** (version 55; the drop of
+   the version 44 upgrade came first).
 4. The roll (season, storm, high water, level) and the `surge` command; the log says one is
    coming, nothing floods.
 5. `FloodState`: breach rule, fill with budget and volume, drain; the flooded rules in `World`.

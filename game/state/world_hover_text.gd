@@ -25,9 +25,7 @@ static func object_text_at(state: GameState, tile: Vector2i) -> String:
 	if Campfire.is_campfire(crop):
 		return Campfire.state_text(crop)
 	if crop != null and crop.type == WorldObjectTypes.DYKE:
-		return state.world.dykes.words(
-			state.world.dykes.height_at(tile), state.world.dykes.strength_at(tile)
-		)
+		return state.world.dykes.words(crop)
 	if crop == null or not crop.is_crop():
 		return ""
 	var day_weather := state.weather.day_summary(crop.pos, state.clock.day)
