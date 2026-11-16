@@ -4,6 +4,7 @@ extends GutTest
 
 const CLASHING := "res://tests/catalog_topics/clashing"
 const MALFORMED := "res://tests/catalog_topics/malformed"
+const SNAG_CLASH := "res://tests/catalog_topics/snag_clash"
 const ODD := "res://tests/catalog_topics/odd"
 
 
@@ -44,3 +45,16 @@ func test_an_id_two_topics_define_names_both_and_keeps_the_first() -> void:
 	assert_eq(problems, [expected % [CLASHING, CLASHING]] as Array[String])
 	assert_eq(all_types.keys(), [&"shared", &"only_a", &"only_b"])
 	assert_eq(all_types[&"shared"], {"hp": 1})
+
+
+func test_a_topic_may_not_define_an_id_the_snags_derive() -> void:
+	var problems: Array[String] = []
+	var by_path := CatalogTopics.read_folder(SNAG_CLASH, problems)
+	var all_types := CatalogTopics.merged(
+		"object", by_path, problems, WorldObjectSnags.reserved_ids()
+	)
+	var expected: Array[String] = [
+		"object dead_oak: defined in WorldObjectSnags and in %s/dead_wood.gd" % SNAG_CLASH
+	]
+	assert_eq(problems, expected)
+	assert_eq(all_types.keys(), [&"stump_pile"])

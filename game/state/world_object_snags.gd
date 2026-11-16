@@ -55,6 +55,15 @@ static func is_snag(type: StringName) -> bool:
 	return KINDS.any(func(kind): return type == dead_type(kind) or type == half_dead_type(kind))
 
 
+## The ids of the snags, each to this class's name, for CatalogTopics to keep topics off them.
+static func reserved_ids() -> Dictionary:
+	var reserved := {}
+	for kind in KINDS:
+		reserved[dead_type(kind)] = "WorldObjectSnags"
+		reserved[half_dead_type(kind)] = "WorldObjectSnags"
+	return reserved
+
+
 ## The types of both snags of each kind, from the `living` types of the kinds.
 static func types_from(living: Dictionary) -> Dictionary:
 	var types := {}

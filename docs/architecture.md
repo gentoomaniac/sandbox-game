@@ -389,7 +389,8 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   (export-aware, like the console's commands). A topic whose `TYPES` is no table of ids to tables
   with text keys is reported with its path, and an id two topics define as
   `<kind> <id>: defined in <file> and in <file>`, both before anything is merged, and `CatalogCheck`
-  shows them with the other problems. They are GDScript scripts, not data files, because the definitions
+  shows them with the other problems. The snag ids `WorldObjectSnags` derives are reserved, so a
+  topic that defines one is reported like a duplicate. They are GDScript scripts, not data files, because the definitions
   hold typed values (`Vector2i`, `Color`, terrain enums, references to `Equipment` slots) that a
   `.cfg` would need a parser and a second set of checks for; `CatalogCheck` checks their fields
   either way. What derives from other data stays in `ItemTypes` (the tool grades, the seeds and

@@ -260,7 +260,10 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 static func _build_types() -> Dictionary:
 	var topics := CatalogTopics.read_folder(TOPICS_DIR, build_problems)
-	var types := _with_crops(CatalogTopics.merged("object", topics, build_problems))
+	var topic_types := CatalogTopics.merged(
+		"object", topics, build_problems, WorldObjectSnags.reserved_ids()
+	)
+	var types := _with_crops(topic_types)
 	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)

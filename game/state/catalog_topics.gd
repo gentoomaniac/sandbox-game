@@ -36,11 +36,13 @@ static func read_folder(directory: String, problems: Array[String]) -> Dictionar
 ## All the definitions of `types_by_source` (the source's name, a path, to its types) as one
 ## table. `kind` is "item" or "object". An id that two sources define is added to `problems` as
 ## "<kind> <id>: defined in <first> and in <second>", and the first source's definition is kept.
+## `reserved_by` (id to the name of what makes it later) holds ids that no source may define: they
+## count as defined by that name before the first source, so a clash is a problem naming the source.
 static func merged(
-	kind: String, types_by_source: Dictionary, problems: Array[String]
+	kind: String, types_by_source: Dictionary, problems: Array[String], reserved_by := {}
 ) -> Dictionary:
 	var all_types := {}
-	var source_of := {}  # id -> the source that defines it
+	var source_of := reserved_by.duplicate()  # id -> the source that defines it
 	for source: String in types_by_source:
 		var types: Dictionary = types_by_source[source]
 		for id: StringName in types:
