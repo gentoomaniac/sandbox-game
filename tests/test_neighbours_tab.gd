@@ -16,6 +16,10 @@ func before_each() -> void:
 	_state.npcs.add(_gesche)
 
 
+func after_each() -> void:
+	ArtSet.is_classic = false
+
+
 func _screen() -> CharacterScreen:
 	var screen := CharacterScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
@@ -183,3 +187,19 @@ func test_the_rows_keep_their_place_when_they_change_and_start_at_the_top_on_the
 	screen.open_tab(CharacterScreen.Tab.SKILLS)
 	screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
 	assert_eq(list.scroll_vertical, 0, "showing the tab starts at the top")
+
+
+func test_the_portraits_follow_the_art_set_even_while_the_tab_is_hidden() -> void:
+	var screen := _screen()
+	screen.open_tab(CharacterScreen.Tab.SKILLS)
+
+	ArtSet.show(true, get_tree())
+	screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
+	var panel: NeighboursPanel = screen.find_children("*", "NeighboursPanel", true, false)[0]
+	var pictures: Array[Node] = []
+	for portrait in panel.find_children("*", "ColorRect", true, false):
+		pictures.append_array(portrait.get_children())
+
+	assert_gt(pictures.size(), 0)
+	for picture: TextureRect in pictures:
+		assert_string_contains(picture.texture.resource_path, "/classic/")

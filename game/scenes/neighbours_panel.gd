@@ -34,6 +34,7 @@ func _init() -> void:
 	add_child(_title)
 	list = ScrollingList.new(_rows)
 	add_child(list)
+	add_to_group(ArtSet.VIEWS)
 
 
 ## Shows the villagers of the game of `state`; showing another game lets go of the old one.
@@ -51,6 +52,13 @@ func refresh() -> void:
 	if rows != _rows_shown or _rows.get_child_count() == 0:
 		_rows_shown = rows
 		_draw_rows(rows)
+
+
+## Called when the art set changes: the portraits are loaded as the rows are drawn, and the rows
+## are not drawn again while nothing about the neighbours changes.
+func show_art_set() -> void:
+	if _state != null:
+		_draw_rows(_rows_shown)
 
 
 func _process(delta: float) -> void:
