@@ -10,10 +10,11 @@ as it is.
 import buildings
 import church
 import declaration
+import hall_house
 import huts
 import yard
 
 
 def pictures():
     """The `PICTURES` of every module by building id; an id two modules draw is refused."""
-    return declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "huts.py": huts.PICTURES, "yard.py": yard.PICTURES})
+    return declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "hall_house.py": hall_house.PICTURES, "huts.py": huts.PICTURES, "yard.py": yard.PICTURES})
