@@ -1,6 +1,6 @@
 class_name WorldObjectStall
 extends RefCounted
-## The player's stall as data, merged into WorldObjectTypes `TYPES` (see there for the entries): the
+## The player's stall as data, loaded into WorldObjectTypes `TYPES` (see there for the entries): the
 ## hand cart with a board (#49), which they stock and villagers buy from (see SalesCart), drawn
 ## by tools/art/sales_cart.py.
 

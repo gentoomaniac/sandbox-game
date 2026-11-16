@@ -5,18 +5,11 @@ extends RefCounted
 ## report loudly, not one to skip silently.
 
 const COMMANDS_DIR := "res://game/state/console/commands"
-const SCRIPT_SUFFIX := ".gd"
 
 
-## The paths of the scripts in `directory`, by name. `ResourceLoader` lists the resources, so this
-## works in an exported game too; folders and any files that are no scripts are left out.
+## The paths of the scripts in `directory`, by name (see ScriptFolder).
 static func script_paths(directory := COMMANDS_DIR) -> Array[String]:
-	var paths: Array[String] = []
-	for file in ResourceLoader.list_directory(directory):
-		if file.ends_with(SCRIPT_SUFFIX):
-			paths.append(directory.path_join(file))
-	paths.sort()
-	return paths
+	return ScriptFolder.paths(directory)
 
 
 ## One command from each script in `paths`. What is wrong with a script is added to `problems`,

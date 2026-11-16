@@ -1,6 +1,6 @@
 class_name WorldObjectDyke
 extends RefCounted
-## The dyke as data, merged into WorldObjectTypes `TYPES` (see there for the entries): a turfed
+## The dyke as data, loaded into WorldObjectTypes `TYPES` (see there for the entries): a turfed
 ## bank of clay along the water, drawn by tools/art/boundaries.py in a look per height, and torn
 ## where the sea damaged it (see DykeProfile `look`), each look a row of the atlas.
 

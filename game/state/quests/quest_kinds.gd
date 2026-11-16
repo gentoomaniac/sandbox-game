@@ -7,7 +7,6 @@ extends RefCounted
 
 const OBJECTIVES_DIR := "res://game/state/quests/objectives"
 const CONDITIONS_DIR := "res://game/state/quests/conditions"
-const SCRIPT_SUFFIX := ".gd"
 
 
 ## One instance of each kind of the scripts in `directory` that extend `base`, by the kind's name.
@@ -15,12 +14,7 @@ const SCRIPT_SUFFIX := ".gd"
 ## a script is added to `problems`, and that script gives no kind.
 static func in_folder(directory: String, base: GDScript, problems: Array[String]) -> Dictionary:
 	var kinds := {}
-	var paths: Array[String] = []
-	for file in ResourceLoader.list_directory(directory):
-		if file.ends_with(SCRIPT_SUFFIX):
-			paths.append(directory.path_join(file))
-	paths.sort()
-	for path in paths:
+	for path in ScriptFolder.paths(directory):
 		var script := load(path) as GDScript if ResourceLoader.exists(path) else null
 		if script == null or not _extends(script, base):
 			problems.append("%s is no script that extends %s" % [path, base.get_global_name()])

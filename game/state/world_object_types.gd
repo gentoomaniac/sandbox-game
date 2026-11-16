@@ -250,6 +250,10 @@ const CORNER_MASKS: Array[int] = [0b0011, 0b0110, 0b1001, 0b1100]
 ## corner slanted on its lower side (in the bits of the mask), on its higher side and on both.
 const SLANTED_LOOKS := 12
 
+## The folder of the topic scripts that define the other types (see CatalogTopics).
+const TOPICS_DIR := "res://game/state/world_objects"
+const _OWN_SOURCE := "res://game/state/world_object_types.gd"
+
 const _OTHER_TYPES := {
 	OAK:
 	{
@@ -950,11 +954,9 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 
 static func _build_types() -> Dictionary:
-	var added := WorldObjectPlants.TYPES.merged(WorldObjectWays.TYPES)
-	added.merge(WorldObjectVillage.TYPES)
-	added.merge(WorldObjectStall.TYPES)
-	added.merge(WorldObjectDyke.TYPES)
-	var types := _with_crops(_OTHER_TYPES.merged(added))
+	var sources := {_OWN_SOURCE: _OTHER_TYPES}
+	sources.merge(CatalogTopics.read_folder(TOPICS_DIR, build_problems))
+	var types := _with_crops(CatalogTopics.merged("object", sources, build_problems))
 	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)

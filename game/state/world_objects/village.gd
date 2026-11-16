@@ -1,6 +1,6 @@
 class_name WorldObjectVillage
 extends RefCounted
-## The objects only the village puts into the world, as data, merged into WorldObjectTypes `TYPES`
+## The objects only the village puts into the world, as data, loaded into WorldObjectTypes `TYPES`
 ## (see there for the entries): nobody takes them down but the notice board, which an item places
 ## too: the village puts one on its square and the player may put one up anywhere (the console's
 ## `give`).

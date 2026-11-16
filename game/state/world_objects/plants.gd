@@ -1,6 +1,6 @@
 class_name WorldObjectPlants
 extends RefCounted
-## The plants of the world as data, merged into WorldObjectTypes `TYPES` (see there for the
+## The plants of the world as data, loaded into WorldObjectTypes `TYPES` (see there for the
 ## entries): the bushes, the sapling, the tall grass and the reeds. They are picked or mown by
 ## hand or scythe, and follow the seasons.
 

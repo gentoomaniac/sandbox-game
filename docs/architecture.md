@@ -337,6 +337,13 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
   fails loudly. A test that needs an item of its own swaps in a small catalog of its own for
   `ItemTypes.TYPES` and restores it, it never adds to the shared one.
+- World objects are defined by topic scripts in `game/state/world_objects/` (plants, ways, village,
+  stall, dyke, ...): each has a constant `TYPES` of plain data keyed by raw ids, and
+  `CatalogTopics` loads them in path order (export-aware, like the console's commands). An id two
+  topics define is reported by `CatalogCheck` as `object <id>: defined in <file> and in <file>`
+  before anything is merged. These are GDScript scripts, not data files, because the definitions
+  hold typed values (`Vector2i`, `Color`, terrain enums) that a `.cfg` would need a parser and its
+  own checks for; `CatalogCheck` checks their fields either way.
 - `CatalogCheck` checks every item and object with its references at start (fields in range,
   wearables stack 1, what an item places or plants, what an object drops, leaves or seeds exists,
   ids of crops and trunks don't collide); `RulesCheck` (run by `Main._ready`) refuses to start
@@ -356,7 +363,7 @@ Typical jobs:
 | New station | A placed object kind (`WorldObjectTypes` with `drops` and `placeable_in`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
 | New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
-| New object or item kind | An entry in `WorldObjectTypes` or `ItemTypes` (an object an item places also needs `placeable_in`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
+| New object or item kind | An entry in the `TYPES` of a topic script in `game/state/world_objects/` (or in `ItemTypes`; an object an item places also needs `placeable_in`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
 
 ### Adding a data file
 

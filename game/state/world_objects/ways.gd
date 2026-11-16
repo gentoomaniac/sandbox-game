@@ -1,6 +1,6 @@
 class_name WorldObjectWays
 extends RefCounted
-## The ways the player lays (#62) as data, merged into WorldObjectTypes `TYPES` (see there for the
+## The ways the player lays (#62) as data, loaded into WorldObjectTypes `TYPES` (see there for the
 ## entries): a walk of planks and a path of cobbles, a piece a tile. Their atlas rows follow the
 ## scarecrow's (see tools/art/generate.py). All ways `connect`: a way next to another, of either
 ## kind, runs on into it with no edge between them, and has an edge where none lies beside it.
