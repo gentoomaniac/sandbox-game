@@ -111,8 +111,9 @@ static func checks() -> Dictionary[StringName, Callable]:
 
 
 static func is_everything_valid() -> bool:
-	var checks_passed := all_pass(checks().values())
-	var missing := missing_families(checks().keys())
+	var registered := checks()
+	var checks_passed := all_pass(registered.values())
+	var missing := missing_families(registered.keys())
 	for family in missing:
 		push_error("no check for %s" % family)
 	return checks_passed and missing.is_empty()
