@@ -130,7 +130,7 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
   grid, the hotbar as the quick bar): `bind(inventory)` when it opens, `refresh()` when anything
   changes, `unbind()` when it closes, `quick_move_requested(slot)` for Shift+click on a backpack or
   hotbar slot, and `dims_item` for the rule of what can't be used now. The rules stay the screen's
-  (the campfire's wood so far).
+  (the campfire's wood, the station's room).
   A window whose slots move stacks their own way sets `move_rule` on them (a callable asked whether
   a stack may be let go there and told to move it; a drag uses the rule of the slot it ends on,
   else of the one it came from) and `is_dimmed` for stacks that can't be used now: the process

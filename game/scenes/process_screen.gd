@@ -15,8 +15,6 @@ extends Modal
 
 const PANEL_GAP := 12
 const SLOT_GAP := 2
-const INVENTORY_COLUMNS := 5
-const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const FILL := preload("res://assets/ui/energy_fill.png")
 const START_TIP := "Start: %s"
 const EMPTY_NOTE := "Put in what a recipe takes."
@@ -26,7 +24,6 @@ const RUNNING_NOTE := "%s: ready in %s"
 const RESULTS_NOTE := "Take out what was made first."
 const NO_RECIPE_NOTE := "No recipe fits what is in the station."
 
-var _hotbar: HotbarHud
 var _station: ProcessStation
 var _title_label := Label.new()
 var _skills_label := Label.new()
@@ -40,14 +37,12 @@ var _button := Button.new()
 ## What the run makes and when, on a line of its own, so the note beside it stays.
 var _run_label := Label.new()
 var _note_label := Label.new()
-## The backpack's slot views, by inventory slot.
-var _backpack_views := {}
+var _backpack: BackpackGrid
 
 
 func _init(hotbar: HotbarHud) -> void:
 	super()
 	close_actions = [&"interact"]
-	_hotbar = hotbar
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
@@ -74,20 +69,10 @@ func _init(hotbar: HotbarHud) -> void:
 		grid_column.add_child(label)
 	row.add_child(grid_column)
 
-	var backpack_column := VBoxContainer.new()
-	var header := TextureRect.new()
-	header.texture = BACKPACK_ICON
-	header.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	backpack_column.add_child(header)
-	var backpack := _new_grid(INVENTORY_COLUMNS)
-	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
-		var view := SlotView.new()
-		view.tooltip_id = "inventory_%d" % slot
-		view.quick_move_requested.connect(_put_in.bind(slot))
-		backpack.add_child(view)
-		_backpack_views[slot] = view
-	backpack_column.add_child(backpack)
-	row.add_child(backpack_column)
+	_backpack = BackpackGrid.new(hotbar)
+	_backpack.dims_item = _cannot_put_in
+	_backpack.quick_move_requested.connect(_put_in)
+	row.add_child(_backpack)
 	_panel.add_child(row)
 
 
@@ -106,15 +91,11 @@ func _on_open() -> void:
 	_show_grid(_station.grid_size)
 	_show_recipes()
 	_note_label.text = ""
-	var inventory := _station.inventory
-	for slot: int in _backpack_views:
-		_backpack_views[slot].bind_to(inventory, slot)
-	inventory.changed.connect(_refresh)
+	_station.inventory.changed.connect(_refresh)
 	_station.grid.changed.connect(_refresh)
 	_station.crafting.player_skills().changed.connect(_refresh)
 	_station.crafting.practised.connect(_on_practised)
-	_hotbar.acquire(self)
-	_hotbar.slot_quick_move_requested.connect(_put_in)
+	_backpack.bind(_station.inventory)
 	_refresh()
 
 
@@ -124,12 +105,7 @@ func _on_close() -> void:
 	_station.grid.changed.disconnect(_refresh)
 	_station.crafting.player_skills().changed.disconnect(_refresh)
 	_station.crafting.practised.disconnect(_on_practised)
-	# The hotbar may have been freed first, when the whole scene goes.
-	if is_instance_valid(_hotbar):
-		for slot in Inventory.HOTBAR_SIZE:
-			_hotbar.dim(slot, false)
-		_hotbar.release(self)
-		_hotbar.slot_quick_move_requested.disconnect(_put_in)
+	_backpack.unbind()
 
 
 ## The bar fills and the time counts down while a run goes on, also with nothing else changing.
@@ -252,13 +228,7 @@ func _refresh() -> void:
 		view.show_stack(_station.grid.slots[slot], false)
 		view.is_dimmed = is_running
 		view.is_clickable = not is_running
-	var inventory := _station.inventory
-	for slot: int in _backpack_views:
-		var view: SlotView = _backpack_views[slot]
-		view.show_stack(inventory.slots[slot], false)
-		view.is_dimmed = not inventory.slots[slot].is_empty() and not _can_put_in(slot)
-	for slot in Inventory.HOTBAR_SIZE:
-		_hotbar.dim(slot, not inventory.slots[slot].is_empty() and not _can_put_in(slot))
+	_backpack.refresh()
 	_bar.visible = is_running
 	_bar.show_value(_station.progress() if is_running else 0.0)
 	var runnable := _station.runnable_recipe()
@@ -286,8 +256,8 @@ func _idle_note(holds_results: bool, runnable: StringName) -> String:
 	return NO_RECIPE_NOTE if missing.is_empty() else MISSING_NOTE % _items_text(missing)
 
 
-func _can_put_in(slot: int) -> bool:
-	return _station.room_for(_station.inventory.item_in(slot)) > 0
+func _cannot_put_in(item: StringName) -> bool:
+	return _station.room_for(item) == 0
 
 
 ## "Brick x22: ready in 7 h 20 min".

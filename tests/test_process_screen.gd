@@ -24,7 +24,7 @@ func before_each() -> void:
 
 
 func _backpack_view(slot: int) -> SlotView:
-	return _screen._backpack_views[slot]
+	return _screen._backpack.views[slot]
 
 
 func _grid_view(slot: int) -> SlotView:
@@ -50,7 +50,7 @@ func test_the_window_shows_the_grid_the_recipes_and_the_backpack() -> void:
 	assert_eq(_screen._title_label.text, "Smelter")
 	assert_not_null(_row(&"bricks"))
 	assert_not_null(_row(&"flour"))
-	assert_eq(_screen._backpack_views.size(), Inventory.BACKPACK_SIZE)
+	assert_eq(_screen._backpack.views.size(), Inventory.BACKPACK_SIZE)
 
 
 func test_stacks_that_can_not_go_in_are_dimmed_from_the_start() -> void:
