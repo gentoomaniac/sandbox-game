@@ -3,18 +3,17 @@ extends RefCounted
 ## The checks of the world and what the other parts of a save refer to in it: the clock, the land
 ## with its edits, objects, buildings and village, what the player has explored, and the map the
 ## game is in. It collects the buildings of the world for the references of villagers (see
-## SaveContext).
-
-## The highest the sea or the water on the land may stand in a save, in centimetres.
-const MAX_LEVEL_CM := 1000
+## SaveContext), and hands the flood in the world to SaveFloodChecks where it comes in the order.
 
 var _ctx: SaveContext
 var _objects: SaveObjectChecks
+var _flood: SaveFloodChecks
 
 
 func _init(context: SaveContext) -> void:
 	_ctx = context
 	_objects = SaveObjectChecks.new(context)
+	_flood = SaveFloodChecks.new(context)
 
 
 func check_clock(game: Dictionary) -> void:
@@ -51,7 +50,7 @@ func _check_world(world: Dictionary) -> void:
 			var edit: Variant = terrain_edits[index]
 			if edit is Array and edit.size() == 3 and not Tile.Terrain.has(str(edit[2])):
 				_ctx.report("world terrain_edits %d" % index, "unknown terrain %s" % edit[2])
-	_check_surge(world)
+	_flood.check(world)
 	_objects.check_ground_items(world, "world")
 	var object_edits: Variant = _ctx.field(world, "object_edits", SaveContext.Kind.LIST, "world")
 	if object_edits != null:
@@ -65,39 +64,6 @@ func _check_world(world: Dictionary) -> void:
 		_ctx.report("world", "no village")
 	elif world["village"] != null:
 		_check_village(world["village"])
-
-
-## The surge and the water it left: whole numbers in range, and a known phase.
-func _check_surge(world: Dictionary) -> void:
-	var surge: Variant = _ctx.field(world, "surge", SaveContext.Kind.DICT, "world")
-	if surge != null:
-		for key in ["level_cm", "peak_minute", "hold_minutes", "last_rolled_tide"]:
-			_ctx.field(surge, key, SaveContext.Kind.WHOLE, "world surge")
-		_ctx.check_between(surge.get("level_cm"), 0, MAX_LEVEL_CM, "world surge", "level_cm")
-	var flood: Variant = _ctx.field(world, "flood", SaveContext.Kind.DICT, "world")
-	if flood != null:
-		for key in ["level_cm", "drain_minute"]:
-			_ctx.field(flood, key, SaveContext.Kind.WHOLE, "world flood")
-		_ctx.check_between(flood.get("level_cm"), 0, MAX_LEVEL_CM, "world flood", "level_cm")
-		var phase: Variant = _ctx.field(flood, "phase", SaveContext.Kind.TEXT, "world flood")
-		if phase != null and not str(phase).to_upper() in FloodState.Phase:
-			_ctx.report("world flood", "unknown phase %s" % phase)
-	for key in ["flood_wet", "flood_salt", "flood_mud", "flood_repairs"]:
-		_ctx.check_entries(world, key, SaveContext.Kind.WHOLE)
-	var met: Variant = _ctx.field(world, "flood_met_chunks", SaveContext.Kind.LIST, "world")
-	if met != null and not met.all(_ctx.is_vector):
-		_ctx.report("world flood_met_chunks", "should be a list of [x, y]")
-	var wet: Variant = world.get("flood_wet")
-	if wet is Array:
-		for index in wet.size():
-			if (
-				wet[index] is Array
-				and wet[index].size() == 3
-				and _ctx.is_kind(wet[index][2], SaveContext.Kind.WHOLE)
-			):
-				_ctx.check_between(
-					wet[index][2], 1, MAX_LEVEL_CM, "world flood_wet %d" % index, "depth"
-				)
 
 
 ## The land the player has seen: the bits of each chunk, base64 of a byte array of a whole size.

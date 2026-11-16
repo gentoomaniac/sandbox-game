@@ -12,6 +12,10 @@ extends RefCounted
 ##   removed since the save). The save is whole otherwise; `drop_missing` takes those things out
 ##   of the data, which is the player's choice to make (see LoadResult).
 ## A save is loadable as it is when both are empty.
+##
+## The checks themselves are by domain, in game/state/save_checks/, and run in the order of
+## `_check_game`: a check that refers to what another found (the buildings of the world) comes
+## after it. A new saved feature adds its check to the domain it belongs to, or a domain of its own.
 
 ## What the checks found, see SaveContext.
 var problems: Array[String]
