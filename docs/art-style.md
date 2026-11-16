@@ -97,7 +97,7 @@ art:
   seat row on the horse's saddle) was measured anew when the horse was (task 114). Grep for
   `ART_16_SCALE`; the factor also hides in `BuildMode.OUTLINE_WIDTH` and `PROGRESS_HEIGHT`.
   Numbers in the
-  pictures' own pixels in data (`sprite_height` in world_object_types.gd, `window_lights` in
+  pictures' own pixels in data (`sprite_height` in game/state/world_objects/, `window_lights` in
   data/buildings.cfg) are the pixels of the files, so they are measured anew too;
 - the shaders of its pictures (sway, water, mud, lily pads) work on the art's pixels through
   `art_scale` (game/scenes/art_scale.gdshaderinc), which AmbientMotion sets to `ART_16_SCALE`:

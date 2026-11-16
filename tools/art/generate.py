@@ -162,9 +162,9 @@ def standing_outdoors(picture, shadow_half_width=None):
 
 
 # The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
-# game/state/world_object_types.gd is its number here, and tests/test_object_atlas.gd checks
+# game/state/world_objects/ is its number here, and tests/test_object_atlas.gd checks
 # it against assets/objects_rows.txt, which is written from the list below. A tree's trunks are
-# two rows, the long trunk and then the short one; its `trunk` in world_object_types.gd names the
+# two rows, the long trunk and then the short one; its `trunk` in world_objects/trees.gd names the
 # first.
 #
 #  0 oak (3)

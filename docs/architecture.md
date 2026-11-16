@@ -337,8 +337,8 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
   fails loudly. A test that needs an item of its own swaps in a small catalog of its own for
   `ItemTypes.TYPES` and restores it, it never adds to the shared one.
-- World objects are defined by topic scripts in `game/state/world_objects/` (plants, ways, village,
-  stall, dyke, ...): each has a constant `TYPES` of plain data keyed by raw ids, and
+- World objects are defined by topic scripts in `game/state/world_objects/` (trees, rocks, plants,
+  boundaries, furniture, stations, yard, landing, ways, village, stall, dyke): each has a constant `TYPES` of plain data keyed by raw ids, and
   `CatalogTopics` loads them in path order (export-aware, like the console's commands). An id two
   topics define is reported by `CatalogCheck` as `object <id>: defined in <file> and in <file>`
   before anything is merged. These are GDScript scripts, not data files, because the definitions

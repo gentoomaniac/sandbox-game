@@ -807,7 +807,7 @@ def outline_in_bark(canvas, colour="soil_dark"):
 
 def vegetation():
     """The vegetation rows of assets/objects.png, in the order of their atlas_row in
-    game/state/world_object_types.gd, starting at row 4, after the camp rows."""
+    game/state/world_objects/, starting at row 4, after the camp rows."""
     return [
         [spruce(seed) for seed in (121, 122, 123)],
         [pine(seed) for seed in (131, 132, 133)],

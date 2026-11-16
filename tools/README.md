@@ -325,7 +325,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
 - **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
   (the table says the order; new rows go at the end), and give its type an
-  `atlas_row` in `game/state/world_object_types.gd`. `generate.py` writes
+  `atlas_row` in `game/state/world_objects/`. `generate.py` writes
   `art/generated/objects/atlas_32x32.txt` from the rows it draws (`make assets` copies them to assets/objects_rows.txt), and `tests/test_object_atlas.gd` compares
   it with every type's `atlas_row` and number of looks. A tree that leaves a trunk also has the
   two rows of `trunks.rows(<tree>)` (its bark in `trunks.SPECIES`), and its `trunk` names the

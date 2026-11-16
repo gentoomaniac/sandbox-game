@@ -209,17 +209,15 @@ const CORNER_MASKS: Array[int] = [0b0011, 0b0110, 0b1001, 0b1100]
 ## corner slanted on its lower side (in the bits of the mask), on its higher side and on both.
 const SLANTED_LOOKS := 12
 
-## The folder of the topic scripts that define the other types (see CatalogTopics).
+## The folder of the topic scripts that define the types (see CatalogTopics).
 const TOPICS_DIR := "res://game/state/world_objects"
-const _OWN_SOURCE := "res://game/state/world_object_types.gd"
 
-const _OTHER_TYPES := {}
-
-## What went wrong while the crops and trunks were added to the fixed types: an id used twice
-## (see CatalogCheck).
+## What went wrong while the topics were read and the crops and trunks added: an id used twice, a
+## topic that does not load (see CatalogCheck).
 static var build_problems: Array[String] = []
 
-## Every type: the fixed ones above and the crops of data/crops.cfg. Read-only, all the way down.
+## Every type: those of the topic scripts, the crops of data/crops.cfg and what derives from them
+## (the snags, the trunks). Read-only, all the way down.
 # The name is that of a constant, but crop types are only known once the file is read.
 static var TYPES := _build_types()  # gdlint: ignore=class-variable-name
 
@@ -261,9 +259,8 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 
 static func _build_types() -> Dictionary:
-	var sources := {_OWN_SOURCE: _OTHER_TYPES}
-	sources.merge(CatalogTopics.read_folder(TOPICS_DIR, build_problems))
-	var types := _with_crops(CatalogTopics.merged("object", sources, build_problems))
+	var topics := CatalogTopics.read_folder(TOPICS_DIR, build_problems)
+	var types := _with_crops(CatalogTopics.merged("object", topics, build_problems))
 	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)

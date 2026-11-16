@@ -1,4 +1,4 @@
-"""Art for the trunks that felled trees leave (see `trunk` in game/state/world_object_types.gd).
+"""Art for the trunks that felled trees leave (see `trunk` in game/state/world_objects/).
 
 A trunk is a felled log lying horizontally, seen in 3/4 view like everything else: its cut face
 with year rings on the left, the bark of its top and front lit from the top left, a broken-off
