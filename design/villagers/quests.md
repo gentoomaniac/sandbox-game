@@ -54,7 +54,7 @@ line may use only the braces named above.
 
 Each **kind** is one small script in `game/state/quests/objectives/` or
 `game/state/quests/conditions/` that extends `QuestObjective` or `QuestCondition` and is found by
-scanning its folder (`QuestKinds`); a script that is no kind, or has no name or one that another
+scanning its folder (`KindFolder`); a script that is no kind, or has no name or one that another
 has, is reported. A kind says what its fields are (`problems`, so a quest file is checked), and later
 what it does at play.
 

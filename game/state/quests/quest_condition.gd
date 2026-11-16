@@ -1,7 +1,7 @@
 class_name QuestCondition
 extends RefCounted
 ## What must hold for a quest to be posted. One kind is one script in
-## game/state/quests/conditions that extends this (see QuestKinds); the quest file names it by
+## game/state/quests/conditions that extends this (see KindFolder); the quest file names it by
 ## `type` in its `requires` and gives the fields it needs.
 
 

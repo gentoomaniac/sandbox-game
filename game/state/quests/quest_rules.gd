@@ -4,7 +4,7 @@ extends RefCounted
 ## of data/quests/_limits.cfg): one file per quest, found by scanning the folder, so a new quest is
 ## a new file. `from_directory` reports everything wrong, by file, and `is_valid` says whether
 ## anything was. What a kind of objective or prerequisite needs is its script's to say (see
-## QuestKinds).
+## KindFolder).
 
 const DEFAULT_DIR := "res://data/quests"
 const LIMITS_FILE := "_limits.cfg"
@@ -46,10 +46,10 @@ func _init(quests: Dictionary, limits: Dictionary, file_problems: Array[String] 
 	_limits = limits
 	_file_problems = file_problems
 	if _objective_kinds.is_empty():
-		_objective_kinds = QuestKinds.in_folder(
+		_objective_kinds = KindFolder.in_folder(
 			QuestKinds.OBJECTIVES_DIR, QuestObjective, _kind_problems
 		)
-		_condition_kinds = QuestKinds.in_folder(
+		_condition_kinds = KindFolder.in_folder(
 			QuestKinds.CONDITIONS_DIR, QuestCondition, _kind_problems
 		)
 

@@ -1,7 +1,7 @@
 class_name ActivityTargets
 extends RefCounted
 ## The kinds of place an activity can be done at, one script each in game/state/activity_targets
-## (see ActivityTarget). They are loaded the way QuestKinds loads the kinds of a quest.
+## (see ActivityTarget). They are loaded by KindFolder.
 
 const DIR := "res://game/state/activity_targets"
 
@@ -13,7 +13,7 @@ static var _default: Dictionary
 static func default_kinds() -> Dictionary:
 	if _default.is_empty():
 		var problems: Array[String] = []
-		_default = QuestKinds.in_folder(DIR, ActivityTarget, problems)
+		_default = KindFolder.in_folder(DIR, ActivityTarget, problems)
 		for problem in problems:
 			push_error(problem)
 	return _default

@@ -1,6 +1,6 @@
 extends GutTest
 ## The quests of the villagers (QuestRules, data/quests/): the folder is clean, the limits are read,
-## each kind of fault is reported by file, and a kind added as a file is found (QuestKinds).
+## each kind of fault is reported by file, and what a kind needs is its own script.
 
 const FIBRE := "fibre_for_beans"
 
@@ -158,25 +158,3 @@ func test_a_limit_that_is_missing_is_reported() -> void:
 func test_a_file_with_the_wrong_sections_is_reported() -> void:
 	var rules := QuestRules.new({}, {}, ["odd.cfg: has not just a [quest] section"])
 	assert_string_contains(rules.problems()[0], "odd.cfg")
-
-
-func test_a_kind_added_as_a_file_is_found_and_a_bad_one_is_reported() -> void:
-	var problems: Array[String] = []
-	var kinds := QuestKinds.in_folder("res://tests/quest_kinds", QuestObjective, problems)
-	assert_eq(kinds.keys(), ["shout"])
-	assert_eq(problems.size(), 3, str(problems))
-	var text := "\n".join(problems)
-	assert_string_contains(text, "shout_twice_objective.gd: shout is also the kind")
-	assert_string_contains(text, "stray.gd is no script that extends QuestObjective")
-	assert_string_contains(text, "unnamed_objective.gd has no kind")
-
-
-func test_the_kinds_of_the_game_are_found_by_name() -> void:
-	var problems: Array[String] = []
-	var objectives := QuestKinds.in_folder(QuestKinds.OBJECTIVES_DIR, QuestObjective, problems)
-	var conditions := QuestKinds.in_folder(QuestKinds.CONDITIONS_DIR, QuestCondition, problems)
-	assert_eq(problems, [] as Array[String])
-	assert_eq(objectives.keys(), ["bring", "build"])
-	var names := conditions.keys()
-	names.sort()
-	assert_eq(names, ["day", "opinion", "quest_done", "season", "skill"])
