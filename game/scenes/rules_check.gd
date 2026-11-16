@@ -5,49 +5,71 @@ extends RefCounted
 ## fails this has nothing more to say before it quits.
 
 
+## Every check by name, in the order they report: the rules files first, then the checks of what
+## the rules and the code define together (the catalog), then the pictures. All of them always
+## run, so the log shows every problem at once. The catalog is built from some of the rules
+## (BuildingRules and others), so with one of those files broken it may add problems that follow
+## from it; the first lines of the log are the ones to fix. A new rules family is one more line
+## here; the same name twice does not parse.
+static func checks() -> Dictionary[StringName, Callable]:
+	return {
+		# Base definitions.
+		&"energy": func() -> bool: return EnergyRules.default_rules().is_valid(),
+		&"crops": func() -> bool: return CropRules.default_rules().is_valid(),
+		&"vegetation": func() -> bool: return Vegetation.default_vegetation().is_valid(),
+		&"wildlife": func() -> bool: return WildlifeRules.default_rules().is_valid(),
+		&"livestock": func() -> bool: return LivestockRules.default_rules().is_valid(),
+		&"npcs": func() -> bool: return NpcRules.default_rules().is_valid(),
+		&"villagers": func() -> bool: return VillagerRules.default_rules().is_valid(),
+		&"village_sheet": func() -> bool: return VillageSheet.default_sheet().is_valid(),
+		&"npc_talk": func() -> bool: return NpcTalkRules.default_rules().is_valid(),
+		&"seasons": func() -> bool: return SeasonRules.default_rules().is_valid(),
+		&"buildings": func() -> bool: return BuildingRules.default_rules().is_valid(),
+		&"recipes": func() -> bool: return RecipeRules.default_rules().is_valid(),
+		&"skills": func() -> bool: return SkillRules.default_rules().is_valid(),
+		&"stations": func() -> bool: return StationRules.default_rules().is_valid(),
+		&"sounds": func() -> bool: return SoundRules.default_rules().is_valid(),
+		&"ambience": func() -> bool: return AmbienceRules.default_rules().is_valid(),
+		&"landscape": func() -> bool: return LandscapeRules.default_rules().is_valid(),
+		&"paths": func() -> bool: return PathRules.default_rules().is_valid(),
+		&"activities": func() -> bool: return ActivityRules.default_rules().is_valid(),
+		&"quests": func() -> bool: return QuestRules.default_rules().is_valid(),
+		&"friendship": func() -> bool: return FriendshipRules.default_rules().is_valid(),
+		&"prices": func() -> bool: return Prices.default_prices().is_valid(),
+		&"shops": func() -> bool: return ShopRules.default_rules().is_valid(),
+		&"barter": func() -> bool: return BarterRules.default_rules().is_valid(),
+		&"stall": func() -> bool: return StallRules.default_rules().is_valid(),
+		&"music": func() -> bool: return MusicRules.default_rules().is_valid(),
+		&"attributes": func() -> bool: return AttributeRules.default_rules().is_valid(),
+		&"crop_raids": func() -> bool: return CropRaidRules.default_rules().is_valid(),
+		&"flowers": func() -> bool: return FlowerRules.default_rules().is_valid(),
+		&"footprints": func() -> bool: return FootprintRules.default_rules().is_valid(),
+		&"gossip": func() -> bool: return GossipRules.default_rules().is_valid(),
+		&"leaf_fall": func() -> bool: return LeafFallRules.default_rules().is_valid(),
+		&"lighting": func() -> bool: return LightingRules.default_rules().is_valid(),
+		&"spread": func() -> bool: return SpreadRules.default_rules().is_valid(),
+		&"stork_nests": func() -> bool: return StorkNestRules.default_rules().is_valid(),
+		&"tool_grades": func() -> bool: return ToolGradeRules.default_rules().is_valid(),
+		&"tool_swings": func() -> bool: return ToolSwingRules.default_rules().is_valid(),
+		&"weather": func() -> bool: return WeatherRules.default_rules().is_valid(),
+		&"yard": func() -> bool: return YardRules.default_rules().is_valid(),
+		&"wild_seeds": func() -> bool: return WildSeeds.default_rules().is_valid(),
+		&"village_plan": func() -> bool: return VillagePlan.default_plan().is_valid(),
+		# What refers to what.
+		&"catalog": CatalogCheck.report,
+		# The pictures.
+		&"assets": AssetCheck.report,
+	}
+
+
 static func is_everything_valid() -> bool:
-	return (
-		EnergyRules.default_rules().is_valid()
-		and CropRules.default_rules().is_valid()
-		and Vegetation.default_vegetation().is_valid()
-		and WildlifeRules.default_rules().is_valid()
-		and LivestockRules.default_rules().is_valid()
-		and NpcRules.default_rules().is_valid()
-		and VillagerRules.default_rules().is_valid()
-		and VillageSheet.default_sheet().is_valid()
-		and NpcTalkRules.default_rules().is_valid()
-		and SeasonRules.default_rules().is_valid()
-		and BuildingRules.default_rules().is_valid()
-		and RecipeRules.default_rules().is_valid()
-		and SkillRules.default_rules().is_valid()
-		and StationRules.default_rules().is_valid()
-		and CatalogCheck.report()
-		and SoundRules.default_rules().is_valid()
-		and AmbienceRules.default_rules().is_valid()
-		and LandscapeRules.default_rules().is_valid()
-		and PathRules.default_rules().is_valid()
-		and ActivityRules.default_rules().is_valid()
-		and QuestRules.default_rules().is_valid()
-		and FriendshipRules.default_rules().is_valid()
-		and Prices.default_prices().is_valid()
-		and ShopRules.default_rules().is_valid()
-		and BarterRules.default_rules().is_valid()
-		and StallRules.default_rules().is_valid()
-		and MusicRules.default_rules().is_valid()
-		and AttributeRules.default_rules().is_valid()
-		and CropRaidRules.default_rules().is_valid()
-		and FlowerRules.default_rules().is_valid()
-		and FootprintRules.default_rules().is_valid()
-		and GossipRules.default_rules().is_valid()
-		and LeafFallRules.default_rules().is_valid()
-		and LightingRules.default_rules().is_valid()
-		and SpreadRules.default_rules().is_valid()
-		and StorkNestRules.default_rules().is_valid()
-		and ToolGradeRules.default_rules().is_valid()
-		and ToolSwingRules.default_rules().is_valid()
-		and WeatherRules.default_rules().is_valid()
-		and YardRules.default_rules().is_valid()
-		and WildSeeds.default_rules().is_valid()
-		and VillagePlan.default_plan().is_valid()
-		and AssetCheck.report()
-	)
+	return all_pass(checks().values())
+
+
+## Whether every check passes. Runs all of them, so that each reports its own problems.
+static func all_pass(to_run: Array) -> bool:
+	var everything_passed := true
+	for check: Callable in to_run:
+		if not check.call():
+			everything_passed = false
+	return everything_passed
