@@ -2,6 +2,16 @@ extends GutTest
 ## The feature flows of the game scene register the words and the opening of their own kind of E
 ## (see InteractionRegistry), so the hint and the interact flow need not know them.
 
+## The object whose kind of E opens a screen of the flows.
+const SCREEN_OBJECTS := {
+	Interaction.Kind.OPEN_STATION_GRID: WorldObjectTypes.KILN,
+	Interaction.Kind.OPEN_CHEST: WorldObjectTypes.CHEST,
+	Interaction.Kind.OPEN_CART: ItemTypes.SALES_CART,
+	Interaction.Kind.OPEN_FIRE: WorldObjectTypes.FIREPLACE,
+	Interaction.Kind.OPEN_CRAFTING: WorldObjectTypes.WORKBENCH,
+	Interaction.Kind.READ_BOARD: WorldObjectTypes.NOTICE_BOARD,
+}
+
 var _state: GameState
 var _interactions: InteractionRegistry
 
@@ -79,9 +89,46 @@ func test_the_quest_flow_registers_the_notice_board() -> void:
 	assert_eq(_words(Interaction.Kind.READ_BOARD), "Read the notice board")
 
 
+## What each kind of E is done to, and for the kinds of a screen of the flows, whether it opens one.
+## The kinds InteractFlow serves (it needs Main for the console and the blackout) have words only.
+func _subject_of(kind: Interaction.Kind) -> Variant:
+	if kind in [Interaction.Kind.CHAT, Interaction.Kind.TRADE]:
+		return _state.npcs.spawn_villager("antje", _state.player.position, _state.world)
+	if SCREEN_OBJECTS.has(kind):
+		return WorldObject.new(SCREEN_OBJECTS[kind], Vector2i.ZERO)
+	return null
+
+
+func _open_screens(node: Node) -> Array[Modal]:
+	var open: Array[Modal] = []
+	if node is Modal and node.is_open():
+		open.append(node)
+	for child in node.get_children():
+		open.append_array(_open_screens(child))
+	return open
+
+
 func test_every_kind_of_e_but_nothing_is_registered_by_the_flows_main_makes() -> void:
 	FlowsCase.make(self, _state, _interactions)
 
 	for kind: Interaction.Kind in Interaction.Kind.values():
 		if kind != Interaction.Kind.NOTHING:
 			assert_true(_interactions.is_registered(kind), Interaction.Kind.find_key(kind))
+
+
+func test_every_registered_kind_has_words_and_the_screen_kinds_open_theirs() -> void:
+	var flows := FlowsCase.make(self, _state, _interactions)
+	for kind: Interaction.Kind in Interaction.Kind.values():
+		if kind == Interaction.Kind.NOTHING:
+			continue
+		var name: String = Interaction.Kind.find_key(kind)
+		var choice := Interaction.Choice.new(kind, _subject_of(kind))
+		assert_ne(_interactions.label_of(choice), "", "%s has words" % name)
+		if SCREEN_OBJECTS.has(kind):
+			_interactions.open(choice)
+			var screens: Array[Modal] = []
+			for flow in flows.all():
+				screens.append_array(_open_screens(flow))
+			assert_eq(screens.size(), 1, "%s opens its screen" % name)
+			for screen in screens:
+				screen.close()

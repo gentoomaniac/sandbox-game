@@ -64,15 +64,16 @@ Warft and an Ewer here and there.
   the sounds of its screens (`GameSounds.click_on_press_in`, `watch_panel`). What other code needs
   of a screen (the debug runner, the screen keys) it takes from the flow's `screen`.
   `FeatureFlows` makes them all, from what they take in `_init`, so Main and the tests make the same
-  ones (`tests/test_feature_flows.gd` checks that every `Interaction.Kind` is registered, and
-  `test_interaction_registry.gd` that the flows do not keep the game alive: a flow must not store
-  the registry, which holds callables of the flows). A kind is registered once: a second
-  registration is a `push_error` naming both owners and is refused. Main adds each flow where its screens are
-  layered and take input, one `add_child` line each in `_make_views` (the flows whose windows stay
-  under the HUD and the console) and `_connect_state_and_views`; nothing is discovered; `tests/test_main_flows.gd` boots Main and checks that every flow of
-  `FeatureFlows.all()` is in its tree, so a forgotten `add_child` fails. To add a
-  screen like the sales cart: the domain's kind and its place in `Interaction.choice_at` (state),
-  the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
+  ones (`tests/test_feature_flows.gd` checks that every `Interaction.Kind` is registered with words,
+  and that the kinds of a screen open it; and `test_interaction_registry.gd` that the flows do not
+  keep the game alive: a flow must not store the registry, which holds callables of the flows). A
+  kind is registered once: a second registration is a `push_error` naming both owners and is
+  refused. Main adds each flow where its screens are layered and take input, one `add_child` line
+  each in `_make_views` (the flows whose windows stay under the HUD and the console) and
+  `_connect_state_and_views`; nothing is discovered; `tests/test_main_flows.gd` boots Main and
+  checks that every flow of `FeatureFlows.all()` is in its tree, so a forgotten `add_child` fails.
+  To add a screen like the sales cart: the domain's kind and its place in `Interaction.choice_at`
+  (state), the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `use_tile`). It owns
