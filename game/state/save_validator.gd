@@ -467,6 +467,9 @@ func _check_player(player: Dictionary) -> void:
 	var inventory: Variant = _field(player, "inventory", Kind.DICT, "player")
 	if inventory != null:
 		_check_inventory(inventory)
+	var money: Variant = _field(player, "money", Kind.WHOLE, "player")
+	if money != null and money < 0:
+		_report("player", "money %d is below 0" % money)
 	var equipment: Variant = _field(player, "equipment", Kind.DICT, "player")
 	if equipment != null:
 		_check_equipment(equipment)

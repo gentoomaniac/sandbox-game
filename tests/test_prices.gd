@@ -37,11 +37,21 @@ func test_a_worth_of_no_item_is_reported() -> void:
 
 
 func test_a_missing_or_unknown_section_is_reported() -> void:
-	assert_eq(Prices.new({}).problems(), ["[worth] is missing"] as Array[String])
+	assert_eq(
+		Prices.new({}).problems(), ["[worth] is missing", "[purse] is missing"] as Array[String]
+	)
 	var values := DataFile.read_sections(Prices.DEFAULT_PATH)
 	values["stall"] = {}
 	var problems := Prices.new(values).problems()
 	assert_eq(problems, ["[stall] is not a section of the file"] as Array[String])
+
+
+func test_a_start_purse_that_is_not_a_whole_number_from_zero_is_reported() -> void:
+	var problem := ["[purse] start is not a whole number from 0"] as Array[String]
+	for bad: Variant in [-1, 2.5, "lots"]:
+		var values := DataFile.read_sections(Prices.DEFAULT_PATH)
+		values["purse"]["start"] = bad
+		assert_eq(Prices.new(values).problems(), problem)
 
 
 func test_the_shop_rounds_in_the_keepers_favour_for_every_worth() -> void:

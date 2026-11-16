@@ -258,6 +258,10 @@ upgrade, as a commit of its own** titled `Save: drop the upgrade from version <N
 
 ## Console
 
+**Built (step 5):** `money`, with no argument it shows the purse; `money 100` sets, `money +10` and
+`money -10` change it, never below 0. The start purse is `[purse] start` of `data/prices.cfg`, the
+save is version 54 (`player.money`, an old save gets 32).
+
 `money <Schilling>` sets the purse; `give` works as before; `nocost` makes shops free.
 
 ## Build steps

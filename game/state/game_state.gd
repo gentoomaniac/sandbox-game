@@ -154,6 +154,7 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 	state.player.home_map = state.world
 	state.player.home_bed = camp.sleeping_bag_pos
 	state.player.inventory = Inventory.with_starting_items()
+	state.player.purse = Purse.new(Prices.default_prices().start_purse())
 	state.player.equipment = Equipment.with_starting_outfit()
 	return state
 

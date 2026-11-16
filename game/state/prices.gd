@@ -6,6 +6,7 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://data/prices.cfg"
 const WORTH := "worth"
+const PURSE := "purse"
 
 static var _default: Prices
 
@@ -34,11 +35,15 @@ static func from_file(path: String) -> Prices:
 ## What is wrong, as "[section] what".
 func problems() -> Array[String]:
 	var found: Array[String] = []
-	if not _values.has(WORTH):
-		found.append("[%s] is missing" % WORTH)
+	for section: String in [WORTH, PURSE]:
+		if not _values.has(section):
+			found.append("[%s] is missing" % section)
 	for section: String in _values:
-		if section != WORTH:
+		if not section in [WORTH, PURSE]:
 			found.append("[%s] is not a section of the file" % section)
+	var start: Variant = _values.get(PURSE, {}).get("start")
+	if _values.has(PURSE) and not (start is int and start >= 0):
+		found.append("[%s] start is not a whole number from 0" % PURSE)
 	for item: String in _values.get(WORTH, {}):
 		var worth: Variant = _values[WORTH][item]
 		if not ItemTypes.TYPES.has(StringName(item)):
@@ -59,3 +64,8 @@ func has_worth(item: StringName) -> bool:
 ## What the item is worth. Ask only for an item that `has_worth`.
 func worth(item: StringName) -> int:
 	return _values[WORTH][String(item)]
+
+
+## The Schilling a new game starts with.
+func start_purse() -> int:
+	return _values[PURSE]["start"]

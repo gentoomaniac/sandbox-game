@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 53
-## The oldest version we still upgrade. Nine steps back for the moment: the commit that raises
-## VERSION (the purse, #49) makes it ten again.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 54
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -232,6 +231,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_51(game)
 	if version <= 52:
 		_upgrade_from_version_52(game)
+	if version <= 53:
+		_upgrade_from_version_53(game)
 
 
 ## Version 44 had the old generator's land (a grid of fields and ditches, woods of single trees, a
@@ -296,3 +297,9 @@ static func _upgrade_from_version_52(game: Dictionary) -> void:
 		npc["ratings_today"] = 0
 		npc["rating_moved_today"] = 0
 		npc["bond"] = "none"
+
+
+## Version 53 had no money (#49): the player has the start purse, as in a new game. Written out, not
+## read from data/prices.cfg, so a later change leaves old saves alone.
+static func _upgrade_from_version_53(game: Dictionary) -> void:
+	game["player"]["money"] = 32

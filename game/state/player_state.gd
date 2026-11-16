@@ -68,6 +68,8 @@ var is_lantern_lit := false:
 	set(value):
 		is_lantern_lit = value
 		_show_held_item()
+## Their money (see Purse).
+var purse := Purse.new()
 ## What they wear. Replace it only through the setter, so the appearance follows.
 var equipment: Equipment:
 	set(value):
@@ -240,6 +242,7 @@ func to_dict() -> Dictionary:
 		"home_bed": SaveCodec.vector_to_json(home_bed),
 		"appearance": appearance.to_dict(),
 		"inventory": inventory.to_dict(),
+		"money": purse.schilling,
 		"equipment": equipment.to_dict(),
 		"energy": energy,
 		"health": health,
@@ -261,6 +264,7 @@ static func from_dict(data: Dictionary, home_map: GameMap) -> PlayerState:
 	# The appearance comes first: setting the inventory wears its held item on it.
 	player.appearance = Appearance.from_dict(data["appearance"])
 	player.inventory = Inventory.from_dict(data["inventory"])
+	player.purse = Purse.new(data["money"])
 	player.equipment = Equipment.from_dict(data["equipment"])
 	player.energy = data["energy"]
 	player.health = data["health"]
