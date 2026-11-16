@@ -68,3 +68,13 @@ func test_every_check_runs_even_when_an_earlier_one_fails() -> void:
 		return true
 	assert_false(RulesCheck.all_pass([failing, passing]))
 	assert_eq(ran, ["failing", "passing"] as Array[String])
+
+
+func test_every_family_has_a_check() -> void:
+	assert_eq(RulesCheck.missing_families(RulesCheck.checks().keys()), [] as Array[StringName])
+
+
+func test_a_family_with_no_check_is_found() -> void:
+	var registered := RulesCheck.checks().keys()
+	registered.erase(&"quests")
+	assert_eq(RulesCheck.missing_families(registered), [&"quests"] as Array[StringName])

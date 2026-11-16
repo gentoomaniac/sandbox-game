@@ -426,7 +426,7 @@ There is no base class: each rules class is plain, so copy one that is shaped li
    of `problems()`; `DataFile` already reports a file that can't be read.
 3. `problems() -> Array[String]` lists what is missing or wrong as `"[section] what"`, and
    `is_valid()` is `problems().is_empty()`.
-4. Register it in `RulesCheck.checks()` (`game/scenes/rules_check.gd`): one line, `<Topic>Rules.default_rules().is_valid()`, with the base definitions. Add a broken instance to the table in `tests/test_rules_check.gd`.
+4. Register it in `RulesCheck.checks()` (`game/scenes/rules_check.gd`): one line, `<Topic>Rules.default_rules().is_valid()`, with the base definitions, and its name in `RulesCheck.FAMILIES`, which `is_everything_valid` compares with `checks()`. Add a broken instance to the table in `tests/test_rules_check.gd`.
 5. Test it: the real file is valid, a file with keys missing reports them (the test counts
    the `push_error`s with `assert_push_error_count`), and so does a missing file.
 

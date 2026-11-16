@@ -4,13 +4,61 @@ extends RefCounted
 ## reports what is wrong by itself (the missing rules, crops, curves or pictures), so a game that
 ## fails this has nothing more to say before it quits.
 
+## The checks `checks()` has to have, one per family of rules and the catalog and the pictures. It
+## is the list to add to with a new family, so that a check dropped from `checks()` is noticed.
+const FAMILIES: Array[StringName] = [
+	&"energy",
+	&"crops",
+	&"vegetation",
+	&"wildlife",
+	&"livestock",
+	&"npcs",
+	&"villagers",
+	&"village_sheet",
+	&"npc_talk",
+	&"seasons",
+	&"buildings",
+	&"recipes",
+	&"skills",
+	&"stations",
+	&"sounds",
+	&"ambience",
+	&"landscape",
+	&"paths",
+	&"activities",
+	&"quests",
+	&"friendship",
+	&"prices",
+	&"shops",
+	&"barter",
+	&"stall",
+	&"music",
+	&"attributes",
+	&"crop_raids",
+	&"flowers",
+	&"footprints",
+	&"gossip",
+	&"leaf_fall",
+	&"lighting",
+	&"spread",
+	&"stork_nests",
+	&"tool_grades",
+	&"tool_swings",
+	&"weather",
+	&"yard",
+	&"wild_seeds",
+	&"village_plan",
+	&"catalog",
+	&"assets",
+]
+
 
 ## Every check by name, in the order they report: the rules files first, then the checks of what
 ## the rules and the code define together (the catalog), then the pictures. All of them always
 ## run, so the log shows every problem at once. The catalog is built from some of the rules
 ## (BuildingRules and others), so with one of those files broken it may add problems that follow
-## from it; the first lines of the log are the ones to fix. A new rules family is one more line
-## here; the same name twice does not parse.
+## from it; the first lines of the log are the ones to fix. A new rules family is one more line here
+## and one in `FAMILIES`; the same name twice does not parse.
 static func checks() -> Dictionary[StringName, Callable]:
 	return {
 		# Base definitions.
@@ -63,7 +111,20 @@ static func checks() -> Dictionary[StringName, Callable]:
 
 
 static func is_everything_valid() -> bool:
-	return all_pass(checks().values())
+	var checks_passed := all_pass(checks().values())
+	var missing := missing_families(checks().keys())
+	for family in missing:
+		push_error("no check for %s" % family)
+	return checks_passed and missing.is_empty()
+
+
+## The families that have no check among `registered`.
+static func missing_families(registered: Array) -> Array[StringName]:
+	var missing: Array[StringName] = []
+	for family in FAMILIES:
+		if family not in registered:
+			missing.append(family)
+	return missing
 
 
 ## Whether every check passes. Runs all of them, so that each reports its own problems.
