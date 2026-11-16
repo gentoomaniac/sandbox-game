@@ -240,6 +240,20 @@ seeds all year.
 
 ## The player's stall (the "shopping trailer")
 
+**Built (step 13), as planned except:** `StallSales` (`game/state/stall_sales.gd`, owned by
+`GameState`, rules in `data/stall.cfg` / `StallRules`) rolls each cart when a day ends, for the day
+that ended, so sleeping, a skip and a day away all give the same sales, from a seed of the world, the
+day and the cart. On a day with no more rain than `rain_hours_limit` (1 hour) up to `per_day` (4)
+villagers who barter (`data/barter.cfg`: what they `want` is what they need) may come, each with the
+chance `base_percent` (60) times the share of their friendship level (0 shunned, 50 % mistrusted, 100
+% from stranger, 200 % from level 9). A visit buys 1 to 3 things from what they want or like (a liked
+good 2 times as likely), if the price is at most the worth times `limit_percent` (the worth plus a
+fifth, up to 140 % for a heart's friend). A sale moves their opinion by 3 points, by 10 if it was
+needed, within the cap of the actions. **Left out:** the villager standing at the cart when the
+player is near (nobody is drawn), the line they may say about it, and the sale as a deed for the
+prompt (it needs a deed kind and the gossip rules to know it). Every villager of `data/barter.cfg`
+may buy, wherever they are in the village.
+
 **Built (step 12), as planned except:** the cart (`sales_cart`, 10 slots, `WorldObjectStall`) is a
 workbench recipe of 8 planks and 2 logs (woodworking 50; there is no wheel item), placed anywhere
 like a chest. E opens the `CartScreen`: [Put] puts the stack in hand on it, each stack has a price

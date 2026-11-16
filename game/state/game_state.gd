@@ -77,6 +77,8 @@ var activities: ActivityUpkeep
 var shops: Shops
 ## The quests the villagers have posted, and the player's list (see design/villagers/quests.md).
 var quests: Quests
+## The villagers buying at the player's sales carts as each day ends (see design/economy).
+var stall_sales: StallSales
 ## What the player did within sight of villagers.
 var deeds: DeedLog
 ## What the player takes, breaks and pushes that is a villager's (see Harm).
@@ -117,6 +119,7 @@ func _init(game_clock := GameClock.new()) -> void:
 	simulation = Simulation.new(clock)
 	shops = Shops.new(ShopRules.default_rules(), clock)
 	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, _the_world)
+	stall_sales = StallSales.new(clock, _the_game)
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
 	harm = Harm.new(npcs, homes, clock, deeds, _the_world)
@@ -935,6 +938,11 @@ func _tiles_kept_clear() -> Array:
 ## The world, for what is made before there is one (see `quests`).
 func _the_world() -> World:
 	return world
+
+
+## This game, for what the game owns and so must not hold (see `stall_sales`).
+func _the_game() -> GameState:
+	return self
 
 
 ## The player: a loaded game has a new one, which systems must not hold on to.

@@ -19,6 +19,20 @@ Schilling, the coin of the village, and in goods: the purse is in your bag.
 
 ![The stall in the rain, with Trienke behind the counter](../docs/screenshots/shop-rain.png)
 
+## Your own stall
+
+Build a **sales cart** at the workbench (8 planks and 2 logs, woodworking 50) and put it down
+anywhere, like a chest. Press E on it: **Put** puts the stack in your hand on the cart, `+` and `-`
+set a price for each stack (a whole number of Schilling, its worth to begin with), **Take back**
+returns it and **Take** empties the till into your purse. You get the whole price, where a shop pays
+60 percent.
+
+While you sleep or are away, the neighbours who need what you have come by on days without much rain:
+a few a day, more of them the better they know you, and they buy only at a price up to a fifth over
+what the thing is worth (a little more from friends). They like it, too: a sale is a little contact
+for friendship, and what a neighbour needed counts for more. The cart's own picture is the carved
+chest's for now.
+
 ## Trading
 
 - Stand by her while the shop is open and press E. The game stands still while you trade;
