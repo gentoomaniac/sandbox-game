@@ -2,7 +2,8 @@ class_name NoticeBoardScreen
 extends Modal
 ## The window of the notice board (E on it, see BoardNotices): the rough line of each quest posted
 ## and not taken yet, with whom to see, or "Nothing new on the board.". It gives no quest: the
-## villager does. E, Escape or the close button closes it.
+## villager does. E, Escape or the close button closes it. The lines scroll when the window has no
+## room for them.
 
 const TITLE_TEXT := "Notice board"
 const WIDTH := 280
@@ -25,7 +26,7 @@ func _init() -> void:
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", LINE_GAP)
 	column.add_child(_title_label)
-	column.add_child(_lines)
+	column.add_child(_scrolling(_lines))
 	_panel.add_child(column)
 
 
