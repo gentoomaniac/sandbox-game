@@ -411,55 +411,6 @@ const _OTHER_TYPES := {
 		"stack_limit": 5,
 		"places": WorldObjectTypes.SCARECROW,
 	},
-	ROAST_TURNIP:
-	{
-		"name": "Roast turnip",
-		"description": "A turnip roasted in the embers. Sweeter than raw.",
-		"weight": 0.4,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	POTTAGE:
-	{
-		"name": "Pottage",
-		"description": "Cabbage, carrot and onion stewed in the pot over the fire.",
-		"weight": 0.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	PEA_SOUP:
-	{
-		"name": "Pea soup",
-		"description": "Thick soup of peas and onion, the coast's daily fare.",
-		"weight": 0.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	BUCKWHEAT_PANCAKES:
-	{
-		"name": "Buckwheat pancakes",
-		"description": "Buckwheat ground and fried thin in the pan, the Geest's pancakes.",
-		"weight": 0.3,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	FLOUR:
-	{
-		"name": "Flour",
-		"description": "Grain ground in a hand quern. Bread needs it.",
-		"weight": 0.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	BREAD:
-	{
-		"name": "Bread",
-		"description": "A round loaf from the oven, the daily bread of the coast.",
-		"weight": 0.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	BERRY_TART:
-	{
-		"name": "Berry tart",
-		"description": "Berries baked in pastry, a treat for a feast day.",
-		"weight": 0.4,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
 	BONE:
 	{
 		"name": "Bone",
@@ -481,13 +432,6 @@ const _OTHER_TYPES := {
 		"weight": 1.0,
 		"stack_limit": 1,
 		"held_sheet": "lantern",
-	},
-	FEAST_CAKE:
-	{
-		"name": "Feast cake",
-		"description": "A tall cake with strawberries, baked for a wedding or the harvest feast.",
-		"weight": 0.8,
-		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 }
 
