@@ -69,7 +69,7 @@ func update(delta: float, is_screen_open: bool) -> void:
 		and PlayerRest.is_door_ahead(_state)
 	):
 		_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
-	_state.collect_ground_items(delta)
+	GroundPickup.collect(_state, delta)
 	_interior_view.cover_bed(_state.player.bed_lying_in)
 	_object_cover.cover(_state.player.bed_lying_in)
 	if PlayerRest.door_underfoot(_state):

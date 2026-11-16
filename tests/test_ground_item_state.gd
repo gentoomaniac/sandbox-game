@@ -9,14 +9,14 @@ const MARK := {"mark": 4}
 
 func _walk_frames(frames: int) -> void:
 	for _i in frames:
-		_state.collect_ground_items(FRAME)
+		GroundPickup.collect(_state, FRAME)
 
 
 func test_an_item_with_a_state_is_dropped_as_a_pile_of_its_own_and_picked_up_with_it() -> void:
 	var inventory := _state.player.inventory
 	inventory.slots[3] = {"item": ItemTypes.STONE, "count": 1, "state": MARK}
 
-	assert_true(_state.drop_from_inventory(3))
+	assert_true(GroundPickup.drop(_state, 3))
 
 	assert_true(inventory.slots[3].is_empty())
 	var piles := _world.ground_items.all()

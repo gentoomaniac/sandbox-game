@@ -1,7 +1,7 @@
 class_name GroundItem
 extends RefCounted
 ## A pile of one kind of item lying on the ground of a map. It blocks nothing; the player
-## collects it by walking over it (see GameState `collect_ground_items`).
+## collects it by walking over it (see GroundPickup `collect`).
 
 var item: StringName
 var count: int

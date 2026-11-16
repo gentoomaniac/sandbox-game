@@ -185,7 +185,7 @@ func test_collecting_a_pile_mid_hop_works_and_ends_its_hop() -> void:
 	# A dropped pile normally waits out its hop; the view must still cope if it goes early.
 	pile.settle_seconds = 0.0
 	_state.player.position = pile.position
-	_state.collect_ground_items(0.1)
+	GroundPickup.collect(_state, 0.1)
 	assert_true(_world.ground_items.all().is_empty(), "the state has collected it")
 	assert_true(_items._hops.is_empty())
 	assert_true(_items._sprites.is_empty())

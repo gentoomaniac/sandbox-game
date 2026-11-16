@@ -9,7 +9,7 @@ const SETTLE_FRAMES := 120
 
 func _walk_frames(frames: int) -> void:
 	for _i in frames:
-		_state.collect_ground_items(FRAME)
+		GroundPickup.collect(_state, FRAME)
 
 
 func _slot_with(item: StringName, count: int) -> int:
@@ -26,7 +26,7 @@ func test_a_dropped_stack_lies_on_the_floor_of_the_house_and_not_in_the_world() 
 	var interior := _enter_house()
 	var slot := _slot_with(ItemTypes.STONE, 6)
 
-	assert_true(_state.drop_from_inventory(slot))
+	assert_true(GroundPickup.drop(_state, slot))
 
 	assert_true(_state.player.inventory.slots[slot].is_empty())
 	assert_eq(interior.ground_items.count_of(ItemTypes.STONE), 6)
@@ -40,7 +40,7 @@ func test_the_piles_lie_on_free_floor_inside_the_room() -> void:
 		_state.player.position = Vector2(position) + Vector2(0.5, 0.5)
 		for facing in [Vector2i.UP, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.DOWN]:
 			_state.player.facing = facing
-			_state.drop_from_inventory(_slot_with(ItemTypes.STONE, 40))
+			GroundPickup.drop(_state, _slot_with(ItemTypes.STONE, 40))
 	assert_gt(interior.ground_items.all().size(), 4)
 	for pile in interior.ground_items.all():
 		var tile := Vector2i(pile.position.floor())
@@ -52,7 +52,7 @@ func test_the_piles_lie_on_free_floor_inside_the_room() -> void:
 
 func test_a_dropped_stack_is_picked_up_again_by_walking_away_and_back() -> void:
 	var interior := _enter_house()
-	_state.drop_from_inventory(_slot_with(ItemTypes.STONE, 1))
+	GroundPickup.drop(_state, _slot_with(ItemTypes.STONE, 1))
 	var pile: GroundItem = interior.ground_items.all()[0]
 	_state.player.position = pile.position
 	_walk_frames(SETTLE_FRAMES)
@@ -82,7 +82,7 @@ func test_a_pile_on_the_floor_is_pulled_to_the_player_and_collected() -> void:
 func test_piles_stay_on_the_floor_when_the_player_leaves_and_comes_back() -> void:
 	var house := _place_house()
 	var interior := _walk_in(house)
-	_state.drop_from_inventory(_slot_with(ItemTypes.STONE, 6))
+	GroundPickup.drop(_state, _slot_with(ItemTypes.STONE, 6))
 	var laid := _positions_of(interior)
 
 	_leave_house(interior)

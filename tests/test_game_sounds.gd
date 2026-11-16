@@ -104,7 +104,7 @@ func test_collecting_an_item_pops() -> void:
 	_world.drop_items(_tile, {ItemTypes.LOGS: 1})
 	_world.ground_items.all()[0].settle_seconds = 0.0
 	_state.player.position = _world.ground_items.all()[0].position
-	_state.collect_ground_items(0.1)
+	GroundPickup.collect(_state, 0.1)
 	assert_eq(_events, [&"item_pickup"])
 
 

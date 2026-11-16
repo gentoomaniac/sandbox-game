@@ -9,7 +9,7 @@ const SETTLE_FRAMES := 120
 
 func _walk_frames(frames: int) -> void:
 	for _i in frames:
-		_state.collect_ground_items(FRAME)
+		GroundPickup.collect(_state, FRAME)
 
 
 func _slot_with(item: StringName, count: int) -> int:
@@ -20,7 +20,7 @@ func _slot_with(item: StringName, count: int) -> int:
 
 func test_a_dropped_stack_lies_on_the_ground_in_front_of_the_player() -> void:
 	var slot := _slot_with(ItemTypes.STONE, 6)
-	assert_true(_state.drop_from_inventory(slot))
+	assert_true(GroundPickup.drop(_state, slot))
 	assert_true(_state.player.inventory.slots[slot].is_empty())
 	assert_eq(_world.ground_items.count_of(ItemTypes.STONE), 6)
 	for pile in _world.ground_items.all():
@@ -29,7 +29,7 @@ func test_a_dropped_stack_lies_on_the_ground_in_front_of_the_player() -> void:
 
 func test_a_dropped_stack_is_not_pulled_back_while_the_player_stands_there() -> void:
 	var slot := _slot_with(ItemTypes.STONE, 6)
-	_state.drop_from_inventory(slot)
+	GroundPickup.drop(_state, slot)
 	_walk_frames(SETTLE_FRAMES)
 	assert_eq(_world.ground_items.count_of(ItemTypes.STONE), 6)
 	assert_true(_state.player.inventory.slots[slot].is_empty())
@@ -37,7 +37,7 @@ func test_a_dropped_stack_is_not_pulled_back_while_the_player_stands_there() -> 
 
 func test_walking_away_and_back_picks_the_dropped_stack_up_again() -> void:
 	var slot := _slot_with(ItemTypes.STONE, 1)
-	_state.drop_from_inventory(slot)
+	GroundPickup.drop(_state, slot)
 	var pile: GroundItem = _world.ground_items.all()[0]
 	_state.player.position = pile.position + Vector2(0, -6)
 	_walk_frames(SETTLE_FRAMES)
@@ -49,13 +49,13 @@ func test_walking_away_and_back_picks_the_dropped_stack_up_again() -> void:
 
 func test_an_empty_slot_drops_nothing() -> void:
 	_state.player.inventory.slots[5] = {}
-	assert_false(_state.drop_from_inventory(5))
+	assert_false(GroundPickup.drop(_state, 5))
 	assert_true(_world.ground_items.all().is_empty())
 
 
 func test_dropping_from_a_slot_that_does_not_exist_does_nothing() -> void:
-	assert_false(_state.drop_from_inventory(-1))
-	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))
+	assert_false(GroundPickup.drop(_state, -1))
+	assert_false(GroundPickup.drop(_state, Inventory.SLOT_COUNT))
 
 
 func test_a_listener_of_the_inventory_sees_the_dropped_pile_already_on_the_ground() -> void:
@@ -69,14 +69,14 @@ func test_a_listener_of_the_inventory_sees_the_dropped_pile_already_on_the_groun
 			]
 		)
 	_state.player.inventory.changed.connect(look)
-	_state.drop_from_inventory(slot)
+	GroundPickup.drop(_state, slot)
 	_state.player.inventory.changed.disconnect(look)
 	assert_eq(seen, [[0, 6]])
 
 
 func test_a_listener_of_the_inventory_sees_the_picked_up_pile_already_gone() -> void:
 	var slot := _slot_with(ItemTypes.STONE, 4)
-	_state.drop_from_inventory(slot)
+	GroundPickup.drop(_state, slot)
 	var pile: GroundItem = _world.ground_items.all()[0]
 	_state.player.position = pile.position + Vector2(0, -6)
 	_walk_frames(SETTLE_FRAMES)

@@ -13,7 +13,7 @@ extends Modal
 ## on E; Escape is the Modal's).
 
 ## The player let go of a picked backpack or hotbar stack outside the screen (see GameState
-## `drop_from_inventory`).
+## GroundPickup `drop`).
 signal drop_requested(slot: int)
 
 const SLOT_GAP := 2

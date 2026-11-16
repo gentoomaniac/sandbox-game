@@ -368,7 +368,7 @@ func _connect_state_and_views() -> void:
 	_build_mode.message_changed.connect(_show_build_message)
 	_house_menu = HouseMenu.new(_house_dialog, _state.homes)
 	_build_mode.building_menu_requested.connect(_house_menu.open)
-	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
+	_bag_screen.drop_requested.connect(func(slot: int) -> void: GroundPickup.drop(_state, slot))
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
 	_use_swing = UseSwing.new(_state, _player_view)
@@ -533,7 +533,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _hotbar_keys.take(event):
 		pass
 	elif event.is_action_pressed("drop_item") and can_use:
-		_state.drop_from_inventory(_state.player.inventory.selected_slot)
+		GroundPickup.drop(_state, _state.player.inventory.selected_slot)
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():

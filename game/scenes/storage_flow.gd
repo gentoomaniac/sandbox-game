@@ -12,7 +12,7 @@ func _init(
 ) -> void:
 	screen = StorageScreen.new(hotbar)
 	add_child(screen)
-	screen.drop_requested.connect(state.drop_from_inventory)
+	screen.drop_requested.connect(func(slot: int) -> void: GroundPickup.drop(state, slot))
 	sounds.click_on_press_in(screen)
 	sounds.watch_panel(screen.is_open, &"chest_open", &"chest_close")
 	interactions.register(

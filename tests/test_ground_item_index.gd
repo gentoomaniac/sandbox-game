@@ -74,7 +74,7 @@ func test_a_pile_pulled_over_a_chunk_border_is_collected_and_unfiled() -> void:
 	var pile := GroundItem.new(ItemTypes.LOGS, 1, Vector2(SIZE - 0.6, 0.5))
 	state.world.ground_items.add(pile)
 	for _frame in 60:
-		state.collect_ground_items(FRAME)
+		GroundPickup.collect(state, FRAME)
 	assert_eq(state.player.inventory.count_of(ItemTypes.LOGS), 1)
 	assert_eq(state.world.ground_items.in_chunks_around(Vector2i(0, 0), 1).size(), 0)
 
@@ -85,7 +85,7 @@ func test_a_pile_in_a_far_chunk_is_neither_settled_nor_touched() -> void:
 	far.settle_seconds = 1.0
 	state.world.ground_items.add(far)
 	for _frame in 10:
-		state.collect_ground_items(FRAME)
+		GroundPickup.collect(state, FRAME)
 	assert_eq(far.settle_seconds, 1.0)
 
 
@@ -120,7 +120,7 @@ func test_a_partly_picked_up_pile_stays_filed() -> void:
 	var pile := GroundItem.new(ItemTypes.LOGS, 5, state.player.position + Vector2(0.1, 0))
 	state.world.ground_items.add(pile)
 	for _frame in 30:
-		state.collect_ground_items(FRAME)
+		GroundPickup.collect(state, FRAME)
 	assert_eq(pile.count, 4)
 	assert_eq(state.world.ground_items.near(pile.position, 0.5), [pile] as Array[GroundItem])
 	assert_eq(state.world.ground_items.all(), [pile] as Array[GroundItem])
@@ -138,6 +138,6 @@ func test_nothing_is_collected_inside_a_house_and_the_piles_stay_filed() -> void
 	PlayerRest.pass_door(state)
 	assert_true(state.is_inside())
 	for _frame in 30:
-		state.collect_ground_items(FRAME)
+		GroundPickup.collect(state, FRAME)
 	assert_eq(state.player.inventory.count_of(ItemTypes.LOGS), 0)
 	assert_eq(state.world.ground_items.near(pile.position, 0.5), [pile] as Array[GroundItem])

@@ -23,7 +23,7 @@ func _lay(item: StringName, count: int, offset: Vector2) -> GroundItem:
 
 func _walk_frames(frames: int) -> void:
 	for _i in frames:
-		_state.collect_ground_items(FRAME)
+		GroundPickup.collect(_state, FRAME)
 
 
 ## No free slot is left, not even the held one.
@@ -143,7 +143,7 @@ func test_walking_over_a_pile_collects_it() -> void:
 
 
 func test_a_pile_is_pulled_only_within_the_pull_radius() -> void:
-	var outside := GameState.PULL_RADIUS + 0.3
+	var outside := GroundPickup.PULL_RADIUS + 0.3
 	var far := _lay(ItemTypes.LOGS, 1, Vector2(outside, 0))
 	var near := _lay(ItemTypes.STONE, 1, Vector2(0, 0.4))
 	_walk_frames(1)

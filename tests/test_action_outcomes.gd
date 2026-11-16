@@ -71,7 +71,7 @@ func test_eating_and_dropping_tell_the_item() -> void:
 	assert_true(_state.eat_held())
 	_assert_one(ActionOutcome.EAT, _state.player.tile(), &"", {ItemTypes.BERRIES: 1})
 	_outcomes.clear()
-	assert_true(_state.drop_from_inventory(_state.player.inventory.selected_slot))
+	assert_true(GroundPickup.drop(_state, _state.player.inventory.selected_slot))
 	_assert_one(ActionOutcome.DROP, _state.player.facing_tile(), &"", {ItemTypes.BERRIES: 1})
 
 
@@ -80,7 +80,7 @@ func test_picking_up_tells_what_was_taken() -> void:
 	for pile in _world.ground_items.all():
 		pile.settle_seconds = 0.0
 		_state.player.position = pile.position
-		_state.collect_ground_items(0.1)
+		GroundPickup.collect(_state, 0.1)
 	var taken := 0
 	for outcome in _outcomes:
 		assert_eq(outcome.kind, ActionOutcome.PICK_UP)
@@ -192,7 +192,7 @@ func test_refusals_tell_nothing() -> void:
 	var campfire := _place_beside(WorldObjectTypes.FIREPLACE)
 	_state.player.inventory.add(ItemTypes.LOGS, 2)
 	assert_eq(Crafting.new(_state).craft(&"planks", campfire), Crafting.Result.WRONG_STATION)
-	assert_false(_state.drop_from_inventory(Inventory.SLOT_COUNT))
+	assert_false(GroundPickup.drop(_state, Inventory.SLOT_COUNT))
 	assert_eq(_outcomes, [] as Array[ActionOutcome])
 
 
@@ -204,6 +204,6 @@ func test_loading_a_game_tells_nothing() -> void:
 	var restored := _through_save()
 	var told: Array[ActionOutcome] = []
 	restored.action_done.connect(func(outcome: ActionOutcome) -> void: told.append(outcome))
-	restored.collect_ground_items(0.1)
+	GroundPickup.collect(restored, 0.1)
 	restored.travel.walk(restored, Vector2.ZERO, 0.1, 1.0)
 	assert_eq(told, [] as Array[ActionOutcome])

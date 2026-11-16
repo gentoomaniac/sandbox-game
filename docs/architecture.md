@@ -135,7 +135,7 @@ Warft and an Ewer here and there.
   did: who, the kind (till, plant, harvest, break, place, build, craft, eat, pick up ...), the
   tile on its map, the object type and the items with counts. GameState tells it once through
   `action_done`, after the action worked (`ToolUse`, `Builder`, `Crafting`, `eat_held`,
-  `drop_from_inventory`, `collect_ground_items`, `take_down_building`): never for a refusal and
+  `GroundPickup`'s `drop` and `collect`, `take_down_building`): never for a refusal and
   never for loading a game. Whoever reacts (the sounds, later the deed log of the gossip)
   listens to it; there is no global event bus. Low-level setters (`World.set_terrain`, console
   and debug commands) tell nothing.
@@ -351,7 +351,7 @@ Warft and an Ewer here and there.
   character and chest screens and is their quick bar: they take it in their constructor and
   listen to its slot views, and it passes clicks on to the game when none of them is open.
   A stack let go outside a screen reaches the world as `drop_requested`, which Main hands to
-  `GameState.drop_from_inventory`.
+  `GroundPickup.drop`.
 
 ## Data files and how to add content
 

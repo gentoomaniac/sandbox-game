@@ -120,12 +120,12 @@ func test_nothing_is_picked_up_on_horseback_until_the_rider_gets_off() -> void:
 	_state.travel.mount(_state, _horse)
 	var pile := GroundItem.new(ItemTypes.LOGS, 2, _state.player.position)
 	_state.world.ground_items.add(pile)
-	_state.collect_ground_items(1.0)
+	GroundPickup.collect(_state, 1.0)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 0, "not while riding")
 	_state.travel.dismount(_state)
 	# Off the horse the player stands beside it, out of the pile's reach: bring the pile over.
 	pile.position = _state.player.position
-	_state.collect_ground_items(1.0)
+	GroundPickup.collect(_state, 1.0)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.LOGS), 2)
 
 

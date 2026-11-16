@@ -14,7 +14,7 @@ extends HotbarWindow
 ## open beside the character window (see Modal `dock`).
 
 ## The player let go of the picked backpack or hotbar stack outside the screen (see
-## GameState `drop_from_inventory`).
+## GroundPickup `drop`).
 signal drop_requested(slot: int)
 
 const SLOT_GAP := 2

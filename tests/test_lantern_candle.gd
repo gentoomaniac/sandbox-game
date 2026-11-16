@@ -182,7 +182,7 @@ func test_a_lantern_and_a_burnt_candle_are_dropped_with_their_state_and_picked_u
 		wanted[slot] = _inventory.slots[slot].duplicate(true)
 	wanted[10] = _inventory.slots[10].duplicate(true)
 	for slot: int in wanted:
-		assert_true(_state.drop_from_inventory(slot), "slot %d" % slot)
+		assert_true(GroundPickup.drop(_state, slot), "slot %d" % slot)
 		assert_true(_inventory.slots[slot].is_empty())
 
 	var piles := _state.world.ground_items.all()
@@ -192,9 +192,9 @@ func test_a_lantern_and_a_burnt_candle_are_dropped_with_their_state_and_picked_u
 		pile.is_dropped_by_player = false
 		pile.settle_seconds = 0.0
 		pile.position = _state.player.position
-	_state.collect_ground_items(1.0 / 60.0)
+	GroundPickup.collect(_state, 1.0 / 60.0)
 	for _frame in 120:
-		_state.collect_ground_items(1.0 / 60.0)
+		GroundPickup.collect(_state, 1.0 / 60.0)
 
 	assert_eq(_state.world.ground_items.all().size(), 0)
 	var back := _inventory.slots.filter(
