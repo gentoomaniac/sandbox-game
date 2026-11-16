@@ -34,26 +34,26 @@ func _grass_tile() -> Vector2i:
 
 func test_a_path_is_drawn_muddy_in_the_rain_and_dry_again_after() -> void:
 	_view.world.set_wear_days(_tile, PathRules.default_rules().path_after_days())
-	assert_eq(_view._layer_at(_tile), TerrainTileset.Layer.PATH)
+	assert_eq(_view._terrain.layer_at(_tile), TerrainTileset.Layer.PATH)
 	_view.world.set_muddy(true)
-	assert_eq(_view._layer_at(_tile), TerrainTileset.Layer.MUDDY_PATH)
-	var muddy: TileMapLayer = _view._layers[TerrainTileset.Layer.MUDDY_PATH]
+	assert_eq(_view._terrain.layer_at(_tile), TerrainTileset.Layer.MUDDY_PATH)
+	var muddy: TileMapLayer = _view._terrain.layers[TerrainTileset.Layer.MUDDY_PATH]
 	assert_ne(muddy.get_cell_source_id(_tile), -1, "the cell is drawn")
 	_view.world.set_muddy(false)
-	assert_eq(_view._layer_at(_tile), TerrainTileset.Layer.PATH)
+	assert_eq(_view._terrain.layer_at(_tile), TerrainTileset.Layer.PATH)
 	assert_eq(muddy.get_cell_source_id(_tile), -1, "and gone")
 
 
 func test_trodden_grass_is_drawn_muddy_too() -> void:
 	_view.world.set_wear_days(_tile, PathRules.default_rules().trodden_after_days())
 	_view.world.set_muddy(true)
-	assert_eq(_view._layer_at(_tile), TerrainTileset.Layer.MUDDY_TRODDEN)
+	assert_eq(_view._terrain.layer_at(_tile), TerrainTileset.Layer.MUDDY_TRODDEN)
 
 
 func test_unworn_grass_is_not_muddy() -> void:
-	var layer: int = _view._layer_at(_tile)
+	var layer: int = _view._terrain.layer_at(_tile)
 	_view.world.set_muddy(true)
-	assert_eq(_view._layer_at(_tile), layer)
+	assert_eq(_view._terrain.layer_at(_tile), layer)
 
 
 func test_a_chunk_that_loads_in_the_rain_is_drawn_muddy() -> void:
@@ -62,4 +62,4 @@ func test_a_chunk_that_loads_in_the_rain_is_drawn_muddy() -> void:
 	_residency.unload_chunk(CHUNK)
 	_residency.load_chunk(CHUNK)
 	_view.finish_drawing()
-	assert_eq(_view._layer_at(_tile), TerrainTileset.Layer.MUDDY_PATH)
+	assert_eq(_view._terrain.layer_at(_tile), TerrainTileset.Layer.MUDDY_PATH)

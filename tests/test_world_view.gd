@@ -95,7 +95,7 @@ func _assert_drawn_with_fallback(cells: Array[Vector2i]) -> void:
 ## The atlas cell of each layer at `cell`, as drawn.
 func _drawn(cell: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
-	for tile_map in _view._layers:
+	for tile_map in _view._terrain.layers:
 		cells.append(tile_map.get_cell_atlas_coords(cell))
 	return cells
 
@@ -110,15 +110,15 @@ func _empty() -> Array[Vector2i]:
 ## What each layer should show at `cell`, worked out from the generator's terrain.
 func _expected(cell: Vector2i) -> Array[Vector2i]:
 	var corners := PackedInt32Array()
-	for offset in WorldView.CORNER_OFFSETS:
+	for offset in TerrainChunkView.CORNER_OFFSETS:
 		var tile := cell + offset
-		corners.append(_view._layer_of_tile(_generator.terrain_at(tile), tile))
+		corners.append(_view._terrain._layer_of_tile(_generator.terrain_at(tile), tile))
 	var cells := _empty()
 	var drawn := TerrainTileset.drawn_layers(corners)
 	for layer in TerrainTileset.LAYER_COUNT:
 		if drawn & (1 << layer):
 			var mask := TerrainTileset.mask_for(corners, layer)
-			cells[layer] = _view._tileset.atlas_cell(layer, mask, cell)
+			cells[layer] = _view._terrain.tileset.atlas_cell(layer, mask, cell)
 	return cells
 
 

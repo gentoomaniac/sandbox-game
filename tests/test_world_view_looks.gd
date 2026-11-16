@@ -42,9 +42,9 @@ func test_a_refresh_is_spread_over_frames() -> void:
 		_residency.load_chunk(coords)
 		_view.finish_drawing()
 	_view.refresh_looks(WINTER)
-	assert_eq(_view._refresh_queue.size(), 3)
+	assert_eq(_view._terrain._refresh_queue.size(), 3)
 	_view.finish_refresh()
-	assert_true(_view._refresh_queue.is_empty())
+	assert_true(_view._terrain._refresh_queue.is_empty())
 
 
 func test_an_oak_is_in_leaf_or_bare_by_the_season() -> void:

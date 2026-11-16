@@ -29,7 +29,7 @@ func _set_day(day: int) -> void:
 ## column of cells beyond them), as {layer node name: {cell: [source, atlas coords]}}.
 func _drawn() -> Dictionary:
 	var drawn := {}
-	for layer in _view._layers:
+	for layer in _view._terrain.layers:
 		var cells := {}
 		for cell in layer.get_used_cells():
 			cells[cell] = [layer.get_cell_source_id(cell), layer.get_cell_atlas_coords(cell)]
@@ -43,7 +43,7 @@ func _redraw_everything() -> void:
 		var origin := Chunk.to_world(coords, Vector2i.ZERO)
 		for y in Chunk.CHUNK_SIZE:
 			for x in Chunk.CHUNK_SIZE:
-				_view._redraw_cell(origin + Vector2i(x, y))
+				_view._terrain._redraw_cell(origin + Vector2i(x, y))
 
 
 func _assert_matches_full_redraw(message: String) -> void:
@@ -63,8 +63,8 @@ func _assert_matches_full_redraw(message: String) -> void:
 
 
 func _refresh_one_chunk() -> void:
-	if not _view._refresh_queue.is_empty():
-		_view._refresh_chunk(_view._refresh_queue.pop_back())
+	if not _view._terrain._refresh_queue.is_empty():
+		_view._terrain._refresh_chunk(_view._terrain._refresh_queue.pop_back())
 
 
 func test_loading_in_any_order_matches_a_full_redraw() -> void:
@@ -104,7 +104,7 @@ func test_chunks_loading_between_refresh_steps_match_a_full_redraw() -> void:
 
 func test_unloading_a_chunk_erases_every_layer_in_it() -> void:
 	var layers: Array[TileMapLayer] = []
-	layers.append_array(_view._layers)
+	layers.append_array(_view._terrain.layers)
 	var first := Chunk.to_world(CHUNKS[0], Vector2i.ZERO)
 	var area := Rect2i(first, Vector2i.ONE * Chunk.CHUNK_SIZE)
 	for day: int in DAYS:

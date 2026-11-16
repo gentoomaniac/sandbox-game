@@ -190,15 +190,19 @@ Warft and an Ewer here and there.
   Which chunks are loaded is not its business: a `ChunkResidency` (`game/world/chunk_residency.gd`,
   made by Main, no nodes) follows the player's tile, plans with `ChunkStreaming`, generates the
   nearest missing chunk and drops the far ones, and tells by `chunk_loaded` and `chunk_unloaded`.
-  WorldView draws what is loaded (a chunk a few rows of cells at a time within a per-frame time
-  budget, so no frame holds a whole chunk's drawing; Main lets the residency load the next one
-  when the view has drawn the last) and erases what is dropped; it also draws
-  terrain, objects, falling trees and the see-through effect; it owns two small views,
-  `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView` (flowers,
-  pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
+  WorldView is the composition and the invalidation boundary: it follows the world's and the
+  residency's signals, spends the one budget of a frame (the ground's chunk drawing, then the look
+  refresh in frames without drawing; it reports `is_settled`) and erases what is dropped. The
+  ground is `TerrainChunkView`: the terrain layers, the terrain layer of each tile of a loaded
+  chunk, the queues of chunks to draw (a chunk a few rows of cells at a time, so no frame holds a
+  whole chunk's drawing; Main lets the residency load the next one when the view has drawn the
+  last) and to refresh, and the `CoverMap`. It does not tick by itself: WorldView's `_process` calls
+  it. WorldView also draws objects, falling trees and the see-through effect, and owns two small
+  views, `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView`
+  (flowers, pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
   (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
   `Vegetation`; nothing about them is saved. The ground is drawn in the summer look only, from
-  one terrain layer per tile (`TerrainTileset.Layer`, kept per chunk in WorldView); the colour of
+  one terrain layer per tile (`TerrainTileset.Layer`, kept per chunk in `TerrainChunkView`); the colour of
   the season and the leaves, frost and snow over it come from the ground shader (`GroundLook`,
   `ground.gdshader`) with the weather as global shader parameters and a ring texture of what each
   tile catches (`CoverMap`, from the pure `GroundCover`), so a change of weather costs no

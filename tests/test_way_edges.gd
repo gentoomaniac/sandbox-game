@@ -106,11 +106,11 @@ func test_a_chunk_that_loads_beside_a_way_draws_the_edge_on_its_border() -> void
 	east.add_object(WorldObject.new(WorldObjectTypes.STONE_PATH, Vector2i(Chunk.CHUNK_SIZE, 5)))
 	_world.remove_chunk(Vector2i.ZERO)
 	_world.add_chunk(east)
-	_view._draw_chunk(east)
+	_view._terrain.draw_chunk(east)
 	assert_eq(_edge_at(Vector2i(Chunk.CHUNK_SIZE - 1, 5)), -1, "its chunk is not loaded")
 	var west := Chunk.new(Vector2i.ZERO)
 	_world.add_chunk(west)
-	_view._draw_chunk(west)
+	_view._terrain.draw_chunk(west)
 	assert_eq(_edge_at(Vector2i(Chunk.CHUNK_SIZE - 1, 5)), EAST)
 
 

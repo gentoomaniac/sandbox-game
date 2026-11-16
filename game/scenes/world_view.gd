@@ -29,32 +29,13 @@ signal tree_felled(tile: Vector2i, seconds: float)
 ## A felled tree hit the ground (where the sound of it belongs). `tree` is the object it was.
 signal tree_landed(tree: WorldObject)
 
-## How long a frame may spend bringing the looks up to date after they changed. Scanning a
-## chunk takes about 1 ms, redrawing the cells of one whose tiles all changed about 10 ms, so
-## the work is cut into cells.
-const REFRESH_BUDGET_USEC := 3000
 ## The lower part of a tree's canopy, as a share of its picture's height above the picture's
 ## bottom: what falls from there passes the trunk and shows against the ground.
 const CANOPY_HEIGHT_SHARE := 0.45
-## Drawing a chunk takes about 45 ms: it is cut into steps (a row of cells, the objects, the
-## borders) that a frame runs until it has spent this long. The next chunk is loaded when the one
-## before is drawn (Main asks `is_drawing`); the look refresh waits for frames without drawing
-## (see `_process`). The chunks load well ahead of the view, so the world around the player is
-## drawn long before they get there.
-const DRAW_BUDGET_USEC := 8000
-## The budget while a chunk next to the player's is still undrawn (at the start, after a jump
-## to another place): it is on the screen, so it is drawn sooner, at the cost of longer frames.
-const URGENT_DRAW_BUDGET_USEC := 16000
 ## An object state (see `_object_states`) for a plant that is dormant and not drawn.
 const DORMANT := -1
 ## Added to an object state for a bush that is out of its fruit season.
 const BARE_OF_FRUIT_FLAG := 16
-
-## The 4 corner tiles of a cell, in mask order: top-left, top-right, bottom-left,
-## bottom-right.
-const CORNER_OFFSETS: Array[Vector2i] = [
-	Vector2i(-1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 0)
-]
 
 ## The tiles whose line objects may look different once an object on a tile changes: those beside
 ## it, and for a line that slants (see LineSlants) the others up to two steps away.
@@ -73,26 +54,6 @@ const _LINE_REDRAW_OFFSETS: Array[Vector2i] = [
 	Vector2i(-2, 0),
 ]
 
-## Visual-only noise, seeded from the world seed with an offset far from the generator's.
-## Variety: grass turns lush or dry over patches about this many tiles across.
-const VARIETY_SEED_OFFSET := 7919
-const VARIETY_FREQUENCY := 0.008
-
-
-## A chunk that is loaded and is being drawn, a step per call of `_draw_chunk_step`.
-class ChunkDrawing:
-	extends RefCounted
-	var chunk: Chunk
-	## 0 is the layers of the tiles, then a step for each row of cells, the objects, the borders.
-	var step := 0
-
-	func _init(chunk_to_draw: Chunk) -> void:
-		chunk = chunk_to_draw
-
-	func is_done() -> bool:
-		return step > Chunk.CHUNK_SIZE + 2
-
-
 var world: World
 ## Y-sorted: whatever is added here is drawn in front of or behind the objects by its y.
 var entities := Node2D.new()
@@ -110,11 +71,8 @@ var decorations: DecorationView
 var _residency: ChunkResidency
 var _hit_particles := HitParticles.new()
 var _falling_leaves := FallingLeaves.new()
-var _variety_noise := FastNoiseLite.new()
-var _tileset := TerrainTileset.new(ambient_motion)
+var _terrain: TerrainChunkView
 var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
-## Indexed by TerrainTileset.Layer.
-var _layers: Array[TileMapLayer] = []
 var _soil_wetness := SoilWetness.new()
 var _footprint_view := FootprintView.new()
 var _flood_overlay := FloodOverlay.new(ambient_motion.flood)
@@ -127,29 +85,11 @@ var _light_strength := 1.0
 var _blend: SeasonBlend
 ## The colour of the ground and what lies on it (see GroundLook and CoverMap).
 var _ground_look: GroundLook
-var _cover_map := CoverMap.new()
-## The focus chunk that the cover map was drawn for (once it has one), and whether a chunk may
-## be waiting there.
-var _cover_focus := Vector2i.ZERO
-var _is_cover_focused := false
-var _is_cover_missing := false
 ## The day that the decorations, plants and houses are drawn for.
 var _look_day := -1
 var _conditions: SeasonBlend.Conditions
 ## The look of the turf objects (the dyke): the ground's, the same for all of them.
 var _turf_look: SeasonBlend.Look
-## The terrain layer of each tile of a loaded chunk (see TerrainTileset.Layer), by tile index
-## (local y * CHUNK_SIZE + x). It comes from the variety noise, the slowest part of drawing a cell.
-var _chunk_layers: Dictionary[Vector2i, PackedInt32Array] = {}
-## The tiles with something that gives shade or shelter on them, to tell a change that reaches the
-## cover from one that does not.
-var _crown_tiles: Dictionary[Vector2i, bool] = {}
-## The chunk that is loaded and being drawn, if any.
-var _drawing: ChunkDrawing
-## The loaded chunks that wait to be drawn, the oldest first.
-var _to_draw: Array[Chunk] = []
-## Chunks whose plants are not brought up to date yet, the nearest to the focus last.
-var _refresh_queue: Array[Vector2i] = []
 ## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
 ## showed as bare of fruit, or DORMANT if it was not drawn.
 var _object_states: Dictionary[Vector2i, int] = {}
@@ -164,26 +104,15 @@ var _buildings := BuildingViews.new(entities)
 
 
 func _init() -> void:
-	decorations = DecorationView.new(_tileset)
 	_ground_look = GroundLook.new(ambient_motion.decoration_sway, ambient_motion.ford)
+	_terrain = TerrainChunkView.new(ambient_motion, _ground_look)
+	decorations = DecorationView.new(_terrain.tileset)
 	decorations.show_ground_look(_ground_look)
 
 
 func _ready() -> void:
 	add_to_group(ArtSet.VIEWS)
-	for layer in TerrainTileset.LAYER_COUNT:
-		var tile_map := TileMapLayer.new()
-		tile_map.name = TerrainTileset.Layer.keys()[layer].capitalize()
-		tile_map.tile_set = _tileset.tile_set
-		tile_map.position = -Vector2(TerrainTileset.TILE_SIZE, TerrainTileset.TILE_SIZE) / 2
-		add_child(tile_map)
-		_layers.append(tile_map)
-	for layer in TerrainTileset.LAYER_COUNT:
-		_layers[layer].material = _ground_look.terrain
-	_layers[TerrainTileset.Layer.WATER].material = ambient_motion.water
-	_layers[TerrainTileset.Layer.FORD].material = ambient_motion.ford
-	_layers[TerrainTileset.Layer.MUD].material = ambient_motion.mud
-	_layers[TerrainTileset.Layer.SOIL].material = _ground_look.soil
+	add_child(_terrain)
 	# Wet soil lies right over the soil terrain, and clears where snow lies on it.
 	_soil_wetness.show_ground_look(_ground_look)
 	add_child(_soil_wetness)
@@ -209,12 +138,11 @@ func _ready() -> void:
 ## Shows the ground, the objects and the crops, the campfires' flames and the buildings in the
 ## chosen art set (see ArtSet).
 func show_art_set() -> void:
-	_tileset.show_art_set()
+	_terrain.show_art_set()
 	_object_tileset.show_art_set()
 	_soil_wetness.show_art_set()
 	ambient_motion.show_art_set()
 	_ground_look.show_art_set()
-	_cover_map.show_art_set()
 	_buildings.show_art_set()
 
 
@@ -234,22 +162,22 @@ func show_world(residency: ChunkResidency) -> void:
 	_way_edges.show_world(world, _look_at)
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
-	_cover_map.show_world(world)
-	decorations.cover_map = _cover_map
+	_terrain.show_world(residency, decorations, _way_edges)
+	_terrain.objects_due.connect(_draw_objects_of)
+	_terrain.chunk_refreshed.connect(_refresh_objects_of)
+	decorations.cover_map = _terrain.cover_map
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world)
-	_footprint_view.show_world(world, _cover_map.ground_cover.is_snowed)
+	_footprint_view.show_world(world, _terrain.cover_map.ground_cover.is_snowed)
 	_flood_overlay.show_world(world, residency)
 	world.building_placed.connect(_buildings.add)
 	world.building_placed.connect(_on_building_changed)
 	world.building_removed.connect(_buildings.remove)
 	world.building_removed.connect(_on_building_changed)
 	world.bell_rung.connect(_buildings.swing_bell)
-	residency.chunk_loaded.connect(_on_chunk_loaded)
+	residency.chunk_loaded.connect(_terrain.on_chunk_loaded)
 	residency.chunk_unloaded.connect(_on_chunk_unloaded)
-	_variety_noise.seed = world.world_seed + VARIETY_SEED_OFFSET
-	_variety_noise.frequency = VARIETY_FREQUENCY
 	decorations.show_world(world)
 	_blend = SeasonBlend.new(world.world_seed)
 	decorations.day = world.clock.day
@@ -258,9 +186,9 @@ func show_world(residency: ChunkResidency) -> void:
 	_turf_look = _blend.turf_look(decorations.day)
 	_buildings.set_looks(_blend, _conditions)
 	show_ground_cover(decorations.day, 0.0, 0.0, 0.0)
-	_sync_cover_focus()
+	_terrain.sync_cover_focus()
 	for coords in world.loaded_chunk_coords():
-		_draw_chunk(world.chunk_at(coords))
+		_terrain.draw_chunk(world.chunk_at(coords))
 	for building in world.buildings():
 		_buildings.add(building)
 
@@ -271,7 +199,7 @@ func show_world(residency: ChunkResidency) -> void:
 ## melts evenly.
 func show_ground_cover(day: int, snow_cover: float, thaw: float, frost: float) -> void:
 	_ground_look.show_mix(_blend.ground_mix(day))
-	_cover_map.set_weather(_blend.litter(day), snow_cover, thaw, frost)
+	_terrain.cover_map.set_weather(_blend.litter(day), snow_cover, thaw, frost)
 
 
 ## Sets the day that the decorations, plants and houses are drawn for, which changes the season's
@@ -285,12 +213,7 @@ func refresh_looks(day: int) -> void:
 	decorations.day = day
 	_conditions = _blend.conditions(day)
 	_turf_look = _blend.turf_look(day)
-	_refresh_queue.assign(world.loaded_chunk_coords())
-	var focus := _residency.focus_chunk
-	_refresh_queue.sort_custom(
-		func(a: Vector2i, b: Vector2i) -> bool:
-			return (a - focus).length_squared() > (b - focus).length_squared()
-	)
+	_terrain.queue_refresh()
 	_buildings.set_looks(_blend, _conditions)
 
 
@@ -301,19 +224,22 @@ func building_picture(building: Building) -> String:
 
 ## Whether a loaded chunk is not drawn yet.
 func is_drawing() -> bool:
-	return _drawing != null
+	return _terrain.is_drawing()
 
 
 ## Draws the chunks that are loaded and not drawn yet, at once (for tests).
 func finish_drawing() -> void:
-	while is_drawing():
-		_draw_next_step()
+	_terrain.finish_drawing()
 
 
 ## Brings every queued chunk up to date at once (for tests).
 func finish_refresh() -> void:
-	while not _refresh_queue.is_empty():
-		_refresh_chunk(_refresh_queue.pop_back())
+	_terrain.finish_refresh()
+
+
+## Redraws one tile after its state changed. World's `tile_changed` calls it.
+func redraw_tile(world_pos: Vector2i) -> void:
+	_terrain.redraw_tile(world_pos)
 
 
 ## How brightly the lights shine now (see ObjectLight.strength).
@@ -348,37 +274,16 @@ func refresh_soil(last_hour_rain: float) -> void:
 func _process(delta: float) -> void:
 	if world == null:
 		return
-	_sync_cover_focus()
-	_draw_within_budget()
-	_draw_missing_cover()
-	_cover_map.upload()
+	_terrain.draw_within_budget()
 	# Loading and drawing fill most of a frame, so the look refresh only runs in frames without.
-	var is_drawn := _residency.is_complete and not is_drawing()
+	var is_drawn := _residency.is_complete and not _terrain.is_drawing()
 	if is_drawn:
-		var deadline := Time.get_ticks_usec() + REFRESH_BUDGET_USEC
-		while Time.get_ticks_usec() < deadline and not _refresh_queue.is_empty():
-			_refresh_chunk(_refresh_queue.pop_back())
-	is_settled = is_drawn and _refresh_queue.is_empty()
+		_terrain.refresh_within_budget()
+	is_settled = is_drawn and not _terrain.has_refresh_pending()
 	_update_see_through(delta)
 	_sway_scarecrows()
 	_update_falling_trees(delta)
 	_shed_leaves(delta)
-
-
-## Redraws one tile after its state changed. World's `tile_changed` calls it.
-func redraw_tile(world_pos: Vector2i) -> void:
-	var layers: PackedInt32Array = _chunk_layers.get(Chunk.world_to_chunk(world_pos), [])
-	if not layers.is_empty():
-		var local := Chunk.local_pos(world_pos)
-		var terrain := world.chunk_at(Chunk.world_to_chunk(world_pos)).terrain_at(local)
-		layers[_tile_index(local)] = _layer_of_tile(terrain, world_pos)
-		_cover_map.redraw_tile(world_pos)
-	# The tile is a corner of the 4 cells around it.
-	for offset: Vector2i in CORNER_OFFSETS:
-		_redraw_cell(world_pos - offset)
-	if world.is_chunk_loaded(Chunk.world_to_chunk(world_pos)):
-		decorations.redraw(world_pos, _layer_at(world_pos))
-	_way_edges.draw(world_pos)
 
 
 ## Called for every tile an object covers; it is drawn from its own tile only.
@@ -387,17 +292,11 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 	if object == null or object.pos == world_pos:
 		_drop_object_sprite(world_pos)
 		_draw_object(world_pos)
-	decorations.redraw(world_pos, _layer_at(world_pos))
+	decorations.redraw(world_pos, _terrain.layer_at(world_pos))
 	# A way laid or taken up changes the edges of the free tiles beside it.
 	if object == null or object.type_data().has("way"):
 		_way_edges.draw_around(world_pos)
-	var is_crown := object != null and object.type in GroundCover.CROWNED
-	if is_crown != _crown_tiles.has(world_pos):
-		if is_crown:
-			_crown_tiles[world_pos] = true
-		else:
-			_crown_tiles.erase(world_pos)
-		_cover_map.redraw_around(world_pos)
+	_terrain.update_crown(world_pos, object != null and object.type in GroundCover.CROWNED)
 	# The lines beside it may join it now, or no longer; a line that slants also turns on the
 	# slant or straight again two tiles away (see LineSlants).
 	for offset in _LINE_REDRAW_OFFSETS:
@@ -415,11 +314,11 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 ## A house was put up or taken down: its lee changes what lies behind it.
 func _on_building_changed(building: Building) -> void:
 	for tile in building.tiles():
-		_cover_map.redraw_around(tile)
+		_terrain.cover_map.redraw_around(tile)
 
 
 func _on_clay_spot_changed(world_pos: Vector2i) -> void:
-	decorations.redraw(world_pos, _layer_at(world_pos))
+	decorations.redraw(world_pos, _terrain.layer_at(world_pos))
 
 
 ## A tool hit an object: what it leaves, if any, shakes (a stump, after the last hit), and
@@ -472,186 +371,32 @@ func _shake_object(object: WorldObject) -> void:
 	_object_sprites[object.pos].shake()
 
 
-## Runs the steps of the drawing, one at least, until the budget of the frame is spent.
-func _draw_within_budget() -> void:
-	if _drawing == null:
-		return
-	var offset := (_drawing.chunk.coords - _residency.focus_chunk).abs()
-	var is_urgent := maxi(offset.x, offset.y) <= 1
-	var budget := URGENT_DRAW_BUDGET_USEC if is_urgent else DRAW_BUDGET_USEC
-	var deadline := Time.get_ticks_usec() + budget
-	_draw_next_step()
-	while is_drawing() and Time.get_ticks_usec() < deadline:
-		_draw_next_step()
-
-
-## Does the next step of the drawing.
-func _draw_next_step() -> void:
-	_draw_chunk_step(_drawing)
-	if _drawing.is_done():
-		_drawing = _next_drawing()
-
-
-## Draws a whole chunk at once.
-func _draw_chunk(chunk: Chunk) -> void:
-	var drawing := ChunkDrawing.new(chunk)
-	while not drawing.is_done():
-		_draw_chunk_step(drawing)
-
-
-## Does the next step of drawing a chunk. The cells read the tiles' looks as they are when
-## their row is drawn, as the world can change between the steps.
-func _draw_chunk_step(drawing: ChunkDrawing) -> void:
-	var chunk := drawing.chunk
-	var coords := chunk.coords
-	var origin := Chunk.to_world(coords, Vector2i.ZERO)
-	if drawing.step == 0:
-		_chunk_layers[coords] = _make_chunk_layers(chunk)
-		_refresh_queue.erase(coords)
-		_cover_map.draw_chunk(coords)
-		for object in chunk.objects():
-			if object.type in GroundCover.CROWNED:
-				for tile in object.tiles():
-					_crown_tiles[tile] = true
-	elif drawing.step <= Chunk.CHUNK_SIZE:
-		_draw_row(drawing, drawing.step - 1)
-	elif drawing.step == Chunk.CHUNK_SIZE + 1:
-		for object in chunk.objects():
-			_draw_object(object.pos)
-		_way_edges.draw_chunk(chunk)
-	else:
-		# The right and bottom neighbours' border cells drew this chunk's tiles with a fallback
-		# while it was missing. Now they can blend properly.
-		for i in Chunk.CHUNK_SIZE + 1:
-			_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
-		for i in Chunk.CHUNK_SIZE:
-			_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
-	drawing.step += 1
-
-
-## Draws the cells of row `y` of a chunk (and their decorations).
-func _draw_row(drawing: ChunkDrawing, y: int) -> void:
-	var origin := Chunk.to_world(drawing.chunk.coords, Vector2i.ZERO)
-	var layers: PackedInt32Array = _chunk_layers[drawing.chunk.coords]
-	# The corners of the row's cells: the layers of the row above and of this row, starting one
-	# column to the left. Reading them once, mostly straight from the chunk, is several times
-	# faster than looking up 4 corners per cell through the world.
-	var above := _layer_row(layers, origin, y - 1)
-	var below := _layer_row(layers, origin, y)
-	for x in Chunk.CHUNK_SIZE:
-		var corners := PackedInt32Array([above[x], above[x + 1], below[x], below[x + 1]])
-		var pos := origin + Vector2i(x, y)
-		_draw_cell_corners(pos, corners, true)
-		# The bottom-right corner is this chunk's tile (x, y).
-		decorations.place(pos, corners[3], world.object_at(pos) != null)
-
-
-## The layers of the tiles of row `y` of a chunk, from the column left of it to its last.
-func _layer_row(layers: PackedInt32Array, origin: Vector2i, y: int) -> PackedInt32Array:
-	var row := PackedInt32Array()
-	row.resize(Chunk.CHUNK_SIZE + 1)
-	for x in range(-1, Chunk.CHUNK_SIZE):
-		if x < 0 or y < 0:
-			row[x + 1] = _layer_at(origin + Vector2i(x, y))
-		else:
-			row[x + 1] = layers[_tile_index(Vector2i(x, y))]
-	return row
-
-
-## The terrain layer of each tile of a chunk.
-func _make_chunk_layers(chunk: Chunk) -> PackedInt32Array:
-	var layers := PackedInt32Array()
-	layers.resize(Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE)
-	var origin := Chunk.to_world(chunk.coords, Vector2i.ZERO)
-	for y in Chunk.CHUNK_SIZE:
-		for x in Chunk.CHUNK_SIZE:
-			layers[_tile_index(Vector2i(x, y))] = _layer_of_tile(
-				chunk.terrain_at(Vector2i(x, y)), origin + Vector2i(x, y)
-			)
-	return layers
-
-
-## Brings a loaded chunk up to date with the day, the snow cover and the frost: redraws the
-## decorations and the plants that changed.
-func _refresh_chunk(coords: Vector2i) -> void:
-	var chunk := world.chunk_at(coords)
-	if chunk == null or not _chunk_layers.has(coords):
-		return
-	var origin := Chunk.to_world(coords, Vector2i.ZERO)
-	for index in Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE:
-		decorations.refresh(origin + Vector2i(index % Chunk.CHUNK_SIZE, index / Chunk.CHUNK_SIZE))
-	_way_edges.refresh_chunk(coords)
-	for object in chunk.objects():
-		if _object_states.get(object.pos, DORMANT) != _object_state(object):
-			_on_objects_changed(object.pos)
-
-
-## The drawing of the oldest chunk that waits, or null if none does.
-func _next_drawing() -> ChunkDrawing:
-	return null if _to_draw.is_empty() else ChunkDrawing.new(_to_draw.pop_front())
-
-
-func _on_chunk_loaded(chunk: Chunk) -> void:
-	if _drawing == null:
-		_drawing = ChunkDrawing.new(chunk)
-	else:
-		_to_draw.append(chunk)
-
-
 ## Erases a chunk that was dropped from the world.
 func _on_chunk_unloaded(chunk: Chunk) -> void:
-	var coords := chunk.coords
-	if _drawing != null and _drawing.chunk == chunk:
-		_drawing = _next_drawing()
-	_to_draw.erase(chunk)
 	for object in chunk.objects():
 		_drop_object_sprite(object.pos)
 		_objects.erase_cell(object.pos)
 		_object_states.erase(object.pos)
 		_remove_light(object.pos)
-	var origin := Chunk.to_world(coords, Vector2i.ZERO)
-	_chunk_layers.erase(coords)
-	_refresh_queue.erase(coords)
-	_cover_map.forget_chunk(coords)
-	_footprint_view.forget_chunk(coords)
-	_way_edges.forget_chunk(coords)
-	for y in Chunk.CHUNK_SIZE:
-		for x in Chunk.CHUNK_SIZE:
-			for tile_map in _layers:
-				tile_map.erase_cell(origin + Vector2i(x, y))
-			decorations.forget(origin + Vector2i(x, y))
-			_crown_tiles.erase(origin + Vector2i(x, y))
+	_terrain.forget_chunk(chunk)
+	_footprint_view.forget_chunk(chunk.coords)
+	_way_edges.forget_chunk(chunk.coords)
 	for fall in _falling_trees.duplicate():
-		if Chunk.world_to_chunk(fall.tree.pos) == coords:
+		if Chunk.world_to_chunk(fall.tree.pos) == chunk.coords:
 			_end_fall(fall)
 
 
-## Redraws the terrain layers of a cell if the chunk that owns it is loaded.
-func _redraw_cell(cell: Vector2i) -> void:
-	if not world.is_chunk_loaded(Chunk.world_to_chunk(cell)):
-		return
-	var corners := PackedInt32Array()
-	for offset: Vector2i in CORNER_OFFSETS:
-		corners.append(_layer_at(cell + offset))
-	_draw_cell_corners(cell, corners)
+## Draws the objects of a chunk that is being drawn.
+func _draw_objects_of(chunk: Chunk) -> void:
+	for object in chunk.objects():
+		_draw_object(object.pos)
 
 
-## The one place tile state becomes terrain: the layers of a cell's 4 corner tiles (in
-## CORNER_OFFSETS order, MISSING where not loaded) decide which layers it draws and with which
-## shapes. A cell `is_new` when its chunk was just loaded: it is empty, so nothing needs erasing,
-## which saves a good part of a chunk load. The colour of the season and the leaves, frost and
-## snow come from the ground shader, not from the cells (see GroundLook).
-func _draw_cell_corners(cell: Vector2i, corners: PackedInt32Array, is_new := false) -> void:
-	TerrainTileset.fill_missing_corners(corners)
-	var drawn := TerrainTileset.drawn_layers(corners)
-	for layer in TerrainTileset.LAYER_COUNT:
-		if drawn & (1 << layer) == 0:
-			if not is_new:
-				_layers[layer].erase_cell(cell)
-		else:
-			var mask := TerrainTileset.mask_for(corners, layer)
-			var atlas_cell := _tileset.atlas_cell(layer, mask, cell)
-			_layers[layer].set_cell(cell, TerrainTileset.TERRAIN_SOURCE_ID, atlas_cell)
+## Draws again the objects of a refreshed chunk whose look changed.
+func _refresh_objects_of(chunk: Chunk) -> void:
+	for object in chunk.objects():
+		if _object_states.get(object.pos, DORMANT) != _object_state(object):
+			_on_objects_changed(object.pos)
 
 
 func _draw_object(world_pos: Vector2i) -> void:
@@ -825,21 +570,9 @@ func _drop_object_sprite(world_pos: Vector2i) -> void:
 		sprite.queue_free()
 
 
-## The terrain layer of a tile, or TerrainTileset.MISSING if its chunk is not loaded.
-func _layer_at(world_pos: Vector2i) -> int:
-	var layers: PackedInt32Array = _chunk_layers.get(Chunk.world_to_chunk(world_pos), [])
-	if layers.is_empty():
-		return TerrainTileset.MISSING
-	return layers[_tile_index(Chunk.local_pos(world_pos))]
-
-
-static func _tile_index(local: Vector2i) -> int:
-	return local.y * Chunk.CHUNK_SIZE + local.x
-
-
 ## Whether snow lies on most of a tile now (what hit effects ask).
 func is_snowed_over(world_pos: Vector2i) -> bool:
-	return world != null and _cover_map.ground_cover.is_snowed(world_pos)
+	return world != null and _terrain.cover_map.ground_cover.is_snowed(world_pos)
 
 
 ## Whether snow lies on the ground under a point of the world, `position` in tiles, now.
@@ -851,32 +584,7 @@ func is_snow_drawn_at(position: Vector2) -> bool:
 ## once the ground is shown for it: `func(world_pos: Vector2i) -> bool`.
 func snow_checker_for(snow_cover: float) -> Callable:
 	return func(world_pos: Vector2i) -> bool:
-		return _cover_map.ground_cover.is_snowed_with(world_pos, snow_cover, 0.0)
-
-
-## Moves the focus of the cover map with the residency's. A chunk that waits for it is drawn by
-## `_draw_missing_cover`.
-func _sync_cover_focus() -> void:
-	if _residency.focus_chunk != _cover_focus or not _is_cover_focused:
-		_cover_focus = _residency.focus_chunk
-		_is_cover_focused = true
-		_cover_map.set_focus(_cover_focus)
-		_is_cover_missing = true
-
-
-## Draws the chunks of the cover map that came into range as the player walked, one a frame.
-func _draw_missing_cover() -> void:
-	if _is_cover_missing:
-		_is_cover_missing = _cover_map.draw_missing()
-
-
-func _layer_of_tile(terrain: Tile.Terrain, world_pos: Vector2i) -> int:
-	var variety := _variety_noise.get_noise_2dv(Vector2(world_pos))
-	# Only the floodplain can be a ford, which is the cheap part to ask first.
-	var is_ford := terrain == Tile.Terrain.FLOODPLAIN and Fords.is_ford(world, world_pos)
-	return TerrainTileset.terrain_layer(
-		terrain, variety, world.wear_stage(world_pos), world.is_muddy, is_ford
-	)
+		return _terrain.cover_map.ground_cover.is_snowed_with(world_pos, snow_cover, 0.0)
 
 
 ## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the

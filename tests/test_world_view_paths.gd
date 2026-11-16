@@ -45,19 +45,19 @@ func _flower_tile() -> Vector2i:
 
 
 func _layer_at(tile: Vector2i) -> int:
-	return _view._layer_at(tile)
+	return _view._terrain.layer_at(tile)
 
 
 func test_worn_grass_is_drawn_trodden_and_then_as_a_path() -> void:
 	var tile := _flower_tile()
 	_wear(tile, _rules.trodden_after_days())
 	assert_eq(_layer_at(tile), TerrainTileset.Layer.TRODDEN)
-	var trodden := _view._layers[TerrainTileset.Layer.TRODDEN]
-	for offset: Vector2i in WorldView.CORNER_OFFSETS:
+	var trodden := _view._terrain.layers[TerrainTileset.Layer.TRODDEN]
+	for offset: Vector2i in TerrainChunkView.CORNER_OFFSETS:
 		assert_ne(trodden.get_cell_source_id(tile - offset), -1, "the 4 cells around it")
 	_wear(tile, _rules.path_after_days())
 	assert_eq(_layer_at(tile), TerrainTileset.Layer.PATH)
-	assert_ne(_view._layers[TerrainTileset.Layer.PATH].get_cell_source_id(tile), -1)
+	assert_ne(_view._terrain.layers[TerrainTileset.Layer.PATH].get_cell_source_id(tile), -1)
 
 
 func test_a_worn_tile_loses_its_flowers_and_tufts() -> void:
@@ -94,7 +94,7 @@ func _wearing_block() -> Vector2i:
 func test_the_cell_between_worn_tiles_joins_up_as_they_all_wear() -> void:
 	var block := _wearing_block()
 	var middle := block + Vector2i.ONE
-	var trodden := _view._layers[TerrainTileset.Layer.TRODDEN]
+	var trodden := _view._terrain.layers[TerrainTileset.Layer.TRODDEN]
 	for offset in BLOCK.slice(0, 3):
 		_wear(block + offset, _rules.trodden_after_days())
 		assert_lt(trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "an edge")
@@ -108,8 +108,8 @@ func test_a_path_among_trodden_tiles_is_an_edge_over_a_full_trodden_cell() -> vo
 	for offset in BLOCK:
 		_wear(block + offset, _rules.trodden_after_days())
 	_wear(block, _rules.path_after_days())
-	var trodden := _view._layers[TerrainTileset.Layer.TRODDEN]
-	var path := _view._layers[TerrainTileset.Layer.PATH]
+	var trodden := _view._terrain.layers[TerrainTileset.Layer.TRODDEN]
+	var path := _view._terrain.layers[TerrainTileset.Layer.PATH]
 	assert_gte(
 		trodden.get_cell_atlas_coords(middle).x, TerrainTileset.FULL_COLUMN, "trodden all over"
 	)
@@ -118,8 +118,8 @@ func test_a_path_among_trodden_tiles_is_an_edge_over_a_full_trodden_cell() -> vo
 
 func test_snow_catches_less_on_a_path_and_clears_first_in_a_thaw() -> void:
 	var tile := _flower_tile()
-	var open := _view._cover_map.channels_at(tile)
+	var open := _view._terrain.cover_map.channels_at(tile)
 	_wear(tile, _rules.path_after_days())
-	var worn := _view._cover_map.channels_at(tile)
+	var worn := _view._terrain.cover_map.channels_at(tile)
 	assert_lt(worn.g, open.g, "a path catches less snow")
 	assert_gt(worn.b, open.b, "and feels more of the thaw")
