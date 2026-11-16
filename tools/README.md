@@ -243,7 +243,7 @@ by topic. Where is a thing drawn?
 | `birds.py` | The sheets of the big birds of the marsh: the white stork and the greylag goose, drawn at 32 px per tile. |
 | `stork_nest.py` | The sheets of the stork's nest on a roof ridge and of the young over its rim, drawn at 32 px per tile (the classic art has its own in `classic/stork_nest.py`). |
 | `farm_animals.py` | The registry of the farm animals' sheets: it lists the species modules (livestock_<family>.py), each with a `sheets()`; a new species adds its module and a line there. |
-| `livestock.py` | The drawing all farm animals share, and for now their species. One sheet per farm animal and look (cows, pigs, sheep, hens, tame rabbits, dogs, cats, horses), drawn at 32 px per tile with forms.py: the sheep, dogs, cats and horses share `quadruped_frame` (body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the cow and the pig are drawn by hand as maps of letters laid over each other for a pose (`cow_frame`, `pig_frame`), the hen and the rabbit are drawn whole per pose. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
+| `livestock.py` | The drawing the farm animals share, at 32 px per tile with forms.py: the poses and legs, `quadruped_frame` (the sheep, dogs, cats and horses: body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the saddle, and `place_piece` for the animals drawn by hand as maps of letters (the cow, the pig and the rooster). |
 | `livestock_cattle.py` | The cow's sheets, drawn by hand as maps of letters (`cow_frame`). |
 | `livestock_pigs.py` | The pig's sheets, drawn by hand as maps of letters (`pig_frame`). |
 | `livestock_sheep.py` | The sheep's sheets (its coat, tail and head), put together by `quadruped_frame`. |
@@ -251,6 +251,7 @@ by topic. Where is a thing drawn?
 | `livestock_rabbit.py` | The tame rabbit's sheets, each pose drawn whole. |
 | `livestock_dog.py` | The dog's sheets (collie, spitz, pointer), put together by `quadruped_frame`. |
 | `livestock_cat.py` | The cat's sheets, with the hunting rows (crouch, creep, pounce), put together by `quadruped_frame`. |
+| `livestock_horse.py` | The horse's sheets (and the pony's, a smaller horse): `horse_sheet`, the saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting; `ridden_sheets`). |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and

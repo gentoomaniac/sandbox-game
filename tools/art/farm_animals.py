@@ -6,16 +6,25 @@ drawing they share (poses, legs, the way a frame is put together) is livestock.p
 adds its module and a line to FAMILIES, and generate.py stays as it is.
 """
 
-import livestock
 import livestock_cat
 import livestock_cattle
 import livestock_dog
+import livestock_horse
 import livestock_pigs
 import livestock_poultry
 import livestock_rabbit
 import livestock_sheep
 
-FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep, livestock_poultry, livestock_rabbit, livestock_dog, livestock_cat)
+FAMILIES = (
+    livestock_cat,
+    livestock_cattle,
+    livestock_dog,
+    livestock_horse,
+    livestock_pigs,
+    livestock_poultry,
+    livestock_rabbit,
+    livestock_sheep,
+)
 
 
 def sheets():

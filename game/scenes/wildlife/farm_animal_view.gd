@@ -77,7 +77,7 @@ var _zs_countdown := 0.0
 
 
 ## The sheet that shows the animal: that of its species and look, with the saddle on for a
-## saddled horse (see tools/art/livestock.py).
+## saddled horse (see tools/art/livestock_horse.py).
 static func sheet_kind(animal: FarmAnimal) -> StringName:
 	var kind := "%s_%s" % [animal.species, animal.look]
 	return StringName(kind + "_saddled" if animal.is_saddled else kind)

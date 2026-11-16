@@ -934,7 +934,7 @@ copper watering can. Kept here as the record of why.
    new colours. Still to do: a Haubarg on a mound for a rich marsh farm, a
    Klöntür in the Grote Door, side doors to the Flett, cattle in the stalls.
 8. ~~**Animals of the region**~~ done (tasks 73 and 60). Task 73 drew the livestock
-   (tools/art/livestock.py): Angler, black pied and red pied cattle; white, grey
+   (tools/art/farm_animals.py, the livestock_*.py modules): Angler, black pied and red pied cattle; white, grey
    (Heidschnucke) and black-faced sheep; brown and white hens and a rooster; agouti, white and
    Dutch rabbits; they can graze the dykes, which are walked on like grass. Task 60 drew the
    big birds of the marsh (tools/art/birds.py): the white stork (38 px tall at 32 px), white

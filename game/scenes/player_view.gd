@@ -16,9 +16,9 @@ extends Node2D
 ## head end of the bed.
 ##
 ## On horseback (PlayerState `horse`) the layers show their riding sheets on the ridden horse's
-## sheets (see tools/art/livestock.py): the horse behind the rider, and what of it is in front of
-## them (its head, coming towards the viewer). The horse stands, walks or trots, and the rider sits
-## in its saddle and rises with the trot.
+## sheets (see tools/art/livestock_horse.py): the horse behind the rider, and what of it is in front
+## of them (its head, coming towards the viewer). The horse stands, walks or trots, and the rider
+## sits in its saddle and rises with the trot.
 ##
 ## Using a tool (`swing`) shows its swing sheets (see Appearance): the character plays the motion
 ## of the tool for the way it faces, at the timings of data/tool_swing.cfg (ToolSwingRules), and

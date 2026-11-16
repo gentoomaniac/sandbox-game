@@ -4,8 +4,8 @@ extends RefCounted
 ## tools/art/animals.py, birds.py and sea_birds.py, whose order of actions this mirrors), one row
 ## per action and one column per frame. Animals face right in the sheets. The farm animals have a
 ## sheet per species and look, `<species>_<look>`, all with the same actions (a saddled horse has
-## one more, `horse_<look>_saddled`; drawn by tools/art/livestock.py), and a cat's three more for
-## hunting. All frame sizes below are the pictures' own pixels, drawn at 32 px per tile.
+## one more, `horse_<look>_saddled`; drawn by tools/art/livestock_horse.py), and a cat's three more
+## for hunting. All frame sizes below are the pictures' own pixels, drawn at 32 px per tile.
 
 const SHEET_PATH := "res://assets/wildlife/%s.png"
 const LIVESTOCK_ACTIONS := {&"idle": 2, &"walk": 4, &"graze": 2, &"sleep": 2, &"run": 4}
