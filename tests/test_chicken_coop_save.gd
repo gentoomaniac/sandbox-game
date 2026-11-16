@@ -50,9 +50,8 @@ func test_a_coop_whose_chunk_is_unloaded_and_loaded_again_keeps_its_hens_and_egg
 	_hens(2)
 	_run(30.0, NIGHT)
 	var coords := Chunk.world_to_chunk(_coop.origin)
-	var saved := _state.to_dict()
+	var restored := RealLoad.of(self, _state)
 	_world.remove_chunk(coords)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(saved)))
 	for loaded in _world.loaded_chunk_coords() + [coords]:
 		restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(loaded))
 	var coop := restored.world.building_at(_coop.origin)

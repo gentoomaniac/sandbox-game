@@ -123,7 +123,7 @@ func test_a_game_saved_with_the_player_on_the_bed_loads_and_they_can_walk() -> v
 	_make_a_house_home()
 	_state.pass_out()
 	_state.player.position = Vector2(1.5, 2.5)
-	var loaded := GameState.from_dict(_state.to_dict())
+	var loaded := RealLoad.of(self, _state)
 	assert_true(loaded.is_inside())
 	loaded.player.move(loaded.current_map, Vector2.DOWN, 0.5)
 	assert_gt(loaded.player.position.y, 4.0)

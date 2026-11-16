@@ -170,5 +170,5 @@ func test_snow_alone_prints_the_cover_and_the_frost() -> void:
 
 func test_a_forced_cover_is_not_saved() -> void:
 	_state.snow_cover.forced = 0.9
-	var restored := GameState.from_dict(_state.to_dict())
+	var restored := RealLoad.of(self, _state)
 	assert_eq(restored.snow_cover.forced, -1.0)
