@@ -37,8 +37,10 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 
 
 ## Puts the world under the game, with the weather that follows the world's seed and the systems
-## that change with time. A game gets its world once, before anything else is built on it.
+## that change with time. A game gets its world once, before anything else is built on it: a
+## second world would leave the systems of the first running beside a new set.
 static func attach_world(state: GameState, world: World) -> void:
+	assert(state.world == null, "The game already has a world")
 	state.world = world
 	state.weather = Weather.new(world.world_seed, state.sun)
 	state.snow_cover = SnowCover.new(state.weather)
