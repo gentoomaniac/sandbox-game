@@ -170,7 +170,7 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
 
 ## Steps (each atomic: code, tests and docs, passing `make test`)
 
-1. `Elevation` and the `[surge]` data, with tests. Nothing uses it yet.
+1. `Elevation` and the `[surge]` data, with tests. Nothing uses it yet. **Built.**
 2. Height and strength of the generated dykes, the hover hint, the three looks (pixel artist).
 3. Dyke edits in the world edits; the save version bump with its upgrade and validator check
    (then the drop of the oldest upgrade as its own commit).

@@ -1,8 +1,8 @@
 class_name LandscapeRules
 extends RefCounted
-## The numbers of the marsh, the woods, the creeks, the dykes and the coast, read from
-## data/landscape.cfg (see there for what each one means). `from_file` reports every key that is
-## missing or out of range, and `is_valid` says whether any was.
+## The numbers of the marsh, the woods, the creeks, the dykes, the coast and the height of the land,
+## read from data/landscape.cfg (see there for what each one means). `from_file` reports every
+## key that is missing or out of range, and `is_valid` says whether any was.
 
 const DEFAULT_PATH := "res://data/landscape.cfg"
 
@@ -15,6 +15,19 @@ const REQUIRED_KEYS := {
 	"tideways": ["spacing", "meander", "widening", "widest"],
 	"warften": ["spacing", "chance", "out"],
 	"ewers": ["spacing", "chance", "out_from", "out_to"],
+	"surge":
+	[
+		"mud",
+		"salt_marsh",
+		"wetland",
+		"floodplain",
+		"warft",
+		"land_at_dyke",
+		"land_rise",
+		"land_top",
+		"noise",
+		"noise_size",
+	],
 }
 static var _default: LandscapeRules
 
