@@ -16,6 +16,10 @@ func register(kind: Interaction.Kind, label: Variant, open: Callable) -> void:
 	_openers[kind] = open
 
 
+func is_registered(kind: Interaction.Kind) -> bool:
+	return _openers.has(kind)
+
+
 ## What E does with the choice, as "Talk to Antje", or "".
 func label_of(choice: Interaction.Choice) -> String:
 	var label: Variant = _labels.get(choice.kind, "")
