@@ -67,24 +67,24 @@ func _draw_rows(rows: Array[Dictionary]) -> void:
 		add_child(_row(row))
 
 
+## The row is what the mouse is over, whatever part of it, as it carries the tooltip.
 func _row(row: Dictionary) -> HBoxContainer:
 	var box := HBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_PASS
 	box.add_theme_constant_override("separation", ROW_GAP)
 	box.add_child(_portrait(row["look"]))
 	var text := VBoxContainer.new()
-	text.mouse_filter = Control.MOUSE_FILTER_PASS
+	text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := Label.new()
 	name_label.text = row["name"]
-	name_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	text.add_child(name_label)
 	var level_label := Label.new()
 	level_label.text = row["level_name"]
-	level_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	text.add_child(level_label)
 	var marks := FriendshipMarks.new()
 	marks.level = row["level"]
+	marks.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	text.add_child(marks)
 	box.add_child(text)
 	TooltipView.set_text(box, row["next"], "neighbour_next")
@@ -96,7 +96,7 @@ func _portrait(look: Appearance) -> Control:
 	var ground := ColorRect.new()
 	ground.color = PORTRAIT_GROUND
 	ground.custom_minimum_size = Vector2(PORTRAIT_SIZE, PORTRAIT_SIZE)
-	ground.mouse_filter = Control.MOUSE_FILTER_PASS
+	ground.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for portrait_layer in look.portrait_layers():
 		var picture := TextureRect.new()
 		picture.texture = load(ArtSet.path(Appearance.portrait_path(portrait_layer)))

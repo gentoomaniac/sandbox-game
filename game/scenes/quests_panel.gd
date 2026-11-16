@@ -64,6 +64,7 @@ func _draw_rows(rows: Array[Dictionary]) -> void:
 		add_child(_row(row))
 
 
+## The row is what the mouse is over, whatever part of it, as it carries the tooltip.
 func _row(row: Dictionary) -> VBoxContainer:
 	var box := VBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -79,5 +80,4 @@ func _label(text: String) -> Label:
 	label.text = text
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.custom_minimum_size.x = PANEL_WIDTH
-	label.mouse_filter = Control.MOUSE_FILTER_PASS
 	return label
