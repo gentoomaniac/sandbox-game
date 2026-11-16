@@ -3,11 +3,12 @@ extends GutTest
 ## (see InteractionRegistry), so the hint and the interact flow need not know them.
 
 var _state: GameState
-var _interactions := InteractionRegistry.new()
+var _interactions: InteractionRegistry
 
 
 func before_each() -> void:
 	_state = GameState.new_game(7)
+	_interactions = InteractionRegistry.new()
 
 
 func _words(kind: Interaction.Kind) -> String:
@@ -78,23 +79,8 @@ func test_the_quest_flow_registers_the_notice_board() -> void:
 	assert_eq(_words(Interaction.Kind.READ_BOARD), "Read the notice board")
 
 
-func test_every_kind_of_e_but_nothing_is_registered_as_main_does() -> void:
-	var settings := GameSettings.new("user://test_feature_flows/settings.cfg")
-	var dialogue: NpcDialogue = add_child_autofree(NpcDialogue.new(settings))
-	var entities: Node2D = add_child_autofree(Node2D.new())
-	var notifications: NotificationHud = add_child_autofree(NotificationHud.new())
-	var hotbar: HotbarHud = add_child_autofree(HotbarCase.new_hotbar())
-	var crafting_screen: CraftingScreen = add_child_autofree(CraftingScreen.new())
-	var sounds: GameSounds = add_child_autofree(GameSounds.new())
-	var interact := InteractFlow.new()
-	interact.state = _state
-	interact.register_kinds(_interactions)
-	add_child_autofree(StallFlow.new(_state, _interactions))
-	add_child_autofree(StorageFlow.new(_state, hotbar, _interactions, sounds))
-	add_child_autofree(ProcessFlow.new(_state, hotbar, _interactions, sounds))
-	add_child_autofree(CraftingFlow.new(_state, _interactions, sounds))
-	add_child_autofree(CampfireFlow.new(_state, hotbar, crafting_screen, _interactions, sounds))
-	add_child_autofree(QuestFlow.new(_state, dialogue, notifications, entities, _interactions))
+func test_every_kind_of_e_but_nothing_is_registered_by_the_flows_main_makes() -> void:
+	FlowsCase.make(self, _state, _interactions)
 
 	for kind: Interaction.Kind in Interaction.Kind.values():
 		if kind != Interaction.Kind.NOTHING:

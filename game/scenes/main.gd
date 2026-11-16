@@ -48,13 +48,8 @@ var _build_menu := BuildMenu.new()
 var _vitals := VitalsHud.new()
 var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
-var _crafting_flow: CraftingFlow
-var _storage_flow: StorageFlow
-var _trade_flow: TradeFlow
-var _process_flow: ProcessFlow
 var _console_view := ConsoleView.new()
 var _map_screen := MapScreen.new()
-var _chat_flow: ChatFlow
 var _npc_name_tag := NpcNameTag.new()
 var _action_hint := ActionHintView.new()
 var _cheat_hud := CheatHud.new()
@@ -73,6 +68,7 @@ var _map_switch: MapSwitch
 var _aim_views: AimViews
 var _walk_flow: WalkFlow
 var _interact: InteractFlow
+var _flows: FeatureFlows
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
 ## Which chunks of the world are loaded; the world view draws them.
@@ -184,6 +180,22 @@ func _music_moment() -> MusicMoment:
 
 ## Puts every view in the tree, in the order they are drawn and take input.
 func _make_views() -> void:
+	_interact = InteractFlow.new()
+	_interact.state = _state
+	# The flows are made before the views: QuestMarkView and FriendshipPopups, which two of them put
+	# among the entities, now come before the player view and the object cover. Sprites at the same
+	# depth sort the other way round, which no one can tell.
+	_flows = FeatureFlows.new(
+		_state,
+		_settings,
+		_hotbar,
+		_sounds,
+		_notifications,
+		_view.entities,
+		_interactions,
+		_interact,
+		_toggle_classic_art
+	)
 	_view.add_child(_ground_item_view)
 	_view.add_child(_npc_views)
 	_view.add_child(_wildlife)
@@ -204,21 +216,16 @@ func _make_views() -> void:
 	add_child(_vitals)
 	add_child(_bag_screen)
 	add_child(_character_screen)
-	_crafting_flow = CraftingFlow.new(_state, _interactions, _sounds)
-	add_child(_crafting_flow)
+	add_child(_flows.crafting)
 	add_child(_map_screen)
-	_storage_flow = StorageFlow.new(_state, _hotbar, _interactions, _sounds)
-	add_child(_storage_flow)
-	_trade_flow = TradeFlow.new(_sounds)
-	add_child(_trade_flow)
-	_process_flow = ProcessFlow.new(_state, _hotbar, _interactions, _sounds)
-	add_child(_process_flow)
+	add_child(_flows.storage)
+	add_child(_flows.trade)
+	add_child(_flows.process)
 	# Where the fire's window was layered, before the HUD and the console over it.
-	add_child(CampfireFlow.new(_state, _hotbar, _crafting_flow.screen, _interactions, _sounds))
+	add_child(_flows.campfire)
 	add_child(_cheat_hud)
 	add_child(_console_view)
-	_chat_flow = ChatFlow.new(_settings, _notifications, _toggle_classic_art, _sounds)
-	add_child(_chat_flow)
+	add_child(_flows.chat)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_load_dialog)
@@ -236,7 +243,7 @@ func _apply_villager_memory_settings() -> void:
 	var profile := _settings.profiles.active
 	_state.deeds.stories_kept = profile["stories_kept"]
 	_state.deeds.memories_kept = profile["memories_kept"]
-	_chat_flow.dialogue.compact_all(_state)
+	_flows.chat.dialogue.compact_all(_state)
 
 
 ## Shows the state in the views and wires what they report back.
@@ -269,15 +276,10 @@ func _connect_state_and_views() -> void:
 	_session.notifications = _notifications
 	_session.blackout = _blackout
 	add_child(_session)
-	_interact = InteractFlow.new()
-	_interact.state = _state
 	_interact.use_highlight = _use_highlight
 	_interact.harvest_hud = _harvest_hud
 	_interact.blackout = _blackout
 	_interact.console_view = _console_view
-	_interact.chat_screen = _chat_flow.screen
-	_interact.trade_screen = _trade_flow.screen
-	_trade_flow.screen.talk_requested.connect(_interact.open_chat)
 	var clock_ticker := GameClockTicker.new(_state, _weather_view, _clock_views.show_clock)
 	clock_ticker.is_held = func() -> bool:
 		return _debug.is_clock_stopped() or _fade_screen.is_black()
@@ -307,19 +309,10 @@ func _connect_state_and_views() -> void:
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
-	var quest_flow := QuestFlow.new(
-		_state, _chat_flow.dialogue, _notifications, _view.entities, _interactions
-	)
-	_interact.quest_voice = quest_flow.voice
-	_interact.register_kinds(_interactions)
 	_action_hint.interactions = _interactions
 	# One line per feature, in the order their screens are layered and take input.
 	for feature: Node in [
-		quest_flow,
-		FriendshipFlow.new(_state, _notifications, _view.entities),
-		SurgeFlow.new(_state, _notifications),
-		BarterFlow.new(_state, _chat_flow.screen, _interact.open_chat),
-		StallFlow.new(_state, _interactions),
+		_flows.quest, _flows.friendship, _flows.surge, _flows.barter, _flows.stall
 	]:
 		add_child(feature)
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
@@ -328,14 +321,14 @@ func _connect_state_and_views() -> void:
 	# applied once it is closed rather than at every step) are compacted.
 	_apply_villager_memory_settings()
 	_menu.closed.connect(_apply_villager_memory_settings)
-	add_child(StoryJudging.new(_chat_flow.dialogue, _state))
-	add_child(WordRating.new(_chat_flow.dialogue, _state))
-	var day_planner := DayPlanner.new(_chat_flow.dialogue, _state)
+	add_child(StoryJudging.new(_flows.chat.dialogue, _state))
+	add_child(WordRating.new(_flows.chat.dialogue, _state))
+	var day_planner := DayPlanner.new(_flows.chat.dialogue, _state)
 	add_child(day_planner)
 	var speech := NpcSpeech.new()
 	add_child(speech)
 	speech.is_nonstop = _options.bubbles
-	speech.show_for(_state, _chat_flow.dialogue, _camera.view_rect, _camera.world_to_ui)
+	speech.show_for(_state, _flows.chat.dialogue, _camera.view_rect, _camera.world_to_ui)
 	_builder = Builder.new(_state)
 	_hotbar_keys = HotbarKeys.new(_state.player.inventory, _builder)
 	_aim_views = AimViews.new()
@@ -364,7 +357,7 @@ func _connect_state_and_views() -> void:
 		_map_switch.pass_door
 	)
 	_screen_keys = ScreenKeys.new(
-		_state, _bag_screen, _character_screen, _crafting_flow.screen, _harvest_hud
+		_state, _bag_screen, _character_screen, _flows.crafting.screen, _harvest_hud
 	)
 	_hotbar.crafting_requested.connect(_screen_keys.on_crafting_requested)
 	_build_mode.world = _state.world
@@ -457,7 +450,7 @@ func _apply_start_options() -> void:
 	if _options.neighbours:
 		_character_screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
 	if _options.crafting:
-		_crafting_flow.screen.open()
+		_flows.crafting.screen.open()
 	if not _options.console.is_empty():
 		_console_view.open()
 		for line in _options.console:
@@ -470,10 +463,10 @@ func _apply_start_options() -> void:
 	_debug.wildlife = _wildlife
 	_debug.tiredness_view = _tiredness_view
 	_debug.interior_view = _interior_view
-	_debug.storage_screen = _storage_flow.screen
-	_debug.crafting_screen = _crafting_flow.screen
-	_debug.process_screen = _process_flow.screen
-	_debug.chat_screen = _chat_flow.screen
+	_debug.storage_screen = _flows.storage.screen
+	_debug.crafting_screen = _flows.crafting.screen
+	_debug.process_screen = _flows.process.screen
+	_debug.chat_screen = _flows.chat.screen
 	_debug.open_chat = _interact.open_chat
 	_debug.open_shop = _interact.open_shop
 	_debug.try_sleep = _blackout.try_sleep

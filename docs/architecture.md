@@ -63,11 +63,14 @@ Warft and an Ewer here and there.
   registers the words and the opening of its `Interaction.Kind` in the `InteractionRegistry` and
   the sounds of its screens (`GameSounds.click_on_press_in`, `watch_panel`). What other code needs
   of a screen (the debug runner, the screen keys) it takes from the flow's `screen`.
-  Main lists the flows in `_connect_state_and_views`, one line each, in the order their screens
-  are layered and take input; nothing is discovered. A flow whose window must stay under the HUD
-  and the console (`CampfireFlow` and the core screens' flows) is added in `_make_views`, at its
-  place among the screens. To add a screen like the sales cart: the domain's kind and its place in
-  `Interaction.choice_at` (state), the screen, the flow, and one line in that list.
+  `FeatureFlows` makes them all, from what they take in `_init`, so Main and the tests make the same
+  ones (`tests/test_feature_flows.gd` checks that every `Interaction.Kind` is registered, and
+  `test_interaction_registry.gd` that the flows do not keep the game alive: a flow must not store
+  the registry, which holds callables of the flows). Main adds each flow where its screens are
+  layered and take input, one `add_child` line each in `_make_views` (the flows whose windows stay
+  under the HUD and the console) and `_connect_state_and_views`; nothing is discovered. To add a
+  screen like the sales cart: the domain's kind and its place in `Interaction.choice_at` (state),
+  the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns

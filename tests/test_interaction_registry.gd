@@ -43,3 +43,39 @@ func test_the_flow_and_its_game_are_freed_with_the_registry() -> void:
 
 	assert_null(flow_ref.get_ref())
 	assert_null(state_ref.get_ref())
+
+
+func test_the_feature_flows_and_their_game_are_freed_with_the_registry() -> void:
+	var state: GameState = GameState.new_game(7)
+	var registry := InteractionRegistry.new()
+	var hotbar: HotbarHud = HotbarCase.new_hotbar()
+	var sounds := GameSounds.new()
+	var notifications := NotificationHud.new()
+	var entities := Node2D.new()
+	var interact := InteractFlow.new()
+	interact.state = state
+	var flows := FeatureFlows.new(
+		state,
+		GameSettings.new("user://test_interaction_registry/settings.cfg"),
+		hotbar,
+		sounds,
+		notifications,
+		entities,
+		registry,
+		interact,
+		func() -> void: pass
+	)
+	var state_ref: WeakRef = weakref(state)
+	var flows_ref: WeakRef = weakref(flows)
+	for flow in flows.all():
+		flow.free()
+	for node: Node in [hotbar, sounds, notifications, entities]:
+		node.free()
+
+	flows = null
+	interact = null
+	registry = null
+	state = null
+
+	assert_null(flows_ref.get_ref())
+	assert_null(state_ref.get_ref())

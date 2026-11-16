@@ -71,24 +71,24 @@ func test_c_opens_the_character_window_and_closes_it() -> void:
 
 func test_shift_c_opens_crafting_and_closes_it_and_leaves_the_character_window_alone() -> void:
 	_press_key(KEY_C, true)
-	assert_true(_main._crafting_flow.screen.is_open(), "Shift+C opens crafting")
+	assert_true(_main._flows.crafting.screen.is_open(), "Shift+C opens crafting")
 	assert_false(_main._character_screen.is_open())
 	_press_key(KEY_C, true)
-	assert_false(_main._crafting_flow.screen.is_open(), "and closes it")
+	assert_false(_main._flows.crafting.screen.is_open(), "and closes it")
 
 
 func test_the_crafting_button_opens_crafting_and_closes_it() -> void:
 	_main._hotbar.crafting_requested.emit()
-	assert_true(_main._crafting_flow.screen.is_open(), "the button opens crafting")
+	assert_true(_main._flows.crafting.screen.is_open(), "the button opens crafting")
 	_main._hotbar.crafting_requested.emit()
-	assert_false(_main._crafting_flow.screen.is_open(), "and closes it")
+	assert_false(_main._flows.crafting.screen.is_open(), "and closes it")
 
 
 func test_shift_c_over_the_open_character_window_does_nothing() -> void:
 	_press_key(KEY_C)
 	_press_key(KEY_C, true)
 	assert_true(_main._character_screen.is_open(), "Shift+C is not C")
-	assert_false(_main._crafting_flow.screen.is_open())
+	assert_false(_main._flows.crafting.screen.is_open())
 
 
 func test_k_opens_the_skills_in_the_character_window() -> void:
@@ -136,7 +136,7 @@ func test_the_bag_and_the_character_window_do_not_pause_the_game() -> void:
 func test_shift_c_does_nothing_over_the_docked_windows_and_the_other_way_round() -> void:
 	_press_key(KEY_B)
 	_press_key(KEY_C, true)
-	assert_false(_main._crafting_flow.screen.is_open())
+	assert_false(_main._flows.crafting.screen.is_open())
 	assert_true(_main._bag_screen.is_open())
 
 
