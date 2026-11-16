@@ -14,6 +14,7 @@ the [README](../README.md).
 | <img src="../docs/screenshots/bag.png" width="140" alt=""> | [Character, items and sleep](character-and-items.md) | The bag, equipment, energy, sleeping and passing out. |
 | <img src="../docs/screenshots/controls.png" width="140" alt=""> | [Controls and settings](controls.md) | All keys, the settings, zoom and the two art sets. |
 | | [Sound and music](sound.md) | Volume, effects, music and ambience. |
+| | [The sea dyke and the storm surge](storm-surge.md) | The dykes' height and strength, the warning, the flood, the salt and the mud it leaves. |
 | | [Saving](saving.md) | When and where the game saves, and damaged saves. |
 | <img src="../docs/screenshots/console.png" width="140" alt=""> | [The console](console.md) | The cheat and test commands. |
 

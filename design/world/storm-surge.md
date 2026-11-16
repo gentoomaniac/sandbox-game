@@ -214,8 +214,13 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
     nobody plays it yet: it needs the sound event `church_bell_alarm` (see the sound designer's
     task). The surf drawn higher at the dyke foot is not done.
 11. Player dykes: clay and sods, raising, repair. Needs #59 merged; if not, this waits and the
-    rest stands without it.
-12. The handbook page, the screenshots, the doc lines; `coast.md` marks it done.
+    rest stands without it. **Not built**: #59 is in the Backlog.
+    `DykeProfile.change` is the one place a dyke's height and strength are set; mending a
+    damaged dyke of the player's own (the villagers leave those) is left out, `FloodState.mend`
+    mends all.
+12. The handbook page, the screenshots, the doc lines; `coast.md` marks it done. **Built** without
+    the screenshots (they come with the pictures of step 6): `handbook/storm-surge.md`, lines in
+    `coast.md`, `generation.md`, `farming/crops.md` and `tech/saving.md`.
 
 ## Open questions (each answerable in a word)
 
