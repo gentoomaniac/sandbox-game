@@ -225,7 +225,7 @@ func test_the_needs_and_the_stock_are_saved() -> void:
 	var cow := _animal(LivestockRules.COW)
 	cow.thirst = 0.3
 	cow.hunger = 0.7
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	for coords in _world.loaded_chunk_coords():
 		restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 	var animal := restored.livestock.all()[0]

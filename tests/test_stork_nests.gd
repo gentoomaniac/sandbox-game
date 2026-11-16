@@ -203,7 +203,7 @@ func test_a_loaded_game_has_the_nests_it_had() -> void:
 		for y in range(-12, 13, 4):
 			state.world.place_building(BuildingTypes.KATE, around + Vector2i(x, y))
 	assert_gt(state.world.buildings().size(), 2, "some houses to look at")
-	var loaded := GameState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
+	var loaded := RealLoad.of(self, state)
 	var nests := StorkNests.new(_rules, loaded.sun, loaded.world.world_seed)
 	var before := StorkNests.new(_rules, state.sun, state.world.world_seed)
 	for house in state.world.buildings():

@@ -20,7 +20,7 @@ func _next_frame() -> Signal:
 
 ## The game saved and loaded, with its chunks.
 func _reloaded() -> GameState:
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	for coords in _world.loaded_chunk_coords():
 		restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 	return restored

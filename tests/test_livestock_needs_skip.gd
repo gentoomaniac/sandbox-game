@@ -78,7 +78,7 @@ func test_the_hours_spent_indoors_are_in_a_save_and_in_the_game_loaded_from_it()
 	cow.thirst = 0.0
 	# The player is in a house for five hours: no update of the animals, but the clock runs.
 	_state.clock.advance(5 * GameClock.MINUTES_PER_HOUR)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	for coords in _world.loaded_chunk_coords():
 		restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 	assert_almost_eq(restored.livestock.all()[0].thirst, 300.0 / (8.0 * 60.0), 0.0001)
@@ -91,10 +91,10 @@ func test_a_game_loaded_indoors_counts_the_hours_it_stays_indoors() -> void:
 	_state.clock.set_time(12, 0)
 	_livestock.account_needs(_state.clock)
 	cow.thirst = 0.0
-	var loaded := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var loaded := RealLoad.of(self, _state)
 	for coords in _world.loaded_chunk_coords():
 		loaded.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 	# No update of the animals while the player stays in a house for four hours, then a save.
 	loaded.clock.advance(4 * GameClock.MINUTES_PER_HOUR)
-	var again := GameState.from_dict(JSON.parse_string(JSON.stringify(loaded.to_dict())))
+	var again := RealLoad.of(self, loaded)
 	assert_almost_eq(again.livestock.all()[0].thirst, 240.0 / (8.0 * 60.0), 0.0001)
