@@ -49,7 +49,6 @@ func test_e_names_getting_on_a_saddled_horse_and_getting_off() -> void:
 func test_e_names_the_chest_and_the_stations() -> void:
 	var words := {
 		WorldObjectTypes.CHEST: "Open chest",
-		WorldObjectTypes.FIREPLACE: "Tend the fire",
 		WorldObjectTypes.KILN: "Use kiln",
 	}
 	for type: StringName in words:

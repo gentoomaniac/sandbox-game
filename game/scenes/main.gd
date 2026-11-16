@@ -52,7 +52,6 @@ var _crafting_screen := CraftingScreen.new()
 var _storage_screen := StorageScreen.new(_hotbar)
 var _trade_screen := TradeScreen.new()
 var _process_screen := ProcessScreen.new(_hotbar)
-var _fire_screen := CampfireScreen.new(_hotbar)
 var _console_view := ConsoleView.new()
 var _map_screen := MapScreen.new()
 var _chat_screen := ChatScreen.new()
@@ -214,7 +213,8 @@ func _make_views() -> void:
 	add_child(_storage_screen)
 	add_child(_trade_screen)
 	add_child(_process_screen)
-	add_child(_fire_screen)
+	# Where the fire's window was layered, before the HUD and the console over it.
+	add_child(CampfireFlow.new(_state, _hotbar, _crafting_screen, _interactions, _sounds))
 	add_child(_cheat_hud)
 	add_child(_console_view)
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
@@ -277,7 +277,6 @@ func _connect_state_and_views() -> void:
 	_interact.trade_screen = _trade_screen
 	_interact.process_screen = _process_screen
 	_interact.storage_screen = _storage_screen
-	_interact.fire_screen = _fire_screen
 	_interact.crafting_screen = _crafting_screen
 	_trade_screen.talk_requested.connect(_interact.open_chat)
 	_clock_ticker = GameClockTicker.new(_state, _weather_view, _show_clock)
@@ -332,7 +331,6 @@ func _connect_state_and_views() -> void:
 	_build_mode.building_menu_requested.connect(_house_menu.open)
 	_bag_screen.drop_requested.connect(_state.drop_from_inventory)
 	_storage_screen.drop_requested.connect(_state.drop_from_inventory)
-	_fire_screen.cook_requested.connect(_crafting_screen.open_station)
 	_camera.rig.follow(_camera_target)
 	_player_view.show_player(_state.player, _options)
 	_use_swing = UseSwing.new(_state, _player_view)
@@ -751,7 +749,6 @@ func _start_sounds() -> void:
 		_sounds.watch_panel(panel.is_open)
 	_sounds.click_on_press_in(_storage_screen)
 	_sounds.click_on_press_in(_process_screen)
-	_sounds.click_on_press_in(_fire_screen)
 	_sounds.watch_panel(_process_screen.is_open)
 	_sounds.watch_panel(_storage_screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)

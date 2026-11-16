@@ -22,6 +22,15 @@ func test_the_stall_flow_registers_the_cart() -> void:
 	assert_eq(_words(Interaction.Kind.OPEN_CART), "Tend the cart")
 
 
+func test_the_campfire_flow_registers_the_fire() -> void:
+	var hotbar: HotbarHud = add_child_autofree(HotbarCase.new_hotbar())
+	var crafting_screen: CraftingScreen = add_child_autofree(CraftingScreen.new())
+	var sounds: GameSounds = add_child_autofree(GameSounds.new())
+	add_child_autofree(CampfireFlow.new(_state, hotbar, crafting_screen, _interactions, sounds))
+
+	assert_eq(_words(Interaction.Kind.OPEN_FIRE), "Tend the fire")
+
+
 func test_the_quest_flow_registers_the_notice_board() -> void:
 	var settings := GameSettings.new("user://test_feature_flows/settings.cfg")
 	var dialogue: NpcDialogue = add_child_autofree(NpcDialogue.new(settings))
