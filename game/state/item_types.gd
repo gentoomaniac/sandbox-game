@@ -155,30 +155,7 @@ const GROUND_ICON_PATH := "res://assets/ground_items/%s.png"
 const TOPICS_DIR := "res://game/state/items"
 const _OWN_SOURCE := "res://game/state/item_types.gd"
 
-const _OTHER_TYPES := {
-	BONE:
-	{
-		"name": "Bone",
-		"description": "A meaty bone. Give it to a dog, and it follows you for a while.",
-		"weight": 0.3,
-		"stack_limit": 20,
-	},
-	SADDLE:
-	{
-		"name": "Saddle",
-		"description": "A riding saddle of leather. Put it on a horse, and you can ride it.",
-		"weight": 8.0,
-		"stack_limit": 1,
-	},
-	LANTERN:
-	{
-		"name": "Lantern",
-		"description": "A horn lantern. Hold it and use it to fit a candle, then to light it.",
-		"weight": 1.0,
-		"stack_limit": 1,
-		"held_sheet": "lantern",
-	},
-}
+const _OTHER_TYPES := {}
 
 ## What went wrong while the crop items were added to the fixed ones: an id used twice (see
 ## CatalogCheck).
