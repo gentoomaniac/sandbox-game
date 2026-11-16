@@ -55,7 +55,8 @@ Warft and an Ewer here and there.
   tooltip's world text, the name tag, build mode and its menu), `WalkFlow` (the player's own
   frame: passing out, walking, picking up, the bed and the door) and `ClockViews` (what the views
   show of the time and the weather: the sky's tint, the clock, the ground cover, the soil, the tide
-  and the position readout).
+  and the position readout), `MapSwitch` (which map the views
+  show, the world or a house's interior, and the door that leads from one to the other).
   A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
   `QuestFlow`, `BarterFlow` and the core screens' `StorageFlow`, `ProcessFlow`, `CraftingFlow`,
   `ChatFlow` and `TradeFlow`): it takes what it needs in `_init`, adds its screens as children,

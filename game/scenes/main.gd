@@ -69,13 +69,12 @@ var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _play_loop: PlayLoop
 var _clock_views: ClockViews
+var _map_switch: MapSwitch
 var _aim_views: AimViews
 var _walk_flow: WalkFlow
 var _interact: InteractFlow
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
-## The map the views show: the world or the interior of a house.
-var _shown_map: GameMap
 ## Which chunks of the world are loaded; the world view draws them.
 var _residency: ChunkResidency
 
@@ -131,9 +130,8 @@ func _ready() -> void:
 	if is_new_game:
 		# Saved at once, so F8 or a crash comes back to the new world, not to the game before it.
 		_saves.save_and_wait(_state, _options.save_path, SaveHeader.Kind.QUICK_SAVE)
-	_shown_map = _state.current_map
 	if _state.is_inside():
-		_show_current_map()
+		_map_switch.show_current_map()
 
 
 ## The settings, the audio and the game, with the flags that change the game applied.
@@ -246,6 +244,8 @@ func _connect_state_and_views() -> void:
 	_clock_views = ClockViews.new(
 		_state, _view, _tint, _hud, _player_view, _weather_view, _camera, _coordinates_hud
 	)
+	_map_switch = MapSwitch.new()
+	_map_switch.state = _state
 	_residency = ChunkResidency.new(_state.world)
 	_blackout = BlackoutFlow.new()
 	_blackout.state = _state
@@ -256,7 +256,7 @@ func _connect_state_and_views() -> void:
 	_blackout.fade_screen = _fade_screen
 	_blackout.saves = _saves
 	_blackout.save_path = _options.save_path
-	_blackout.show_current_map = _show_current_map
+	_blackout.show_current_map = _map_switch.show_current_map
 	_blackout.show_clock = _clock_views.show_clock
 	add_child(_blackout)
 	_session = SessionFlow.new()
@@ -291,6 +291,16 @@ func _connect_state_and_views() -> void:
 		_ground_item_view,
 		_npc_views
 	)
+	_map_switch.audio = _audio
+	_map_switch.view = _view
+	_map_switch.weather_view = _weather_view
+	_map_switch.play_loop = _play_loop
+	_map_switch.interior_view = _interior_view
+	_map_switch.interior_npc_views = _interior_npc_views
+	_map_switch.wildlife = _wildlife
+	_map_switch.player_view = _player_view
+	_map_switch.use_highlight = _use_highlight
+	_map_switch.clock_views = _clock_views
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -351,7 +361,7 @@ func _connect_state_and_views() -> void:
 		_harvest_hud,
 		_interior_view,
 		_object_cover,
-		_pass_door
+		_map_switch.pass_door
 	)
 	_screen_keys = ScreenKeys.new(
 		_state, _bag_screen, _character_screen, _crafting_flow.screen, _harvest_hud
@@ -396,8 +406,8 @@ func _connect_state_and_views() -> void:
 		func() -> void:
 			_camera.rig.follow(_camera_target)
 			# `reset` and `tp` can take the player to another map.
-			if _state.current_map != _shown_map:
-				_show_current_map()
+			if _map_switch.has_map_changed():
+				_map_switch.show_current_map()
 			_clock_views.show_clock()
 			# The map takes the keys the console would.
 			if _map_screen.is_open():
@@ -467,7 +477,7 @@ func _apply_start_options() -> void:
 	_debug.open_chat = _interact.open_chat
 	_debug.open_shop = _interact.open_shop
 	_debug.try_sleep = _blackout.try_sleep
-	_debug.pass_door = _pass_door
+	_debug.pass_door = _map_switch.pass_door
 	_debug.open_menu = _menu.open_page
 	_debug.open_load_dialog = _load_dialog.open_saves.bind(_options.save_path)
 	_debug.save_screenshot_and_quit = _save_screenshot_and_quit
@@ -636,31 +646,6 @@ func _switch_art_set(event: InputEvent) -> bool:
 
 func _toggle_classic_art() -> void:
 	_settings.set_classic_art(not ArtSet.is_classic)
-
-
-func _pass_door() -> void:
-	_state.pass_door()
-	_show_current_map()
-
-
-## Shows the map the player is on: the world, or the interior (which pauses the world's
-## chunk streaming, leaving it as it is).
-func _show_current_map() -> void:
-	_shown_map = _state.current_map
-	var is_inside := _state.is_inside()
-	_audio.set_inside(is_inside)
-	_view.visible = not is_inside
-	_weather_view.visible = not is_inside
-	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
-	_play_loop.update_streaming_hold()
-	_interior_view.visible = is_inside
-	if is_inside:
-		_wildlife.clear()
-		_interior_view.show_interior(_state.current_map)
-	_interior_npc_views.show_room(_state.current_map as Interior if is_inside else null)
-	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
-	_use_highlight.reparent(_interior_view if is_inside else _view, false)
-	_clock_views.show_clock()
 
 
 ## Starts the sounds of the game once everything that makes one exists: the footsteps, work and
