@@ -80,7 +80,7 @@ func test_lowering_the_stories_kept_moves_the_surplus_out() -> void:
 	assert_eq(_npc.memories.size(), 3)
 
 
-func test_a_story_is_saved_whole() -> void:
+func test_a_story_is_kept_whole_by_the_npc_codec() -> void:
 	var story := _story(4, MemoryWeight.HIGH)
 	story["how"] = GossipRules.HEARD
 	story["told_by"] = "Hinrich Boysen"

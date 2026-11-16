@@ -103,7 +103,7 @@ func _remove_a_tree() -> Vector2i:
 	return Vector2i.ZERO
 
 
-func test_world_object_round_trip_keeps_its_growth() -> void:
+func test_world_object_codec_keeps_its_growth() -> void:
 	var crop := WorldObject.new(WorldObjectTypes.TURNIP, Vector2i(-3, 4))
 	crop.state["growth"] = 4.5
 	crop.state["crop_damage"] = 0.25
@@ -114,14 +114,14 @@ func test_world_object_round_trip_keeps_its_growth() -> void:
 	assert_eq(CropLife.damage(restored), 0.25)
 
 
-func test_clock_round_trip() -> void:
+func test_clock_codec_round_trip() -> void:
 	_state.simulation.advance(GameClock.MINUTES_PER_DAY + 95)
 	var restored := GameClock.from_dict(_through_json(_state.clock.to_dict()))
 	assert_eq(restored.day, 2)
 	assert_eq(restored.minute_of_day, _state.clock.minute_of_day)
 
 
-func test_appearance_round_trip_keeps_the_layer_order() -> void:
+func test_appearance_codec_keeps_the_layer_order() -> void:
 	var appearance := Appearance.new()
 	appearance.wear(Appearance.HAIR, "2")
 	appearance.take_off(Appearance.HELD)
@@ -130,7 +130,7 @@ func test_appearance_round_trip_keeps_the_layer_order() -> void:
 	assert_eq(restored.layers[0].slot, Appearance.BODY)
 
 
-func test_player_round_trip() -> void:
+func test_player_codec_round_trip() -> void:
 	var player := _state.player
 	player.position = Vector2(12.25, -3.75)
 	player.facing = Vector2i.LEFT
@@ -141,7 +141,7 @@ func test_player_round_trip() -> void:
 	assert_eq(restored.home_map, _state.world)
 
 
-func test_interior_round_trip() -> void:
+func test_interior_codec_round_trip() -> void:
 	var interior := InteriorLoader.load_interior(
 		BuildingTypes.TYPES[BuildingTypes.KATE]["interior_map"]
 	)
@@ -152,7 +152,7 @@ func test_interior_round_trip() -> void:
 	assert_eq(restored.is_walkable(interior.entry_tile()), true)
 
 
-func test_building_without_an_interior_round_trip() -> void:
+func test_building_without_an_interior_codec_round_trip() -> void:
 	var building := Building.new(BuildingTypes.KATE, Vector2i(5, -6))
 	var restored := Building.from_dict(_through_json(building.to_dict()))
 	assert_eq(restored.origin, building.origin)
@@ -168,12 +168,12 @@ func test_a_building_keeps_its_style_and_one_the_file_no_longer_has_looks_as_its
 	assert_eq(restored.type_data(), BuildingTypes.TYPES[BuildingTypes.KATE])
 
 
-func test_a_new_game_round_trip() -> void:
+func test_a_new_game_codec_round_trip() -> void:
 	var data := _through_json(_state.to_dict())
 	assert_eq(_through_json(GameState.from_dict(data).to_dict()), data)
 
 
-func test_a_lived_in_game_round_trip() -> void:
+func test_a_lived_in_game_codec_round_trip() -> void:
 	var removed_tree := _remove_a_tree()
 	_lived_in_state()
 	var data := _through_json(_state.to_dict())
@@ -208,7 +208,7 @@ func test_a_lived_in_game_round_trip() -> void:
 
 
 func test_loading_does_not_make_a_second_camp() -> void:
-	var restored := GameState.from_dict(_through_json(_state.to_dict()))
+	var restored := RealLoad.of(self, _state)
 	_load_chunks_like(_state.world, restored.world)
 	var fireplaces := 0
 	for coords in restored.world.loaded_chunk_coords():
@@ -221,7 +221,7 @@ func test_loading_does_not_make_a_second_camp() -> void:
 
 func test_the_restored_game_carries_on() -> void:
 	_lived_in_state()
-	var restored := GameState.from_dict(_through_json(_state.to_dict()))
+	var restored := RealLoad.of(self, _state)
 	assert_true(restored.door_underfoot() == _state.door_underfoot())
 	restored.player.position = Vector2(restored.current_map.exit_tile) + Vector2(0.5, 0.5)
 	restored.pass_door()

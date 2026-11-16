@@ -115,7 +115,7 @@ func test_a_house_someone_has_been_in_and_changed_keeps_its_inside() -> void:
 	assert_eq(hall.inside().to_dict(), changed)
 
 
-func test_the_own_inside_is_still_theirs_after_a_save() -> void:
+func test_the_own_inside_is_still_theirs_after_the_building_codec() -> void:
 	var hall := _hall()
 	_state.homes.move_in(_villager("antje"), hall)
 

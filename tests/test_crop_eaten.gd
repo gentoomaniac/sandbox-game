@@ -32,7 +32,7 @@ func test_a_crop_with_one_item_left_to_give_has_no_yield_to_eat() -> void:
 	assert_false(CropLife.has_yield_to_eat(_crop(&"cabbage")), "a yield of 1")
 
 
-func test_what_was_eaten_survives_the_codec() -> void:
+func test_what_was_eaten_survives_the_world_object_codec() -> void:
 	var crop := _crop(&"wheat")
 	CropLife.eat(crop, 1)
 	var loaded := WorldObject.from_dict(crop.to_dict())

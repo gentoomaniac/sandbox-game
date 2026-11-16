@@ -159,7 +159,7 @@ func test_changes_are_announced() -> void:
 	assert_signal_emit_count(_inventory, "changed", 2)
 
 
-func test_round_trip_through_json() -> void:
+func test_inventory_codec_round_trip_through_json() -> void:
 	_inventory.add(ItemTypes.TURNIP, 120)
 	_inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	_inventory.select(1)

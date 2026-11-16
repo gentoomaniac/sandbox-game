@@ -17,7 +17,7 @@ func _flooded_world() -> World:
 	return world
 
 
-func test_the_surge_that_is_coming_is_saved() -> void:
+func test_the_surge_that_is_coming_survives_the_world_codec() -> void:
 	var world := World.new(7)
 	world.surge.expect(2.7, 5000, 180)
 	world.surge.last_rolled_tide = 6
@@ -30,7 +30,7 @@ func test_the_surge_that_is_coming_is_saved() -> void:
 	assert_eq(restored.surge.last_rolled_tide, 6)
 
 
-func test_the_standing_water_its_salt_and_the_dykes_to_mend_are_saved() -> void:
+func test_the_standing_water_its_salt_and_the_dykes_to_mend_survive_the_world_codec() -> void:
 	var world := _flooded_world()
 	assert_gt(world.flood.wet_count(), 100)
 

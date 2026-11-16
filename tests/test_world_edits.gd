@@ -79,7 +79,7 @@ func test_edits_do_not_leak_into_other_chunks() -> void:
 	)
 
 
-func test_edits_made_in_an_unloaded_chunk_are_replayed_when_it_loads_after_a_save() -> void:
+func test_edits_in_an_unloaded_chunk_are_replayed_when_it_loads_after_the_codec() -> void:
 	var near_tree := _generated_tree()
 	_world.remove_object(near_tree.pos)
 	var tilled := _free_tile()

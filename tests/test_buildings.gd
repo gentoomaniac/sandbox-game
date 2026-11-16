@@ -160,7 +160,7 @@ func test_furnishing_replaces_a_default_inside_nobody_changed_but_keeps_a_change
 	assert_eq(changed.inside().to_dict(), changed_before)
 
 
-func test_the_own_inside_is_saved_with_the_building() -> void:
+func test_the_own_inside_is_kept_by_the_building_codec() -> void:
 	var building := _world.place_building(HOUSE, ORIGIN)
 	var own_map: String = BuildingTypes.TYPES[BuildingTypes.SHACK]["interior_map"]
 	building.furnish_from(own_map)
