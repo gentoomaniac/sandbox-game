@@ -18,10 +18,10 @@ func test_no_sheet_or_speech_names_a_coin_the_game_lacks() -> void:
 
 func test_the_prices_of_the_village_sheet_are_those_of_the_shop() -> void:
 	var rules := ShopRules.default_rules()
-	var shop_values := DataFile.read_sections(ShopRules.DEFAULT_PATH)
-	var bread: int = shop_values["shop.%s.takes.%s" % [SHOP, ItemTypes.BREAD]]["worth"]
-	var egg: int = shop_values["shop.%s.takes.%s" % [SHOP, ItemTypes.EGG]]["worth"]
-	var candle := rules.worth_of_sold(SHOP, ItemTypes.CANDLE)
+	var prices := Prices.default_prices()
+	var bread := prices.worth(ItemTypes.BREAD)
+	var egg := prices.worth(ItemTypes.EGG)
+	var candle := prices.worth(ItemTypes.CANDLE)
 	var sheet := VillageSheet.default_sheet()
 	var told := sheet.text(true, ["money"] as Array[String])
 

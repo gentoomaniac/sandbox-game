@@ -57,7 +57,7 @@ func test_the_stock_and_the_room_are_read() -> void:
 
 func test_an_unknown_item_is_reported() -> void:
 	var values := DataFile.read_sections(ShopRules.DEFAULT_PATH)
-	values["shop.trienke.takes.gold_bar"] = {"worth": 5, "room": 1}
+	values["shop.trienke.takes.gold_bar"] = {"room": 1}
 	assert_eq(
 		ShopRules.new(values).problems(),
 		["[shop.trienke.takes.gold_bar] gold_bar is no item"] as Array[String]
@@ -69,11 +69,25 @@ func test_an_unknown_keeper_is_reported() -> void:
 	assert_eq(problems, ["[shop.trienke] keeper nobody is no villager"] as Array[String])
 
 
-func test_a_worth_below_one_is_reported() -> void:
-	var problems := _rules_with("shop.trienke.takes.egg", {"worth": 0}).problems()
-	assert_eq(
-		problems, ["[shop.trienke.takes.egg] worth is not a whole number from 1"] as Array[String]
-	)
+func test_a_good_with_no_worth_is_reported() -> void:
+	var prices := Prices.new({"worth": {}})
+
+	var problems := ShopRules.new(DataFile.read_sections(ShopRules.DEFAULT_PATH), prices).problems()
+
+	assert_eq(problems.size(), 24, "every good of the file")
+	assert_has(problems, "[shop.trienke.takes.egg] egg has no worth in data/prices.cfg")
+	assert_has(problems, "[shop.trienke.sells.candle] candle has no worth in data/prices.cfg")
+
+
+func test_a_good_she_takes_must_be_worth_two() -> void:
+	var values := DataFile.read_sections(Prices.DEFAULT_PATH)
+	values["worth"]["egg"] = 1
+	values["worth"]["candle"] = 1
+	var shop_values := DataFile.read_sections(ShopRules.DEFAULT_PATH)
+
+	var problems := ShopRules.new(shop_values, Prices.new(values)).problems()
+
+	assert_eq(problems, ["[shop.trienke.takes.egg] egg is worth less than 2"] as Array[String])
 
 
 func test_a_restock_over_the_max_is_reported() -> void:
@@ -83,7 +97,7 @@ func test_a_restock_over_the_max_is_reported() -> void:
 
 func test_a_good_both_sold_and_taken_is_reported() -> void:
 	var values := DataFile.read_sections(ShopRules.DEFAULT_PATH)
-	values["shop.trienke.takes.candle"] = {"worth": 16, "room": 2}
+	values["shop.trienke.takes.candle"] = {"room": 2}
 	assert_eq(
 		ShopRules.new(values).problems(),
 		["[shop.trienke] candle is both sold and taken"] as Array[String]
@@ -106,7 +120,7 @@ func test_a_missing_key_and_a_bad_percent_are_reported() -> void:
 func test_a_section_that_is_no_shop_is_reported() -> void:
 	var values := DataFile.read_sections(ShopRules.DEFAULT_PATH)
 	values["stall.trienke"] = {}
-	values["shop.nobody.sells.egg"] = {"worth": 1, "max": 1, "restock": 1}
+	values["shop.nobody.sells.egg"] = {"max": 1, "restock": 1}
 	var problems := ShopRules.new(values).problems()
 	assert_eq(problems.size(), 2)
 	assert_true(problems[0].ends_with("is no shop, no good of a shop and not under a shop"))

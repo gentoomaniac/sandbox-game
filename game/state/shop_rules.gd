@@ -1,8 +1,8 @@
 class_name ShopRules
 extends RefCounted
 ## What the shopkeepers sell and take, read from data/shops.cfg (see there for what each key means):
-## the worth of each good in Schilling, the percentages that make a price and a value of it, and how
-## much she has and takes. `from_file` reports everything wrong with the file, and `is_valid` says
+## the percentages that make a price and a value of the worths of Prices, and how much she has and
+## takes. `from_file` reports everything wrong with the file, and `is_valid` says
 ## whether anything was.
 
 const DEFAULT_PATH := "res://data/shops.cfg"
@@ -10,17 +10,21 @@ const SHOP_PREFIX := "shop"
 const SELLS := "sells"
 const TAKES := "takes"
 const SHOP_KEYS: Array[String] = ["keeper", "sell_percent", "take_percent"]
-const SELLS_KEYS: Array[String] = ["worth", "max", "restock"]
-const TAKES_KEYS: Array[String] = ["worth", "room"]
+const SELLS_KEYS: Array[String] = ["max", "restock"]
+const TAKES_KEYS: Array[String] = ["room"]
+## A good she takes pays at least 1 at `take_percent`, rounded down; see data/prices.cfg.
+const LEAST_TAKEN_WORTH := 2
 
 static var _default: ShopRules
 
 ## {section: {key: value}}, as in the file.
 var _values: Dictionary
+var _prices: Prices
 
 
-func _init(values: Dictionary) -> void:
+func _init(values: Dictionary, prices := Prices.default_prices()) -> void:
 	_values = values
+	_prices = prices
 
 
 ## The rules of the data file, loaded the first time they are asked for.
@@ -103,7 +107,7 @@ func is_taken(shop: String, item: StringName) -> bool:
 ## friendship with her (see ShopStanding), a whole percent.
 func price(shop: String, item: StringName, standing_percent := 100) -> int:
 	var percent: int = _values[_section(shop)]["sell_percent"]
-	return ceili(worth_of_sold(shop, item) * percent * standing_percent / 10000.0)
+	return ceili(_prices.worth(item) * percent * standing_percent / 10000.0)
 
 
 ## Whether the item is one of her best wares (`best` of its section), which she sells only to
@@ -116,11 +120,7 @@ func is_best(shop: String, item: StringName) -> bool:
 ## rounded down.
 func value(shop: String, item: StringName) -> int:
 	var percent: int = _values[_section(shop)]["take_percent"]
-	return floori(_values[_good_section(shop, TAKES, item)]["worth"] * percent / 100.0)
-
-
-func worth_of_sold(shop: String, item: StringName) -> int:
-	return _values[_good_section(shop, SELLS, item)]["worth"]
+	return floori(_prices.worth(item) * percent / 100.0)
 
 
 ## The most of the item she has at once.
@@ -195,6 +195,10 @@ func _good_problems(
 	var values: Dictionary = _values[section]
 	if not ItemTypes.TYPES.has(item):
 		found.append("[%s] %s is no item" % [section, item])
+	elif not _prices.has_worth(item):
+		found.append("[%s] %s has no worth in data/prices.cfg" % [section, item])
+	elif kind == TAKES and _prices.worth(item) < LEAST_TAKEN_WORTH:
+		found.append("[%s] %s is worth less than %d" % [section, item, LEAST_TAKEN_WORTH])
 	for key in keys:
 		if not values.has(key):
 			found.append("[%s] no %s" % [section, key])

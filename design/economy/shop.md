@@ -101,7 +101,9 @@ chest). E on the keeper **out of hours** opens the chat (below).
 
 - Everything has a **worth** in Schilling, "ß" in short (the unit of the economy draft; it was
   called Pfennig before #49).
-  In this step the worths are in `data/shops.cfg`; they move to `data/prices.cfg` when money comes.
+  The worths are in `data/prices.cfg` (`Prices`), one table for every shop; `data/shops.cfg` keeps
+  the keeper, the percentages, the stock and the room. A good she takes must be worth at least 2
+  (60 % of 1 rounds down to nothing), and the file check says so.
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
   ratios). The village sheet's money topic names these prices, and a test keeps them in line
   (`tests/test_money_lore.gd`). A deal is fair when the value given is at least the price of
@@ -150,8 +152,8 @@ chest). E on the keeper **out of hours** opens the chat (below).
 ### `data/shops.cfg`
 
 One `[shop.<keeper id>]` and a section for each good, read once at start by `ShopRules`, which
-reports what is wrong (`problems`): an unknown item or keeper, a worth below 1, a `restock` over
-`max`, a good both sold and taken.
+reports what is wrong (`problems`): an unknown item or keeper, a good with no worth in `data/prices.cfg`, a taken good worth
+less than 2, a `restock` over `max`, a good both sold and taken.
 
 ```
 [shop.trienke]
@@ -161,17 +163,14 @@ sell_percent=125
 take_percent=60
 
 [shop.trienke.sells.turnip_seeds]
-worth=2
 max=40
 restock=10
 
 [shop.trienke.sells.candle]
-worth=16
 max=6
 restock=1
 
 [shop.trienke.takes.egg]
-worth=2
 room=12
 ```
 

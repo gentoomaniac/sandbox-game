@@ -91,6 +91,10 @@ A shop sells at 125 % rounded up and takes at 60 % rounded down. For a worth:
 
 ## The value table, and where it lives
 
+**Built (step 4):** `data/prices.cfg` with `[worth]`, `Prices` (`game/state/prices.gd`), `ShopRules`
+asking it, the file checks, `tests/test_prices.gd`. `[friendship]` is not needed: #48's
+`data/friendship.cfg` has the discount (see step 10); `[seasons.<kind>]` comes with step 11.
+
 A new **`data/prices.cfg`**, one source for what a thing is worth:
 
 ```
