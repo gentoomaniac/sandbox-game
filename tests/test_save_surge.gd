@@ -42,6 +42,20 @@ func test_the_standing_water_its_salt_and_the_dykes_to_mend_are_saved() -> void:
 	assert_eq(restored.flood.wet_count(), world.flood.wet_count())
 
 
+func test_the_flood_of_a_game_loads_through_the_real_loader() -> void:
+	var state := GameState.new_game(CoastWorld.SEED)
+	CoastWorld.load_chunks(state.world)
+	state.world.surge.expect(2.7, 5000, 180)
+	state.world.flood.begin(state.world, 3.4, NOW, 1)
+	state.world.flood.settle(state.world)
+
+	var restored := RealLoad.of(self, state).world
+
+	assert_eq(restored.flood.snapshot(), state.world.flood.snapshot())
+	assert_eq(restored.flood.phase, FloodState.Phase.STANDING)
+	assert_eq(restored.surge.to_dict(), state.world.surge.to_dict())
+
+
 func test_a_flood_saved_while_filling_stands_as_far_as_it_got() -> void:
 	var world := CoastWorld.make()
 	world.flood.begin(world, 3.4, NOW, 1)

@@ -10,11 +10,17 @@ const CHUNK_ROWS := Vector2i(0, 2)
 
 static func make() -> World:
 	var world := World.new(SEED)
+	load_chunks(world)
+	return world
+
+
+## Loads those chunks into a world of the seed, as far as it has not got them.
+static func load_chunks(world: World) -> void:
 	var generator := WorldGenerator.new(SEED)
 	for y in range(CHUNK_ROWS.x, CHUNK_ROWS.y):
 		for x in range(CHUNK_COLUMNS.x, CHUNK_COLUMNS.y):
-			world.add_chunk(generator.generate_chunk(Vector2i(x, y)))
-	return world
+			if not world.is_chunk_loaded(Vector2i(x, y)):
+				world.add_chunk(generator.generate_chunk(Vector2i(x, y)))
 
 
 ## The sea dyke objects of the loaded chunks.
