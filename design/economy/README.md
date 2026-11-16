@@ -204,6 +204,15 @@ needs money to be done. A coin reward (`reward.schilling`, a whole number from 1
 **Prices:**
 
 - **Sells at 125 %, buys at 60 %**, rounded in the keeper's favour (above).
+- **Built (step 10), a difference from the plan:** #48 built the cut first and simpler. The benefit
+  `better_prices` (level 6) brings the price to **80 %** (`[shop] better_prices_percent` of
+  `data/friendship.cfg`, `ShopStanding`), one step and not the 5, 10 and 15 % of levels 6, 8 and 9
+  below, and the plan's `[friendship]` of `data/prices.cfg` is not made: the number lives where #48
+  put it. The percent is applied to the worth at 125 % and the price rounded up once, so it is
+  whole, at least 1 and never past the full price (`tests/test_shop_standing.gd`). Steps of 5/10/15
+  would be a change of that one data file and `ShopStanding`, if play asks for them. It cuts what she
+  sells only; what she pays for the player's goods is not raised (the plan's "added to what they
+  pay" is left out). The text below is the plan.
 - **Friendship** shaves the price by the benefit `better_prices` (level 6, Good neighbour): 5 % at
   6, 10 % at 8 and 15 % at 9, off what they sell and added to what they pay, never past the worth.
   This replaces the draft's levels, which predate the ten of

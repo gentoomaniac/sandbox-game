@@ -108,6 +108,10 @@ chest). E on the keeper **out of hours** opens the chat (below).
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
   ratios). The village sheet's money topic names these prices, and a test keeps them in line
   (`tests/test_money_lore.gd`). Whole Schilling throughout, no fractions.
+- **Friendship in the price** (#48 and #49 step 10): a shopkeeper with the benefit `better_prices`
+  (level 6, Good neighbour) sells at 80 % of her price (`ShopStanding`), applied to the worth once
+  and rounded up once, so a price is whole, at least 1 and never past the full price. What she pays
+  does not change.
 - **A deal is a price and a value, and the difference is paid in coin** (#49, step 7): what she asks
   for what the player gets is the price, what she gives for what they bring is the value. If the
   value is less, the player pays the rest from the purse; if it is more, she pays the rest in
