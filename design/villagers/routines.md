@@ -377,7 +377,7 @@ priority=5
 fixed=true
 ```
 
-- **Targets** are `home` (the yard of their house), `workplace` (`Workplace.spot()`; with none:
+- **Targets** (one script each in `game/state/activity_targets/`, see [the architecture](../../docs/architecture.md)) are `home` (the yard of their house), `workplace` (`Workplace.spot()`; with none:
   `home`), `field` (below), `church`, `meeting` (the village's, else the church yard), `friend`
   (the yard of the house of a villager of their `people`, picked from the day and the name) and
   `wild` (a walkable meadow tile 8 to `wild` tiles from home, picked from the day and the name,

@@ -20,14 +20,10 @@ const RULES_KEYS: Array[String] = [
 	"min_gap_minutes",
 	"feasts",
 ]
-## The targets that are looked for within `search_tiles` of the villager's home.
-const SEARCH_KINDS: Array[String] = ["field", "church", "meeting", "friend", "wild"]
 ## The activity every day has (see DefaultDay), and the set everybody has.
 const SLEEP := "sleep"
 const BASE_SET := "base"
 
-## Where an activity is done, relative to the villager (see ActivityPlaces).
-const TARGETS: Array[String] = ["home", "workplace", "field", "church", "meeting", "friend", "wild"]
 ## How they stand there: still, strolling within the radius, or at work.
 const DOINGS: Array[String] = ["stand", "walk_about", "work"]
 ## The kinds of a day an activity can be planned for: Monday to Friday, Saturday, Sunday, and the
@@ -37,17 +33,18 @@ const SEASONS: Array[String] = ["spring", "summer", "autumn", "winter"]
 const REQUIRED_KEYS: Array[String] = ["verb", "target", "doing"]
 const TEXT_KEYS: Array[String] = ["verb"]
 const FLAG_KEYS: Array[String] = ["needs_daylight", "needs_dry", "fixed", "inside"]
-## The targets with a building whose door they can go in by (`inside`).
-const TARGETS_WITH_DOOR: Array[String] = ["home", "workplace", "church", "friend"]
 
 static var _default: ActivityRules
 
 ## {section: {key: value}}, as in the file.
 var _values: Dictionary
+## {name: ActivityTarget}: where an activity can be done, relative to the villager.
+var _targets: Dictionary
 
 
-func _init(values: Dictionary) -> void:
+func _init(values: Dictionary, targets := ActivityTargets.default_kinds()) -> void:
 	_values = values
+	_targets = targets
 
 
 ## The rules of the data file, loaded the first time they are asked for.
@@ -223,19 +220,17 @@ func _rules_problems() -> Array[String]:
 		# No spread is fine: they all start at once.
 		if float(section[key]) < 0 or float(section[key]) == 0 and key != "spread_minutes":
 			found.append("[%s] %s must be above 0" % [RULES_SECTION, key])
+	var searched := _searched_targets()
 	if section.has("search_tiles"):
 		var tiles: Variant = section["search_tiles"]
 		var is_tiles: bool = (
 			tiles is Dictionary
-			and tiles.keys().size() == SEARCH_KINDS.size()
-			and SEARCH_KINDS.all(func(kind: String) -> bool: return float(tiles.get(kind, 0)) > 0)
+			and tiles.keys().size() == searched.size()
+			and searched.all(func(kind: String) -> bool: return float(tiles.get(kind, 0)) > 0)
 		)
 		if not is_tiles:
 			found.append(
-				(
-					"[%s] search_tiles is not tiles above 0 for each of %s"
-					% [RULES_SECTION, SEARCH_KINDS]
-				)
+				"[%s] search_tiles is not tiles above 0 for each of %s" % [RULES_SECTION, searched]
 			)
 	if section.has("feasts"):
 		var feasts: Variant = section["feasts"]
@@ -255,8 +250,8 @@ func _activity_problems(id: String) -> Array[String]:
 	for key in TEXT_KEYS:
 		if values.has(key) and not (values[key] is String and not values[key].is_empty()):
 			found.append("[%s] %s is not a text" % [id, key])
-	if values.has("target") and values["target"] not in TARGETS:
-		found.append("[%s] target is not one of %s" % [id, TARGETS])
+	if values.has("target") and values["target"] not in _targets:
+		found.append("[%s] target is not one of %s" % [id, _target_names()])
 	if values.has("doing") and values["doing"] not in DOINGS:
 		found.append("[%s] doing is not one of %s" % [id, DOINGS])
 	if values.has("radius") and not float(values["radius"]) > 0.0:
@@ -269,10 +264,10 @@ func _activity_problems(id: String) -> Array[String]:
 		values.get("inside") is bool
 		and values["inside"]
 		and target is String
-		and target in TARGETS
-		and target not in TARGETS_WITH_DOOR
+		and target in _targets
+		and not _targets[target].has_door()
 	):
-		found.append("[%s] inside needs a target with a door: %s" % [id, TARGETS_WITH_DOOR])
+		found.append("[%s] inside needs a target with a door: %s" % [id, _targets_with_door()])
 	if values.has("priority") and not values["priority"] is int:
 		found.append("[%s] priority is not a whole number" % id)
 	found.append_array(_list_problems(id, values, "days", DAY_KINDS))
@@ -345,3 +340,20 @@ func _set_problems() -> Array[String]:
 		if not used.has(id):
 			found.append("[%s] is in no set" % id)
 	return found
+
+
+## The words an activity can name as its `target`.
+func _target_names() -> Array[String]:
+	var found: Array[String] = []
+	found.assign(_targets.keys())
+	return found
+
+
+## The targets looked for within `search_tiles` of the villager's home.
+func _searched_targets() -> Array[String]:
+	return _target_names().filter(func(name: String) -> bool: return _targets[name].is_searched())
+
+
+## The targets with a building whose door an activity can go in by (`inside`).
+func _targets_with_door() -> Array[String]:
+	return _target_names().filter(func(name: String) -> bool: return _targets[name].has_door())
