@@ -36,6 +36,7 @@ import crafts  # noqa: E402
 import craft_icons  # noqa: E402
 import crop_icons  # noqa: E402
 import crops  # noqa: E402
+import declaration  # noqa: E402
 import fire  # noqa: E402
 import flowers  # noqa: E402
 import footprints  # noqa: E402
@@ -74,7 +75,7 @@ from palette import CLASSIC_ART, GENERATED, PALETTE, save, save_picture, set_fil
 
 
 def write_character():
-    layers = character.layers() | villagers.layers()
+    layers = declaration.merge({"character.py": character.layers(), "villagers.py": villagers.layers()})
     for name, layer in layers.items():
         save(character.character_sheet(*layer), f"character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
         save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
@@ -160,7 +161,7 @@ def write_ground():
 
 
 def write_buildings():
-    for name, draw in (buildings.PICTURES | church.PICTURES | yard.PICTURES).items():
+    for name, draw in declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "yard.py": yard.PICTURES}).items():
         for lit_suffix, is_lit in (("", False), ("_lit", True)):
             picture, snowy = draw(is_lit=is_lit)
             for look in seasons.HOUSE_LOOKS:
@@ -185,87 +186,109 @@ def standing_outdoors(picture):
 
 
 def object_atlas():
-    """The rows of assets/objects.png in order, each as (kind, its variants), as
-    tools/art/generate.py draws them (see the numbered table there)."""
+    """The rows of assets/objects.png in the order of `declaration.OBJECT_KINDS`, each as
+    (kind, its variants), as tools/art/generate.py draws them."""
     spruces, pines, dead_trees, berry_bushes, shrubs, saplings, ferns = trees.vegetation()
-    return [
-        ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
-        ("stone", [trees.stone(seed) for seed in (111, 112)]),
-        ("fireplace", [camp.fireplace(), camp.fireplace_out()]),
-        ("sleeping_bag", [camp.bedroll()]),
-        ("spruce", spruces),
-        ("pine", pines),
-        ("dead_tree", dead_trees),
-        ("berry_bush", berry_bushes),
-        ("shrub", shrubs),
-        ("sapling", saplings),
-        ("fern", ferns),
-        ("boulder", [trees.boulder(seed) for seed in (191, 192)]),
-        ("stump", [trees.stump(seed) for seed in (201, 202)]),
-        ("tall_grass", meadow.tall_grass_row()),
-        *trunks.rows("oak"),
-        *trunks.rows("spruce"),
-        *trunks.rows("pine"),
-        *trunks.rows("dead_tree"),
-        *trunks.rows("willow"),
-        ("reeds", reeds.reeds_row()),
-        ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
-        ("chest", [standing_outdoors(chest.chest())]),
-        ("knick", boundaries.knick_row()),
-        ("wattle_fence", boundaries.wattle_fence_row()),
-        ("stone_wall", boundaries.stone_wall_row()),
-        ("dyke", boundaries.dyke_row()),
-        ("willow", willow.willow_row()),
-        ("beech", beech.beech_row()),
-        *trunks.rows("beech"),
-        ("birch", birch.birch_row()),
-        *trunks.rows("birch"),
-        ("alder", alder.alder_row()),
-        *trunks.rows("alder"),
-        ("workbench", [standing_outdoors(crafts.workbench())]),
-        ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
-        ("kiln", [standing_outdoors(crafts.kiln())]),
-        ("oven", [standing_outdoors(crafts.oven())]),
-        # The new Ewer's picture is three cells wide: the classic one lies in the middle one.
-        ("ewer", [blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT), *coast.ewer_row(), blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)]),
-        ("grave", [standing_outdoors(picture) for picture in graves.graves()]),
-        ("jetty", landing.jetty_row()),
-        ("rowing_boat", landing.rowing_boat_row()),
-        ("net_frame", landing.net_frame_row()),
-        ("eel_traps", landing.eel_traps_row()),
-        ("draw_well", [standing_outdoors(yard.draw_well())]),
-        ("trough", [standing_outdoors(yard.trough(level)) for level in range(yard.STOCK_LOOKS)]),
-        ("hay_rack", [standing_outdoors(yard.hay_rack(level)) for level in range(yard.STOCK_LOOKS)]),
-        ("feed_trough", [standing_outdoors(yard.trough(level, "feed")) for level in range(yard.STOCK_LOOKS)]),
-        ("pen_fence", pen.pen_fence_row()),
-        ("pen_gate", pen.pen_gate_row()),
-        ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
-        ("pen_gate_open", pen.pen_gate_row(is_open=True)),
-        ("scarecrow", [standing_outdoors(picture) for picture in scarecrow.frames()]),
-        # The ways are drawn by the new art's module, at this tile size (see ways.py).
-        ("plank_walk", ways.plank_walk_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
-        ("stone_path", ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
-        ("way_edge", ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)),
-        ("market_stall", [standing_outdoors(stall.market_stall())]),
-        *snags.rows(),
-        ("notice_board", [standing_outdoors(notice_board.notice_board())]),
-        ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
-        ("dyke_low", boundaries.dyke_row("low")),
-        ("dyke_high", boundaries.dyke_row("high")),
-        ("dyke_torn", boundaries.torn_dyke_row()),
-    ]
+    blank_cell = blank(OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
+    drawn = declaration.merge(
+        {
+            "trees.py": {
+                "oak": [trees.oak(seed) for seed in trees.OAK_SEEDS],
+                "stone": [trees.stone(seed) for seed in (111, 112)],
+                "spruce": spruces,
+                "pine": pines,
+                "dead_tree": dead_trees,
+                "berry_bush": berry_bushes,
+                "shrub": shrubs,
+                "sapling": saplings,
+                "fern": ferns,
+                "boulder": [trees.boulder(seed) for seed in (191, 192)],
+                "stump": [trees.stump(seed) for seed in (201, 202)],
+                "dead_stump": [trees.dead_stump(seed) for seed in (211, 212)],
+            },
+            "camp.py": {
+                "fireplace": [camp.fireplace(), camp.fireplace_out()],
+                "sleeping_bag": [camp.bedroll()],
+            },
+            "meadow.py": {"tall_grass": meadow.tall_grass_row()},
+            "trunks.py": {
+                kind: variants
+                for species in ("oak", "spruce", "pine", "dead_tree", "willow", "beech", "birch", "alder")
+                for kind, variants in trunks.rows(species)
+            },
+            "reeds.py": {"reeds": reeds.reeds_row()},
+            "chest.py": {"chest": [standing_outdoors(chest.chest())]},
+            "boundaries.py": {
+                "knick": boundaries.knick_row(),
+                "wattle_fence": boundaries.wattle_fence_row(),
+                "stone_wall": boundaries.stone_wall_row(),
+                "dyke": boundaries.dyke_row(),
+                "dyke_low": boundaries.dyke_row("low"),
+                "dyke_high": boundaries.dyke_row("high"),
+                "dyke_torn": boundaries.torn_dyke_row(),
+            },
+            "willow.py": {"willow": willow.willow_row()},
+            "beech.py": {"beech": beech.beech_row()},
+            "birch.py": {"birch": birch.birch_row()},
+            "alder.py": {"alder": alder.alder_row()},
+            "crafts.py": {
+                "workbench": [standing_outdoors(crafts.workbench())],
+                "carved_chest": [standing_outdoors(crafts.carved_chest())],
+                "kiln": [standing_outdoors(crafts.kiln())],
+                "oven": [standing_outdoors(crafts.oven())],
+            },
+            # The new Ewer's picture is three cells wide: the classic one lies in the middle one.
+            "coast.py": {"ewer": [blank_cell, *coast.ewer_row(), blank_cell]},
+            "graves.py": {"grave": [standing_outdoors(picture) for picture in graves.graves()]},
+            "landing.py": {
+                "jetty": landing.jetty_row(),
+                "rowing_boat": landing.rowing_boat_row(),
+                "net_frame": landing.net_frame_row(),
+                "eel_traps": landing.eel_traps_row(),
+            },
+            "yard.py": {
+                "draw_well": [standing_outdoors(yard.draw_well())],
+                "trough": [standing_outdoors(yard.trough(level)) for level in range(yard.STOCK_LOOKS)],
+                "hay_rack": [standing_outdoors(yard.hay_rack(level)) for level in range(yard.STOCK_LOOKS)],
+                "feed_trough": [standing_outdoors(yard.trough(level, "feed")) for level in range(yard.STOCK_LOOKS)],
+            },
+            "pen.py": {
+                "pen_fence": pen.pen_fence_row(),
+                "pen_gate": pen.pen_gate_row(),
+                "pig_shelter": [standing_outdoors(pen.pig_shelter())],
+                "pen_gate_open": pen.pen_gate_row(is_open=True),
+            },
+            "scarecrow.py": {"scarecrow": [standing_outdoors(picture) for picture in scarecrow.frames()]},
+            # The ways are drawn by the new art's module, at this tile size (see ways.py).
+            "ways.py": {
+                "plank_walk": ways.plank_walk_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT),
+                "stone_path": ways.stone_path_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT),
+                "way_edge": ways.way_edge_row(TILE, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT),
+            },
+            "stall.py": {"market_stall": [standing_outdoors(stall.market_stall())]},
+            "snags.py": dict(snags.rows()),
+            "notice_board.py": {"notice_board": [standing_outdoors(notice_board.notice_board())]},
+            "sales_cart.py": {"sales_cart": [standing_outdoors(sales_cart.sales_cart())]},
+        }
+    )
+    return declaration.in_declared_order(declaration.OBJECT_KINDS, drawn, "the object atlas")
 
 
 def write_objects():
     """The object atlas in every look, the bare trees drawn anew for winter."""
     objects = object_atlas()
-    redraws = {
-        "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
-        "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
-        "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
-        "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
-        "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
-    } | snags.redraws()
+    redraws = declaration.merge(
+        {
+            "generate.py": {
+                "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
+                "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
+                "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
+                "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
+                "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
+            },
+            "snags.py": snags.redraws(),
+        }
+    )
     objects_by_look = {look: object_looks.object_rows(look, objects, redraws) for look in object_looks.LOOKS}
     objects_by_look |= cover.object_cover_looks(objects_by_look)
     atlas.save_sheets("objects", [kind for kind, _ in objects], object_looks.LOOKS + cover.COVER_LOOKS, objects_by_look, OBJECT_CELL_WIDTH, OBJECT_CELL_HEIGHT)
@@ -293,7 +316,22 @@ def write_interior():
 
 
 def write_items():
-    icons = item_icons.ICONS | crop_icons.icons() | tool_icons.icons() | craft_icons.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | {"scarecrow": scarecrow.icon(), "notice_board": yard.icon_of(notice_board.notice_board()), "sales_cart": sales_cart.icon()} | ways.icons(TILE, yard.icon_of)
+    icons = declaration.merge(
+        {
+            "item_icons.py": item_icons.ICONS,
+            "crop_icons.py": crop_icons.icons(),
+            "tool_icons.py": tool_icons.icons(),
+            "craft_icons.py": craft_icons.icons(),
+            "yard.py": yard.icons(),
+            "pen.py": pen.icons(),
+            "boundaries.py": boundaries.icons(),
+            "trees.py": trees.icons(),
+            "scarecrow.py": {"scarecrow": scarecrow.icon()},
+            "notice_board.py": {"notice_board": yard.icon_of(notice_board.notice_board())},
+            "sales_cart.py": {"sales_cart": sales_cart.icon()},
+            "ways.py": ways.icons(TILE, yard.icon_of),
+        }
+    )
     for name, picture in icons.items():
         save_picture(picture, f"items/{name}.png")
         # The same icon at half size, for items lying on the ground.

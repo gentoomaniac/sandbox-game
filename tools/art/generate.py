@@ -115,6 +115,7 @@ import coast
 import crafts
 import crop_icons
 import crops
+import declaration
 import fire
 import flowers
 import footprints
@@ -161,150 +162,90 @@ def standing_outdoors(picture, shadow_half_width=None):
     return canvas
 
 
-# The rows of assets/objects.png, as (kind, looks). `atlas_row` of each type in
-# game/state/world_objects/ is its number here, and tests/test_object_atlas.gd checks
-# it against assets/objects_rows.txt, which is written from the list below. A tree's trunks are
-# two rows, the long trunk and then the short one; its `trunk` in world_objects/trees.gd names the
-# first.
-#
-#  0 oak (3)
-#  1 stone (2)
-#  2 fireplace (1, then the same with the fire out)
-#  3 sleeping_bag (1)
-#  4 spruce (3)
-#  5 pine (3)
-#  6 dead_tree (3)
-#  7 berry_bush (3, then the same 3 picked)
-#  8 shrub (3)
-#  9 sapling (3)
-# 10 fern (3; the game type is fern_bush, the art kind keeps its old name)
-# 11 boulder (2)
-# 12 stump (2)
-# 13 tall_grass (3, then the same 3 mown)
-# 14 oak_trunk (2)
-# 15 oak_short_trunk (2)
-# 16 spruce_trunk (2)
-# 17 spruce_short_trunk (2)
-# 18 pine_trunk (2)
-# 19 pine_short_trunk (2)
-# 20 dead_tree_trunk (2)
-# 21 dead_tree_short_trunk (2)
-# 22 willow_trunk (2)
-# 23 willow_short_trunk (2)
-# 24 reeds (3, then the same 3 cut)
-# 25 dead_stump (2)
-# 26 chest (1)
-# 27 knick (3 variants of 16, one per connection mask, see boundaries.py)
-# 28 wattle_fence (16, one per connection mask)
-# 29 stone_wall (3 variants of 16)
-# 30 dyke (16, one per connection mask, then 12 corners crossing a side on the slant, see slants.py)
-# 31 willow (3)
-# 32 beech (3)
-# 33 beech_trunk (2)
-# 34 beech_short_trunk (2)
-# 35 birch (3)
-# 36 birch_trunk (2)
-# 37 birch_short_trunk (2)
-# 38 alder (3)
-# 39 alder_trunk (2)
-# 40 alder_short_trunk (2)
-# 41 workbench (1)
-# 42 carved_chest (1)
-# 43 kiln (1)
-# 44 oven (1)
-# 45 ewer (1, three cells wide)
-# 46 grave (3)
-# 47 jetty (16, one per connection mask, see landing.py)
-# 48 rowing_boat (1)
-# 49 net_frame (1)
-# 50 eel_traps (1)
-# 51 draw_well (1)
-# 52 trough (4, its fills: empty, low, half, full, see yard.py)
-# 53 hay_rack (4, the same)
-# 54 feed_trough (4, the same: the trough with feed in it)
-# 55 pen_fence (16, one per connection mask, see pen.py)
-# 56 pen_gate (16, the same)
-# 57 pig_shelter (1)
-# 58 pen_gate_open (16, the gate swung open)
-# 59 scarecrow (3 frames: still, then blown by the wind, see scarecrow.py)
-# 60 plank_walk (4 variants of 16, one per connection mask: full-tile ground pieces that run on into the ways beside them, see ways.py)
-# 61 stone_path (3 variants of 16, the same)
-# 62 way_edge (16, one per mask of the sides with a way beside them: not an object, drawn on the free tiles beside ways, see ways.py)
-# 63 market_stall (1, see stall.py)
-# 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
-# 78 notice_board (1, see notice_board.py)
-# 79 sales_cart (1, see sales_cart.py)
-# 80 dyke_low (28, as the dyke: its look under 1.5 m, see boundaries.DYKE_LOOKS)
-# 81 dyke_high (28, the same: its look over 2.8 m)
-# 82 dyke_torn (28, the same: its torn crest while the sea has damaged it, see boundaries.torn_dyke)
 def object_atlas():
-    """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
-    treat every kind alike, so kind and row come from one list."""
+    """The rows of assets/objects.png in the order of `declaration.OBJECT_KINDS`, each as
+    (kind, its variants). The seasons treat every kind alike, so kind and row come from one list."""
     spruces, pines, dead_trees, berry_bushes, shrubs, saplings, ferns = trees.vegetation()
-    return [
-        ("oak", [trees.oak(seed) for seed in trees.OAK_SEEDS]),
-        ("stone", [trees.stone(seed) for seed in (111, 112)]),
-        ("fireplace", [camp.fireplace(), camp.fireplace_out()]),
-        ("sleeping_bag", [camp.bedroll()]),
-        ("spruce", spruces),
-        ("pine", pines),
-        ("dead_tree", dead_trees),
-        ("berry_bush", berry_bushes),
-        ("shrub", shrubs),
-        ("sapling", saplings),
-        ("fern", ferns),
-        ("boulder", [trees.boulder(seed) for seed in (191, 192)]),
-        ("stump", [trees.stump(seed) for seed in (201, 202)]),
-        ("tall_grass", meadow.tall_grass_row()),
-        *trunks.rows("oak"),
-        *trunks.rows("spruce"),
-        *trunks.rows("pine"),
-        *trunks.rows("dead_tree"),
-        *trunks.rows("willow"),
-        ("reeds", reeds.reeds_row()),
-        ("dead_stump", [trees.dead_stump(seed) for seed in (211, 212)]),
-        ("chest", [standing_outdoors(chest.chest())]),
-        ("knick", boundaries.knick_row()),
-        ("wattle_fence", boundaries.wattle_fence_row()),
-        ("stone_wall", boundaries.stone_wall_row()),
-        ("dyke", boundaries.dyke_row()),
-        ("willow", willow.willow_row()),
-        ("beech", beech.beech_row()),
-        *trunks.rows("beech"),
-        ("birch", birch.birch_row()),
-        *trunks.rows("birch"),
-        ("alder", alder.alder_row()),
-        *trunks.rows("alder"),
-        ("workbench", [standing_outdoors(crafts.workbench())]),
-        ("carved_chest", [standing_outdoors(crafts.carved_chest())]),
-        ("kiln", [standing_outdoors(crafts.kiln())]),
-        ("oven", [standing_outdoors(crafts.oven())]),
-        ("ewer", coast.ewer_row()),
-        ("grave", [standing_outdoors(picture) for picture in church.graves()]),
-        ("jetty", landing.jetty_row()),
-        ("rowing_boat", landing.rowing_boat_row()),
-        ("net_frame", landing.net_frame_row()),
-        ("eel_traps", landing.eel_traps_row()),
-        ("draw_well", [standing_outdoors(yard.draw_well(), yard.WELL_SHADOW)]),
-        ("trough", [standing_outdoors(picture) for picture in yard.trough_looks()]),
-        ("hay_rack", [standing_outdoors(picture) for picture in yard.hay_rack_looks()]),
-        ("feed_trough", [standing_outdoors(picture) for picture in yard.trough_looks("feed")]),
-        ("pen_fence", pen.pen_fence_row()),
-        ("pen_gate", pen.pen_gate_row()),
-        ("pig_shelter", [standing_outdoors(pen.pig_shelter())]),
-        ("pen_gate_open", pen.pen_gate_row(is_open=True)),
-        ("scarecrow", [standing_outdoors(picture, scarecrow.SHADOW) for picture in scarecrow.frames()]),
-        ("plank_walk", ways.plank_walk_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
-        ("stone_path", ways.stone_path_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
-        ("way_edge", ways.way_edge_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)),
-        ("market_stall", [standing_outdoors(stall.market_stall())]),
-        *snags.rows(),
-        ("notice_board", [standing_outdoors(notice_board.notice_board())]),
-        ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
-        ("dyke_low", boundaries.dyke_row("low")),
-        ("dyke_high", boundaries.dyke_row("high")),
-        ("dyke_torn", boundaries.torn_dyke_row()),
-    ]
+    drawn = declaration.merge(
+        {
+            "trees.py": {
+                "oak": [trees.oak(seed) for seed in trees.OAK_SEEDS],
+                "stone": [trees.stone(seed) for seed in (111, 112)],
+                "spruce": spruces,
+                "pine": pines,
+                "dead_tree": dead_trees,
+                "berry_bush": berry_bushes,
+                "shrub": shrubs,
+                "sapling": saplings,
+                "fern": ferns,
+                "boulder": [trees.boulder(seed) for seed in (191, 192)],
+                "stump": [trees.stump(seed) for seed in (201, 202)],
+                "dead_stump": [trees.dead_stump(seed) for seed in (211, 212)],
+            },
+            "camp.py": {
+                "fireplace": [camp.fireplace(), camp.fireplace_out()],
+                "sleeping_bag": [camp.bedroll()],
+            },
+            "meadow.py": {"tall_grass": meadow.tall_grass_row()},
+            "trunks.py": {
+                kind: variants
+                for species in ("oak", "spruce", "pine", "dead_tree", "willow", "beech", "birch", "alder")
+                for kind, variants in trunks.rows(species)
+            },
+            "reeds.py": {"reeds": reeds.reeds_row()},
+            "chest.py": {"chest": [standing_outdoors(chest.chest())]},
+            "boundaries.py": {
+                "knick": boundaries.knick_row(),
+                "wattle_fence": boundaries.wattle_fence_row(),
+                "stone_wall": boundaries.stone_wall_row(),
+                "dyke": boundaries.dyke_row(),
+                "dyke_low": boundaries.dyke_row("low"),
+                "dyke_high": boundaries.dyke_row("high"),
+                "dyke_torn": boundaries.torn_dyke_row(),
+            },
+            "willow.py": {"willow": willow.willow_row()},
+            "beech.py": {"beech": beech.beech_row()},
+            "birch.py": {"birch": birch.birch_row()},
+            "alder.py": {"alder": alder.alder_row()},
+            "crafts.py": {
+                "workbench": [standing_outdoors(crafts.workbench())],
+                "carved_chest": [standing_outdoors(crafts.carved_chest())],
+                "kiln": [standing_outdoors(crafts.kiln())],
+                "oven": [standing_outdoors(crafts.oven())],
+            },
+            "coast.py": {"ewer": coast.ewer_row()},
+            "church.py": {"grave": [standing_outdoors(picture) for picture in church.graves()]},
+            "landing.py": {
+                "jetty": landing.jetty_row(),
+                "rowing_boat": landing.rowing_boat_row(),
+                "net_frame": landing.net_frame_row(),
+                "eel_traps": landing.eel_traps_row(),
+            },
+            "yard.py": {
+                "draw_well": [standing_outdoors(yard.draw_well(), yard.WELL_SHADOW)],
+                "trough": [standing_outdoors(picture) for picture in yard.trough_looks()],
+                "hay_rack": [standing_outdoors(picture) for picture in yard.hay_rack_looks()],
+                "feed_trough": [standing_outdoors(picture) for picture in yard.trough_looks("feed")],
+            },
+            "pen.py": {
+                "pen_fence": pen.pen_fence_row(),
+                "pen_gate": pen.pen_gate_row(),
+                "pig_shelter": [standing_outdoors(pen.pig_shelter())],
+                "pen_gate_open": pen.pen_gate_row(is_open=True),
+            },
+            "scarecrow.py": {"scarecrow": [standing_outdoors(picture, scarecrow.SHADOW) for picture in scarecrow.frames()]},
+            "ways.py": {
+                "plank_walk": ways.plank_walk_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT),
+                "stone_path": ways.stone_path_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT),
+                "way_edge": ways.way_edge_row(GAME_TILE, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT),
+            },
+            "stall.py": {"market_stall": [standing_outdoors(stall.market_stall())]},
+            "snags.py": dict(snags.rows()),
+            "notice_board.py": {"notice_board": [standing_outdoors(notice_board.notice_board())]},
+            "sales_cart.py": {"sales_cart": [standing_outdoors(sales_cart.sales_cart())]},
+        }
+    )
+    return declaration.in_declared_order(declaration.OBJECT_KINDS, drawn, "the object atlas")
 
 
 def atlas_cells(picture):
@@ -339,15 +280,20 @@ def write_seasonal_art():
     # The meadow flowers have a row of their own, below the layers' (see flowers.py).
     decoration_rows.append(flowers.flower_row())
     objects = object_atlas()
-    redraws = {
-        "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
-        "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
-        "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
-        "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
-        "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
-    } | snags.redraws()
+    redraws = declaration.merge(
+        {
+            "generate.py": {
+                "oak": lambda variant: trees.bare_oak(trees.OAK_SEEDS[variant]),
+                "willow": lambda variant: willow.bare_willow(willow.WILLOW_SEEDS[variant]),
+                "beech": lambda variant: beech.bare_beech(beech.BEECH_SEEDS[variant]),
+                "birch": lambda variant: birch.bare_birch(birch.BIRCH_SEEDS[variant]),
+                "alder": lambda variant: alder.bare_alder(alder.ALDER_SEEDS[variant]),
+            },
+            "snags.py": snags.redraws(),
+        }
+    )
     houses = {}
-    for name, draw in (buildings.PICTURES | church.PICTURES | yard.PICTURES).items():
+    for name, draw in declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "yard.py": yard.PICTURES}).items():
         houses[name] = draw(is_lit=False)
         houses[f"{name}_lit"] = draw(is_lit=True)
     decorations_by_look = {}
@@ -372,7 +318,7 @@ def write_seasonal_art():
 
 
 def write_character():
-    layers = character.layers() | villagers.layers()
+    layers = declaration.merge({"character.py": character.layers(), "villagers.py": villagers.layers()})
     for name, layer in layers.items():
         save(character.character_sheet(*layer), f"character/{name}.png", character.CHARACTER_WIDTH, character.CHARACTER_HEIGHT)
         save(character.collapse_sheet(*layer), f"character/collapse/{name}.png", character.COLLAPSE_SIZE)
@@ -444,11 +390,30 @@ def write_crops():
 
 
 def write_items():
-    bodies = items.icons() | crop_icons.icons() | meadow.icons() | reeds.icons() | tool_icons.icons() | crafts.icons() | church.icons() | landing.icons() | yard.icons() | pen.icons() | boundaries.icons() | trees.icons() | scarecrow.icons() | {"notice_board": items.icon_of(notice_board.notice_board()), "sales_cart": items.icon_of(sales_cart.sales_cart())} | ways.icons(GAME_TILE, items.icon_of)
+    bodies = declaration.merge(
+        {
+            "items.py": items.icons(),
+            "crop_icons.py": crop_icons.icons(),
+            "meadow.py": meadow.icons(),
+            "reeds.py": reeds.icons(),
+            "tool_icons.py": tool_icons.icons(),
+            "crafts.py": crafts.icons(),
+            "church.py": church.icons(),
+            "landing.py": landing.icons(),
+            "yard.py": yard.icons(),
+            "pen.py": pen.icons(),
+            "boundaries.py": boundaries.icons(),
+            "trees.py": trees.icons(),
+            "scarecrow.py": scarecrow.icons(),
+            "notice_board.py": {"notice_board": items.icon_of(notice_board.notice_board())},
+            "sales_cart.py": {"sales_cart": items.icon_of(sales_cart.sales_cart())},
+            "ways.py": ways.icons(GAME_TILE, items.icon_of),
+        }
+    )
     for name, body in bodies.items():
         save_picture(items.icon(body), f"items/{name}.png")
         save_picture(items.ground_item(body), f"ground_items/{name}.png")
-    for name, picture in (items.SLOTS | items.SLOT_HINTS).items():
+    for name, picture in declaration.merge({"SLOTS": items.SLOTS, "SLOT_HINTS": items.SLOT_HINTS}).items():
         save_picture(picture, f"ui/{name}.png")
 
 

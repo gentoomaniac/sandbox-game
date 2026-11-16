@@ -201,7 +201,8 @@ by topic. Where is a thing drawn?
 | Module | What it draws |
 |---|---|
 | `contrast_sheet.py` | `make contrast-sheet` (after `make assets`): the tall grass, fern and reeds (or the atlas rows named in `KINDS="willow shrub"`) over the grass, lush grass, dry grass and floodplain of every look (each season, frost, snow, and night) into `build/contrast_sheet.png`, to check contrast by eye. |
-| `generate.py` | The object atlas (`object_atlas()`, with the numbered table of its rows; `atlas_cells` splits a picture wider than a cell, the Ewer's, into its cells), the writers and `main()`; everything is drawn at the game's 32 px tile (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
+| `declaration.py` | The identity and order of the art both generators read: the object atlas's kinds in row order (`OBJECT_KINDS`, with the row number and the variants of each), `merge` (joins the pictures of several modules and refuses a name two of them draw, naming both) and `in_declared_order`. Its tests are `test_declaration.py`. |
+| `generate.py` | The object atlas (`object_atlas()`, which collects the pictures by module and lays them out as declared; `atlas_cells` splits a picture wider than a cell, the Ewer's, into its cells), the writers and `main()`; everything is drawn at the game's 32 px tile (see [docs/art-style.md](../docs/art-style.md), "Resolution"). |
 | `canvas.py` | The shared basics: `TILE` (the 16 px of the icons and the classic art), `GAME_TILE` (the game's 32 px tile), the size of an object cell at each (`GAME_OBJECT_*`, and `OBJECT_*` for the classic art), `blank`, `filled`, `copy`, a clipped `rect`, and the two outline helpers: `outline` (a ring outside the drawing) and `outline_edge` (recolours the drawing's border). |
 | `palette.py` | The palette, `DARKEST_OF` (the colour that outlines each ramp), `to_image`, `save` (one PNG under `art/generated/`, remembering the cell size of a sheet) and the palette check. |
 | `atlas.py` | Writes the sheets of the object and decoration atlases (one image per entity, a row per look) and their `atlas_<art set>.txt`, and reads it. |
@@ -323,8 +324,8 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   `game/state/items/`; the outline and the 16x16 version for the ground are made for
   you.
 - **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
-  (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
-  (the table says the order; new rows go at the end), and give its type an
+  (`trees.py` for most), name its kind in `OBJECT_KINDS` of declaration.py (the order of the rows; new rows go at the end) and add its pictures to the dict of its module in `object_atlas()` of generate.py (and of classic/generate.py, so that both art sets have the row)
+  and give its type an
   `atlas_row` in `game/state/world_objects/`. `generate.py` writes
   `art/generated/objects/atlas_32x32.txt` from the rows it draws (`make assets` copies them to assets/objects_rows.txt), and `tests/test_object_atlas.gd` compares
   it with every type's `atlas_row` and number of looks. A tree that leaves a trunk also has the
