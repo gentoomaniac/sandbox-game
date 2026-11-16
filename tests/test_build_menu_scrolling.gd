@@ -9,7 +9,7 @@ var _window: SubViewport
 
 
 func before_each() -> void:
-	_state = GameState.new_game(1)
+	_state = GameFactory.new_game(1)
 	_builder = Builder.new(_state)
 	_builder.select_hammer()
 

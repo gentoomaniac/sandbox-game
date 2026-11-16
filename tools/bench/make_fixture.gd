@@ -7,7 +7,7 @@ extends SceneTree
 
 func _init() -> void:
 	var out: String = OS.get_cmdline_user_args()[0]
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var world := state.world
 	var gen := WorldGenerator.new(7)
 	var rng := RandomNumberGenerator.new()

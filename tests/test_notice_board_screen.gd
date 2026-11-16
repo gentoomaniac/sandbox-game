@@ -7,7 +7,7 @@ var _screen: NoticeBoardScreen
 
 
 func before_each() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, state.npcs.villagers))
 	state.npcs.add(Npc.create_villager("gesche", Vector2.ZERO, state.npcs.villagers))
 	state.quests.post("fibre_for_beans", "antje")

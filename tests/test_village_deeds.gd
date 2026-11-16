@@ -8,7 +8,7 @@ var _tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_tile = _state.player.tile()
 	var feet := Vector2(_tile) + Vector2(3.5, 0.5)
 	var antje := Npc.create_villager("antje", feet, _state.npcs.villagers)

@@ -9,7 +9,7 @@ func _saved_villager() -> Dictionary:
 
 
 func test_the_opinion_and_what_moved_it_today_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var antje := Npc.create_villager("antje", Vector2(3.5, 4.5), state.npcs.villagers)
 	antje.change_opinion(15, 4, GossipRules.default_rules())
 	state.npcs.add(antje)

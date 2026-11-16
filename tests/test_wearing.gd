@@ -46,7 +46,7 @@ func test_the_appearance_follows_the_equipment() -> void:
 
 
 func test_a_new_game_wears_the_period_clothes_and_carries_two_hats_a_shirt_and_a_jacket() -> void:
-	var state := GameState.new_game(1)
+	var state := GameFactory.new_game(1)
 	assert_eq(state.player.equipment.item_in(Equipment.BODY), ItemTypes.WAISTCOAT)
 	assert_eq(state.player.equipment.item_in(Equipment.LEGS), ItemTypes.BREECHES)
 	assert_eq(state.player.equipment.item_in(Equipment.FEET), ItemTypes.CLOGS)
@@ -67,7 +67,7 @@ func test_equipment_codec_round_trip() -> void:
 
 
 func test_a_saved_player_keeps_what_they_wear_and_how_they_look() -> void:
-	var state := GameState.new_game(1)
+	var state := GameFactory.new_game(1)
 	state.player.equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
 	var restored := RealLoad.of(self, state).player
 	assert_eq(restored.equipment.item_in(Equipment.HEAD), ItemTypes.STRAW_HAT)

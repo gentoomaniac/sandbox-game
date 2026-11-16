@@ -3,7 +3,7 @@ extends SaveValidationCase
 
 
 func test_the_levels_are_kept_and_the_bonuses_are_not() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.attributes.set_level(Attributes.STRENGTH, 14)
 	state.player.attributes.set_level(Attributes.HP, 3)
 	state.player.attributes.add_bonus(&"stew", Attributes.STRENGTH, 2)

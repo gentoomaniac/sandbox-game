@@ -17,7 +17,7 @@ var _friendship := FriendshipRules.default_rules()
 
 func before_each() -> void:
 	_bag = ItemSlots.new(6)
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_antje = Npc.create_villager("antje", Vector2(2.5, 2.5), _state.npcs.villagers)
 	_state.npcs.add(_antje)
 	_at_level(5)

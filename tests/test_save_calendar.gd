@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_a_current_save_keeps_its_day() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.clock.day = 130
 	assert_true(SaveFile.write(state, SAVE_PATH))
 

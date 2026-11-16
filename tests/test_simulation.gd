@@ -5,7 +5,7 @@ var _state: GameState
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 
 
 func test_advancing_moves_the_clock() -> void:
@@ -17,7 +17,7 @@ func test_advancing_moves_the_clock() -> void:
 
 
 func test_a_span_passes_as_the_same_time_in_steps() -> void:
-	var stepped := GameState.new_game(7)
+	var stepped := GameFactory.new_game(7)
 	_state.simulation.advance(3 * GameClock.MINUTES_PER_DAY + 137)
 	for _i in 3 * GameClock.MINUTES_PER_DAY + 137:
 		stepped.simulation.advance(1)
@@ -47,7 +47,7 @@ class SpanSpyClock:
 
 
 func test_a_game_that_is_let_go_of_is_freed_with_its_simulation() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var watcher: WeakRef = weakref(state)
 	state = null
 	assert_null(watcher.get_ref(), "no system of the simulation holds on to the game")

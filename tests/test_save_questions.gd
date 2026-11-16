@@ -54,7 +54,7 @@ func test_a_refused_save_with_none_before_it_says_a_new_game_starts() -> void:
 
 
 func test_loading_a_save_asks_first_and_escape_keeps_the_game() -> void:
-	var header := SaveHeader.of(GameState.new_game(7), SaveHeader.Kind.SLEEP)
+	var header := SaveHeader.of(GameFactory.new_game(7), SaveHeader.Kind.SLEEP)
 	var questions := SaveQuestions.new(_dialog)
 	_dialog.opened.connect(_dialog.close.call_deferred, CONNECT_ONE_SHOT)
 
@@ -67,7 +67,7 @@ func test_loading_a_save_asks_first_and_escape_keeps_the_game() -> void:
 
 
 func test_pressing_load_it_confirms_the_load() -> void:
-	var header := SaveHeader.of(GameState.new_game(7), SaveHeader.Kind.SLEEP)
+	var header := SaveHeader.of(GameFactory.new_game(7), SaveHeader.Kind.SLEEP)
 	var questions := SaveQuestions.new(_dialog)
 	_dialog.opened.connect(
 		func() -> void: _dialog._buttons.get_child(0).pressed.emit.call_deferred(), CONNECT_ONE_SHOT

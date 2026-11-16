@@ -13,7 +13,7 @@ var _antje: Npc
 
 
 func before_all() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 
 
 func before_each() -> void:

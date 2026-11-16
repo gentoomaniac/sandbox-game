@@ -98,8 +98,8 @@ func test_the_character_screen_lets_go_of_the_old_player() -> void:
 
 func test_the_crafting_screen_lets_go_of_the_old_game() -> void:
 	var screen: CraftingScreen = add_child_autofree(CraftingScreen.new())
-	var first := GameState.new_game(1)
-	var second := GameState.new_game(2)
+	var first := GameFactory.new_game(1)
+	var second := GameFactory.new_game(2)
 	screen.show_crafting(Crafting.new(first), first.player.inventory)
 	screen.show_crafting(Crafting.new(second), second.player.inventory)
 	assert_eq(_connections_to(first.player.inventory.changed, screen), 0)

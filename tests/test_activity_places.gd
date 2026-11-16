@@ -11,7 +11,7 @@ var _antje: Npc
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_places = ActivityPlaces.new(_state.world, _state.npcs)
 	_house = _place(BuildingTypes.KATE, Vector2i(-6, 0))
 	_antje = _add("antje")

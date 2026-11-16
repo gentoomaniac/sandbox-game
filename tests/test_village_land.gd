@@ -6,7 +6,7 @@ var _state: GameState
 
 
 func before_each() -> void:
-	_state = GameState.new_game(1, true)
+	_state = GameFactory.new_game(1, true)
 
 
 func _village_house() -> Building:
@@ -45,7 +45,7 @@ func test_on_the_land_the_console_says_so() -> void:
 
 func test_a_world_with_no_village_says_so() -> void:
 	assert_eq(
-		Console.new(GameState.new_game(7)).run("village"),
+		Console.new(GameFactory.new_game(7)).run("village"),
 		["This world has no village"] as Array[String]
 	)
 

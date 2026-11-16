@@ -13,7 +13,7 @@ var _plain: Vector2i
 
 func before_each() -> void:
 	_events.clear()
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_find_ford_and_plain()
 	_state.world.add_chunk(Chunk.new(Chunk.world_to_chunk(_ford), Tile.Terrain.FLOODPLAIN))
 	_audio = AudioService.new()

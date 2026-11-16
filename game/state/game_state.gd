@@ -22,7 +22,7 @@ var clock: GameClock
 var simulation: Simulation
 ## Where the sun is over the year; the weather follows it.
 var sun := Sun.new()
-## Built from the world seed (see `new_game` and `from_dict`).
+## Built from the world seed (see GameFactory).
 var weather: Weather
 ## Session-only (see Console): the weather condition that is forced, or &"" for the weather
 ## as the simulation has it. Not saved.
@@ -86,12 +86,12 @@ var building_inside: Building:
 
 
 ## `game_clock` is the clock to follow: a loaded game brings the one it saved. Whoever builds
-## the world from it passes the same clock on (see `new_game` and `from_dict`).
+## the world from it passes the same clock on (see GameFactory).
 func _init(game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	simulation = Simulation.new(clock)
 	shops = Shops.new(ShopRules.default_rules(), clock)
-	quests = Quests.new(QuestRules.default_rules(), clock, npcs, _the_player, _the_world)
+	quests = Quests.new(QuestRules.default_rules(), clock, npcs, the_player, _the_world)
 	stall_sales = StallSales.new(clock, _the_game)
 	deeds = DeedLog.new(npcs, clock)
 	judge = StoryJudge.new(npcs, clock)
@@ -99,40 +99,6 @@ func _init(game_clock := GameClock.new()) -> void:
 	action_done.connect(deeds.record)
 	action_done.connect(harm.record)
 	npcs.villager_spawned.connect(homes.settle)
-
-
-## A new game: the player starts at a camp site near the world centre, with home set to its
-## sleeping bag. The chunks around the camp are generated into the world here. With `with_village`
-## the village Wehlsbüll is built too, with its eight villagers in it (a seed with no site for it
-## has none): the game asks for it, the many tests that want a bare world do not pay its third of a
-## second.
-static func new_game(world_seed: int, with_village := false) -> GameState:
-	var state := GameState.new()
-	state.world = World.new(world_seed, state.clock)
-	state.weather = Weather.new(world_seed, state.sun)
-	state.snow_cover = SnowCover.new(state.weather)
-	state._start_simulation()
-	var camp := CampSite.create(state.world, WorldGenerator.new(world_seed))
-	var site := VillageSite.find(world_seed) if with_village else null
-	if site != null:
-		var plan := VillagePlan.default_plan()
-		var problem := VillageBuilder.build(state.world, site, plan)
-		if problem != "":
-			push_error("The village was not built: %s" % problem)
-		else:
-			VillageBuilder.lay_track(state.world, site)
-			problem = VillagePeople.move_in(state, site, plan)
-			if problem != "":
-				push_error("The villagers did not all move in: %s" % problem)
-	state.quests.post_first()
-	state.player.position = Vector2(camp.spawn_pos) + Vector2(0.5, 0.5)
-	state.explored.see(state.player.tile())
-	state.player.home_map = state.world
-	state.player.home_bed = camp.sleeping_bag_pos
-	state.player.inventory = Inventory.with_starting_items()
-	state.player.purse = Purse.new(Prices.default_prices().start_purse())
-	state.player.equipment = Equipment.with_starting_outfit()
-	return state
 
 
 ## The work of a frame of play (see Simulation `frame_work`), called once a frame by Main. The
@@ -357,10 +323,7 @@ static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 ## The chunks of the restored world are not loaded yet: whoever shows it streams them in.
 static func from_dict(data: Dictionary) -> GameState:
 	var state := GameState.new(GameClock.from_dict(data["clock"]))
-	state.world = World.from_dict(data["world"], state.clock)
-	state.weather = Weather.new(state.world.world_seed, state.sun)
-	state.snow_cover = SnowCover.new(state.weather)
-	state._start_simulation()
+	GameFactory.attach_world(state, World.from_dict(data["world"], state.clock))
 	state.player = PlayerState.from_dict(data["player"], state._map_from_ref(data["home_map"]))
 	state.explored.load_array(data["explored"])
 	state.livestock.load_array(data["livestock"])
@@ -411,35 +374,9 @@ func _building_of_ref(ref: Dictionary) -> Building:
 	return null
 
 
-## Puts what changes with time under the simulation, once the world and the weather exist. The
-## order is the order they run in.
-func _start_simulation() -> void:
-	# The needs and the friendship of the animals count from the clock as it is now (as loaded, for a
-	# loaded game).
-	livestock.account_clock(clock)
-	simulation.add_system(FarmingUpkeep.new(world, weather))
-	scarecrows = Scarecrows.new(world)
-	crop_raids = CropRaids.new(world, _player_feet)
-	crop_raids.is_guarded = scarecrows.is_guarding
-	simulation.add_system(crop_raids)
-	crop_warnings = CropWarnings.new(world, _player_feet)
-	simulation.add_system(crop_warnings)
-	simulation.add_system(NightUpkeep.new(world, weather, _tiles_kept_clear))
-	activities = ActivityUpkeep.new(world, npcs, homes, sun, weather, clock)
-	simulation.add_system(activities)
-	simulation.add_system(
-		ActorsUpkeep.new(world, livestock, npcs, _player_feet, activities.catch_up)
-	)
-	simulation.add_system(GossipSpread.new(npcs, deeds))
-	simulation.add_system(LanternUpkeep.new(_the_player))
-	simulation.add_system(CampfireUpkeep.new(world))
-	simulation.add_system(SurgeUpkeep.new(world, weather))
-	simulation.add_system(SurgeRefuge.new(world, npcs, livestock, activities))
-
-
 ## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.
 ## A named method: a lambda would keep the whole game alive from the simulation it belongs to.
-func _tiles_kept_clear() -> Array:
+func tiles_kept_clear() -> Array:
 	return [] if is_inside() else [player.tile()]
 
 
@@ -454,13 +391,13 @@ func _the_game() -> GameState:
 
 
 ## The player: a loaded game has a new one, which systems must not hold on to.
-func _the_player() -> PlayerState:
+func the_player() -> PlayerState:
 	return player
 
 
 ## Where the player is for the animals and villagers of the world, which an indoor player is
 ## not part of: infinitely far.
-func _player_feet() -> Vector2:
+func player_feet() -> Vector2:
 	return Vector2.INF if is_inside() else player.position
 
 

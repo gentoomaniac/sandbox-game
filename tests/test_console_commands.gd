@@ -7,7 +7,7 @@ var _context: ConsoleContext
 
 
 func before_each() -> void:
-	_context = ConsoleContext.new(GameState.new_game(1))
+	_context = ConsoleContext.new(GameFactory.new_game(1))
 
 
 func test_every_file_loads_as_a_command_with_its_texts() -> void:

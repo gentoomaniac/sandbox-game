@@ -3,7 +3,7 @@ extends GutTest
 
 
 func test_a_new_game_starts_with_the_start_purse() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	assert_eq(state.player.purse.schilling, 32)
 	assert_eq(state.player.purse.schilling, Prices.default_prices().start_purse())
 

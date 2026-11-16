@@ -8,7 +8,7 @@ var _events: Array[StringName] = []
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_audio = AudioService.new()
 	add_child_autofree(_audio)
 	_audio.played.connect(

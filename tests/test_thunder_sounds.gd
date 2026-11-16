@@ -26,7 +26,7 @@ func before_each() -> void:
 	add_child_autofree(_weather_view)
 	var ambience := AmbienceSounds.new()
 	add_child_autofree(ambience)
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	wildlife.rules.sun = state.sun
 	ambience.listen(_audio, state, wildlife, _weather_view)
 

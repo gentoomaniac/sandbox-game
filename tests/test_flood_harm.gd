@@ -11,7 +11,7 @@ var _tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	_tile = _state.player.tile() + Vector2i(3, 2)
 	for y in range(-2, 3):

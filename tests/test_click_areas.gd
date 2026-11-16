@@ -6,7 +6,7 @@ var _state: GameState
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_make_window()
 
 

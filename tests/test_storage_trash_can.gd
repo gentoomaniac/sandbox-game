@@ -17,7 +17,7 @@ func before_each() -> void:
 	_taken.clear()
 	_inventory = Inventory.new()
 	_chest = WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.inventory = _inventory
 	_make_window()
 	var hotbar := HotbarCase.new_hotbar()

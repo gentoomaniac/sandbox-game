@@ -7,7 +7,7 @@ var _screen: CharacterScreen
 
 func before_each() -> void:
 	_make_window()
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, state.npcs.villagers))
 	state.quests.post("fibre_for_beans", "antje")
 	QuestTalk.greet_and_say(state, state.npcs.find("antje"))

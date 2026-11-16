@@ -18,7 +18,7 @@ func before_all() -> void:
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_state.clock.day = MIDSUMMER
 	_load_chunks_of(_state, _spots)
 
@@ -188,10 +188,10 @@ func test_digging_a_clay_spot_gives_clay_about_four_times_in_ten() -> void:
 
 func test_the_roll_is_the_same_for_the_same_spot_and_day_and_differs_between_days() -> void:
 	var first := _dig_all(_state, MIDSUMMER)
-	var other_game := GameState.new_game(SEED)
+	var other_game := GameFactory.new_game(SEED)
 	_load_chunks_of(other_game, _spots)
 	assert_eq(_dig_all(other_game, MIDSUMMER), first, "same day, same result")
-	var later_game := GameState.new_game(SEED)
+	var later_game := GameFactory.new_game(SEED)
 	_load_chunks_of(later_game, _spots)
 	assert_ne(_dig_all(later_game, MIDSUMMER + 1), first, "the day is part of the roll")
 

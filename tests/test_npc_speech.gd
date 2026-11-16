@@ -18,7 +18,7 @@ var _region: Rect2
 
 func before_each() -> void:
 	_region = _everything_in_view()
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_settings = GameSettings.new(SETTINGS_PATH)
 	_settings.profiles.active["endpoint"] = ""
 	_chat = FakeChat.new()

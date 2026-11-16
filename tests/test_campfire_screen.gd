@@ -10,7 +10,7 @@ var _fire: WorldObject
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_inventory = Inventory.new()
 	_state.player.inventory = _inventory
 	_inventory.slots[1] = {"item": ItemTypes.STONE, "count": 2}

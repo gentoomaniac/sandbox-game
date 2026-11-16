@@ -4,7 +4,7 @@ extends SaveValidationCase
 
 
 func _state_with_a_deed_seen_by_antje() -> GameState:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var antje := Npc.create_villager("antje", Vector2(3.5, 4.5), state.npcs.villagers)
 	state.npcs.add(antje)
 	state.clock.day = 4

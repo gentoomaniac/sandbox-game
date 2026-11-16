@@ -20,7 +20,7 @@ func test_a_save_older_than_the_oldest_supported_version_is_refused_and_kept_as_
 
 
 func test_a_current_save_keeps_its_ground_items() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.world.ground_items.add(GroundItem.new(ItemTypes.LOGS, 2, Vector2(1.5, 2.25)))
 	assert_true(SaveFile.write(state, SAVE_PATH))
 

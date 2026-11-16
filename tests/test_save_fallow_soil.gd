@@ -6,7 +6,7 @@ const OTHER_TILE := Vector2i(5, 4)
 
 
 func _new_game() -> GameState:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	for tile in [TILE, OTHER_TILE]:
 		state.world.set_terrain(tile, Tile.Terrain.SOIL)
 	return state

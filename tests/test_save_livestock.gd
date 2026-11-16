@@ -5,7 +5,7 @@ extends SaveUpgradeCase
 
 
 func test_the_farm_animals_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var cow := FarmAnimal.new(LivestockRules.COW, &"red_pied", Vector2(3.25, -4.5))
 	cow.tint = Color.html("f4e8dc")
 	state.livestock.add(cow)
@@ -23,7 +23,7 @@ func test_the_farm_animals_are_kept() -> void:
 
 
 func test_the_friendship_and_the_days_of_petting_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var dog := FarmAnimal.new(LivestockRules.DOG, &"spitz", Vector2(1.5, 2.5))
 	dog.friendship = 65
 	dog.last_petted_day = 12
@@ -39,7 +39,7 @@ func test_the_friendship_and_the_days_of_petting_are_kept() -> void:
 
 
 func test_a_pig_is_kept_with_its_look_and_its_needs() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var pig := FarmAnimal.new(LivestockRules.PIG, &"saddleback", Vector2(1.5, -2.25))
 	pig.hunger = 0.25
 	pig.thirst = 0.75

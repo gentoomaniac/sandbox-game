@@ -7,7 +7,7 @@ var _screen: CharacterScreen
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, _state.npcs.villagers))
 	_state.player.inventory = Inventory.new()
 	_screen = CharacterScreen.new(autofree(HotbarCase.new_hotbar()))

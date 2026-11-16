@@ -21,7 +21,7 @@ var _livestock: Livestock
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	_middle = _state.player.tile() + Vector2i(12, 0)
 	for y in range(-PEN_RADIUS - 1, PEN_RADIUS + 2):

@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_a_current_save_keeps_days_and_steps() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var tile := state.player.tile() + Vector2i(3, 3)
 	state.world.set_terrain(tile, Tile.Terrain.GRASS)
 	state.world.set_wear_days(tile, 5)

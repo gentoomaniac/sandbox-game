@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_a_horse_keeps_its_stamina() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", Vector2(3.5, 4.5))
 	horse.stamina = 0.25
 	state.livestock.add(horse)

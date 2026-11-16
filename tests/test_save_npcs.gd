@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_the_villagers_and_their_chat_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var npc := Npc.create(42, Vector2(3.25, -4.5), state.npcs.rules)
 	npc.anchor = Vector2(1.5, -2.5)
 	npc.add_chat_line(3, 495, true, "hello")
@@ -44,7 +44,7 @@ func test_the_villagers_and_their_chat_are_kept() -> void:
 
 
 func test_a_villager_written_by_hand_keeps_their_id() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, state.npcs.villagers))
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
@@ -91,7 +91,7 @@ func test_a_villager_whose_id_left_the_data_file_keeps_their_saved_sheet() -> vo
 
 
 func test_the_lines_waiting_for_a_memory_are_saved() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var npc := Npc.create(42, Vector2.ZERO, state.npcs.rules)
 	for index in 5:
 		npc.add_chat_line(1, 600, true, "line %d" % index)

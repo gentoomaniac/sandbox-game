@@ -12,7 +12,7 @@ var _quitting: SaveBeforeQuit
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_dialog = ChoiceDialog.new()
 	add_child_autofree(_dialog)
 	_questions = []

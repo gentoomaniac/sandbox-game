@@ -8,7 +8,7 @@ var _shed: Building
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_house = _place(BuildingTypes.KATE)
 	_shed = _place(BuildingTypes.SHACK)
 	assert_not_null(_house)

@@ -7,7 +7,7 @@ var _state: GameState
 
 func before_all() -> void:
 	super.before_all()
-	_state = GameState.new_game(1, true)
+	_state = GameFactory.new_game(1, true)
 
 
 func _building_of(plan_id: String) -> Building:

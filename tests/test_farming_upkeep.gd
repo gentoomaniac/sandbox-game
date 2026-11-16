@@ -22,7 +22,7 @@ var _tile := Vector2i(3, 3)
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_weather = SteadyWeather.new(7)
 	_simulation = Simulation.new(_state.clock)
 	_farming = FarmingUpkeep.new(_state.world, _weather)
@@ -105,8 +105,8 @@ func test_the_soil_of_an_unloaded_chunk_changes_hourly_too() -> void:
 
 
 func test_soil_read_once_after_a_month_equals_soil_read_every_hour() -> void:
-	var stepped := GameState.new_game(7)
-	var skipped := GameState.new_game(7)
+	var stepped := GameFactory.new_game(7)
+	var skipped := GameFactory.new_game(7)
 	for state in [stepped, skipped]:
 		state.world.set_terrain(_tile, Tile.Terrain.SOIL)
 		state.world.set_moisture(_tile, 0.8)
@@ -163,7 +163,7 @@ func test_soil_that_is_untilled_forgets_its_moisture() -> void:
 
 
 func test_tiles_last_seen_in_different_hours_catch_up_as_hour_by_hour() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	# The soil must not grow over in the month.
 	state.world.fallow.grass_days = 1000
 	var seen_in_hour: Dictionary[Vector2i, int] = {}

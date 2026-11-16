@@ -5,7 +5,7 @@ extends SaveValidationCase
 
 
 func _state_with_lantern_and_candle() -> GameState:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var inventory := state.player.inventory
 	inventory.slots[6] = {"item": ItemTypes.LANTERN, "count": 1}
 	inventory.set_state(6, LanternCandle.lantern_state_with({"burnt_minutes": 700}))
@@ -46,7 +46,7 @@ func test_a_state_that_is_not_a_candles_is_refused() -> void:
 
 
 func test_a_lantern_in_a_pile_on_the_ground_keeps_its_candle() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var lantern_state := LanternCandle.lantern_state_with({"burnt_minutes": 250})
 	state.world.ground_items.add(
 		GroundItem.new(ItemTypes.LANTERN, 1, state.player.position, lantern_state)

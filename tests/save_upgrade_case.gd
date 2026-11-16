@@ -20,4 +20,4 @@ func _write_save(version: int, game: Dictionary) -> void:
 
 ## A current save as parsed JSON, to take fields from.
 func _current_game() -> Dictionary:
-	return JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))
+	return JSON.parse_string(JSON.stringify(GameFactory.new_game(7).to_dict()))

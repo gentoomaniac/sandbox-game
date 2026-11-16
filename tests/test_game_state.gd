@@ -7,7 +7,7 @@ var _state: GameState
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 
 
 func _bed() -> WorldObject:
@@ -29,7 +29,7 @@ func test_new_game_starts_at_the_camp_with_home_at_the_sleeping_bag() -> void:
 
 
 func test_new_game_is_deterministic() -> void:
-	var other := GameState.new_game(SEED)
+	var other := GameFactory.new_game(SEED)
 	assert_eq(other.player.position, _state.player.position)
 	assert_eq(other.player.home_bed, _state.player.home_bed)
 

@@ -10,7 +10,7 @@ var _spread: GossipSpread
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.clock.day = 3
 	_state.clock.minute_of_day = NOON
 	_spread = GossipSpread.new(_state.npcs, _state.deeds)
@@ -252,7 +252,7 @@ func test_the_chance_to_tell_follows_how_the_two_are_tied() -> void:
 func test_the_dice_decide_a_middling_chance_and_the_same_seed_decides_the_same() -> void:
 	var told: Array[int] = []
 	for _run in 2:
-		_state = GameState.new_game(7)
+		_state = GameFactory.new_game(7)
 		_state.clock.day = 3
 		_state.clock.minute_of_day = NOON
 		_spread = GossipSpread.new(_state.npcs, _state.deeds)

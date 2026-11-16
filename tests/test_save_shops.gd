@@ -7,7 +7,7 @@ const SEEDS := ItemTypes.TURNIP_SEEDS
 
 
 func test_a_half_sold_shop_is_half_sold_after_a_save_and_a_load() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.inventory.add(ItemTypes.EGG, 12)
 	state.player.inventory.add(ItemTypes.LOGS, 8)
 	assert_eq(state.shops.trade(SHOP, {SEEDS: 4}, {ItemTypes.EGG: 12}, state.player.inventory), "")
@@ -24,7 +24,7 @@ func test_a_half_sold_shop_is_half_sold_after_a_save_and_a_load() -> void:
 
 
 func test_the_stock_still_fills_up_by_the_days_after_a_reload() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.inventory.add(ItemTypes.LOGS, 10)
 	assert_eq(
 		state.shops.trade(SHOP, {SEEDS: 13}, {ItemTypes.LOGS: 10}, state.player.inventory), ""

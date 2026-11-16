@@ -16,7 +16,7 @@ func test_the_land_within_sight_is_explored_and_the_land_beyond_is_not() -> void
 
 
 func test_walking_on_explores_the_land_behind_and_keeps_it() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var start := state.player.tile()
 
 	PlayerRest.teleport_to(state, start + Vector2i(60, 0))
@@ -72,7 +72,7 @@ func test_the_revision_around_a_chunk_changes_when_land_beside_it_is_explored() 
 
 
 func test_the_explored_land_is_saved_and_loaded() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var far := state.player.tile() + Vector2i(-80, 45)
 	state.explored.see(far)
 	assert_true(SaveFile.write(state, SAVE_PATH))
@@ -85,7 +85,7 @@ func test_the_explored_land_is_saved_and_loaded() -> void:
 
 
 func test_a_version_49_save_has_the_land_about_the_player_explored() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var game := _current_game()
 	game.erase("explored")
 	_write_save(49, game)

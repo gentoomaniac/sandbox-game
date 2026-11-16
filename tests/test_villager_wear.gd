@@ -15,7 +15,7 @@ var _step_of_wear := PathRules.default_rules().villager_step()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_world = _state.world
 	_npcs = _state.npcs
 	_start = _state.player.tile() + Vector2i(30, 0)

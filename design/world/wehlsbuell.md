@@ -247,7 +247,7 @@ The issue wants a place where villagers come together now and then, so gossip ha
 The player finds the village by a trodden way from the camp to it, as well as by the handbook and the
 `village` command. It is a **desire path** ([desire-paths.md](desire-paths.md), #61), laid at the start.
 
-- **Laid:** `VillageBuilder.lay_track`, in `GameState.new_game` after the village stands, gives each tile of
+- **Laid:** `VillageBuilder.lay_track`, in `GameFactory.new_game` after the village stands, gives each tile of
   the way from the camp to the east end of the Sielweg that can wear (grass and floodplain; fords are
   floodplain, so they keep it, though a ford is never drawn worn) the wear of a path: `World.set_wear_days`
   with `most_days` (12). The way is the one the site's search of rule 4 found (`VillageSite.camp_way`, kept
@@ -303,7 +303,7 @@ villagers' opinions of the player (`data/gossip.cfg`: `[built]` is +1 now).
 
 ## 10. The nine villagers
 
-Spawned once, in `GameState.new_game`, after the village is built, each at its door with
+Spawned once, in `GameFactory.new_game`, after the village is built, each at its door with
 `Npcs.spawn_villager` (`VillagePeople.move_in`). `Households.settle` then finds the house of their
 sheet's type nearest to where they stand, so Boy and Antje join Hinrich's hall house and each
 workplace is the nearest of its type. The plan says who lives where: each building of
@@ -420,7 +420,7 @@ The village is built after #60 has merged.
 4. **The record and the save.** `World.village` with its save, the upgrade, the validator, the next free save
    version, and the drop of the oldest upgrade in a commit of its own. No builder yet: the record is `null`.
    Tests: `test_village_record.gd` (round trip, old save, validator). Doc: [../tech/saving.md](../tech/saving.md).
-5. **The buildings.** `VillageBuilder.build` places the buildings and fills the record; `GameState.new_game` builds
+5. **The buildings.** `VillageBuilder.build` places the buildings and fills the record; `GameFactory.new_game` builds
    the village. Tests: the rest of `test_village_builder.gd`. Save size and time written here.
 6. **Lanes and the square.** First the lane tiles and the square worn to a path and kept, then (the user's
    answer in #95) laid with cobbles instead: `VillageBuilder._lay_cobbles`. Tests: `test_village_lanes.gd`.
@@ -467,7 +467,7 @@ The user can stop after step 5 and have the village standing, empty.
   `is_populated` (step 8), all in world tiles. The flag is in already so that step 8 needs no save version of
   its own. (Step 8 added `field_spots`, see there.)
 - **Step 5.** `VillageBuilder.build` (the land, then the 19 buildings, then the record in `world.village`;
-  `build_land` stays for the map tool and the land tests); `GameState.new_game(seed, with_village)` builds the
+  `build_land` stays for the map tool and the land tests); `GameFactory.new_game(seed, with_village)` builds the
   village when `with_village` is true, which the game's two new games in `main.gd` say. **Changed from the plan:**
   `new_game` builds no village by default. 141 places in the tests start a game, and the village
   makes each take about 0.3 s longer (the whole test run 38 % longer: 255 s to 352 s) and puts 19
@@ -495,7 +495,7 @@ The user can stop after step 5 and have the village standing, empty.
   already did, so the site keeps the way it found (`camp_way`) and the new game does one search, not two.
   Per #95 the track is only a hint: the desire-path rules are unchanged and it fades in about ten days
   (section 7). The map tool draws the cobbles and the track. Tests: `tests/test_village_track.gd`.
-- **Step 8.** `VillagePeople.move_in` (`game/state/village_people.gd`), called by `GameState.new_game` after
+- **Step 8.** `VillagePeople.move_in` (`game/state/village_people.gd`), called by `GameFactory.new_game` after
   the build: each resident of the plan is spawned at the door of their building, `Households.settle`
   does the rest by their sheets, and what the sheets cannot say the plan does (the mill house, the
   tile of a spot). It loads the chunks round each door and unloads them again

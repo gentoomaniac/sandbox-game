@@ -13,7 +13,7 @@ var _friendship := FriendshipRules.default_rules()
 ## A game with Antje (who wants flour, fibre and reeds, and likes eggs) at `level` and a cart that
 ## holds `goods` (item to count), set up the same every time. `rules` are the stall's.
 func _stall(goods: Dictionary, level := 5, rules := _sure_visits()) -> Dictionary:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	var antje := Npc.create_villager("antje", Vector2(2.5, 2.5), state.npcs.villagers)
 	antje.opinion = _friendship.first_point_of(level)
 	state.npcs.add(antje)

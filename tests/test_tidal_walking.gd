@@ -17,7 +17,7 @@ var _mud_tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	var origin := _state.player.tile() + Vector2i(40, 0)
 	var generator := WorldGenerator.new(SEED)

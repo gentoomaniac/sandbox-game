@@ -3,7 +3,7 @@ extends SaveValidationCase
 
 
 func test_a_world_with_snags_and_their_stumps_is_the_same_after_a_save_and_a_load() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var around := state.player.tile()
 	var placed := {}
 	for kind in WorldObjectSnags.KINDS:

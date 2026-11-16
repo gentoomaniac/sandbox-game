@@ -5,7 +5,7 @@ extends SaveValidationCase
 
 ## A shack of the world, which the record names.
 func _state_with_a_village() -> GameState:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var origin := Vector2i.ZERO
 	for x in range(-10, 10):
 		if state.world.placement_blockers(BuildingTypes.SHACK, Vector2i(x, 9)).is_empty():
@@ -29,7 +29,7 @@ func _saved_village() -> Dictionary:
 
 
 func test_a_world_without_a_village_saves_null_and_loads_without_one() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	assert_null(state.world.village)
 	assert_null(state.to_dict()["world"]["village"])
 	assert_true(SaveFile.write(state, SAVE_PATH))
@@ -127,7 +127,9 @@ func test_the_land_includes_its_edge_tiles_and_stops_there() -> void:
 	assert_true(world.is_village_land(area.end - Vector2i.ONE))
 	assert_false(world.is_village_land(area.end))
 	assert_false(world.is_village_land(area.position - Vector2i.ONE))
-	assert_false(GameState.new_game(7).world.is_village_land(Vector2i.ZERO), "no village, no land")
+	assert_false(
+		GameFactory.new_game(7).world.is_village_land(Vector2i.ZERO), "no village, no land"
+	)
 
 
 func test_the_villages_buildings_are_the_ones_the_record_names() -> void:

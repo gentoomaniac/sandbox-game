@@ -8,7 +8,7 @@ var _opened: Array[Npc] = []
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_console = Console.new(_state)
 	_opened.clear()
 	_console.context.shop_opener = func(keeper: Npc) -> void: _opened.append(keeper)

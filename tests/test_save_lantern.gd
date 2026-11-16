@@ -4,7 +4,7 @@ extends SaveUpgradeCase
 
 
 func test_a_lit_lantern_is_lit_after_loading_and_shines_in_the_hand() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var inventory := state.player.inventory
 	inventory.replace_with_one(inventory.selected_slot, ItemTypes.LANTERN)
 	inventory.set_state(inventory.selected_slot, LanternCandle.lantern_state_with({}))
@@ -23,6 +23,6 @@ func test_a_lit_lantern_is_lit_after_loading_and_shines_in_the_hand() -> void:
 
 
 func test_a_lantern_put_out_stays_out() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	assert_true(SaveFile.write(state, SAVE_PATH))
 	assert_false(SaveFile.read(SAVE_PATH).player.is_lantern_lit)

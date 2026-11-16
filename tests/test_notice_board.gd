@@ -59,7 +59,7 @@ func test_taking_the_board_down_loses_no_quest() -> void:
 
 
 func test_a_new_village_has_its_board_on_the_square() -> void:
-	var state := GameState.new_game(1, true)
+	var state := GameFactory.new_game(1, true)
 
 	var boards := state.world.edited_objects().filter(
 		func(object: WorldObject) -> bool: return object.type == WorldObjectTypes.NOTICE_BOARD

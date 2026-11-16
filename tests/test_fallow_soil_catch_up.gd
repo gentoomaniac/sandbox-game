@@ -25,7 +25,7 @@ var _field: Array[Vector2i] = []
 
 func before_each() -> void:
 	Simulation.frame_budget_usec = 0
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_field.clear()
 	var corner := _state.player.tile() + Vector2i(4, -3)
 	for y in FIELD.y:

@@ -11,7 +11,7 @@ var _chest: WorldObject
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_player = _state.player
 	_player.inventory = Inventory.new()
 	_hotbar = HotbarCase.new_hotbar()

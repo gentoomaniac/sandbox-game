@@ -69,7 +69,7 @@ func test_the_index_is_built_again_on_load() -> void:
 
 
 func test_a_pile_pulled_over_a_chunk_border_is_collected_and_unfiled() -> void:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	state.player.position = Vector2(SIZE + 0.5, 0.5)
 	var pile := GroundItem.new(ItemTypes.LOGS, 1, Vector2(SIZE - 0.6, 0.5))
 	state.world.ground_items.add(pile)
@@ -80,7 +80,7 @@ func test_a_pile_pulled_over_a_chunk_border_is_collected_and_unfiled() -> void:
 
 
 func test_a_pile_in_a_far_chunk_is_neither_settled_nor_touched() -> void:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	var far := GroundItem.new(ItemTypes.LOGS, 1, state.player.position + Vector2(300, 0))
 	far.settle_seconds = 1.0
 	state.world.ground_items.add(far)
@@ -112,7 +112,7 @@ func test_the_index_is_not_in_the_save() -> void:
 
 
 func test_a_partly_picked_up_pile_stays_filed() -> void:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	var inventory := state.player.inventory
 	for slot in inventory.slots.size():
 		inventory.slots[slot] = {"item": ItemTypes.TURNIP, "count": 99}

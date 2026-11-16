@@ -210,7 +210,7 @@ func test_produce_is_food_except_the_grains_and_flax() -> void:
 
 
 func test_eating_produce_restores_energy() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.energy = 50.0
 	state.player.inventory.add(&"potato", 2)
 	HotbarHold.hold(state.player.inventory, &"potato")
@@ -220,7 +220,7 @@ func test_eating_produce_restores_energy() -> void:
 
 
 func test_wheat_cannot_be_eaten() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.energy = 50.0
 	state.player.inventory.add(&"wheat", 1)
 	HotbarHold.hold(state.player.inventory, &"wheat")

@@ -6,7 +6,7 @@ var _hud: PathsHud
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_hud = PathsHud.new()
 	_hud.setup(_state.npcs, _state.player)
 	add_child_autofree(_hud)

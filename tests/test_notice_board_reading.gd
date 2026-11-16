@@ -144,7 +144,7 @@ func test_with_a_board_a_posted_quest_is_a_notice_on_it() -> void:
 
 
 func test_in_a_village_the_notice_names_it() -> void:
-	var state := GameState.new_game(1, true)
+	var state := GameFactory.new_game(1, true)
 	var notices: Array[String] = []
 	state.quests.noticed.connect(func(text: String) -> void: notices.append(text))
 

@@ -6,7 +6,7 @@ const QUEST := "fibre_for_beans"
 
 
 func _state_with_quests() -> GameState:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	for id in ["antje", "gesche"]:
 		state.npcs.add(Npc.create_villager(id, Vector2.ZERO, state.npcs.villagers))
 	state.clock.day = 12

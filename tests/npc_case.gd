@@ -19,7 +19,7 @@ var _npcs: Npcs
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	_middle = _state.player.tile() + Vector2i(30, 0)
 	var generator := WorldGenerator.new(SEED)

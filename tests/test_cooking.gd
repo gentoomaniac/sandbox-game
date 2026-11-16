@@ -35,7 +35,7 @@ func test_a_dish_restores_more_energy_than_its_ingredients_eaten_raw() -> void:
 
 
 func test_anyone_can_roast_a_turnip_at_the_campfire_and_learns_from_it() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var crafting := Crafting.new(state)
 	var campfire := StationFinder.in_reach(state, &"hearth")
 	assert_has(RecipeRules.default_rules().recipes_at(&"hearth"), &"roast_turnip")
@@ -48,7 +48,7 @@ func test_anyone_can_roast_a_turnip_at_the_campfire_and_learns_from_it() -> void
 
 
 func test_a_cooked_dish_is_eaten_like_raw_food() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.energy = 50.0
 	state.player.inventory.slots[0] = {"item": ItemTypes.POTTAGE, "count": 1}
 	state.player.inventory.select(0)

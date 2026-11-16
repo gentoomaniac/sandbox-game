@@ -12,7 +12,7 @@ var _friendship := FriendshipRules.default_rules()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_antje = Npc.create_villager("antje", Vector2(2.5, 2.5), _state.npcs.villagers)
 	_antje.opinion = _friendship.first_point_of(5)
 	_state.npcs.add(_antje)

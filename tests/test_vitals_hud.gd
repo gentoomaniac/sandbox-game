@@ -14,7 +14,7 @@ func _window_of(window_size: Vector2i) -> SubViewport:
 
 func _hud_in(window: SubViewport) -> VitalsHud:
 	var hud := VitalsHud.new()
-	hud.show_state(GameState.new_game(7))
+	hud.show_state(GameFactory.new_game(7))
 	window.add_child(hud)
 	return hud
 
@@ -67,7 +67,7 @@ func test_the_stamina_bar_shows_the_ridden_horses_stamina_and_only_while_riding(
 	await wait_process_frames(2)
 	assert_false(hud.stamina_bar.visible, "on foot")
 
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", state.player.position)
 	horse.is_saddled = true
 	state.livestock.add(horse)

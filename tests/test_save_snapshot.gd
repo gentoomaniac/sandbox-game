@@ -16,7 +16,7 @@ var _animal: FarmAnimal
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	var middle := _state.player.tile()
 	var generator := WorldGenerator.new(SEED)

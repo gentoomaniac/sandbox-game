@@ -4,7 +4,7 @@ extends SaveUpgradeCase
 
 
 func test_the_can_and_the_needs_of_the_animals_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.can_water = 6
 	var cow := FarmAnimal.new(LivestockRules.COW, &"red_pied", Vector2(3.25, -4.5))
 	cow.hunger = 0.25

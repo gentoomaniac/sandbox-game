@@ -168,7 +168,7 @@ func test_in_the_hall_house_e_opens_the_hearth_and_a_night_in_a_box_bed_makes_it
 
 
 func test_new_game_home_is_in_the_world() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	assert_eq(state.player.home_map, state.world)
 
 

@@ -11,7 +11,7 @@ var _service := SaveService.new()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 
 
 func after_each() -> void:

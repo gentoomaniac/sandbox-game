@@ -10,7 +10,7 @@ var _momme: Npc
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_console = Console.new(_state)
 	_house = _place(BuildingTypes.KATE)
 	_antje = _add("antje")

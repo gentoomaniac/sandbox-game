@@ -12,7 +12,7 @@ var _talked_to: Array[Npc] = []
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.player.purse.schilling = 0
 	_keeper = Npc.create_villager("trienke", Vector2.ZERO, _state.npcs.villagers)
 	_viewport = SubViewport.new()

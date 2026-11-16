@@ -4,7 +4,7 @@ extends QuestsCase
 
 
 func test_a_new_game_with_a_village_posts_a_starter_of_a_random_villager() -> void:
-	var state := GameState.new_game(1, true)
+	var state := GameFactory.new_game(1, true)
 
 	var entries := state.quests.open_entries()
 
@@ -16,7 +16,7 @@ func test_a_new_game_with_a_village_posts_a_starter_of_a_random_villager() -> vo
 
 
 func test_a_new_game_with_no_villagers_posts_nothing() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 
 	assert_true(state.quests.open_entries().is_empty())
 	assert_eq(state.quests.post_first(), "")
@@ -89,7 +89,7 @@ func test_the_same_day_and_world_give_the_same_pick() -> void:
 	_use_rules({"a": {}, "b": {}, "c": {}, "d": {}})
 	_quests.post_today()
 	var first := _quests.open_entries()[0].duplicate()
-	var other := GameState.new_game(7)
+	var other := GameFactory.new_game(7)
 	other.npcs.add(Npc.create_villager(ANTJE, Vector2.ZERO, other.npcs.villagers))
 	other.npcs.add(Npc.create_villager(GESCHE, Vector2.ZERO, other.npcs.villagers))
 	other.quests.rules = _quests.rules

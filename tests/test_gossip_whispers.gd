@@ -16,7 +16,7 @@ func before_each() -> void:
 
 ## A new game with the teller and the hearers close together, and dice seeded the same each time.
 func _new_village() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.clock.day = 3
 	_spread = GossipSpread.new(_state.npcs, _state.deeds)
 	_spread.rng.seed = 11

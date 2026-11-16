@@ -62,11 +62,11 @@ func test_the_record_has_the_land_the_square_the_spots_and_the_buildings() -> vo
 
 
 func test_a_new_game_has_no_village_unless_it_is_asked_for() -> void:
-	assert_null(GameState.new_game(1).world.village)
+	assert_null(GameFactory.new_game(1).world.village)
 
 
 func test_a_new_game_has_the_village_with_its_chunks_unloaded_and_a_save_keeps_it() -> void:
-	var state := GameState.new_game(1, true)
+	var state := GameFactory.new_game(1, true)
 	assert_not_null(state.world.village)
 	assert_eq(state.world.buildings().size(), _plan.buildings.size())
 	assert_eq(state.world.village.area, _site(1).land(_plan))

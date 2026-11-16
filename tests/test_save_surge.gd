@@ -43,7 +43,7 @@ func test_the_standing_water_its_salt_and_the_dykes_to_mend_survive_the_world_co
 
 
 func test_the_flood_of_a_game_loads_through_the_real_loader() -> void:
-	var state := GameState.new_game(CoastWorld.SEED)
+	var state := GameFactory.new_game(CoastWorld.SEED)
 	CoastWorld.load_chunks(state.world)
 	state.world.surge.expect(2.7, 5000, 180)
 	state.world.flood.begin(state.world, 3.4, NOW, 1)

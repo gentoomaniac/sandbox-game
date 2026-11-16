@@ -19,7 +19,7 @@ func _problems_with(key: String, value: Variant) -> Array:
 
 
 func test_the_friendship_of_a_villager_is_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var antje := Npc.create_villager("antje", Vector2(3.5, 4.5), state.npcs.villagers)
 	antje.change_friendship(30, 4, FriendshipRules.default_rules(), GossipRules.default_rules())
 	antje.last_gift_day = 4
@@ -39,7 +39,7 @@ func test_the_friendship_of_a_villager_is_kept() -> void:
 
 
 func test_a_version_52_save_keeps_the_opinion_and_has_the_defaults() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var antje := Npc.create_villager("antje", Vector2(3.5, 4.5), state.npcs.villagers)
 	antje.opinion = 150
 	state.npcs.add(antje)

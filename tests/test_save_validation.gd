@@ -182,7 +182,7 @@ func test_the_oldest_and_the_newest_version_load_without_a_question() -> void:
 
 
 func test_a_lived_in_game_passes_the_validator_and_round_trips() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.world.drop_items(state.player.tile(), {ItemTypes.LOGS: 3})
 	state.player.inventory.add(ItemTypes.LOGS, 40)
 	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))

@@ -17,7 +17,7 @@ func _dyke_save(height_cm: Variant, strength_pct: Variant) -> Dictionary:
 
 
 func test_a_changed_dyke_is_saved_and_loaded() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var tile := state.player.tile() + Vector2i(3, 0)
 	state.world.remove_object(tile)
 	var dyke := WorldObject.new(WorldObjectTypes.DYKE, tile)

@@ -79,6 +79,8 @@ Warft and an Ewer here and there.
   the riding state and is given the game on each call, as a helper the game holds must not hold
   the game back (a cycle would leak the whole game). The doors, the bed that is home, sleeping,
   passing out and `teleport_to` are `PlayerRest`, functions that are given the game.
+  A new game and the putting of the world and the ordered simulation systems under a game are
+  `GameFactory` (`new_game`, `attach_world`), which a loaded game goes through as well.
 - **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
   whatever moves the clock goes through it, and whatever changes with time is a
   `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played
@@ -121,7 +123,7 @@ Warft and an Ewer here and there.
   `WildlifeView.settle` and `WeatherView.snap` do it at once. Played time (`advance`) never moves
   animals by itself: they walk by the frame in real seconds (`Livestock.update`,
   `Npcs.update`), outdoors only. A new system (a villager schedule, a gossip meeting) is a
-  `SimulationSystem` added in `GameState._start_simulation`, with the hook it needs.
+  `SimulationSystem` added in `GameFactory.attach_world`, with the hook it needs.
   The game's speed is `GameClock.GAME_MINUTES_PER_REAL_SECOND`. Tests compare skips of an
   hour, a day and a month with the same time played in steps (`tests/test_time_skip.gd`).
 - **ToolUse** (`game/state/tool_use.gd`) is what the use action does: the `Use` outcomes, what

@@ -11,7 +11,7 @@ var _comings: Array[float] = []
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_weather = StormyWeather.new(SEED)
 	_state.world.surge.coming.connect(
 		func(level: float, _start: int) -> void: _comings.append(level)

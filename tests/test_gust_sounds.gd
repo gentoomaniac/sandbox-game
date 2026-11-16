@@ -15,7 +15,7 @@ var _shader_seconds := 0.0
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	# The check depends on where exactly the player stands: a front at the edge of two steps fails it.
 	_state.player.position += Vector2(1.0, 0.0)
 	var audio := AudioService.new()

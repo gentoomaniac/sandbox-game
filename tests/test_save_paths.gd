@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_the_wear_is_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var tile := state.player.tile() + Vector2i(3, 3)
 	state.world.set_terrain(tile, Tile.Terrain.GRASS)
 	state.world.set_wear_days(tile, PathRules.default_rules().path_after_days())

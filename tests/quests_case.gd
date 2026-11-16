@@ -12,7 +12,7 @@ var _quests: Quests
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_add_villagers([ANTJE, GESCHE])
 	_quests = _state.quests
 

@@ -17,7 +17,7 @@ func _process(_delta: float) -> bool:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--seed="):
 			world_seed = int(argument.trim_prefix("--seed="))
-	var state := GameState.new_game(world_seed)
+	var state := GameFactory.new_game(world_seed)
 	var world := state.world
 	var generator := WorldGenerator.new(world_seed)
 	var centre := state.player.tile()

@@ -24,7 +24,7 @@ func after_each() -> void:
 
 ## A save at game day `day`; its content is not a game.
 func _store_stub(day: int, kind := SaveHeader.Kind.AUTOSAVE) -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.clock.day = day
 	assert_eq(SaveFile.store("{}", SaveHeader.of(state, kind), BASE), "")
 

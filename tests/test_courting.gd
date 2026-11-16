@@ -9,7 +9,7 @@ var _villagers: VillagerRules
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_boy = Npc.create_villager("boy", Vector2.ZERO, _state.npcs.villagers)
 	_state.npcs.add(_boy)
 	var sheets := DataFile.read_sections(VillagerRules.DEFAULT_PATH)

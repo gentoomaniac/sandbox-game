@@ -9,7 +9,7 @@ var _player_feet: Vector2
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_warnings = CropWarnings.new(_state.world, func() -> Vector2: return _player_feet)
 	_warnings.warned.connect(func(text: String) -> void: _texts.append(text))
 	_texts.clear()

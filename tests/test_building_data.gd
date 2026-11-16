@@ -191,4 +191,4 @@ func test_the_hammer_is_a_tool_item_with_icons() -> void:
 	assert_true(ResourceLoader.exists(ItemTypes.icon_path(ItemTypes.RUSTY_IRON_HAMMER)))
 	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.RUSTY_IRON_HAMMER)))
 	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.REEDS)))
-	assert_eq(Console.new(GameState.new_game(1)).run("give rusty_iron_hammer").size(), 1)
+	assert_eq(Console.new(GameFactory.new_game(1)).run("give rusty_iron_hammer").size(), 1)

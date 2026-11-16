@@ -31,7 +31,7 @@ func _measure(world_seed: int, with_village: bool) -> Array[float]:
 	var state: GameState
 	for _run in RUNS:
 		var started := Time.get_ticks_usec()
-		state = GameState.new_game(world_seed, with_village)
+		state = GameFactory.new_game(world_seed, with_village)
 		best_msec = minf(best_msec, (Time.get_ticks_usec() - started) / 1000.0)
 	var save_bytes := SaveFile.text_of(SaveFile.snapshot(state)).length()
 	return [best_msec, save_bytes / 1024.0]

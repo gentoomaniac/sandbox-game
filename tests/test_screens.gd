@@ -6,7 +6,7 @@ var _chest: WorldObject
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_chest = WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 
 

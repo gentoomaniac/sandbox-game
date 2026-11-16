@@ -13,7 +13,7 @@ var _villagers := {}
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	for id in VillagerRules.default_rules().ids():
 		if _rules.has(id):
 			var npc := Npc.create_villager(id, Vector2.ZERO, _state.npcs.villagers)

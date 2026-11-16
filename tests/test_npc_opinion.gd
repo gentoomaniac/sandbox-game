@@ -11,7 +11,7 @@ var _console: Console
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_console = Console.new(_state)
 	_antje = Npc.create_villager("antje", Vector2.ZERO, _state.npcs.villagers)
 	_state.npcs.add(_antje)

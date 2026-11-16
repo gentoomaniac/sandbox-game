@@ -8,7 +8,7 @@ var _topics: Array[String]
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.clock.day = 3
 	_spread = GossipSpread.new(_state.npcs, _state.deeds)
 	_spread.rng.seed = 1

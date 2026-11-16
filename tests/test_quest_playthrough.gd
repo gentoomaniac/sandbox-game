@@ -11,7 +11,7 @@ var _quests: Quests
 
 
 func before_each() -> void:
-	_state = GameState.new_game(1, true)
+	_state = GameFactory.new_game(1, true)
 	_quests = _state.quests
 	_state.player.inventory = Inventory.new()
 	_state.player.position = Vector2(_state.world.village.meeting_spot) + Vector2(0.5, 0.5)

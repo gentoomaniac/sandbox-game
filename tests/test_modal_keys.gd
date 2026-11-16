@@ -39,7 +39,7 @@ func test_a_windows_key_does_nothing_while_another_window_is_open() -> void:
 
 ## The rule with the real windows: what Main asks before it acts on Shift+C, C, B and K.
 func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
 	var bag := _bag(hotbar, state)
 	var character := _character(hotbar, state)
@@ -72,7 +72,7 @@ func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves(
 
 
 func test_the_bag_and_the_character_window_open_together_and_close_on_their_own_keys() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
 	var bag := _bag(hotbar, state)
 	var character := _character(hotbar, state)
@@ -88,7 +88,7 @@ func test_the_bag_and_the_character_window_open_together_and_close_on_their_own_
 
 
 func test_opening_another_window_closes_both_docked_ones() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
 	var bag := _bag(hotbar, state)
 	var character := _character(hotbar, state)

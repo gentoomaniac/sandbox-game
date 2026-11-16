@@ -29,7 +29,7 @@ func test_a_new_game_has_the_wear_of_a_path_on_the_wearable_tiles_of_the_way_and
 ) -> void:
 	var most_days := PathRules.default_rules().most_days()
 	for world_seed: int in SEEDS:
-		var state := GameState.new_game(world_seed, true)
+		var state := GameFactory.new_game(world_seed, true)
 		var way := VillageSite.find(world_seed).camp_way
 		var worn := _track_of(state)
 		assert_gt(worn.size(), way.size() / 2, "seed %d: most of the way wears" % world_seed)
@@ -40,7 +40,7 @@ func test_a_new_game_has_the_wear_of_a_path_on_the_wearable_tiles_of_the_way_and
 
 
 func test_the_track_fades_to_grass_when_nobody_walks_it() -> void:
-	var state := GameState.new_game(1, true)
+	var state := GameFactory.new_game(1, true)
 	var track := _track_of(state)
 	assert_gt(track.size(), 100)
 
@@ -58,4 +58,4 @@ func test_the_track_fades_to_grass_when_nobody_walks_it() -> void:
 
 
 func test_a_game_without_the_village_has_no_track() -> void:
-	assert_true(_track_of(GameState.new_game(7)).is_empty())
+	assert_true(_track_of(GameFactory.new_game(7)).is_empty())

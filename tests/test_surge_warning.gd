@@ -10,7 +10,7 @@ var _rules := NpcTalkRules.default_rules()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 
 
 func test_the_sky_turns_stormy_six_hours_before_the_sea_rises_and_clears_when_it_falls() -> void:

@@ -55,7 +55,7 @@ func test_a_stork_stands_on_top_of_the_roof_as_it_is_shown() -> void:
 func test_a_stork_leaves_a_roof_whose_house_is_gone() -> void:
 	_wildlife.spawn_in_view(WildlifeRules.ROOF_STORK, 1)
 	var stork: Stork = _storks()[0]
-	_wildlife.world_view.world = GameState.new_game(1).world
+	_wildlife.world_view.world = GameFactory.new_game(1).world
 	_run(stork, 10.0)
 	assert_eq(stork._state, Stork.FLY)
 
@@ -73,7 +73,7 @@ func test_a_roof_takes_one_stork() -> void:
 
 
 func test_no_roof_no_stork() -> void:
-	_wildlife.world_view.world = GameState.new_game(1).world
+	_wildlife.world_view.world = GameFactory.new_game(1).world
 	assert_false(_wildlife._send_stork_to_roof(false))
 	assert_eq(_wildlife.spawn_in_view(WildlifeRules.ROOF_STORK, 1), 0)
 

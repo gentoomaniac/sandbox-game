@@ -11,7 +11,7 @@ var _events: Array[StringName] = []
 
 func before_each() -> void:
 	_events.clear()
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.weather_override = &"clear"
 	_audio = AudioService.new()
 	add_child_autofree(_audio)

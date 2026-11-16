@@ -7,7 +7,7 @@ var _interactions: InteractionRegistry
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_interactions = InteractionRegistry.new()
 
 

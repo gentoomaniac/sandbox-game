@@ -12,7 +12,7 @@ var _tilled_tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 
 
 func after_each() -> void:

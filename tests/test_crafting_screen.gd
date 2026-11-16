@@ -7,7 +7,7 @@ var _screen: CraftingScreen
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_screen = CraftingScreen.new()
 	add_child_autofree(_screen)
 	_screen.show_crafting(Crafting.new(_state), _state.player.inventory)

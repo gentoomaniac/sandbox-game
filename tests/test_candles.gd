@@ -7,7 +7,7 @@ var _crafting: Crafting
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.player.inventory = Inventory.new()
 	_inventory = _state.player.inventory
 	_crafting = Crafting.new(_state)

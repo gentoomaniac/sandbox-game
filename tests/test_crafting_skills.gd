@@ -29,7 +29,7 @@ var _hearth: WorldObject
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_crafting = Crafting.new(_state, RecipeRules.new(RECIPES))
 	_hearth = StationFinder.in_reach(_state, &"hearth")
 	_state.player.inventory.add(ItemTypes.BERRIES, 10)

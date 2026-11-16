@@ -4,7 +4,7 @@ extends GutTest
 
 
 func test_the_label_shows_the_load_and_the_carry_capacity_and_follows_strength() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var screen := BagScreen.new(autofree(HotbarCase.new_hotbar(state.player.inventory)))
 	add_child_autofree(screen)
 	screen.show_player(state.player)
@@ -14,7 +14,7 @@ func test_the_label_shows_the_load_and_the_carry_capacity_and_follows_strength()
 
 
 func test_the_purse_is_shown_in_schilling_and_follows_the_money() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var screen := BagScreen.new(autofree(HotbarCase.new_hotbar(state.player.inventory)))
 	add_child_autofree(screen)
 	screen.show_player(state.player)

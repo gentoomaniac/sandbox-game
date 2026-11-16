@@ -4,7 +4,7 @@ extends SaveValidationCase
 
 
 func test_a_saved_purse_is_loaded() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.purse.schilling = 77
 	assert_true(SaveFile.write(state, SAVE_PATH))
 

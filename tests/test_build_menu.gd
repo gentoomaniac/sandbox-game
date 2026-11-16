@@ -21,7 +21,7 @@ var _menu: BuildMenu
 
 func before_each() -> void:
 	_make_window()
-	_state = GameState.new_game(1)
+	_state = GameFactory.new_game(1)
 	_builder = Builder.new(_state)
 	_builder.select_hammer()
 	_menu = BuildMenu.new()

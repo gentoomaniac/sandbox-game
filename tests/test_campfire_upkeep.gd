@@ -95,7 +95,7 @@ func test_the_hearth_of_a_house_is_no_campfire_and_burns_for_ever() -> void:
 
 
 func test_a_campfire_that_is_out_is_nothing_to_stand_by() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var camp_fire := state.world.object_at(
 		CampSite.sleeping_bag_of_seed(7) - CampSite.SLEEPING_BAG_OFFSET
 	)

@@ -28,7 +28,7 @@ func test_a_save_that_cannot_be_read_leaves_nothing_waiting_and_is_moved_aside()
 
 
 func test_the_saved_game_is_kept_for_the_new_scene_and_given_once() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.position = Vector2(12.5, 9.5)
 	assert_true(SaveFile.write(state, PATH))
 	assert_eq(QuickLoad.prepare(SaveList.newest_path(PATH)), QuickLoad.Outcome.READY)
@@ -37,7 +37,7 @@ func test_the_saved_game_is_kept_for_the_new_scene_and_given_once() -> void:
 
 
 func test_a_failed_prepare_drops_a_game_kept_before() -> void:
-	SaveFile.write(GameState.new_game(7), PATH)
+	SaveFile.write(GameFactory.new_game(7), PATH)
 	var save_path := SaveList.newest_path(PATH)
 	QuickLoad.prepare(save_path)
 	DirAccess.remove_absolute(save_path)
@@ -85,7 +85,7 @@ func test_the_restarted_scene_keeps_the_view_flags_and_drops_the_rest() -> void:
 
 
 func _write_save_missing_an_item() -> void:
-	var game: Dictionary = JSON.parse_string(JSON.stringify(GameState.new_game(7).to_dict()))
+	var game: Dictionary = JSON.parse_string(JSON.stringify(GameFactory.new_game(7).to_dict()))
 	game["player"]["inventory"]["slots"][4] = {"item": "old_seeds", "count": 3}
 	DirAccess.make_dir_recursive_absolute(DIR)
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
@@ -124,11 +124,11 @@ func test_cancelling_keeps_nothing_and_the_file_stays() -> void:
 
 
 func test_a_new_game_is_kept_for_the_new_scene_and_said_to_be_new() -> void:
-	var game := GameState.new_game(7)
+	var game := GameFactory.new_game(7)
 	QuickLoad.start_new(game)
 	assert_true(QuickLoad.is_new_game)
 	assert_same(QuickLoad.take(), game)
 	assert_null(QuickLoad.take())
-	SaveFile.write(GameState.new_game(7), PATH)
+	SaveFile.write(GameFactory.new_game(7), PATH)
 	QuickLoad.prepare(SaveList.newest_path(PATH))
 	assert_false(QuickLoad.is_new_game, "a load is no new game")

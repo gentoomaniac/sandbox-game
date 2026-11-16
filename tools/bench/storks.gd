@@ -36,7 +36,7 @@ func _process(_delta: float) -> bool:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--seed="):
 			_world_seed = int(argument.trim_prefix("--seed="))
-	_state = GameState.new_game(_world_seed)
+	_state = GameFactory.new_game(_world_seed)
 	var generator := WorldGenerator.new(_world_seed)
 	for y in range(-CHUNK_RADIUS, CHUNK_RADIUS):
 		for x in range(-CHUNK_RADIUS, CHUNK_RADIUS):

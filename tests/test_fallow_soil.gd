@@ -13,7 +13,7 @@ var _tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	_fallow = _world.fallow
 	_tile = _grass_tile()

@@ -29,7 +29,7 @@ func test_a_kind_nobody_registered_says_and_does_nothing() -> void:
 
 
 func test_the_flow_and_its_game_are_freed_with_the_registry() -> void:
-	var state: GameState = GameState.new_game(7)
+	var state: GameState = GameFactory.new_game(7)
 	var flow := InteractFlow.new()
 	flow.state = state
 	var registry := InteractionRegistry.new()
@@ -46,7 +46,7 @@ func test_the_flow_and_its_game_are_freed_with_the_registry() -> void:
 
 
 func test_the_feature_flows_and_their_game_are_freed_with_the_registry() -> void:
-	var state: GameState = GameState.new_game(7)
+	var state: GameState = GameFactory.new_game(7)
 	var registry := InteractionRegistry.new()
 	var hotbar: HotbarHud = HotbarCase.new_hotbar()
 	var sounds := GameSounds.new()

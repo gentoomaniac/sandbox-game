@@ -10,7 +10,7 @@ var _rules := GossipRules.default_rules()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.clock.day = 3
 	_judge = _state.judge
 	_antje = Npc.create_villager("antje", Vector2.ZERO, _state.npcs.villagers)

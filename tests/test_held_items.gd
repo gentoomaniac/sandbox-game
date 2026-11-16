@@ -10,7 +10,7 @@ var _tile: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(SEED)
+	_state = GameFactory.new_game(SEED)
 	_world = _state.world
 	_tile = _grass_tile()
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5) - Vector2(0, 1)

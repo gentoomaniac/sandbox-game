@@ -12,7 +12,7 @@ var _friendship := FriendshipRules.default_rules()
 
 
 func before_each() -> void:
-	_state = GameState.new_game(1, true)
+	_state = GameFactory.new_game(1, true)
 	_antje = _state.npcs.find("antje")
 	_gesche = _state.npcs.find("gesche")
 	_tile = Vector2i(_antje.anchor)

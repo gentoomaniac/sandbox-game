@@ -72,7 +72,7 @@ func test_villagers_come_in_both_sexes_and_women_wear_skirts() -> void:
 
 
 func test_a_villager_by_the_camp_is_anchored_to_its_fireplace() -> void:
-	var camp := GameState.new_game(SEED)
+	var camp := GameFactory.new_game(SEED)
 	var fireplace := CampSite.sleeping_bag_of_seed(SEED) - CampSite.SLEEPING_BAG_OFFSET
 	var anchor := Npcs.anchor_near(camp.player.position, camp.world, 16.0)
 	assert_eq(anchor, Vector2(fireplace) + Vector2(0.5, 0.5))

@@ -3,7 +3,7 @@ extends SaveUpgradeCase
 
 
 func test_the_rooster_is_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.livestock.add(FarmAnimal.new(LivestockRules.CHICKEN, &"rooster", Vector2(1.5, 2.5)))
 	assert_true(SaveFile.write(state, SAVE_PATH))
 

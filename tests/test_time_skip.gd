@@ -17,7 +17,7 @@ var _stepped: GameState
 
 func before_each() -> void:
 	super.before_each()
-	_stepped = GameState.new_game(SEED)
+	_stepped = GameFactory.new_game(SEED)
 	_stepped.player.position = _state.player.position
 	for state in [_state, _stepped]:
 		_make_farm(state)
@@ -212,7 +212,7 @@ func test_a_short_skip_is_the_frames_of_play_with_the_clock_between_them() -> vo
 ## With no crop to read the soil every hour, what the skip leaves undone would show at the first
 ## look at a tile: the weather of the whole month worked out in one frame.
 func test_the_soil_is_ready_when_a_skip_of_thirty_days_is_over() -> void:
-	var bare := GameState.new_game(SEED)
+	var bare := GameFactory.new_game(SEED)
 	var tile := bare.player.tile() + Vector2i(1, 4)
 	bare.world.set_terrain(tile, Tile.Terrain.SOIL)
 	bare.simulation.skip(30 * GameClock.MINUTES_PER_DAY)

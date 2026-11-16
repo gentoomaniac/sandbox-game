@@ -17,7 +17,7 @@ var _camera: CameraController
 
 
 func before_each() -> void:
-	_state = GameState.new_game(1)
+	_state = GameFactory.new_game(1)
 	_wildlife = WildlifeView.new()
 	_wildlife.rng.seed = SEED
 	_wildlife.rules = WildlifeRules.default_rules()

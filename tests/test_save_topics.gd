@@ -7,7 +7,7 @@ func _saved(npc: Npc) -> Dictionary:
 
 
 func test_the_topics_a_villager_knows_are_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var npc := Npc.create(42, Vector2.ZERO, state.npcs.rules)
 	npc.topics.assign(["places", "money"])
 	state.npcs.add(npc)

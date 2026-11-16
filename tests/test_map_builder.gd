@@ -9,7 +9,7 @@ var _builder: MapBuilder
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_builder = MapBuilder.new(_state.world, _state.explored)
 
 

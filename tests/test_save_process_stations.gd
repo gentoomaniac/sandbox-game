@@ -11,7 +11,7 @@ func _object_at(state: GameState, pos: Vector2i) -> WorldObject:
 
 
 func test_a_loaded_kiln_is_kept() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var kiln := WorldObject.new(WorldObjectTypes.KILN, Vector2i(3, 4))
 	kiln.storage.add(ItemTypes.RAW_BRICK, 12)
 	state.world.add_object(kiln)

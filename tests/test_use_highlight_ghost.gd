@@ -6,7 +6,7 @@ var _highlight: UseHighlight
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_highlight = UseHighlight.new()
 	add_child_autofree(_highlight)
 	_highlight.show_for(_state, null)

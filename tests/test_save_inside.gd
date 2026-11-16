@@ -7,7 +7,7 @@ var _house: Building
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	var origin := _state.player.tile() + Vector2i(8, 8)
 	for y in range(-1, 8):
 		for x in range(-1, 8):

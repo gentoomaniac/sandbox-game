@@ -126,7 +126,7 @@ func test_practising_says_the_skills_changed() -> void:
 
 
 func test_the_skills_survive_a_save_round_trip() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.skills.set_points(&"masonry", 12.3)
 	state.player.skills.set_fading(&"cooking", true)
 	var restored := RealLoad.of(self, state)
@@ -140,7 +140,7 @@ func test_the_skills_survive_a_save_round_trip() -> void:
 
 
 func test_the_skill_command_sets_a_skills_points_within_its_cap() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var console := Console.new(state)
 	assert_eq(console.run("skill masonry 42.5"), ["Masonry is 42.5"] as Array[String])
 	assert_eq(state.player.skills.points(&"masonry"), 42.5)
@@ -149,6 +149,6 @@ func test_the_skill_command_sets_a_skills_points_within_its_cap() -> void:
 
 
 func test_the_skill_command_names_an_unknown_skill_and_wants_points() -> void:
-	var console := Console.new(GameState.new_game(7))
+	var console := Console.new(GameFactory.new_game(7))
 	assert_eq(console.run("skill smithing 5"), ["Unknown skill: smithing"] as Array[String])
 	assert_eq(console.run("skill masonry"), ["Usage: skill <skill> <points>"] as Array[String])

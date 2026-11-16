@@ -7,7 +7,7 @@ var _panel: AttributesPanel
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	var screen := CharacterScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
 	screen.show_player(_state.player)

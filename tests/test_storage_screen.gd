@@ -17,7 +17,7 @@ func before_each() -> void:
 ## The storage screen open on a chest with `_chest`'s slots, for `_inventory`'s player. Returns
 ## the views the player sees: the backpack's, the hotbar's (the HUD's), then the chest's.
 func _open_screen() -> Array[SlotView]:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.player.inventory = _inventory
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
@@ -147,7 +147,7 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 	var window := SubViewport.new()
 	window.size = Vector2i(320, 180)
 	add_child_autofree(window)
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
 	_screen = StorageScreen.new(autofree(HotbarCase.new_hotbar()))
@@ -163,7 +163,7 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 func test_opening_the_chest_closes_the_window_that_was_open() -> void:
 	var crafting := CraftingScreen.new()
 	add_child_autofree(crafting)
-	crafting.show_crafting(Crafting.new(GameState.new_game(7)), _inventory)
+	crafting.show_crafting(Crafting.new(GameFactory.new_game(7)), _inventory)
 	crafting.open()
 	_open_screen()
 	assert_false(crafting.is_open())

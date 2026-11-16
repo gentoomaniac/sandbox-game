@@ -10,7 +10,7 @@ var _player: PlayerState
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_player = _state.player
 	_hotbar = add_child_autofree(HotbarHud.new())
 	_hotbar.show_inventory(_player.inventory)
@@ -81,7 +81,7 @@ func test_character_screens_opened_and_freed_leave_no_nodes() -> void:
 
 
 func test_chat_screens_with_an_answer_pending_leave_no_nodes() -> void:
-	var state := GameState.new_game(1)
+	var state := GameFactory.new_game(1)
 	var npc := Npc.create(5, state.player.position, state.npcs.rules)
 	state.npcs.add(npc)
 	var settings := GameSettings.new("user://test_chat/settings.cfg")

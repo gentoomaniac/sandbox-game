@@ -7,7 +7,7 @@ var _inventory: Inventory
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_inventory = _state.player.inventory
 	_inventory.slots[7] = {
 		"item": ItemTypes.LANTERN, "count": 1, "state": LanternCandle.lantern_state_with({})

@@ -231,7 +231,7 @@ func test_the_place_is_a_building_else_a_fire_else_the_open() -> void:
 
 
 func test_the_moment_of_the_game_is_read_from_its_state() -> void:
-	var state := GameState.new_game(7)
+	var state := GameFactory.new_game(7)
 	state.clock.set_time(8, 15)
 	var npc := Npc.create(1, state.player.position, NpcRules.default_rules())
 	var moment := NpcMoment.of(state, npc, 8.0)

@@ -197,7 +197,7 @@ func test_no_one_is_on_an_empty_nest() -> void:
 
 
 func test_a_loaded_game_has_the_nests_it_had() -> void:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	var around := state.player.tile()
 	for x in range(-12, 13, 4):
 		for y in range(-12, 13, 4):

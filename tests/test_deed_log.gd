@@ -10,7 +10,7 @@ var _spot: Vector2i
 
 
 func before_each() -> void:
-	_state = GameState.new_game(7)
+	_state = GameFactory.new_game(7)
 	_state.clock.minute_of_day = NOON
 	_spot = _state.player.tile()
 

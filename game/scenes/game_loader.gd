@@ -15,7 +15,7 @@ func _init(options: StartupOptions, save_questions: SaveQuestions) -> void:
 
 
 static func new_world() -> GameState:
-	return GameState.new_game(WORLD_SEED, true)
+	return GameFactory.new_game(WORLD_SEED, true)
 
 
 ## `resumed_state` is the game a quick load or a new game has handed over (see QuickLoad), or null.

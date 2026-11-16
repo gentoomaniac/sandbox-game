@@ -14,7 +14,7 @@ var _stealing := FriendshipRules.default_rules().harm_points(GossipRules.STOLE)
 
 func before_each() -> void:
 	_taken.clear()
-	_state = GameState.new_game(1, true)
+	_state = GameFactory.new_game(1, true)
 	_antje = _state.npcs.find("antje")
 	_state.clock.minute_of_day = 12 * GameClock.MINUTES_PER_HOUR
 	for npc in _state.npcs.all():

@@ -20,7 +20,7 @@ func before_each() -> void:
 
 # The new game with the chunks of the sea dyke (see CoastWorld) loaded, and the clock at NOW.
 func _new_game_on_the_coast() -> GameState:
-	var state := GameState.new_game(SEED)
+	var state := GameFactory.new_game(SEED)
 	var generator := WorldGenerator.new(SEED)
 	for y in range(CoastWorld.CHUNK_ROWS.x, CoastWorld.CHUNK_ROWS.y):
 		for x in range(CoastWorld.CHUNK_COLUMNS.x, CoastWorld.CHUNK_COLUMNS.y):
