@@ -41,7 +41,8 @@ func test_a_trade_gives_the_goods_for_the_value_and_uses_up_stock_and_room() -> 
 	var give := {ItemTypes.EGG: 8, ItemTypes.FIBRE: 7}
 
 	var quote := _shops.quote(SHOP, want, give, _bag)
-	assert_eq([quote.price, quote.value, quote.keeps, quote.problem], [15, 15, 0, ""])
+	assert_eq([quote.price, quote.value, quote.player_pays, quote.she_pays], [15, 15, 0, 0])
+	assert_eq(quote.problem, "")
 	assert_eq(_shops.trade(SHOP, want, give, _bag), "")
 
 	assert_eq(_bag.totals(), {SEEDS: 5})
@@ -58,8 +59,7 @@ func test_a_new_shop_starts_full() -> void:
 
 func test_a_trade_with_nothing_chosen_is_refused() -> void:
 	_carry(ItemTypes.EGG, 2)
-	_assert_refused({}, {}, "Choose what you want.")
-	_assert_refused({}, {ItemTypes.EGG: 2}, "Choose what you want for it.")
+	_assert_refused({}, {}, "Choose what to buy or sell.")
 
 
 func test_what_she_does_not_sell_or_take_is_refused() -> void:
@@ -110,14 +110,16 @@ func _assert_refused_in(
 	assert_eq(bag.totals(), before)
 
 
-func test_an_overpayment_is_hers_and_there_is_no_change() -> void:
+func test_an_overpayment_is_paid_to_the_player_in_coin() -> void:
 	_carry(ItemTypes.LOGS, 6)
+	var purse := Purse.new(0)
 	var want := {ItemTypes.CANDLE: 1}
 	var give := {ItemTypes.LOGS: 6}
-	var quote := _shops.quote(SHOP, want, give, _bag)
-	assert_eq([quote.price, quote.value, quote.keeps], [20, 24, 4])
-	assert_eq(_shops.trade(SHOP, want, give, _bag), "")
+	var quote := _shops.quote(SHOP, want, give, _bag, ShopStanding.new(), purse)
+	assert_eq([quote.price, quote.value, quote.she_pays, quote.player_pays], [20, 24, 4, 0])
+	assert_eq(_shops.trade(SHOP, want, give, _bag, ShopStanding.new(), purse), "")
 	assert_eq(_bag.totals(), {ItemTypes.CANDLE: 1})
+	assert_eq(purse.schilling, 4)
 
 
 func _carry_payment() -> void:

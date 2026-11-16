@@ -119,6 +119,10 @@ turnip=6
 
 ## From barter to money: the shop of #10
 
+**Built (step 7):** `ShopQuote` has `player_pays` and `she_pays` (`keeps` is gone), `Shops.quote`,
+`trade` and `cover` take the purse, the trade screen shows it, and `nocost` sets the price to 0
+(through the standing). `tests/test_shop_coin.gd`.
+
 The trade screen keeps its two sides (what you get, what you give) and gains the purse:
 
 - **A deal is a price and a value.** The price is what she asks for what the player gets, the value

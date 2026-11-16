@@ -77,7 +77,7 @@ Decided 2026-11-05.
   what is left, what she takes on the right with its value, the room she has today and how many the
   player has, a `[-] n [+]` on every row (never above her stock, her room or the bag), and below what
   the player gets and gives in Schilling, one line that says what is right or wrong with the deal
-  ("Short by 5 Schilling.", "Your bag is full.", "She keeps the 2 ß over."; the texts are `Shops`'s) and
+  ("Short by 5 Schilling.", "Your bag is full.", "She pays you 2 ß."; the texts are `Shops`'s) and
   `Cover it` (the cheapest of the bag, until the goods are paid), `Trade` (on only when the deal is
   fair) and `Talk` (asks for the chat). It is a `Modal` that pauses the game; E and Escape close
   it. Rows with nothing to trade are grey. Until E on the keeper opens it, the console's `shop`

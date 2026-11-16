@@ -3,11 +3,13 @@ extends Modal
 ## The trade with a shopkeeper over the game (design/economy/shop.md): what she sells on the left,
 ## each with its price and what is left of it, what she takes on the right, each with its value
 ## and the room she has for it today, and a count to change with [-] and [+] on every row. Below,
-## what the player gets and gives, a line that says what is right or wrong with the deal, and
-## [Cover it] (the cheapest of the bag, until the goods are paid), [Trade] (on only when the deal
-## is fair) and [Talk] (the chat with her). The game stands still while it is open. Rows with
-## nothing to trade are grey. The numbers and the refusals are Shops': the screen only shows them.
-## E and Escape close it, as the chest's.
+## what the player gets and gives, the purse, a line that says what is right or wrong with the
+## deal (the difference of price and value is paid in coin, by the player or by her), and
+## [Cover it] (the cheapest of the bag, until the goods are paid beyond the purse), [Trade] (on
+## only when the deal is fair) and [Talk] (the chat with her). The game stands still while it is
+## open. Rows with nothing to trade are grey. The numbers and the refusals are Shops': the screen
+## only shows them. E and Escape close it, as the chest's. The console's `nocost` makes the goods
+## free.
 
 ## The player wants to talk to the keeper instead.
 signal talk_requested(keeper: Npc)
@@ -35,6 +37,7 @@ var _sells_column := VBoxContainer.new()
 var _takes_column := VBoxContainer.new()
 var _get_label := Label.new()
 var _give_label := Label.new()
+var _purse_label := Label.new()
 var _status_label := Label.new()
 var _cover_button := Button.new()
 var _trade_button := Button.new()
@@ -54,7 +57,7 @@ func _init() -> void:
 	goods.add_child(_goods_column("She sells", _sells_column))
 	goods.add_child(_goods_column("She takes", _takes_column))
 	column.add_child(goods)
-	for label in [_get_label, _give_label, _status_label]:
+	for label in [_get_label, _give_label, _purse_label, _status_label]:
 		column.add_child(label)
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_END
@@ -79,6 +82,8 @@ func open_shop(keeper: Npc, state: GameState) -> void:
 	_state = state
 	_keeper = keeper
 	_standing = ShopStanding.with_keeper(keeper)
+	if state.cheats.is_cost_off:
+		_standing.price_percent = 0
 	_shop = ShopRules.default_rules().shop_of_keeper(keeper.id)
 	assert(_shop != "", "%s keeps no shop" % keeper.id)
 	_show_goods()
@@ -92,11 +97,13 @@ func _on_open() -> void:
 	_title_label.text = "%s, %s" % [_keeper.name, _keeper.trade]
 	_hint_label.text = "Prices are in Schilling (ß)."
 	_state.player.inventory.changed.connect(_refresh)
+	_state.player.purse.changed.connect(_refresh)
 	_refresh()
 
 
 func _on_close() -> void:
 	_state.player.inventory.changed.disconnect(_refresh)
+	_state.player.purse.changed.disconnect(_refresh)
 
 
 ## What the player gets, plus one of the item (or less one).
@@ -113,14 +120,16 @@ func step_give(item: StringName, delta: int) -> void:
 
 ## Fills what the player gives with the cheapest of the bag, until what they get is paid.
 func cover() -> void:
-	give = _state.shops.cover(_shop, want, _state.player.inventory, _standing)
+	give = _state.shops.cover(_shop, want, _state.player.inventory, _standing, _state.player.purse)
 	_note = ""
 	_refresh()
 
 
 ## Does the deal if it is fair.
 func trade() -> void:
-	var problem := _state.shops.trade(_shop, want, give, _state.player.inventory, _standing)
+	var problem := _state.shops.trade(
+		_shop, want, give, _state.player.inventory, _standing, _state.player.purse
+	)
 	if problem == "":
 		want = {}
 		give = {}
@@ -134,8 +143,10 @@ func status_text() -> String:
 		return _note
 	if not _quote.is_fair():
 		return _quote.problem
-	if _quote.keeps > 0:
-		return "She keeps the %d ß over." % _quote.keeps
+	if _quote.she_pays > 0:
+		return "She pays you %d ß." % _quote.she_pays
+	if _quote.player_pays > 0:
+		return "You pay %d ß." % _quote.player_pays
 	return "A fair trade."
 
 
@@ -200,9 +211,10 @@ func _refresh() -> void:
 		var detail := "%d ß, room %d, you have %d" % [rules.value(_shop, row.item), room, carried]
 		var can_add: bool = give.get(row.item, 0) < _most_to_give(row.item)
 		row.show_state(detail, give.get(row.item, 0), can_add, carried == 0 or room == 0)
-	_quote = shops.quote(_shop, want, give, bag, _standing)
+	_quote = shops.quote(_shop, want, give, bag, _standing, _state.player.purse)
 	_get_label.text = "You get: %s" % _counts_text(want, _quote.price)
 	_give_label.text = "You give: %s" % _counts_text(give, _quote.value)
+	_purse_label.text = "Your purse: %d ß" % _state.player.purse.schilling
 	_status_label.text = status_text()
 	_cover_button.disabled = want.is_empty()
 	_trade_button.disabled = not _quote.is_fair()

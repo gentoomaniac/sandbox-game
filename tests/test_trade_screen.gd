@@ -13,6 +13,7 @@ var _talked_to: Array[Npc] = []
 
 func before_each() -> void:
 	_state = GameState.new_game(7)
+	_state.player.purse.schilling = 0
 	_keeper = Npc.create_villager("trienke", Vector2.ZERO, _state.npcs.villagers)
 	_viewport = SubViewport.new()
 	_viewport.size = Vector2i(640, 360)
@@ -72,7 +73,7 @@ func test_the_counts_stay_within_the_stock_the_bag_and_the_room() -> void:
 func test_the_line_says_what_is_short_and_the_trade_button_is_off() -> void:
 	_carry(ItemTypes.EGG, 8)
 	_open()
-	assert_eq(_screen.status_text(), "Choose what you want.")
+	assert_eq(_screen.status_text(), "Choose what to buy or sell.")
 	assert_true(_screen._trade_button.disabled)
 	assert_true(_screen._cover_button.disabled, "nothing wanted, nothing to cover")
 	_screen.step_want(SEEDS, 5)
@@ -107,13 +108,45 @@ func test_cover_it_fills_what_is_given_and_a_fair_trade_is_on() -> void:
 	assert_false(_screen._trade_button.disabled)
 
 
-func test_an_overpayment_says_what_she_keeps() -> void:
+func test_an_overpayment_says_what_she_pays_and_the_purse_gets_it() -> void:
 	_carry(ItemTypes.LOGS, 6)
 	_open()
 	_screen.step_want(ItemTypes.CANDLE, 1)
 	_screen.step_give(ItemTypes.LOGS, 6)
-	assert_eq(_screen.status_text(), "She keeps the 4 ß over.")
+	assert_eq(_screen.status_text(), "She pays you 4 ß.")
 	assert_false(_screen._trade_button.disabled)
+	_screen._trade_button.pressed.emit()
+	assert_eq(_state.player.purse.schilling, 4)
+	assert_eq(_screen._purse_label.text, "Your purse: 4 ß")
+
+
+func test_a_shortfall_says_what_the_player_pays_from_the_purse() -> void:
+	_state.player.purse.schilling = 32
+	_carry(ItemTypes.EGG, 8)
+	_open()
+	_screen.step_want(SEEDS, 5)
+	_screen.step_give(ItemTypes.EGG, 8)
+	assert_eq(_screen.status_text(), "You pay 7 ß.")
+	assert_eq(_screen._purse_label.text, "Your purse: 32 ß")
+	_screen._trade_button.pressed.emit()
+	assert_eq(_state.player.purse.schilling, 25)
+	assert_eq(_screen._purse_label.text, "Your purse: 25 ß")
+
+
+func test_the_player_may_sell_for_coin_with_nothing_wanted() -> void:
+	_carry(ItemTypes.TURNIP, 2)
+	_open()
+	_screen.step_give(ItemTypes.TURNIP, 2)
+	assert_eq(_screen.status_text(), "She pays you 6 ß.")
+	assert_false(_screen._trade_button.disabled)
+
+
+func test_nocost_makes_the_goods_free() -> void:
+	_state.cheats.is_cost_off = true
+	_open()
+	_screen.step_want(SEEDS, 5)
+	assert_eq(_screen.status_text(), "A fair trade.")
+	assert_eq(_screen._sell_rows[0]._detail_label.text, "0 ß, 40 left")
 
 
 func test_the_trade_button_does_the_deal_and_clears_the_counts() -> void:

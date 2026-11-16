@@ -1,7 +1,7 @@
 # The shop
 
-Trienke Lorenzen, the Höker of Wehlsbüll, keeps a stall on the town square. You trade with her by
-barter: there is no money in the game yet, only what things are worth.
+Trienke Lorenzen, the Höker of Wehlsbüll, keeps a stall on the town square. You trade with her for
+Schilling, the coin of the village, and in goods: the purse is in your bag.
 
 ![Trienke Lorenzen behind her stall on the town square, in the 32 px and the classic art](../docs/screenshots/shop-stall.png)
 
@@ -28,8 +28,11 @@ barter: there is no money in the game yet, only what things are worth.
   and `-` to choose how many of each, `Cover it` to fill what you give with the cheapest of your
   bag until what you get is paid, and `Trade` when the line below says the trade is fair. `Talk`
   turns to a chat with her instead. Rows with nothing to trade are grey.
-- A trade is fair when what you give is worth at least what you get. She gives no change: what is
-  over is hers, and the line says so (`Cover it` takes no more than it needs).
+- The difference between what you get and what you give is paid in coin. If what you give is worth
+  less, you pay the rest from your purse (the screen shows it, and the bag too); if it is worth
+  more, she pays you the rest in Schilling. You can give nothing and pay in coin, or get nothing
+  and be paid. If your purse cannot pay, the line says "Short by N Schilling." `Cover it` fills in
+  goods only as far as your purse does not reach.
 - The trade is all or nothing: if your bag has no room for what you get, the line says so and
   nothing changes.
 - She takes at 60 percent of what a thing is worth, and sells at 125 percent: the prices are in

@@ -90,11 +90,12 @@ chest). E on the keeper **out of hours** opens the chat (below).
 - Two lists with a `[-] n [+]` on each row. Left rows are what she sells (price, stock); right rows
   are what the player carries that she takes (value, room left today). Rows with nothing in the bag
   or out of stock are grey.
-- A line below says what is wrong or right: "Short by 5 Schilling.", "Out of seeds today.", "Your bag
-  is full.", "She has no room for more eggs today.", "She keeps the 2 ß over." `Trade` is on only
+- Under the lists the purse is shown ("Your purse: 32 ß"). A line below says what is wrong or
+  right: "Short by 5 Schilling.", "Out of seeds today.", "Your bag is full.", "She has no room for
+  more eggs today.", "You pay 7 ß.", "She pays you 2 ß." `Trade` is on only
   when the deal is fair; the line says why not otherwise.
 - `Cover it` fills the "give" side with the cheapest takable items from the bag until the goods are
-  paid for. It is a help; the player may change the counts.
+  paid for beyond what the purse pays. It is a help; the player may change the counts.
 - Escape leaves. Keys and layout follow `StorageScreen`.
 
 ### Barter rules
@@ -106,10 +107,14 @@ chest). E on the keeper **out of hours** opens the chat (below).
   (60 % of 1 rounds down to nothing), and the file check says so.
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
   ratios). The village sheet's money topic names these prices, and a test keeps them in line
-  (`tests/test_money_lore.gd`). A deal is fair when the value given is at least the price of
-  what is got. Whole Schilling throughout, no fractions.
-- **No change:** an overpayment is hers and the line says so (open question 4).
-- **Refused:** not enough value; not enough stock; not enough room for what she takes; the player
+  (`tests/test_money_lore.gd`). Whole Schilling throughout, no fractions.
+- **A deal is a price and a value, and the difference is paid in coin** (#49, step 7): what she asks
+  for what the player gets is the price, what she gives for what they bring is the value. If the
+  value is less, the player pays the rest from the purse; if it is more, she pays the rest in
+  Schilling (before #49 she kept it). Either side may be empty, so the player can sell for coin
+  and buy with coin. She has no purse of her own: the room of the day is the cap. `nocost` makes
+  the price of everything 0.
+- **Refused:** the purse can't pay what the player owes ("Short by N Schilling.");  not enough stock; not enough room for what she takes; the player
   does not carry what they offer; what they get does not fit the bag once what they give is out.
   `ItemSlots.can_exchange` checks the last exactly and `exchange` is all or nothing, so a refused
   deal changes nothing.
