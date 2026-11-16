@@ -2,7 +2,7 @@
 
 Pictures are lists of rows of palette colour names (None = clear), like every other tile in
 canvas.py. generate.py writes them: icons to assets/items/<item id>.png (ids from
-game/state/item_types.gd), their half size versions for the ground to
+game/state/items/), their half size versions for the ground to
 assets/ground_items/<item id>.png, slots to assets/ui/slot.png and slot_selected.png.
 """
 

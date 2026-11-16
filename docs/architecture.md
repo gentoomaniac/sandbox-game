@@ -337,14 +337,20 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
   fails loudly. A test that needs an item of its own swaps in a small catalog of its own for
   `ItemTypes.TYPES` and restores it, it never adds to the shared one.
-- World objects are defined by topic scripts in `game/state/world_objects/` (trees, rocks, plants,
-  boundaries, furniture, stations, yard, landing, ways, village, stall, dyke), items by those in
-  `game/state/items/` (resources, ...): each has a constant `TYPES` of plain data keyed by raw ids, and
-  `CatalogTopics` loads them in path order (export-aware, like the console's commands). An id two
-  topics define is reported by `CatalogCheck` as `object <id>: defined in <file> and in <file>`
-  before anything is merged. These are GDScript scripts, not data files, because the definitions
-  hold typed values (`Vector2i`, `Color`, terrain enums) that a `.cfg` would need a parser and its
-  own checks for; `CatalogCheck` checks their fields either way.
+- The ordinary items and world objects are declared in topic scripts: `game/state/items/`
+  (resources, clothing, food, stations, furniture, yard, landing, boundaries, plants, gear) and
+  `game/state/world_objects/` (trees, rocks, plants, boundaries, furniture, stations, yard, landing,
+  ways, village, stall, dyke). Each has a constant `TYPES` of plain data keyed by raw ids, so a topic
+  never depends on the table that gathers it, and `CatalogTopics` loads them in path order
+  (export-aware, like the console's commands). An id two topics define is reported as
+  `<kind> <id>: defined in <file> and in <file>` before anything is merged, and `CatalogCheck` shows
+  it with the other problems. They are GDScript scripts, not data files, because the definitions
+  hold typed values (`Vector2i`, `Color`, terrain enums, references to `Equipment` slots) that a
+  `.cfg` would need a parser and a second set of checks for; `CatalogCheck` checks their fields
+  either way. What derives from other data stays in `ItemTypes` (the tool grades, the seeds and
+  produce of the crops) and `WorldObjectTypes` (the crops, snags, reeds and trunks), which only
+  assemble the catalog and answer queries about it. Constants like `ItemTypes.CHEST` stay as names
+  for the ids callers use; a new item or object needs none.
 - `CatalogCheck` checks every item and object with its references at start (fields in range,
   wearables stack 1, what an item places or plants, what an object drops, leaves or seeds exists,
   ids of crops and trunks don't collide); `RulesCheck` (run by `Main._ready`) refuses to start
@@ -361,10 +367,10 @@ Typical jobs:
 | New building | A section in `data/buildings.cfg`, its two pictures and an interior map ([maps/README.md](../maps/README.md)), or an empty `interior_map` for one nobody goes into (the bell frame). |
 | New building style | A section `[<building>.<style>]` after its building in `data/buildings.cfg` with its `name` and the keys it changes (its pictures, costs); it shares the building's footprint, door and inside. |
 | New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`; `station`, `skill`, `level` and `hours` are optional. |
-| New station | A placed object kind (`WorldObjectTypes` with `drops` and `placeable_in`, `ItemTypes` with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
+| New station | A placed object kind (a `world_objects/` entry with `drops` and `placeable_in`, an `items/` entry with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
 | New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
-| New object or item kind | An entry in the `TYPES` of a topic script in `game/state/world_objects/` (or in `ItemTypes`; an object an item places also needs `placeable_in`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
+| New object or item kind | An entry in the `TYPES` of a topic script in `game/state/items/` or `game/state/world_objects/` (a new file there is picked up as is; an object an item places also needs `placeable_in`, the item `places`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
 
 ### Adding a data file
 

@@ -106,7 +106,7 @@ turnip=6
 [seasons.<kind>]      ; step 11: a factor in percent by season for a kind of good
 ```
 
-- `[worth]` maps an item of the game (the names of `game/state/item_types.gd`) to a whole number of
+- `[worth]` maps an item of the game (the names of `game/state/items/`) to a whole number of
   Schilling, from 1. Every item that can be bought, sold or bartered has one. An item with none
   cannot be traded (the check reports a shop good with no worth).
 - **`data/shops.cfg`** keeps what is the shop's own: the keeper, the percentages, the stock (`max`,

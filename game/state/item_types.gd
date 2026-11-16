@@ -153,20 +153,17 @@ const GROUND_ICON_PATH := "res://assets/ground_items/%s.png"
 
 ## The folder of the topic scripts that define the items (see CatalogTopics).
 const TOPICS_DIR := "res://game/state/items"
-const _OWN_SOURCE := "res://game/state/item_types.gd"
 
-const _OTHER_TYPES := {}
-
-## What went wrong while the crop items were added to the fixed ones: an id used twice (see
-## CatalogCheck).
+## What went wrong while the topics were read and the tool and crop items added: an id used twice,
+## a topic that does not load (see CatalogCheck).
 static var build_problems: Array[String] = []
 
-## Every type: the fixed ones above, the tools in their grades (data/tools.cfg) and the seeds and
-## produce of the crops in data/crops.cfg. Read-only, all the way down.
+## Every type: those of the topic scripts, the tools in their grades (data/tools.cfg) and the seeds
+## and produce of the crops in data/crops.cfg. Read-only, all the way down.
 # The name is that of a constant, but the items made from the files are only known once they are
 # read.
 # gdlint: ignore=class-variable-name
-static var TYPES := _with_crop_items(_with_tool_items(_declared_types()))
+static var TYPES := _build_types()
 
 
 ## The item's 32x32 icon, which the UI shows at half size (see tools/art/items.py).
@@ -214,14 +211,12 @@ static func tool_name(tool_item_id: StringName) -> String:
 	return _TOOL_KINDS[TYPES[tool_item_id]["tool"]]["name"]
 
 
-## The items of the topic scripts, checked for ids two of them define.
-static func _declared_types() -> Dictionary:
-	var sources := {_OWN_SOURCE: _OTHER_TYPES}
-	sources.merge(CatalogTopics.read_folder(TOPICS_DIR, build_problems))
-	return CatalogTopics.merged("item", sources, build_problems)
+static func _build_types() -> Dictionary:
+	var topics := CatalogTopics.read_folder(TOPICS_DIR, build_problems)
+	return _with_crop_items(_with_tool_items(CatalogTopics.merged("item", topics, build_problems)))
 
 
-## The tools in every grade of data/tools.cfg, added to the fixed types.
+## The tools in every grade of data/tools.cfg, added to the types of the topics.
 static func _with_tool_items(other_types: Dictionary) -> Dictionary:
 	var types := other_types.duplicate()
 	var rules := ToolGradeRules.default_rules()

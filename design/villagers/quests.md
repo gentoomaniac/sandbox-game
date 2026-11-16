@@ -38,7 +38,7 @@ holds the folder clean. The header of `data/quests/fibre_for_beans.cfg` lists ev
 | `requires` | optional list of prerequisites, all must hold for it to be posted |
 | `reward` | `items` (item to count) and `opinion_steps` (1 or 2), at least one |
 
-Items are those of `game/state/item_types.gd` (there is no `items.cfg`); a count is at least 1 and a
+Items are those of `game/state/items/` (there is no `items.cfg`); a count is at least 1 and a
 line may use only the braces named above.
 
 ### Limits: `data/quests/_limits.cfg`

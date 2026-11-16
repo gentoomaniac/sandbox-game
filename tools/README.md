@@ -320,7 +320,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   the module of its topic and add it to `ICONS` (items) or to `furniture()` (interior.py; new
   pieces go at the end, the tile ids of the interior tileset are counted in that order). Item
   icons are 32x32 bodies without an outline (see items.py), named after the item id in
-  `game/state/item_types.gd`; the outline and the 16x16 version for the ground are made for
+  `game/state/items/`; the outline and the 16x16 version for the ground are made for
   you.
 - **A world object** (a tree, a rock, a plant): draw its variants in the module of its topic
   (`trees.py` for most), add a row to `object_atlas()` and to the numbered table above it
