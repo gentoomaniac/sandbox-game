@@ -102,8 +102,9 @@ chest). E on the keeper **out of hours** opens the chat (below).
 - Everything has a **worth** in Pfennig (the unit of the economy draft, the village sheet's prices).
   In this step the worths are in `data/shops.cfg`; they move to `data/prices.cfg` when money comes.
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
-  ratios). A deal is fair when the value given is at least the price of what is got. Whole Pfennig
-  throughout, no fractions.
+  ratios). The village sheet's money topic names these prices, and a test keeps them in line
+  (`tests/test_money_lore.gd`). A deal is fair when the value given is at least the price of
+  what is got. Whole Pfennig throughout, no fractions.
 - **No change:** an overpayment is hers and the line says so (open question 4).
 - **Refused:** not enough value; not enough stock; not enough room for what she takes; the player
   does not carry what they offer; what they get does not fit the bag once what they give is out.

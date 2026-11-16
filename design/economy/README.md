@@ -217,6 +217,10 @@ A **hand cart with a board** (a *Verkaufskarren*), or a stall at the farm gate: 
 
 ## Lore: the village drops Mark and Reichstaler
 
+**Built (step 1)**, with `tests/test_money_lore.gd`: the sheet's money topic names the worths of the
+shop file (bread 12, egg 2, candle 16 and 20 at the stall) and no sheet or speech names another coin.
+The plan of the change:
+
 The default stands: **the village sheet and the speech lines no longer name coins the game lacks**,
 or the model would talk of Mark that nobody can pay in. What changes (step 1):
 
