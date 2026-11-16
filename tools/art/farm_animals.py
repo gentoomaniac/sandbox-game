@@ -8,12 +8,13 @@ adds its module and a line to FAMILIES, and generate.py stays as it is.
 
 import livestock
 import livestock_cattle
+import livestock_dog
 import livestock_pigs
 import livestock_poultry
 import livestock_rabbit
 import livestock_sheep
 
-FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep, livestock_poultry, livestock_rabbit)
+FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep, livestock_poultry, livestock_rabbit, livestock_dog)
 
 
 def sheets():
