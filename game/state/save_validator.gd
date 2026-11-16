@@ -395,7 +395,7 @@ func _check_object_state(
 ) -> void:
 	# Every other entry (growth, days_growing, damage, days_until_bears...) is a number.
 	for key: Variant in state:
-		var is_other_kind: bool = key in ["tree", ProcessStation.RUN, Campfire.LIT]
+		var is_other_kind: bool = key in ["tree", ProcessStation.RUN, Campfire.LIT, "prices"]
 		if not is_other_kind and not _is_kind(state[key], Kind.NUMBER):
 			_report(path + " state", "%s should be a number" % key)
 	# What a trough or a hay rack holds and the eggs in a nest: whole numbers up to what they hold.
@@ -426,6 +426,32 @@ func _check_object_state(
 			_add_missing("tree %s" % state["tree"], path, drop_object)
 	if state.has(ProcessStation.RUN):
 		_check_run(state, path + " state " + ProcessStation.RUN)
+	if state.has("till") and not (_is_kind(state["till"], Kind.WHOLE) and state["till"] >= 0):
+		_report(path + " state", "till should be a whole number, at least 0")
+	if state.has("prices"):
+		_check_prices(state["prices"], path + " state prices")
+
+
+## The prices of a sales cart (see SalesCart), by slot: the item each price is for and the price in
+## whole Schilling, from 1. A price for an item the game no longer has is dropped.
+func _check_prices(prices: Variant, path: String) -> void:
+	if not prices is Dictionary:
+		_report(path, "should be a dictionary")
+		return
+	for slot: Variant in prices:
+		var entry: Variant = prices[slot]
+		var entry_path := "%s %s" % [path, slot]
+		if not (slot is String and slot.is_valid_int() and int(slot) >= 0):
+			_report(entry_path, "should be under a slot number")
+		elif not entry is Dictionary:
+			_report(entry_path, "should be a dictionary")
+		else:
+			var item: Variant = _field(entry, "item", Kind.TEXT, entry_path)
+			var price: Variant = _field(entry, "price", Kind.WHOLE, entry_path)
+			if price != null and price < 1:
+				_report(entry_path, "price should be at least 1")
+			if item != null and not ItemTypes.TYPES.has(StringName(item)):
+				_add_missing("item %s" % item, entry_path, func() -> void: prices.erase(slot))
 
 
 ## The run of a process station (see ProcessStation): its recipe, start and done minutes, and
