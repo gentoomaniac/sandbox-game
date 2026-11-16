@@ -12,6 +12,7 @@ import math
 import random
 
 import chest
+import declaration
 import fire
 from canvas import TILE, blank, copy, filled, outline_edge, rect
 
@@ -554,10 +555,9 @@ def marker_tile(picture, footprint):
 
 
 def furniture():
-    """The furniture by name: its picture and its footprint in tiles. The marker tiles of
-    assets/interior.png and the files follow this order, and the tile ids of the tileset
-    (maps/interiors/*.tsx) are counted in it, so new pieces go at the end."""
-    return {
+    """The furniture by name, in the order of `declaration.FURNITURE`: its picture and its footprint
+    in tiles."""
+    drawn = {
         "bed": (bed(), (1, 2)),
         "table": (table(), (2, 1)),
         "stool": (stool(), (1, 1)),
@@ -575,6 +575,7 @@ def furniture():
         "plate_rack": (plate_rack(), (1, 2)),
         "wall_bench": (wall_bench(), (2, 1)),
     }
+    return dict(declaration.in_declared_order(declaration.FURNITURE, drawn, "the furniture"))
 
 
 # The part of each bed that lies over the player when they wake in it (the blanket, and what

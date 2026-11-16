@@ -102,6 +102,29 @@ OBJECT_KINDS = (
 )
 
 
+# The furniture of the interiors, by name. The marker tiles of assets/interior.png and the files
+# follow this order, and the tile ids of the tileset (maps/interiors/*.tsx) are counted in it, so
+# new pieces go at the end.
+FURNITURE = (
+    "bed",
+    "table",
+    "stool",
+    "chest",
+    "hearth",
+    "window",
+    "sleeping_mat",
+    "box_bed",
+    "bench",
+    "stall_partition",
+    "hay_pile",
+    "barrel",
+    "sacks",
+    "crate",
+    "plate_rack",
+    "wall_bench",
+)
+
+
 class DuplicateContribution(ValueError):
     """Two sources draw the same name."""
 

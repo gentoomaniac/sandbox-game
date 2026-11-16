@@ -32,6 +32,9 @@ class InDeclaredOrderTest(unittest.TestCase):
             declaration.in_declared_order(("a",), {"a": 1, "b": 2}, "test")
 
 
-class ObjectKindsTest(unittest.TestCase):
+class DeclaredNamesTest(unittest.TestCase):
     def test_every_object_kind_is_declared_once(self):
         self.assertEqual(len(declaration.OBJECT_KINDS), len(set(declaration.OBJECT_KINDS)))
+
+    def test_every_piece_of_furniture_is_declared_once(self):
+        self.assertEqual(len(declaration.FURNITURE), len(set(declaration.FURNITURE)))
