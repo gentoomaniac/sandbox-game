@@ -126,7 +126,7 @@ func _process(delta: float) -> bool:
 				main._state.cheats.is_noclip = true
 				walk_start = main._state.player.position
 		Scenario.WALKING:
-			main._state.travel.walk(main._state, Vector2.RIGHT, delta)
+			PlayerTravel.walk(main._state, Vector2.RIGHT, delta)
 			if main._state.player.position.x - walk_start.x >= WALK_TILES:
 				_end_scenario()
 				for line in long_frames:

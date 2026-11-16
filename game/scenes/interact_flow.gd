@@ -46,11 +46,11 @@ func interact(interactions: InteractionRegistry) -> void:
 
 
 func _mount(horse: FarmAnimal) -> void:
-	state.travel.mount(state, horse)
+	PlayerTravel.mount(state, horse)
 
 
 func _dismount(_no_subject: Variant) -> void:
-	if not state.travel.dismount(state):
+	if not PlayerTravel.dismount(state):
 		harvest_hud.show_note("No room to get off here.")
 
 

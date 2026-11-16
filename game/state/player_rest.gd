@@ -114,7 +114,7 @@ static func pass_out_over_frames(state: GameState, next_frame: Callable) -> int:
 ## stands on that spot they are put on the nearest free ground.
 static func go_to_home_bed(state: GameState) -> void:
 	var player := state.player
-	state.travel.leave_horse(state)
+	PlayerTravel.leave_horse(state)
 	state.building_inside = state.building_with_interior(player.home_map)
 	var bed := _home_bed(state)
 	if bed != null:
@@ -125,13 +125,13 @@ static func go_to_home_bed(state: GameState) -> void:
 	player.home_bed = CampSite.spawn_of_seed(state.world.world_seed)
 	player.position = _tile_centre(player.home_bed)
 	player.bed_lying_in = null
-	state.travel.put_player_on_free_ground(state)
+	PlayerTravel.put_player_on_free_ground(state)
 
 
 ## Puts the player on a tile of the world, out of the house they are in (and off the horse they
 ## ride, which stays).
 static func teleport_to(state: GameState, tile: Vector2i) -> void:
-	state.travel.leave_horse(state)
+	PlayerTravel.leave_horse(state)
 	state.building_inside = null
 	state.player.position = _tile_centre(tile)
 	state.player.bed_lying_in = null

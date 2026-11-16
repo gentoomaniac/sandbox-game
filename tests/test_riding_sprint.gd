@@ -16,14 +16,14 @@ func before_each() -> void:
 	_state.livestock.add(_horse)
 	# Nothing in the way, so the speed is the only thing that decides how far the horse goes.
 	_state.cheats.is_noclip = true
-	_state.travel.mount(_state, _horse)
+	PlayerTravel.mount(_state, _horse)
 
 
 ## Rides for the seconds; `direction` zero stands.
 func _ride(seconds: float, direction := Vector2.RIGHT, is_sprinting := false) -> void:
-	_state.travel.is_sprint_held = is_sprinting
+	_state.player.is_sprint_held = is_sprinting
 	for _step in roundi(seconds / STEP):
-		_state.travel.walk(_state, direction, STEP, _state.travel.walk_speed_factor(_state))
+		PlayerTravel.walk(_state, direction, STEP, PlayerTravel.walk_speed_factor(_state))
 
 
 ## How many tiles a second the horse goes over `seconds` more of riding.
@@ -41,20 +41,20 @@ func test_riding_walks_at_one_and_a_half_times_the_walking_speed_after_getting_g
 	_get_going()
 
 	assert_almost_eq(_speed_over(1.0, false), 1.5 * PlayerState.SPEED, 0.01)
-	assert_eq(_state.travel.walk_speed_factor(_state), _rules.general("ride_trot_factor"))
+	assert_eq(PlayerTravel.walk_speed_factor(_state), _rules.general("ride_trot_factor"))
 
 
 func test_sprinting_goes_at_the_sprint_factor_once_the_horse_has_got_going() -> void:
 	_ride(STEP, Vector2.RIGHT, true)
 	assert_eq(
-		_state.travel.walk_speed_factor(_state), _rules.general("ride_walk_factor"), "not yet going"
+		PlayerTravel.walk_speed_factor(_state), _rules.general("ride_walk_factor"), "not yet going"
 	)
 	_get_going()
 
 	assert_almost_eq(
 		_speed_over(1.0, true), _rules.general("ride_sprint_factor") * PlayerState.SPEED, 0.01
 	)
-	assert_true(_state.travel.is_sprinting(_state))
+	assert_true(PlayerTravel.is_sprinting(_state))
 	assert_gt(_rules.general("ride_sprint_factor"), _rules.general("ride_trot_factor"))
 
 
@@ -67,8 +67,8 @@ func test_a_sprint_uses_stamina_for_the_seconds_a_full_one_lasts() -> void:
 	assert_almost_eq(_horse.stamina, 0.5, 0.01)
 	_ride(seconds / 2.0 + 0.2, Vector2.RIGHT, true)
 	assert_lt(_horse.stamina, 0.01)
-	assert_false(_state.travel.is_sprinting(_state), "none left")
-	assert_eq(_state.travel.walk_speed_factor(_state), _rules.general("ride_trot_factor"))
+	assert_false(PlayerTravel.is_sprinting(_state), "none left")
+	assert_eq(PlayerTravel.walk_speed_factor(_state), _rules.general("ride_trot_factor"))
 
 
 func test_a_horse_with_none_left_sprints_again_once_a_part_has_come_back() -> void:
@@ -80,10 +80,10 @@ func test_a_horse_with_none_left_sprints_again_once_a_part_has_come_back() -> vo
 	)
 
 	_ride(seconds_to_sprint_again - 1.0, Vector2.RIGHT, true)
-	assert_false(_state.travel.is_sprinting(_state), "holding the key rests the horse, no more")
+	assert_false(PlayerTravel.is_sprinting(_state), "holding the key rests the horse, no more")
 
 	_ride(2.0, Vector2.RIGHT, true)
-	assert_true(_state.travel.is_sprinting(_state))
+	assert_true(PlayerTravel.is_sprinting(_state))
 
 
 func test_stamina_comes_back_faster_standing_than_walking() -> void:
@@ -100,7 +100,7 @@ func test_stamina_comes_back_faster_standing_than_walking() -> void:
 
 
 func test_a_horse_nobody_rides_gets_its_stamina_back_standing_rate() -> void:
-	_state.travel.dismount(_state)
+	PlayerTravel.dismount(_state)
 	_horse.stamina = 0.0
 
 	for _step in roundi(5.0 / STEP):
@@ -110,14 +110,14 @@ func test_a_horse_nobody_rides_gets_its_stamina_back_standing_rate() -> void:
 
 
 func test_a_horse_that_was_saved_with_none_is_winded_when_got_on_again() -> void:
-	_state.travel.dismount(_state)
+	PlayerTravel.dismount(_state)
 	_horse.stamina = 0.0
-	_state.travel.mount(_state, _horse)
+	PlayerTravel.mount(_state, _horse)
 
 	_get_going()
 	_ride(STEP, Vector2.RIGHT, true)
 
-	assert_false(_state.travel.is_sprinting(_state))
+	assert_false(PlayerTravel.is_sprinting(_state))
 
 
 func test_the_sprint_key_is_shift_by_default_and_can_be_rebound() -> void:

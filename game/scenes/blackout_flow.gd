@@ -50,7 +50,7 @@ func pass_out() -> void:
 	console_view.close()
 	# They slide off the horse first, if there is room beside it; else they collapse in the saddle.
 	if state.player.horse != null:
-		state.travel.dismount(state)
+		PlayerTravel.dismount(state)
 	var was_up_too_late := state.is_up_too_late
 	player_view.collapse()
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout

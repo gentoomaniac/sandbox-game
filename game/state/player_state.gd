@@ -29,6 +29,15 @@ var bed_lying_in: WorldObject
 ## The horse the player rides, or null on foot (see PlayerTravel `mount`): it goes where they go.
 ## Not saved: a game saved on horseback loads with the player standing beside the horse.
 var horse: FarmAnimal
+## The sprint key is held (set every frame by whoever reads the keys); it only counts on a horse
+## that is trotting and not winded (see PlayerTravel `is_sprinting`). Not saved.
+var is_sprint_held := false
+## Seconds the player has kept moving: a horse trots after a while (see PlayerTravel
+## `is_trotting`). Not saved.
+var moving_seconds := 0.0
+## The ridden horse used up its stamina and may not sprint until some has come back (see
+## `sprint_again_stamina` in data/livestock.cfg). Not saved: the horse's stamina is.
+var is_horse_winded := false
 
 ## What they are made of: it sets the most energy and health they can have, and the weight they
 ## carry before it tires them. Replace it only through the setter, so the vitals follow it.

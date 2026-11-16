@@ -173,7 +173,7 @@ func test_walking_checks_for_pushing() -> void:
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
 	_stand_by_the_tile(_antje, 0.1)
 
-	_state.travel.walk(_state, Vector2.ZERO, 0.1)
+	PlayerTravel.walk(_state, Vector2.ZERO, 0.1)
 
 	assert_eq(_antje.opinion, _friendship.harm_points(GossipRules.RUDE))
 

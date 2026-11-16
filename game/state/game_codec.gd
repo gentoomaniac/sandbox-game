@@ -22,7 +22,7 @@ static func snapshot(state: GameState) -> Dictionary:
 	var player_data := player.to_dict()
 	# A game saved on horseback loads with the player standing beside the horse (or, with no room
 	# there, on its spot).
-	var spot := Vector2.INF if player.horse == null else state.travel.dismount_spot(state)
+	var spot := Vector2.INF if player.horse == null else PlayerTravel.dismount_spot(state)
 	if spot != Vector2.INF:
 		player_data["position"] = SaveCodec.float_vector_to_json(spot)
 	return {

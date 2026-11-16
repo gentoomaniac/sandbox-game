@@ -68,8 +68,6 @@ var energy_drain := 1.0
 ## The player was awake when the clock reached PlayerRest.LATE_NIGHT_MINUTE (see `pass_awake_time`)
 ## and has not slept since: they pass out. Not saved.
 var is_up_too_late := false
-## How the player walks and rides (see PlayerTravel); it is given this game on each call.
-var travel := PlayerTravel.new()
 ## Where the player is: the world, or the interior of the building they are inside.
 var current_map: GameMap:
 	get:

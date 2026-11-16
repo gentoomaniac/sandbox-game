@@ -104,7 +104,7 @@ func test_getting_on_a_horse_during_the_swing_ends_it_with_no_blow() -> void:
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", _state.player.position)
 	horse.is_saddled = true
 	_state.livestock.add(horse)
-	_state.travel.mount(_state, horse)
+	PlayerTravel.mount(_state, horse)
 	_run(_rules.duration(&"chop"))
 	assert_false(_view.is_swinging())
 	assert_eq(_results, [], "no blow")

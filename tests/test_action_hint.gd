@@ -42,7 +42,7 @@ func test_e_names_getting_on_a_saddled_horse_and_getting_off() -> void:
 	horse.is_saddled = true
 	_state.livestock.add(horse)
 	assert_eq(InteractionWords.e_text(self, _state, _tile), "Get on the horse")
-	_state.travel.mount(_state, horse)
+	PlayerTravel.mount(_state, horse)
 	assert_eq(InteractionWords.e_text(self, _state, _tile), "Get off the horse")
 
 

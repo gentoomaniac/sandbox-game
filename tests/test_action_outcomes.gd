@@ -205,5 +205,5 @@ func test_loading_a_game_tells_nothing() -> void:
 	var told: Array[ActionOutcome] = []
 	restored.action_done.connect(func(outcome: ActionOutcome) -> void: told.append(outcome))
 	GroundPickup.collect(restored, 0.1)
-	restored.travel.walk(restored, Vector2.ZERO, 0.1, 1.0)
+	PlayerTravel.walk(restored, Vector2.ZERO, 0.1, 1.0)
 	assert_eq(told, [] as Array[ActionOutcome])

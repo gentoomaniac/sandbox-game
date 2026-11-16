@@ -92,11 +92,11 @@ func test_the_player_leaves_prints_on_foot_and_not_on_horseback() -> void:
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
 	# Six frames of a quarter tile, a tile and a half: three steps.
 	for _frame in 6:
-		_state.travel.walk(_state, Vector2.RIGHT, 0.05)
+		PlayerTravel.walk(_state, Vector2.RIGHT, 0.05)
 	assert_eq(_ring_size(_tile), 3)
 	_state.player.horse = FarmAnimal.new(LivestockRules.HORSE, &"bay", _state.player.position)
 	for _frame in 6:
-		_state.travel.walk(_state, Vector2.RIGHT, 0.05)
+		PlayerTravel.walk(_state, Vector2.RIGHT, 0.05)
 	assert_eq(_ring_size(_tile), 3, "the horse's hooves are for #65")
 
 

@@ -71,7 +71,7 @@ func test_the_stamina_bar_shows_the_ridden_horses_stamina_and_only_while_riding(
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", state.player.position)
 	horse.is_saddled = true
 	state.livestock.add(horse)
-	state.travel.mount(state, horse)
+	PlayerTravel.mount(state, horse)
 	horse.stamina = 0.5
 	hud.show_state(state)
 	await wait_process_frames(2)

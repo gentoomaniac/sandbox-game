@@ -75,9 +75,10 @@ Warft and an Ewer here and there.
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `use_tile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
-  Walking and riding are `PlayerTravel` (`GameState.travel`, `travel.walk(state, ...)`): it keeps
-  the riding state and is given the game on each call, as a helper the game holds must not hold
-  the game back (a cycle would leak the whole game). The doors, the bed that is home, sleeping,
+  Walking and riding are `PlayerTravel` (`PlayerTravel.walk(state, ...)`), functions that are given the
+  game; the riding state it needs is the player's (`PlayerState.moving_seconds`). A helper the game
+  holds must not hold the game back (a cycle would leak the whole game), hence no object for it.
+  The doors, the bed that is home, sleeping,
   passing out and `teleport_to` are `PlayerRest`, functions that are given the game.
   A new game and the putting of the world and the ordered simulation systems under a game are
   `GameFactory` (`new_game`, `attach_world`), which a loaded game goes through as well. What gets
