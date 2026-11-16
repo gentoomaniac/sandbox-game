@@ -52,8 +52,8 @@ assets/effects/friendship_heart.png and friendship_cloud.png: what rises over a 
 opinion of the player rises or falls, two cells side by side each (friendship.py).
 assets/ui/friendship_marks.png: the marks of the Neighbours tab, a cell per look (friendship.py).
 
-assets/buildings/<type>.png: one picture per building type (drawn in buildings.py, the church and
-its bell frame in church.py) at the game's tile (not doubled), as wide as its footprint and as
+assets/buildings/<type>.png: one picture per building type (drawn by the modules houses.py lists)
+at the game's tile (not doubled), as wide as its footprint and as
 tall as the footprint plus the roof rising above it. The bottom edge is the footprint's bottom edge.
 <type>_lit.png is the same with lit windows, for the night. Each also comes in the house looks
 of seasons.HOUSE_LOOKS (kate_autumn.png, kate_lit_snow.png). Sizes and door tiles are in
@@ -105,7 +105,6 @@ import birds
 import stork_nest
 import swing
 import boundaries
-import buildings
 import camp
 import character
 import church
@@ -121,6 +120,7 @@ import fire
 import flowers
 import footprints
 import friendship
+import houses
 import interior
 import items
 import landing
@@ -292,10 +292,10 @@ def write_seasonal_art():
             "snags.py": snags.redraws(),
         }
     )
-    houses = {}
-    for name, draw in declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "yard.py": yard.PICTURES}).items():
-        houses[name] = draw(is_lit=False)
-        houses[f"{name}_lit"] = draw(is_lit=True)
+    house_pictures = {}
+    for name, draw in houses.pictures().items():
+        house_pictures[name] = draw(is_lit=False)
+        house_pictures[f"{name}_lit"] = draw(is_lit=True)
     decorations_by_look = {}
     objects_by_look = {}
     for look in seasons.LOOKS:
@@ -305,10 +305,10 @@ def write_seasonal_art():
             decorations_by_look[look] = seasons.ground_rows(look, decoration_rows, seasons.STANDING.get(look))
         objects_by_look[look] = [[cell for picture in row for cell in atlas_cells(picture)] for row in seasons.object_rows(look, objects, redraws)]
         if look in seasons.HOUSE_LOOKS:
-            for name, (picture, snowy) in houses.items():
+            for name, (picture, snowy) in house_pictures.items():
                 save_picture(seasons.house(look, picture, snowy), f"buildings/{name}{suffix}.png")
     # The snow that the roof of each house gets, one picture for its lit and unlit look alike.
-    for name, (picture, snowy) in houses.items():
+    for name, (picture, snowy) in house_pictures.items():
         if not name.endswith("_lit"):
             save_picture(cover.house_cover(picture, snowy), f"buildings/{name}_snow_cover.png")
     save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")

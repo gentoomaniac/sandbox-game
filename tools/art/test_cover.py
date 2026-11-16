@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 from PIL import Image
 
-import buildings
 import cover
+import houses
 import palette
 import seasons
 
@@ -73,7 +73,7 @@ class ObjectCoverTest(unittest.TestCase):
 
 class HouseCoverTest(unittest.TestCase):
     def test_the_snow_of_a_roof_is_snow_colours_on_roof_pixels_only(self):
-        picture, snowy = buildings.PICTURES["kate"](is_lit=False)
+        picture, snowy = houses.pictures()["kate"](is_lit=False)
         snow = cover.house_cover(picture, snowy)
         self.assertEqual((len(snow), len(snow[0])), (len(picture), len(picture[0])))
         drawn = {(x, y): name for y, row in enumerate(snow) for x, name in enumerate(row) if name}

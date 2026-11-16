@@ -218,6 +218,7 @@ by topic. Where is a thing drawn?
 | `forms.py` | Rounded shapes as masks (ellipse, turned or not, capsule, polygon, rounded box) and their shading by the light from the top left, for the figures of character.py and villagers.py, the farm animals of livestock.py and the wild animals. |
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
+| `houses.py` | The registry of the buildings' pictures: `pictures()` joins the `PICTURES` of the modules that draw them (id to how to draw it) and refuses an id two of them draw. A new building adds its module there. |
 | `buildings.py` | The shack, fisherman's hut, Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
 | `seasons.py` | The other looks (spring, autumn, bare, frost, snow, leaf-out steps) made from the summer art by colour remaps and overlays (the ground's autumn and bare looks are darker greens). Also adds its colours to the palette. |
