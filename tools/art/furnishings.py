@@ -9,6 +9,7 @@ the order of the tile ids of the tileset) and drawn by the `pieces()` of its mod
 import beds
 import declaration
 import interior
+import kitchen
 import tables_and_seats
 
 
@@ -19,6 +20,7 @@ def furniture():
         {
             "beds.py": beds.pieces(),
             "interior.py": interior.pieces(),
+            "kitchen.py": kitchen.pieces(),
             "tables_and_seats.py": tables_and_seats.pieces(),
         }
     )

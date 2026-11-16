@@ -125,6 +125,7 @@ import furnishings
 import houses
 import interior
 import items
+import kitchen
 import landing
 import meadow
 import notice_board
@@ -372,7 +373,7 @@ def write_bedroll_cover():
 def write_fire():
     for name, (behind, front), (box, half_width, tall) in (
         ("fireplace", camp.fireplace_layers(), camp.FIREPLACE_FLAME),
-        ("hearth", interior.hearth_layers(), interior.HEARTH_FLAME),
+        ("hearth", kitchen.hearth_layers(), kitchen.HEARTH_FLAME),
     ):
         strip = fire.strip(behind, front, box, half_width, tall)
         save([strip], f"fire/{name}.png", len(strip[0][0]), len(strip[0]))
