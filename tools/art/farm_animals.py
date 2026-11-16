@@ -7,8 +7,9 @@ adds its module and a line to FAMILIES, and generate.py stays as it is.
 """
 
 import livestock
+import livestock_cattle
 
-FAMILIES = (livestock,)
+FAMILIES = (livestock, livestock_cattle)
 
 
 def sheets():
