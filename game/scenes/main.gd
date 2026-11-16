@@ -289,8 +289,9 @@ func _connect_state_and_views() -> void:
 	_wildlife.show_wildlife(_state, _view, _camera)
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
-	var quest_flow := QuestFlow.new(_state, _chat_screen.dialogue, _notifications, _view.entities)
-	_interact.board_screen = quest_flow.board_screen
+	var quest_flow := QuestFlow.new(
+		_state, _chat_screen.dialogue, _notifications, _view.entities, _interactions
+	)
 	_interact.quest_voice = quest_flow.voice
 	_interact.register_kinds(_interactions)
 	_action_hint.interactions = _interactions
