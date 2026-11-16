@@ -128,11 +128,13 @@ func _init(settings: GameSettings) -> void:
 	_add_button(display, "Back", _back)
 
 	var game := _add_page(pages, Page.GAME, "Game")
+	var game_rows := VBoxContainer.new()
+	game.add_child(ScrollingList.new(game_rows))
 	_ui_scale_label = Label.new()
 	_ui_scale_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	TooltipView.set_text(_ui_scale_label, UI_SCALE_TIP)
 	_ui_scale_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	game.add_child(_ui_scale_label)
+	game_rows.add_child(_ui_scale_label)
 	_ui_scale_slider = HSlider.new()
 	_ui_scale_slider.min_value = GameSettings.MIN_UI_SCALE
 	_ui_scale_slider.max_value = GameSettings.MAX_UI_SCALE
@@ -141,45 +143,45 @@ func _init(settings: GameSettings) -> void:
 	_ui_scale_slider.drag_started.connect(func() -> void: _is_dragging_slider = true)
 	_ui_scale_slider.drag_ended.connect(_on_slider_released)
 	TooltipView.set_text(_ui_scale_slider, UI_SCALE_TIP, "setting_ui_scale")
-	game.add_child(_ui_scale_slider)
+	game_rows.add_child(_ui_scale_slider)
 	_first_focus[Page.GAME] = _ui_scale_slider
-	_drain_button = _add_button(game, "", _cycle_energy_drain, DRAIN_TIP)
+	_drain_button = _add_button(game_rows, "", _cycle_energy_drain, DRAIN_TIP)
 	_day_length_label = Label.new()
 	_day_length_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	TooltipView.set_text(_day_length_label, DAY_LENGTH_TIP)
 	_day_length_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	game.add_child(_day_length_label)
+	game_rows.add_child(_day_length_label)
 	_day_length_slider = HSlider.new()
 	_day_length_slider.max_value = GameSettings.MAX_DAY_LENGTH_VARIATION
 	_day_length_slider.step = GameSettings.DAY_LENGTH_VARIATION_STEP
 	_day_length_slider.value_changed.connect(_on_day_length_changed)
 	TooltipView.set_text(_day_length_slider, DAY_LENGTH_TIP, "setting_day_length")
-	game.add_child(_day_length_slider)
+	game_rows.add_child(_day_length_slider)
 	_autosave_label = Label.new()
 	_autosave_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	TooltipView.set_text(_autosave_label, AUTOSAVE_TIP)
 	_autosave_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	game.add_child(_autosave_label)
+	game_rows.add_child(_autosave_label)
 	_autosave_slider = HSlider.new()
 	_autosave_slider.min_value = GameSettings.MIN_AUTOSAVE_MINUTES
 	_autosave_slider.max_value = GameSettings.MAX_AUTOSAVE_MINUTES
 	_autosave_slider.step = GameSettings.AUTOSAVE_STEP
 	_autosave_slider.value_changed.connect(_on_autosave_changed)
 	TooltipView.set_text(_autosave_slider, AUTOSAVE_TIP, "setting_autosave")
-	game.add_child(_autosave_slider)
+	game_rows.add_child(_autosave_slider)
 	_max_fps_label = Label.new()
 	_max_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	TooltipView.set_text(_max_fps_label, MAX_FPS_TIP)
 	_max_fps_label.mouse_filter = Control.MOUSE_FILTER_PASS
-	game.add_child(_max_fps_label)
+	game_rows.add_child(_max_fps_label)
 	_max_fps_slider = HSlider.new()
 	_max_fps_slider.min_value = GameSettings.MIN_MAX_FPS
 	_max_fps_slider.max_value = NO_LIMIT_STOP
 	_max_fps_slider.step = GameSettings.MAX_FPS_STEP
 	_max_fps_slider.value_changed.connect(_on_max_fps_changed)
 	TooltipView.set_text(_max_fps_slider, MAX_FPS_TIP, "setting_max_fps")
-	game.add_child(_max_fps_slider)
-	_action_hint_button = _add_button(game, "", _toggle_action_hint, ACTION_HINT_TIP)
+	game_rows.add_child(_max_fps_slider)
+	_action_hint_button = _add_button(game_rows, "", _toggle_action_hint, ACTION_HINT_TIP)
 	_add_button(game, "Back", _back)
 
 	var controls := ControlsPage.new(_settings)

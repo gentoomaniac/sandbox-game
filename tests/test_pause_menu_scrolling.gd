@@ -84,3 +84,25 @@ func _check_page_reopened_after_the_window_shrank(page: PauseMenu.Page) -> void:
 
 func test_the_audio_page_reopened_after_the_window_shrank_fits_it() -> void:
 	await _check_page_reopened_after_the_window_shrank(PauseMenu.Page.AUDIO)
+
+
+func test_the_game_page_scrolls_in_a_small_window() -> void:
+	await _check_page(PauseMenu.Page.GAME)
+
+
+func test_the_ui_scale_applies_when_its_slider_is_let_go_on_the_scrolling_page() -> void:
+	_menu.open_page(PauseMenu.Page.GAME)
+	await wait_process_frames(2)
+	var slider := _menu._ui_scale_slider
+	slider.drag_started.emit()
+
+	slider.value = GameSettings.MAX_UI_SCALE
+	assert_ne(_menu._settings.ui_scale, GameSettings.MAX_UI_SCALE, "not while it is dragged")
+	slider.drag_ended.emit(true)
+	await wait_process_frames(2)
+
+	assert_eq(_menu._settings.ui_scale, GameSettings.MAX_UI_SCALE)
+
+
+func test_the_game_page_reopened_after_the_window_shrank_fits_it() -> void:
+	await _check_page_reopened_after_the_window_shrank(PauseMenu.Page.GAME)
