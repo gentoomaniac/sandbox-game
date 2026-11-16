@@ -66,6 +66,21 @@ func _live_in_the_game() -> void:
 	_state.livestock.spawn(LivestockRules.COW, 1, Vector2(_free_tile(7)), _world)
 	_animal = _state.livestock.all()[0]
 	_state.player.inventory.add(ItemTypes.TURNIP, 2)
+	_world.surge.expect(2.5, 9000, 180)
+	_world.flood.load_dict(_flood_data(_free_tile(13), 300))
+
+
+## What `FloodState.load_dict` takes: a tile that is wet, salty, muddy and to be mended.
+func _flood_data(tile: Vector2i, level_cm: int) -> Dictionary:
+	var entry := [tile.x, tile.y, 50]
+	return {
+		"flood": {"phase": "standing", "level_cm": level_cm, "drain_minute": 5000},
+		"flood_wet": [entry],
+		"flood_salt": [entry],
+		"flood_mud": [entry],
+		"flood_repairs": [entry],
+		"flood_met_chunks": [[tile.x, tile.y]],
+	}
 
 
 ## Changes at least one thing of every kind the snapshot holds, by the ways the game does.
@@ -95,6 +110,8 @@ func _change_everything() -> void:
 	_state.clock.advance(125)
 	_world.fallow.count_night(_state.clock.day)
 	_state.livestock.spawn(LivestockRules.SHEEP, 1, Vector2(_free_tile(12)), _world)
+	_world.surge.expect(3.0, 9500, 180)
+	_world.flood.load_dict(_flood_data(_free_tile(14), 320))
 
 
 func test_what_the_game_does_after_a_snapshot_does_not_reach_it() -> void:

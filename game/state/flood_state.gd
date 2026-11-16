@@ -47,6 +47,10 @@ var _seen: Dictionary[Vector2i, bool] = {}
 var _volume_left := 0.0
 ## The chunks whose dykes the sea has met already.
 var _met_chunks: Dictionary[Vector2i, bool] = {}
+## The days of salt each tile that stood under the sea still carries, and the days each that dried
+## is still muddy.
+var _salt_days: Dictionary[Vector2i, int] = {}
+var _mud_days: Dictionary[Vector2i, int] = {}
 ## When the villagers mend each damaged dyke tile, as a game minute.
 var _repair_minute: Dictionary[Vector2i, int] = {}
 var _drain_order: Array[Vector2i] = []
@@ -169,6 +173,69 @@ func settle(world: World) -> void:
 		step_tiles(world, most)
 
 
+## The flood as it is now, copied (see World `snapshot`): the standing water, its salt and mud and
+## the dykes to mend. A flood still filling is saved as standing, as far as it got.
+func snapshot() -> Dictionary:
+	return {
+		"phase": Phase.keys()[Phase.STANDING if phase == Phase.FILLING else phase].to_lower(),
+		"level_cm": roundi(level * METRES_TO_CM),
+		"drain_minute": drain_minute,
+		"wet": _depth_cm.duplicate(),
+		"salt": _salt_days.duplicate(),
+		"mud": _mud_days.duplicate(),
+		"repairs": _repair_minute.duplicate(),
+		"met_chunks": _met_chunks.keys(),
+	}
+
+
+## The save data of a `snapshot`: the state, and a list of `[x, y, value]` for each of the tiles'
+## values (`flood_wet`, `flood_salt`, `flood_mud`, `flood_repairs`) and a list of `[x, y]` of the
+## chunks whose dykes the sea has met (`flood_met_chunks`), so a load does not break them again.
+## Safe to call from a thread.
+static func dict_of(snapshot_data: Dictionary) -> Dictionary:
+	return {
+		"flood":
+		{
+			"phase": snapshot_data["phase"],
+			"level_cm": snapshot_data["level_cm"],
+			"drain_minute": snapshot_data["drain_minute"],
+		},
+		"flood_wet": _entries_of(snapshot_data["wet"]),
+		"flood_salt": _entries_of(snapshot_data["salt"]),
+		"flood_mud": _entries_of(snapshot_data["mud"]),
+		"flood_repairs": _entries_of(snapshot_data["repairs"]),
+		"flood_met_chunks": snapshot_data["met_chunks"].map(SaveCodec.vector_to_json),
+	}
+
+
+## Takes the state of the world's save data (see `dict_of`).
+func load_dict(data: Dictionary) -> void:
+	var state: Dictionary = data["flood"]
+	level = int(state["level_cm"]) / METRES_TO_CM
+	drain_minute = int(state["drain_minute"])
+	for entry: Array in data["flood_wet"]:
+		_set_depth(SaveCodec.vector_from_json(entry), int(entry[2]))
+	for entry: Array in data["flood_salt"]:
+		_salt_days[SaveCodec.vector_from_json(entry)] = int(entry[2])
+	for entry: Array in data["flood_mud"]:
+		_mud_days[SaveCodec.vector_from_json(entry)] = int(entry[2])
+	for entry: Array in data["flood_repairs"]:
+		_repair_minute[SaveCodec.vector_from_json(entry)] = int(entry[2])
+	for chunk_coords: Array in data["flood_met_chunks"]:
+		_met_chunks[SaveCodec.vector_from_json(chunk_coords)] = true
+	_dirty_chunks.clear()
+	phase = Phase[str(state["phase"]).to_upper()] as Phase
+	if phase == Phase.DRAINING:
+		_start_draining()
+
+
+static func _entries_of(values: Dictionary) -> Array[Array]:
+	var entries: Array[Array] = []
+	for tile: Vector2i in values:
+		entries.append(SaveCodec.vector_to_json(tile) + [values[tile]])
+	return entries
+
+
 # The sea meets the sea dykes of the loaded chunks it has not met yet.
 func _meet_new_chunks(world: World, now: int) -> void:
 	for chunk_coords in world.loaded_chunk_coords():
@@ -231,6 +298,8 @@ func _fill(world: World, count: int) -> void:
 		var depth_cm := _queue_depth_cm[_queue_head]
 		_queue_head += 1
 		_set_depth(tile, depth_cm)
+		_salt_days[tile] = int(_landscape.value("surge", "salt_days"))
+		_mud_days.erase(tile)
 		_volume_left -= depth_cm / METRES_TO_CM
 		filled += 1
 		for side in World.CONNECTION_SIDES:
@@ -262,6 +331,7 @@ func _start_draining() -> void:
 func _drain(count: int) -> void:
 	for _i in mini(count, _drain_order.size() - _drain_head):
 		_set_depth(_drain_order[_drain_head], 0)
+		_mud_days[_drain_order[_drain_head]] = int(_landscape.value("surge", "mud_days"))
 		_drain_head += 1
 	if _drain_head >= _drain_order.size():
 		_drain_order.clear()

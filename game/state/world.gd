@@ -870,6 +870,8 @@ func snapshot() -> Dictionary:
 		"object_edits": object_edits,
 		"buildings": buildings_data,
 		"village": null if village == null else village.to_dict(),
+		"surge": surge.to_dict(),
+		"flood": flood.snapshot(),
 	}
 
 
@@ -905,6 +907,8 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 	world.ground_items.load_array(data["ground_items"])
 	if data["village"] != null:
 		world.village = Village.from_dict(data["village"])
+	world.surge.load_dict(data["surge"])
+	world.flood.load_dict(data)
 	return world
 
 

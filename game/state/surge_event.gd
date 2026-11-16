@@ -58,3 +58,20 @@ func is_expected_at(minutes: int) -> bool:
 ## Whether the water stands at its height at a game minute.
 func is_holding_at(minutes: int) -> bool:
 	return has_surge() and minutes >= start_minute() and minutes <= end_minute()
+
+
+## The surge as save data, in whole numbers.
+func to_dict() -> Dictionary:
+	return {
+		"level_cm": roundi(level * FloodState.METRES_TO_CM),
+		"peak_minute": peak_minute,
+		"hold_minutes": hold_minutes,
+		"last_rolled_tide": last_rolled_tide,
+	}
+
+
+func load_dict(data: Dictionary) -> void:
+	level = int(data["level_cm"]) / FloodState.METRES_TO_CM
+	peak_minute = int(data["peak_minute"])
+	hold_minutes = int(data["hold_minutes"])
+	last_rolled_tide = int(data["last_rolled_tide"])

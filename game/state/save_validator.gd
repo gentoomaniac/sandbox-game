@@ -15,6 +15,9 @@ extends RefCounted
 
 enum Kind { TEXT, NUMBER, WHOLE, BOOL, LIST, DICT, VECTOR, RECT, POINT }
 
+## The highest the sea or the water on the land may stand in a save, in centimetres.
+const MAX_LEVEL_CM := 1000
+
 const KIND_NAMES := {
 	Kind.TEXT: "text",
 	Kind.NUMBER: "a number",
@@ -169,6 +172,7 @@ func _check_world(world: Dictionary) -> void:
 			var edit: Variant = terrain_edits[index]
 			if edit is Array and edit.size() == 3 and not Tile.Terrain.has(str(edit[2])):
 				_report("world terrain_edits %d" % index, "unknown terrain %s" % edit[2])
+	_check_surge(world)
 	_check_ground_items(world, "world")
 	var object_edits: Variant = _field(world, "object_edits", Kind.LIST, "world")
 	if object_edits != null:
@@ -182,6 +186,39 @@ func _check_world(world: Dictionary) -> void:
 		_report("world", "no village")
 	elif world["village"] != null:
 		_check_village(world["village"])
+
+
+## The surge and the water it left: whole numbers in range, and a known phase.
+func _check_surge(world: Dictionary) -> void:
+	var surge: Variant = _field(world, "surge", Kind.DICT, "world")
+	if surge != null:
+		for key in ["level_cm", "peak_minute", "hold_minutes", "last_rolled_tide"]:
+			_field(surge, key, Kind.WHOLE, "world surge")
+		_check_between(surge.get("level_cm"), 0, MAX_LEVEL_CM, "world surge", "level_cm")
+	var flood: Variant = _field(world, "flood", Kind.DICT, "world")
+	if flood != null:
+		for key in ["level_cm", "drain_minute"]:
+			_field(flood, key, Kind.WHOLE, "world flood")
+		_check_between(flood.get("level_cm"), 0, MAX_LEVEL_CM, "world flood", "level_cm")
+		var phase: Variant = _field(flood, "phase", Kind.TEXT, "world flood")
+		if phase != null and not str(phase).to_upper() in FloodState.Phase:
+			_report("world flood", "unknown phase %s" % phase)
+	for key in ["flood_wet", "flood_salt", "flood_mud", "flood_repairs"]:
+		_check_entries(world, key, Kind.WHOLE)
+	var met: Variant = _field(world, "flood_met_chunks", Kind.LIST, "world")
+	if met != null and not met.all(_is_vector):
+		_report("world flood_met_chunks", "should be a list of [x, y]")
+	var wet: Variant = world.get("flood_wet")
+	if wet is Array:
+		for index in wet.size():
+			if (
+				wet[index] is Array
+				and wet[index].size() == 3
+				and _is_kind(wet[index][2], Kind.WHOLE)
+			):
+				_check_between(
+					wet[index][2], 1, MAX_LEVEL_CM, "world flood_wet %d" % index, "depth"
+				)
 
 
 ## The record of the village: its land with the square, the meeting spot and the mill's spot

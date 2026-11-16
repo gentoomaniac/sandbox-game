@@ -192,7 +192,10 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
    (`FloodOverlay`, `FloodMask`, `flood.gdshader`): a mask of a chunk is made again in 0.35 ms
    at the most (1024 wet tiles), only for the chunks a batch of tiles touched. Checked that the
    shader compiles and draws; the pictures for the user come later.
-7. Saving the surge and the wet tiles (a second version bump).
+7. Saving the surge and the wet tiles (a second version bump). **Built** (version 56; the drop of
+   the version 45 upgrade came first). The fields are in the world's data, not the game's
+   (`World.snapshot`); the wet tiles, their salt, the mud and the dykes to mend are `[x, y, value]`
+   lists. The salt and mud days are set by the flood and saved, the harm that reads them is step 8.
 8. The harm: crops, salt and its hover, wet ground after, items washing away.
 9. Animals and villagers flee and return; the routines' hold.
 10. The warning: forced storm, surf, talk, and the bell (the sound first, a sound-designer task).

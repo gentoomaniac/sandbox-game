@@ -38,7 +38,7 @@ static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 	var wear_today: Dictionary = snapshot_data["wear_today"]
 	for pos: Vector2i in wear_today:
 		wear_today_data.append(SaveCodec.vector_to_json(pos) + [wear_today[pos]])
-	return {
+	var save_data := {
 		"seed": snapshot_data["seed"],
 		"ground_items": GroundItems.array_of(snapshot_data["ground_items"]),
 		"spent_clay_spots": clay_spots_data,
@@ -51,4 +51,7 @@ static func dict_of(snapshot_data: Dictionary) -> Dictionary:
 		"object_edits": object_edits,
 		"buildings": snapshot_data["buildings"],
 		"village": snapshot_data["village"],
+		"surge": snapshot_data["surge"],
 	}
+	save_data.merge(FloodState.dict_of(snapshot_data["flood"]))
+	return save_data

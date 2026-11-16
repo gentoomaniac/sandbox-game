@@ -22,10 +22,9 @@ extends RefCounted
 ## SaveValidator checks the whole game data: `from_dict` is strict (it asserts) and trusts that.
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
-const VERSION := 55
-## The oldest version we still upgrade. Nine steps back for the moment: the commit that raises
-## VERSION (the surge's water, #103) makes it ten again.
-const OLDEST_VERSION := VERSION - 9
+const VERSION := 56
+## The oldest version we still upgrade.
+const OLDEST_VERSION := VERSION - 10
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
@@ -232,6 +231,8 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_53(game)
 	if version <= 54:
 		_upgrade_from_version_54(game)
+	if version <= 55:
+		_upgrade_from_version_55(game)
 
 
 ## Version 46 had no plans of the villagers' days from the language model (#7): every villager has
@@ -297,3 +298,13 @@ static func _upgrade_from_version_53(game: Dictionary) -> void:
 ## data changes.
 static func _upgrade_from_version_54(_game: Dictionary) -> void:
 	pass
+
+
+## Version 55 had no storm surge or water on the land (#103): none is expected, and no tile is wet,
+## salty or muddy.
+static func _upgrade_from_version_55(game: Dictionary) -> void:
+	var world: Dictionary = game["world"]
+	world["surge"] = {"level_cm": 0, "peak_minute": 0, "hold_minutes": 0, "last_rolled_tide": -1}
+	world["flood"] = {"phase": "idle", "level_cm": 0, "drain_minute": 0}
+	for key in ["flood_wet", "flood_salt", "flood_mud", "flood_repairs", "flood_met_chunks"]:
+		world[key] = []

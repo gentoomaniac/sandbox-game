@@ -46,6 +46,8 @@ const REQUIRED_KEYS := {
 		"stay_hours",
 		"stay_spread_hours",
 		"wade_depth",
+		"salt_days",
+		"mud_days",
 	],
 }
 static var _default: LandscapeRules
