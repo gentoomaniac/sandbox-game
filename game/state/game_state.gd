@@ -240,18 +240,6 @@ func current_weather() -> WeatherSample:
 	return sample if weather_override == &"" else weather.forced(sample, weather_override)
 
 
-## How the crop or the campfire at a tile is doing (see CropWords `state_text` and Campfire
-## `state_text`), or "" where there is none.
-func object_text_at(tile: Vector2i) -> String:
-	var crop := world.object_at(tile)
-	if Campfire.is_campfire(crop):
-		return Campfire.state_text(crop)
-	if crop == null or not crop.is_crop():
-		return ""
-	var day_weather := weather.day_summary(crop.pos, clock.day)
-	return CropWords.state_text(crop, day_weather, world.moisture_at(crop.pos))
-
-
 ## Lights a campfire that is out with a log of its slot (see Campfire `ignite`).
 func light_campfire(fire: WorldObject) -> void:
 	Campfire.ignite(fire)

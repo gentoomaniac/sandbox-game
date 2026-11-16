@@ -126,7 +126,7 @@
     and about how many days it takes in perfect weather (and again, for a crop that fruits again).
     The thresholds are in `[farming]`.
     **Looking at a crop** (mouse over it or facing it, outdoors: the hover box of the buildings,
-    `WorldHoverText`, `GameState.object_text_at`; the user, 2026-11-14)
+    `WorldHoverText`; the user, 2026-11-14)
     says its name and state in a few words: growing, ripe (and in how many days it withers), or
     dead; what hurts it today (frost, dry soil, too little sun, wind) or slows it (cold, heat, too little
     sun, dry soil: less than a good day's growth); how many more bad days kill it, if it is damaged;

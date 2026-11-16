@@ -12,7 +12,7 @@ func _aim(tile: Vector2i, source: Targeting.Source) -> Targeting:
 
 func test_a_crop_speaks_to_the_mouse_and_to_the_facing_tile() -> void:
 	_place(WorldObjectTypes.TURNIP)
-	var expected := _state.object_text_at(_tile)
+	var expected := WorldHoverText.object_text_at(_state, _tile)
 
 	assert_ne(expected, "")
 	for source: Targeting.Source in [Targeting.Source.MOUSE, Targeting.Source.FACING]:

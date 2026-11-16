@@ -64,7 +64,7 @@ func test_the_words_tell_how_much_wood_is_left() -> void:
 	assert_eq(Campfire.state_text(fire), "Campfire, burning low: wood for about 2 hours")
 	fire.state[Campfire.LOG_LEFT] = 60
 	assert_eq(Campfire.state_text(fire), "Campfire, burning low: wood for about 1 hour")
-	assert_eq(_state.object_text_at(_tile), Campfire.state_text(fire))
+	assert_eq(WorldHoverText.object_text_at(_state, _tile), Campfire.state_text(fire))
 
 
 func test_the_wood_and_the_flame_are_kept_when_the_world_is_saved_and_loaded() -> void:
