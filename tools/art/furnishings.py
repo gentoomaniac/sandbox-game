@@ -7,6 +7,8 @@ the order of the tile ids of the tileset) and drawn by the `pieces()` of its mod
 """
 
 import beds
+import byre_and_store
+import chest
 import declaration
 import interior
 import kitchen
@@ -19,6 +21,8 @@ def furniture():
     drawn = declaration.merge(
         {
             "beds.py": beds.pieces(),
+            "byre_and_store.py": byre_and_store.pieces(),
+            "chest.py": {"chest": (chest.chest(), (1, 1))},
             "interior.py": interior.pieces(),
             "kitchen.py": kitchen.pieces(),
             "tables_and_seats.py": tables_and_seats.pieces(),
