@@ -386,9 +386,10 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
   `game/state/world_objects/` (trees, rocks, plants, boundaries, furniture, stations, yard, landing,
   ways, village, stall, dyke). Each has a constant `TYPES` of plain data keyed by raw ids, so a topic
   never depends on the table that gathers it, and `CatalogTopics` loads them in path order
-  (export-aware, like the console's commands). An id two topics define is reported as
-  `<kind> <id>: defined in <file> and in <file>` before anything is merged, and `CatalogCheck` shows
-  it with the other problems. They are GDScript scripts, not data files, because the definitions
+  (export-aware, like the console's commands). A topic whose `TYPES` is no table of ids to tables
+  with text keys is reported with its path, and an id two topics define as
+  `<kind> <id>: defined in <file> and in <file>`, both before anything is merged, and `CatalogCheck`
+  shows them with the other problems. They are GDScript scripts, not data files, because the definitions
   hold typed values (`Vector2i`, `Color`, terrain enums, references to `Equipment` slots) that a
   `.cfg` would need a parser and a second set of checks for; `CatalogCheck` checks their fields
   either way. What derives from other data stays in `ItemTypes` (the tool grades, the seeds and

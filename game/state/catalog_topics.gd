@@ -11,7 +11,9 @@ const TYPES_CONSTANT := "TYPES"
 
 
 ## The `TYPES` of each script in `directory`, by the script's path, in the order of the paths. A
-## script that does not load or has no `TYPES` is added to `problems` and gives none.
+## script that does not load, has no `TYPES` or has `TYPES` that are no table gives none, and a
+## definition of the wrong shape (id not a StringName, value not a table, key not a text) is left
+## out; each is added to `problems` with the script's path.
 static func read_folder(directory: String, problems: Array[String]) -> Dictionary:
 	var by_path := {}
 	for path in ScriptFolder.paths(directory):
@@ -23,7 +25,11 @@ static func read_folder(directory: String, problems: Array[String]) -> Dictionar
 		if not constants.has(TYPES_CONSTANT):
 			problems.append("%s has no %s" % [path, TYPES_CONSTANT])
 			continue
-		by_path[path] = constants[TYPES_CONSTANT]
+		var types = constants[TYPES_CONSTANT]
+		if not types is Dictionary:
+			problems.append("%s: %s must be a table of ids" % [path, TYPES_CONSTANT])
+			continue
+		by_path[path] = _well_formed(path, types, problems)
 	return by_path
 
 
@@ -46,3 +52,18 @@ static func merged(
 			source_of[id] = source
 			all_types[id] = types[id]
 	return all_types
+
+
+static func _well_formed(path: String, types: Dictionary, problems: Array[String]) -> Dictionary:
+	var kept := {}
+	for id in types:
+		var definition = types[id]
+		if not id is StringName:
+			problems.append('%s: id %s must be a StringName (&"name")' % [path, id])
+		elif not definition is Dictionary:
+			problems.append("%s: %s must be a table" % [path, id])
+		elif definition.keys().any(func(key): return not key is String):
+			problems.append("%s: %s has a key that is no text" % [path, id])
+		else:
+			kept[id] = definition
+	return kept

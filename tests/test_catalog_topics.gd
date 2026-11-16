@@ -3,6 +3,7 @@ extends GutTest
 ## topics define is a problem that names both, found before either is merged.
 
 const CLASHING := "res://tests/catalog_topics/clashing"
+const MALFORMED := "res://tests/catalog_topics/malformed"
 const ODD := "res://tests/catalog_topics/odd"
 
 
@@ -18,6 +19,21 @@ func test_a_topic_without_types_is_a_problem() -> void:
 	var problems: Array[String] = []
 	assert_eq(CatalogTopics.read_folder(ODD, problems), {})
 	assert_eq(problems, [ODD + "/no_types.gd has no TYPES"] as Array[String])
+
+
+func test_a_topic_with_a_misshapen_table_is_a_problem_naming_the_file() -> void:
+	var problems: Array[String] = []
+	var by_path := CatalogTopics.read_folder(MALFORMED, problems)
+	var odd := MALFORMED + "/odd_entries.gd"
+	assert_eq(by_path.keys(), [odd])
+	assert_eq(by_path[odd].keys(), [&"sound"])
+	var expected: Array[String] = [
+		MALFORMED + "/not_a_table.gd: TYPES must be a table of ids",
+		odd + ': id text_id must be a StringName (&"name")',
+		odd + ": no_table must be a table",
+		odd + ": odd_key has a key that is no text",
+	]
+	assert_eq(problems, expected)
 
 
 func test_an_id_two_topics_define_names_both_and_keeps_the_first() -> void:
