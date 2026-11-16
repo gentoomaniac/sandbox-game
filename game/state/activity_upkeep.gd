@@ -31,6 +31,8 @@ var _rules: ActivityRules
 var _days_of_npc := {}
 ## {Npc: ActivityStep}: the next entry of a villager, with the minute they leave for it.
 var _next_step_of_npc := {}
+## The villagers whose day is held: they are somewhere else for a while (see `hold`).
+var _held: Dictionary[Npc, bool] = {}
 ## A skip's rest is not played minute by minute (see `skip_begins`).
 var _is_in_skip := false
 ## The game day of the last tick, to see a new day begin.
@@ -66,7 +68,20 @@ func advance(_minutes: int, _clock_at_end: GameClock) -> void:
 	for npc in _npcs.all():
 		if is_new_day:
 			_drop_old_plans(npc)
-		_follow_day(npc)
+		if not _held.has(npc):
+			_follow_day(npc)
+
+
+## The villager's day is held: they are not sent where it has them be, as they are sent somewhere
+## else (away from a flood, see SurgeRefuge) until `release`.
+func hold(npc: Npc) -> void:
+	_held[npc] = true
+
+
+## The villager goes back to their day: they are sent where it has them be at once.
+func release(npc: Npc) -> void:
+	_held.erase(npc)
+	npc.current_step = null
 
 
 func skip_begins(_minutes: int) -> void:
