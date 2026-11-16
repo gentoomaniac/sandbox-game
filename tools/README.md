@@ -156,6 +156,13 @@ in summer, at wet meadows and at a village it builds in a new world, with the pl
 a circle, or the time skipped every hour: `godot --headless --path . -s tools/bench/storks.gd`
 (`-- --seed=<n>`; set `XDG_DATA_HOME` away from the real one).
 
+`tools/bench/activities.gd` (#7; no make target, it needs no save and writes nothing) puts 155
+villagers with houses in a new game on a Sunday morning (day 7, 09:45, with a church and a field)
+and prints the milliseconds of the simulation's minute and of the activities' tick on its own. Run
+it as `godot --headless --path . -s tools/bench/activities.gd` (without `--quiet`, which hides its
+output). On the dev laptop: the whole minute 4.8 ms, the villagers' days a steady 0.8 ms of it
+(1.5 ms before the place of an entry was looked for only once).
+
 `tools/bench/paths.gd` (tasks 238 and #68 step 6; no make target) sends the villagers of a save
 (`build/bench/fixture.save`, `make bench` writes it) 100 to 300 tiles, in real time at 60 frames a
 second, `once` (all together), through a `day` (to and fro, from random moments) and into a time `skip`,
