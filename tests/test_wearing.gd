@@ -57,7 +57,7 @@ func test_a_new_game_wears_the_period_clothes_and_carries_two_hats_a_shirt_and_a
 	assert_true(Appearance.CLOTHES in _layer_slots(state.player))
 
 
-func test_equipment_round_trip() -> void:
+func test_equipment_codec_round_trip() -> void:
 	_equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
 	_equipment.equip(Equipment.BODY, ItemTypes.SHIRT)
 	var restored := Equipment.from_dict(_through_json(_equipment.to_dict()))
@@ -69,6 +69,6 @@ func test_equipment_round_trip() -> void:
 func test_a_saved_player_keeps_what_they_wear_and_how_they_look() -> void:
 	var state := GameState.new_game(1)
 	state.player.equipment.equip(Equipment.HEAD, ItemTypes.STRAW_HAT)
-	var restored := PlayerState.from_dict(_through_json(state.player.to_dict()), state.world)
+	var restored := RealLoad.of(self, state).player
 	assert_eq(restored.equipment.item_in(Equipment.HEAD), ItemTypes.STRAW_HAT)
 	assert_eq(restored.appearance.layers, state.player.appearance.layers)

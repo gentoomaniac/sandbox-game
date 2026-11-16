@@ -112,7 +112,7 @@ func test_tilling_a_path_tills_it_and_leaves_no_wear() -> void:
 	assert_eq(_world.wear_stage(TILE), PathRules.Stage.UNWORN, "grassed over, it starts anew")
 
 
-func test_the_wear_survives_a_save_round_trip() -> void:
+func test_the_wear_survives_the_world_codec_round_trip() -> void:
 	_world.set_wear_days(TILE, _rules.path_after_days())
 	_world.set_wear_days(TILE + Vector2i.DOWN, _rules.trodden_after_days())
 	var restored := World.from_dict(
@@ -123,7 +123,7 @@ func test_the_wear_survives_a_save_round_trip() -> void:
 	assert_eq(restored.wear_stage(TILE + Vector2i.DOWN), PathRules.Stage.TRODDEN)
 
 
-func test_the_steps_of_today_survive_a_save_round_trip() -> void:
+func test_the_steps_of_today_survive_the_world_codec_round_trip() -> void:
 	_world.wear_tile(TILE, 3.5)
 	var restored := World.from_dict(
 		JSON.parse_string(JSON.stringify(_world.to_dict())), GameClock.new()
