@@ -219,7 +219,8 @@ by topic. Where is a thing drawn?
 | `portraits.py` | The 32x32 chat portrait of every layer that shows in a bust: the top of its frame facing the viewer. |
 | `interior.py` | The room tiles and the furniture inside the buildings, the hearth too, drawn at 32 px; the bed covers. |
 | `houses.py` | The registry of the buildings' pictures: `pictures()` joins the `PICTURES` of the modules that draw them (id to how to draw it) and refuses an id two of them draw. A new building adds its module there. |
-| `buildings.py` | The shack, fisherman's hut, Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), longhouse, hall house and barn at 32 px per tile, plain and with lit windows. |
+| `buildings.py` | What the houses share at 32 px per tile: the palettes, the thatch and turf roofs, the walls, doors and windows, plain and with lit windows. |
+| `farmhouses.py` | Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), the longhouse and the barn. |
 | `huts.py` | The shack and the fisherman's hut (boarded walls, turf or reed roof). |
 | `hall_house.py` | The hall house: its half-hipped thatch roof seen from the gable (`gable_roof`), the horse heads on its bargeboards, the half-timbered gable and the big barn door. |
 | `church.py` | The church and its bell frame (as buildings.py), and the graves of the churchyard (a row of the object atlas, drawn at 32 px). |
@@ -345,7 +346,7 @@ When a group goes native (docs/art-style.md, "Resolution"), before its redraw ch
   first of them.
   `seasons.py` needs a winter look per kind: add one entry to `_WINTER_LOOKS` (a kind
   without one stops the build with its name), and look at the picture under snow.
-- **A building:** its picture in `buildings.py` or `church.py` (`PICTURES`), its section in
+- **A building:** its picture in the module of its family (`farmhouses.py`, `huts.py`, `hall_house.py`, `church.py`; a new family is a module with a `PICTURES` dict that `houses.py` lists), its section in
   `data/buildings.cfg`, and its interior ([maps/README.md](../maps/README.md)).
 - **A crop:** a section in `data/crops.cfg` and a sheet in `crops.py`; no game code.
 - **A new kind of file** (a new family of PNGs): a `write_...` function in `generate.py` that
