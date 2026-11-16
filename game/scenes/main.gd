@@ -73,6 +73,7 @@ var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _clock_ticker: GameClockTicker
 var _interact: InteractFlow
+var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
 ## The game hour the wetness of the soil was last shown for.
 var _soil_shown_hour := -1
@@ -298,6 +299,8 @@ func _connect_state_and_views() -> void:
 	var stall_flow := StallFlow.new()
 	add_child(stall_flow)
 	_interact.cart_screen = stall_flow.cart_screen
+	_interact.register_kinds(_interactions)
+	_action_hint.interactions = _interactions
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
 	_interior_npc_views.show_npcs(_state.npcs, _interior_view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is
@@ -505,7 +508,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# E also picks the next building (outdoors), so the hammer in hand doesn't open a chest or put
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():
-		_interact.interact()
+		_interact.interact(_interactions)
 	elif _is_use_event(event) and can_use and (_eat_held() or _state.switch_held_lantern()):
 		pass  # No target: a held food is eaten, the lantern lit or put out, instead of a tile used.
 	elif event.is_action_pressed("use") and can_use:

@@ -28,7 +28,7 @@ func test_e_on_the_board_reads_it() -> void:
 
 	assert_eq(choice.kind, Interaction.Kind.READ_BOARD)
 	assert_eq(choice.subject, _board)
-	assert_eq(ActionHint.e_text(_state, _board.pos), "Read the notice board")
+	assert_eq(InteractionWords.e_text(_state, _board.pos), "Read the notice board")
 
 
 func test_a_villager_in_front_comes_before_the_board() -> void:

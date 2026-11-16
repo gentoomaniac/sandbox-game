@@ -20,39 +20,75 @@ var cart_screen: CartScreen
 var quest_voice: QuestVoice
 
 
+## Registers what E does for the kinds the flow itself serves, and the words of their hint. The
+## features that bring a screen of their own register their kinds themselves. The flow does not keep
+## the registry: the registry holds callables of the flow, and keeping it would make a cycle.
+func register_kinds(interactions: InteractionRegistry) -> void:
+	interactions.register(Interaction.Kind.DISMOUNT, "Get off the horse", _dismount)
+	interactions.register(
+		Interaction.Kind.CHAT, func(npc: Npc) -> String: return "Talk to %s" % npc.name, open_chat
+	)
+	interactions.register(
+		Interaction.Kind.TRADE,
+		func(npc: Npc) -> String: return "Trade with %s" % npc.name,
+		open_shop
+	)
+	interactions.register(Interaction.Kind.MOUNT, "Get on the horse", state.mount)
+	interactions.register(
+		Interaction.Kind.OPEN_STATION_GRID,
+		func(station: WorldObject) -> String: return "Use %s" % _name_of(station),
+		func(station: WorldObject) -> void:
+			process_screen.open_station(ProcessStation.new(state, Crafting.new(state), station))
+	)
+	interactions.register(
+		Interaction.Kind.OPEN_CHEST,
+		func(chest: WorldObject) -> String: return "Open %s" % _name_of(chest),
+		func(chest: WorldObject) -> void: storage_screen.open_chest(chest, state)
+	)
+	interactions.register(
+		Interaction.Kind.OPEN_CART,
+		"Tend the cart",
+		func(cart: WorldObject) -> void: cart_screen.open_cart(cart, state.player)
+	)
+	interactions.register(
+		Interaction.Kind.READ_BOARD,
+		"Read the notice board",
+		func(_board: WorldObject) -> void: board_screen.open_board(state)
+	)
+	interactions.register(
+		Interaction.Kind.OPEN_FIRE,
+		"Tend the fire",
+		func(fire: WorldObject) -> void: fire_screen.open_fire(fire, state)
+	)
+	interactions.register(
+		Interaction.Kind.OPEN_CRAFTING,
+		func(station: WorldObject) -> String: return "Craft at %s" % _name_of(station),
+		func(station: WorldObject) -> void: crafting_screen.open_station(station)
+	)
+	interactions.register(
+		Interaction.Kind.RING_BELL,
+		"Ring the bell",
+		func(_frame: Building) -> void: state.ring_bell_in_reach()
+	)
+	interactions.register(
+		Interaction.Kind.SLEEP, "Sleep", func(_bed: WorldObject) -> void: blackout.try_sleep()
+	)
+
+
 ## E: on horseback, gets off. Else speaks to the villager in front, gets on the saddled horse in
 ## front, opens the chest or station in reach, reads the notice board in reach, rings the bell frame
 ## in reach or sleeps in the bed.
-func interact() -> void:
-	var choice := Interaction.choice_at(state, use_highlight.targeting().tile)
-	match choice.kind:
-		Interaction.Kind.DISMOUNT:
-			if not state.dismount():
-				harvest_hud.show_note("No room to get off here.")
-		Interaction.Kind.CHAT:
-			open_chat(choice.subject)
-		Interaction.Kind.TRADE:
-			open_shop(choice.subject)
-		Interaction.Kind.MOUNT:
-			state.mount(choice.subject)
-		Interaction.Kind.OPEN_STATION_GRID:
-			process_screen.open_station(
-				ProcessStation.new(state, Crafting.new(state), choice.subject)
-			)
-		Interaction.Kind.OPEN_CHEST:
-			storage_screen.open_chest(choice.subject, state)
-		Interaction.Kind.OPEN_CART:
-			cart_screen.open_cart(choice.subject, state.player)
-		Interaction.Kind.READ_BOARD:
-			board_screen.open_board(state)
-		Interaction.Kind.OPEN_FIRE:
-			fire_screen.open_fire(choice.subject, state)
-		Interaction.Kind.OPEN_CRAFTING:
-			crafting_screen.open_station(choice.subject)
-		Interaction.Kind.RING_BELL:
-			state.ring_bell_in_reach()
-		Interaction.Kind.SLEEP:
-			blackout.try_sleep()
+func interact(interactions: InteractionRegistry) -> void:
+	interactions.open(Interaction.choice_at(state, use_highlight.targeting().tile))
+
+
+func _dismount(_no_subject: Variant) -> void:
+	if not state.dismount():
+		harvest_hud.show_note("No room to get off here.")
+
+
+func _name_of(object: WorldObject) -> String:
+	return String(object.type).replace("_", " ")
 
 
 ## Opens the trade with a shopkeeper, who turns to the player (the trade pauses the game).

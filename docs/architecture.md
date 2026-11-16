@@ -45,8 +45,10 @@ Warft and an Ewer here and there.
   `GameLoader` (which game the scene starts with), `SessionFlow` (the quick save and load keys,
   the load dialog's pick, New game and the save before quitting; `QuickLoadFlow` does F8's
   reload), `BlackoutFlow` (door, sleep and passing out), `InteractFlow` (E, and the opening of a
-  chat or trade), `UseSwing` and `UseNotes` (a use of the held item and its note), `ScreenKeys`
-  and `HotbarKeys` (the window and hotbar keys) and `GameClockTicker` (real time to game minutes,
+  chat or trade; the words and the opening of each `Interaction.Kind` are registered in an
+  `InteractionRegistry`, which also gives the action hint its words for E), `UseSwing` and
+  `UseNotes` (a use of the held item and its note), `ScreenKeys` and
+  `HotbarKeys` (the window and hotbar keys) and `GameClockTicker` (real time to game minutes,
   F2).
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,

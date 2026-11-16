@@ -9,6 +9,8 @@ extends CanvasLayer
 const GAP := 2
 const THEME := preload("res://game/scenes/ui_theme.tres")
 
+## Names what E does (see InteractionRegistry); Main sets it.
+var interactions: InteractionRegistry
 var _label := Label.new()
 
 
@@ -32,7 +34,7 @@ func text() -> String:
 func show_for(state: GameState, settings: GameSettings, target: Vector2i, is_wanted: bool) -> void:
 	var lines: Array[String] = []
 	if is_wanted and settings.is_action_hint_shown:
-		var e_text := ActionHint.e_text(state, target)
+		var e_text := interactions.e_text(state, target)
 		var e_keys := settings.bindings(&"interact")
 		if e_text != "" and not e_keys.is_empty():
 			lines.append("%s: %s" % [GameSettings.binding_text(e_keys[0]), e_text])

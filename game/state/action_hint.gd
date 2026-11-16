@@ -1,9 +1,9 @@
 class_name ActionHint
 extends RefCounted
-## The words that name what E and the use action will do on a target tile, for the hint over the
-## hotbar. They ask the rules that do it (Interaction `choice_at`, ToolUse `use_at`, GameState
-## `can_eat_held`), so the hint can't differ from the action. An empty text means there is nothing
-## to say. Plain logic on the GameState it is given.
+## The words that name what the use action will do on a target tile, for the hint over the hotbar.
+## They ask the rules that do it (ToolUse `use_at`, GameState `can_eat_held`), so the hint can't
+## differ from the action. An empty text means there is nothing to say. Plain logic on the
+## GameState it is given. The words of E are the interaction registry's (see InteractionRegistry).
 
 ## What each use of the held item is called, for the uses worth naming. The others (nothing to do,
 ## a tool too weak, riding, ...) say nothing; a tool of the player's is named in `use_text`.
@@ -34,37 +34,6 @@ const LANTERN_WORDS := {
 	GameState.LanternUse.LIGHT: "Light the lantern",
 	GameState.LanternUse.FIT_CANDLE: "Fit a candle",
 }
-
-
-## What E does on `target`, as "Talk to Antje", or "".
-static func e_text(state: GameState, target: Vector2i) -> String:
-	var choice := Interaction.choice_at(state, target)
-	match choice.kind:
-		Interaction.Kind.DISMOUNT:
-			return "Get off the horse"
-		Interaction.Kind.CHAT:
-			return "Talk to %s" % choice.subject.name
-		Interaction.Kind.TRADE:
-			return "Trade with %s" % choice.subject.name
-		Interaction.Kind.MOUNT:
-			return "Get on the horse"
-		Interaction.Kind.OPEN_STATION_GRID:
-			return "Use %s" % _name_of(choice.subject)
-		Interaction.Kind.OPEN_CHEST:
-			return "Open %s" % _name_of(choice.subject)
-		Interaction.Kind.OPEN_CART:
-			return "Tend the cart"
-		Interaction.Kind.READ_BOARD:
-			return "Read the notice board"
-		Interaction.Kind.OPEN_FIRE:
-			return "Tend the fire"
-		Interaction.Kind.OPEN_CRAFTING:
-			return "Craft at %s" % _name_of(choice.subject)
-		Interaction.Kind.RING_BELL:
-			return "Ring the bell"
-		Interaction.Kind.SLEEP:
-			return "Sleep"
-	return ""
 
 
 ## What the use key does with the held item on `target`, as "Harvest", or "". Eating and the lantern
@@ -104,7 +73,3 @@ static func _empty_hand_advice(inventory: Inventory) -> String:
 static func _is_ripe_crop_at(state: GameState, target: Vector2i) -> bool:
 	var crop := state.world.object_at(target)
 	return crop != null and crop.is_crop() and CropLife.is_ripe(crop)
-
-
-static func _name_of(object: WorldObject) -> String:
-	return String(object.type).replace("_", " ")

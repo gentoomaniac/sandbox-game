@@ -1,0 +1,45 @@
+extends GutTest
+## The registry of what E is called and does (InteractionRegistry), and that it does not keep the
+## game alive: its callables hold the flow, so the flow must not hold the registry back.
+
+
+func test_a_registered_kind_has_words_and_is_opened_with_its_subject() -> void:
+	var registry := InteractionRegistry.new()
+	var opened := []
+	registry.register(
+		Interaction.Kind.OPEN_CHEST,
+		func(subject: String) -> String: return "Open " + subject,
+		func(subject: String) -> void: opened.append(subject)
+	)
+	var choice := Interaction.Choice.new(Interaction.Kind.OPEN_CHEST, "box")
+
+	registry.open(choice)
+
+	assert_eq(registry.label_of(choice), "Open box")
+	assert_eq(opened, ["box"])
+
+
+func test_a_kind_nobody_registered_says_and_does_nothing() -> void:
+	var registry := InteractionRegistry.new()
+	var choice := Interaction.Choice.new(Interaction.Kind.SLEEP)
+
+	registry.open(choice)
+
+	assert_eq(registry.label_of(choice), "")
+
+
+func test_the_flow_and_its_game_are_freed_with_the_registry() -> void:
+	var state: GameState = GameState.new_game(7)
+	var flow := InteractFlow.new()
+	flow.state = state
+	var registry := InteractionRegistry.new()
+	flow.register_kinds(registry)
+	var flow_ref: WeakRef = weakref(flow)
+	var state_ref: WeakRef = weakref(state)
+
+	flow = null
+	state = null
+	registry = null
+
+	assert_null(flow_ref.get_ref())
+	assert_null(state_ref.get_ref())
