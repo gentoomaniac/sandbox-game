@@ -1,7 +1,7 @@
 class_name GameFactory
 extends RefCounted
 ## Builds a GameState: the new game, and the putting of a world under a game, with the systems that
-## change with time (see Simulation), which a loaded game goes through as well (see SaveCodec).
+## change with time (see Simulation), which a loaded game goes through as well (see GameCodec).
 ## Keeps nothing; the game it builds does not hold it.
 
 
