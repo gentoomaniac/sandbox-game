@@ -35,6 +35,9 @@
     They don't block walking (they are walked on, sheep grazed on them), but they block building
     and tilling on their tile: nothing is built into a dyke. Nothing removes one yet (basic
     terraforming is on the backlog, [#59](https://github.com/gentoomaniac/sandbox-game/issues/59)).
+    Every dyke tile has a height and a strength (`DykeProfile`, from the seed, shared by a
+    stretch of about 60 tiles); the hover says them, and a storm surge runs over the low ones (see
+    [storm-surge.md](storm-surge.md)).
   - **Knicks, walls and fences** are objects the player makes (task 203) and the villages will
     lay. The axe cuts a Knick down for 1 log and 2 fibre (its wood was the reason it was planted
     and cut back every few years), a wattle fence for 2 fibre; the pickaxe takes a wall apart for

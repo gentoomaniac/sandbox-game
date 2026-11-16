@@ -27,6 +27,15 @@ const REQUIRED_KEYS := {
 		"land_top",
 		"noise",
 		"noise_size",
+		"sea_dyke_height",
+		"sea_dyke_spread",
+		"river_dyke_height",
+		"river_dyke_spread",
+		"dyke_strength",
+		"dyke_strength_spread",
+		"dyke_stretch_size",
+		"low_below",
+		"high_above",
 	],
 }
 static var _default: LandscapeRules

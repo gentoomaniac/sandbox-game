@@ -51,6 +51,9 @@ var world_seed: int
 ## GameState, which gives it in.
 var clock: GameClock
 var vegetation := Vegetation.default_vegetation()
+## How high the land lies, and how high and strong the generated dykes are (the storm surge).
+var elevation: Elevation
+var dykes: DykeProfile
 ## The moisture of the tilled soil (see `moisture_at`).
 var soil: SoilMoisture
 ## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).
@@ -100,6 +103,8 @@ func _init(seed_value: int, game_clock := GameClock.new()) -> void:
 	clock = game_clock
 	soil = SoilMoisture.new(game_clock)
 	_generator = WorldGenerator.new(seed_value)
+	elevation = Elevation.new(seed_value, _generator)
+	dykes = DykeProfile.new(seed_value, _generator)
 	objects_changed.connect(_count_object_change)
 	building_placed.connect(_count_building)
 	building_removed.connect(_count_building)
