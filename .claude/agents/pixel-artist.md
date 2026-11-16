@@ -15,8 +15,8 @@ agent gives you a brief; a reviewer checks your branch; the coordinator merges i
 - `AGENTS.md` / `CLAUDE.md` of the repo; project rules win over this file.
 - `docs/art-style.md` (period, place, palette use, the ranked art list) and
   `design/presentation/art-pipeline.md` (outlines, light, shadows, clusters).
-- `tools/README.md` and the generator files near your subject (e.g. `tools/art/livestock.py`
-  for animals, `buildings.py`, `yard.py`, `forms.py` for shared shapes and lighting,
+- `tools/README.md` and the generator files near your subject (e.g. `tools/art/livestock_*.py`
+  for animals, one per species, `buildings.py` and the house modules, `yard.py`, `forms.py` for shared shapes and lighting,
   `palette.py`), and `tools/art/classic/` for the 16 px art.
 
 ## How the art is made
@@ -27,7 +27,7 @@ agent gives you a brief; a reviewer checks your branch; the coordinator merges i
 - Every subject is drawn at 32 px **and** in the classic 16 px art, with the frames the game
   uses (e.g. for animals: stand, walk, graze, sleep, run).
 - Complex side views are best drawn as a hand-made character map (one letter per region) in
-  the cell, as the cow and horse are (`cow_letters`, `cow_frame` in livestock.py): the user
+  the cell, as the cow and horse are (`cow_letters`, `cow_frame` in livestock_cattle.py): the user
   rejected shape-built animals several times and approved the hand-drawn map.
 - Reference images the user gives are for proportions and placement only: never copy their
   pixels, watermarks or details like collars.
