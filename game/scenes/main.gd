@@ -48,7 +48,7 @@ var _build_menu := BuildMenu.new()
 var _vitals := VitalsHud.new()
 var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
-var _crafting_screen := CraftingScreen.new()
+var _crafting_flow: CraftingFlow
 var _storage_flow: StorageFlow
 var _trade_screen := TradeScreen.new()
 var _process_flow: ProcessFlow
@@ -208,7 +208,8 @@ func _make_views() -> void:
 	add_child(_vitals)
 	add_child(_bag_screen)
 	add_child(_character_screen)
-	add_child(_crafting_screen)
+	_crafting_flow = CraftingFlow.new(_state, _interactions, _sounds)
+	add_child(_crafting_flow)
 	add_child(_map_screen)
 	_storage_flow = StorageFlow.new(_state, _hotbar, _interactions, _sounds)
 	add_child(_storage_flow)
@@ -216,7 +217,7 @@ func _make_views() -> void:
 	_process_flow = ProcessFlow.new(_state, _hotbar, _interactions, _sounds)
 	add_child(_process_flow)
 	# Where the fire's window was layered, before the HUD and the console over it.
-	add_child(CampfireFlow.new(_state, _hotbar, _crafting_screen, _interactions, _sounds))
+	add_child(CampfireFlow.new(_state, _hotbar, _crafting_flow.screen, _interactions, _sounds))
 	add_child(_cheat_hud)
 	add_child(_console_view)
 	_chat_screen.dialogue = NpcDialogue.new(_settings)
@@ -277,7 +278,6 @@ func _connect_state_and_views() -> void:
 	_interact.console_view = _console_view
 	_interact.chat_screen = _chat_screen
 	_interact.trade_screen = _trade_screen
-	_interact.crafting_screen = _crafting_screen
 	_trade_screen.talk_requested.connect(_interact.open_chat)
 	var clock_ticker := GameClockTicker.new(_state, _weather_view, _show_clock)
 	clock_ticker.is_held = func() -> bool:
@@ -330,7 +330,7 @@ func _connect_state_and_views() -> void:
 	_builder = Builder.new(_state)
 	_hotbar_keys = HotbarKeys.new(_state.player.inventory, _builder)
 	_screen_keys = ScreenKeys.new(
-		_state, _bag_screen, _character_screen, _crafting_screen, _harvest_hud
+		_state, _bag_screen, _character_screen, _crafting_flow.screen, _harvest_hud
 	)
 	_hotbar.crafting_requested.connect(_screen_keys.on_crafting_requested)
 	_build_mode.world = _state.world
@@ -354,7 +354,6 @@ func _connect_state_and_views() -> void:
 	_character_screen.show_player(_state.player)
 	_character_screen.show_quests(_state)
 	_character_screen.show_neighbours(_state)
-	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
 	_map_screen.show_state(_state)
 	_map_screen.teleporter = func(tile: Vector2i) -> Array[String]:
@@ -433,7 +432,7 @@ func _apply_start_options() -> void:
 	if _options.neighbours:
 		_character_screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
 	if _options.crafting:
-		_crafting_screen.open()
+		_crafting_flow.screen.open()
 	if not _options.console.is_empty():
 		_console_view.open()
 		for line in _options.console:
@@ -447,7 +446,7 @@ func _apply_start_options() -> void:
 	_debug.tiredness_view = _tiredness_view
 	_debug.interior_view = _interior_view
 	_debug.storage_screen = _storage_flow.screen
-	_debug.crafting_screen = _crafting_screen
+	_debug.crafting_screen = _crafting_flow.screen
 	_debug.process_screen = _process_flow.screen
 	_debug.chat_screen = _chat_screen
 	_debug.open_chat = _interact.open_chat
@@ -728,16 +727,11 @@ func _start_sounds() -> void:
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_hotbar)
 	for panel: Node in [
-		_menu,
-		_console_view,
-		_chat_screen,
-		_bag_screen,
-		_character_screen,
-		_crafting_screen,
-		_trade_screen
+		_menu, _console_view, _chat_screen, _bag_screen, _character_screen, _trade_screen
 	]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
+	_sounds.watch_panel(_crafting_flow.screen.is_open)
 	_sounds.watch_panel(_process_flow.screen.is_open)
 	_sounds.watch_panel(_storage_flow.screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)

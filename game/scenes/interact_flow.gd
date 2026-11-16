@@ -11,7 +11,6 @@ var blackout: BlackoutFlow
 var console_view: ConsoleView
 var chat_screen: ChatScreen
 var trade_screen: TradeScreen
-var crafting_screen: CraftingScreen
 var quest_voice: QuestVoice
 
 
@@ -29,11 +28,6 @@ func register_kinds(interactions: InteractionRegistry) -> void:
 		open_shop
 	)
 	interactions.register(Interaction.Kind.MOUNT, "Get on the horse", state.mount)
-	interactions.register(
-		Interaction.Kind.OPEN_CRAFTING,
-		func(station: WorldObject) -> String: return "Craft at %s" % Interaction.name_of(station),
-		func(station: WorldObject) -> void: crafting_screen.open_station(station)
-	)
 	interactions.register(
 		Interaction.Kind.RING_BELL,
 		"Ring the bell",

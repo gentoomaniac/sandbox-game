@@ -12,3 +12,4 @@ static func make(test: GutTest, state: GameState, interactions: InteractionRegis
 	interact.register_kinds(interactions)
 	test.add_child_autofree(StorageFlow.new(state, hotbar, interactions, sounds))
 	test.add_child_autofree(ProcessFlow.new(state, hotbar, interactions, sounds))
+	test.add_child_autofree(CraftingFlow.new(state, interactions, sounds))
