@@ -43,6 +43,7 @@ says so, and whether to pick a free hotbar slot or to move an item off a full ho
 | C | The character window. The same key closes it. |
 | K | The skills tab of the character window. |
 | J | The quests tab of the character window: the quests you have taken, who gave them, how far you are, the days left and the reward. |
+| (click the tab) | The neighbours tab of the character window: every villager with their level of friendship with you and ten marks; hover a row to see what the next level brings. It has no key yet. |
 | Shift + C, or click the workbench icon | The crafting menu (by hand). The icon sits beside the bag icon. |
 | Left mouse button, dragged | Move a stack onto a slot, the trash can, or (outside the window) the ground. |
 | Shift + left click | Send a stack to the other side (bag, character and chest windows). |

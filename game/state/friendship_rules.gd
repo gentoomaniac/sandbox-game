@@ -108,6 +108,9 @@ func problems() -> Array[String]:
 					% [benefit, EARLIEST_BENEFIT_LEVEL, LEVEL_COUNT]
 				)
 			)
+	for benefit in BENEFITS:
+		if not _values.get("benefit_text", {}).get(str(benefit)) is String:
+			bad.append("[benefit_text] %s must be a text" % benefit)
 	if not bad.is_empty():
 		return bad
 	if levels.size() != LEVEL_COUNT:
@@ -176,6 +179,11 @@ func action_daily_cap() -> int:
 ## The lowest level that has `benefit` (one of BENEFITS).
 func benefit_level(benefit: StringName) -> int:
 	return _values["benefits"][str(benefit)]
+
+
+## What `benefit` is, in a few words that follow "Brings: ".
+func benefit_text(benefit: StringName) -> String:
+	return _values["benefit_text"][str(benefit)]
 
 
 ## Whether a villager at `level` of friendship with the player gives `benefit`. A villager whose

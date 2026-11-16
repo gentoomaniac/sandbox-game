@@ -335,6 +335,7 @@ func _connect_state_and_views() -> void:
 	_bag_screen.show_player(_state.player)
 	_character_screen.show_player(_state.player)
 	_character_screen.show_quests(_state)
+	_character_screen.show_neighbours(_state)
 	_crafting_screen.show_crafting(Crafting.new(_state), _state.player.inventory)
 	_cheat_hud.show_cheats(_state.cheats)
 	_map_screen.show_state(_state)

@@ -68,7 +68,9 @@
     while an item is dragged. Right-click equips or unequips at once.
   - Keys: C opens the character window and closes it, K opens its skills tab and closes it from
     there, J its quests tab (the quests the player has taken, see
-    [../villagers/quests.md](../villagers/quests.md)); B opens the bag and closes it (Tab is unbound); Escape and the pause key close either.
+    [../villagers/quests.md](../villagers/quests.md)); a fourth tab, Neighbours (#48, no key yet: the
+    tab button), shows the villagers by how well they know the player, see
+    [../villagers/relationships.md](../villagers/relationships.md); B opens the bag and closes it (Tab is unbound); Escape and the pause key close either.
     E does nothing while one is open. Crafting is Shift+C.
   - Worn items count toward the carried weight.
   - Hair and body are the character's look, not equipment.

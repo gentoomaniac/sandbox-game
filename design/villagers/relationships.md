@@ -81,6 +81,14 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
 - Step 12: the level in the talk panel. The villager's name under their portrait has their level's
   name under it, updated after a gift or a line; a villager at level 1 says a turn-away line when the
   window opens (`TalkFriendship.greet`) and to anything the player writes. See [dialogue.md](dialogue.md).
+- Step 13: the Neighbours tab. `CharacterScreen` has a fourth tab (`Tab.NEIGHBOURS`, no key bound: the
+  tab button) with `NeighboursPanel`: a row for each villager of the world from `NeighbourRows` (state, with
+  tests: closest friends first, then by name), each with their portrait, name, level name and the
+  ten `FriendshipMarks`, and a tooltip with the next level and what it brings ("Next: Neighbour.
+  Brings: barters at the market price, says what they want this year."), from `[benefit_text]` of
+  `data/friendship.cfg`. The points are never shown. **Placeholders for the art of step 14:** the marks
+  are plain squares drawn in code (the first two dark blue, then ember red, the tenth gold, an empty
+  one stone grey), to be replaced by drawn marks; the portraits are the villagers' own.
 
 ## The user's words
 

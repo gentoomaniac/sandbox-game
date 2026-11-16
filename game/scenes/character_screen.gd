@@ -6,14 +6,20 @@ extends HotbarWindow
 ## slot is worn, a worn item dragged onto it is taken off, and right click wears or takes off.
 ## An equipment slot only takes an item that fits (those light up while one is dragged).
 ## Below them the attributes and what they give (see AttributesPanel).
-## A second tab beside it shows the skills (see SkillsPanel) and a third the quests the player has
-## taken (see QuestsPanel); C opens the window on the character, K on the skills, J on the quests
-## (`open_tab`, `toggle_tab`; `open()` opens the character).
+## A second tab beside it shows the skills (see SkillsPanel), a third the quests the player has
+## taken (see QuestsPanel) and a fourth the neighbours and how well they know the player (see
+## NeighboursPanel); C opens the window on the character, K on the skills, J on the quests
+## (`open_tab`, `toggle_tab`; `open()` opens the character). The neighbours have no key yet.
 ## It is docked in the middle of the screen, and can be open beside the bag (see Modal `dock`).
 
-enum Tab { CHARACTER, SKILLS, QUESTS }
+enum Tab { CHARACTER, SKILLS, QUESTS, NEIGHBOURS }
 
-const TAB_NAMES := {Tab.CHARACTER: "Character", Tab.SKILLS: "Skills", Tab.QUESTS: "Quests"}
+const TAB_NAMES := {
+	Tab.CHARACTER: "Character",
+	Tab.SKILLS: "Skills",
+	Tab.QUESTS: "Quests",
+	Tab.NEIGHBOURS: "Neighbours",
+}
 const SLOT_GAP := 2
 const COLUMN_GAP := 4
 const MAX_PREVIEW_SCALE := 2
@@ -37,6 +43,7 @@ var _pages := {}
 var _tab_buttons := {}
 var _skills_panel := SkillsPanel.new()
 var _quests_panel := QuestsPanel.new()
+var _neighbours_panel := NeighboursPanel.new()
 var _attributes_panel := AttributesPanel.new()
 
 
@@ -59,7 +66,12 @@ func _init(hotbar: HotbarHud) -> void:
 	character_page.add_child(_attributes_panel)
 	character_page.add_child(_note_label)
 
-	_pages = {Tab.CHARACTER: character_page, Tab.SKILLS: _skills_panel, Tab.QUESTS: _quests_panel}
+	_pages = {
+		Tab.CHARACTER: character_page,
+		Tab.SKILLS: _skills_panel,
+		Tab.QUESTS: _quests_panel,
+		Tab.NEIGHBOURS: _neighbours_panel,
+	}
 	var tabs := HBoxContainer.new()
 	var tab_group := ButtonGroup.new()
 	for tab: Tab in _pages:
@@ -76,6 +88,7 @@ func _init(hotbar: HotbarHud) -> void:
 	page_column.add_child(character_page)
 	page_column.add_child(_skills_panel)
 	page_column.add_child(_quests_panel)
+	page_column.add_child(_neighbours_panel)
 	_panel.add_child(page_column)
 
 
@@ -100,6 +113,11 @@ func show_player(player: PlayerState) -> void:
 ## Shows the quests of the game of `state` on the quests tab.
 func show_quests(state: GameState) -> void:
 	_quests_panel.show_quests(state)
+
+
+## Shows the villagers of the game of `state` on the neighbours tab.
+func show_neighbours(state: GameState) -> void:
+	_neighbours_panel.show_neighbours(state)
 
 
 ## Opens the window on `tab`, or switches to it when the window is open.
@@ -131,6 +149,8 @@ func _show_tab(tab: Tab) -> void:
 	_use_hotbar(visible and tab == Tab.CHARACTER)
 	if tab == Tab.QUESTS:
 		_quests_panel.refresh()
+	if tab == Tab.NEIGHBOURS:
+		_neighbours_panel.refresh()
 	_refresh()
 	if is_inside_tree():
 		_fit_character()
