@@ -293,6 +293,7 @@ func _connect_state_and_views() -> void:
 	_interact.board_screen = quest_flow.board_screen
 	_interact.quest_voice = quest_flow.voice
 	add_child(FriendshipFlow.new(_state, _notifications, _view.entities))
+	add_child(SurgeFlow.new(_state, _notifications))
 	add_child(BarterFlow.new(_state, _chat_screen, _interact.open_chat))
 	var stall_flow := StallFlow.new()
 	add_child(stall_flow)

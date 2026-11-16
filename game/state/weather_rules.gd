@@ -42,6 +42,21 @@ const REQUIRED_KEYS := {
 	"precipitation": ["humidity_from", "humidity_full", "rain_from_temperature"],
 	"fog": ["humidity_from", "humidity_full", "calm_wind"],
 	"wind": ["strong_from", "strong_full"],
+	"surge":
+	[
+		"base_chance",
+		"min_storm",
+		"full_storm",
+		"first_day",
+		"last_day",
+		"winter_from_day",
+		"winter_share",
+		"level_min",
+		"level_max",
+		"level_noise",
+		"hold_hours",
+		"warning_hours",
+	],
 	"thunder":
 	[
 		"temperature_from",

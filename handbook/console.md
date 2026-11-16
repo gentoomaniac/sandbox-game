@@ -21,6 +21,7 @@ Cheats and test commands, all of them.
 | `noclip` | Toggle walking through anything: water, trees, rocks, buildings, furniture (indoors within the room, outdoors on loaded ground). Turned off where you don't fit, it puts you on the nearest free ground. |
 | `weather`, `weather <condition>`, `weather auto` | Show the weather, force a condition, or go back to the simulation. |
 | `snow`, `snow <0..1>`, `snow auto` | Show the snow cover, force it, or go back to the weather. |
+| `surge`, `surge <metres>`, `surge off` | Show the storm surge that is expected (how high, when the sea rises), start one that rises now (the water in metres over mean high water, 1.6 to 3.2 as a storm makes it; default 2.8), or end it. |
 | `spawn npc [count]` | Put villagers nearby, each with a look, a name and a sheet of their own; they stay. |
 | `spawn [npc] <villager>` | Put a villager written by hand nearby (`spawn kerrin` or `spawn npc kerrin`): `antje`, `momme`, `ocke`, `kerrin`, `hinrich`, `boy`, `inken`, `gesche` or `trienke`; each comes once. |
 | `spawn <animal> [count]` | Put animals nearby: farm animals that stay (`cow`, `sheep`, `chicken`, `rabbit`, `dog`, `cat`, `horse`) or wild ones that come and go (`bird`, `wild_rabbit`, `squirrel`, `deer`, `bee`, `butterfly`, `flock`, `stork`, `roof_stork` on the nearest roof, `geese` grazing, `flying_geese`, `mouse`, `frog`, and on the coast `oystercatcher`, `dunlin`, `gull`, `tern`, and `crows`, flocks on the fields and meadows). `spawn` alone, or with an unknown name, lists them. |

@@ -54,6 +54,8 @@ var vegetation := Vegetation.default_vegetation()
 ## How high the land lies, and how high and strong the generated dykes are (the storm surge).
 var elevation: Elevation
 var dykes: DykeProfile
+## The storm surge that is coming or running.
+var surge := SurgeEvent.new()
 ## The moisture of the tilled soil (see `moisture_at`).
 var soil: SoilMoisture
 ## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).

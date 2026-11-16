@@ -33,6 +33,12 @@ Warften.
   holds for the 3 hours around high water, then falls. The roll comes from the world seed and
   the tide's number, so it is deterministic, like the weather.
 - A debug command `surge [level]` starts one (like `weather`).
+- **Built values** (`[surge]` of `data/weather.cfg`): the weather's `storm` never passes 0.37
+  (it is the lesser of the rain and the wind's ramp), so the plan's 0.7 could never come. A storm
+  counts as a share of `full_storm` (0.35), from `min_storm` (0.12); the strongest storm within
+  the 3 hours around the high water counts; the chance is `base_chance` (1.1) times the share
+  squared. Measured over 20 years of ten seeds that is about 1.1 surges per game year (0.4 to 2.2
+  between seeds), at levels from 2.0 to 3.4 m.
 
 ## Dyke height and quality
 
@@ -176,7 +182,7 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
    (then the drop of the oldest upgrade as its own commit). **Built** (version 55; the drop of
    the version 44 upgrade came first).
 4. The roll (season, storm, high water, level) and the `surge` command; the log says one is
-   coming, nothing floods.
+   coming, nothing floods. **Built** (`SurgeRoll`, `SurgeUpkeep`, `SurgeEvent`, `SurgeFlow`).
 5. `FloodState`: breach rule, fill with budget and volume, drain; the flooded rules in `World`.
 6. The overlay: `flood.gdshader`, the chunk masks; the pictures.
 7. Saving the surge and the wet tiles (a second version bump).
