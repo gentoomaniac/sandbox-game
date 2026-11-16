@@ -247,6 +247,7 @@ by topic. Where is a thing drawn?
 | `livestock_cattle.py` | The cow's sheets, drawn by hand as maps of letters (`cow_frame`). |
 | `livestock_pigs.py` | The pig's sheets, drawn by hand as maps of letters (`pig_frame`). |
 | `livestock_sheep.py` | The sheep's sheets (its coat, tail and head), put together by `quadruped_frame`. |
+| `livestock_poultry.py` | The hen's sheets and the rooster's, each pose drawn whole (the rooster as maps of letters). |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and
