@@ -198,30 +198,13 @@ const STOCK_FULL_FROM := 0.7
 ## object that covers a tile.
 const MAX_FOOTPRINT := Vector2i(7, 2)
 
-## The atlas rows of the long trunks; the short one is the row after each. They follow the order
-## in which tools/art/generate.py lays out the object atlas (assets/objects_rows.txt, checked by a
-## test), so a new tree gets the next free rows there and here.
-const _OAK_TRUNK_ROW := 14
-const _SPRUCE_TRUNK_ROW := 16
-const _PINE_TRUNK_ROW := 18
-const _DEAD_TREE_TRUNK_ROW := 20
-const _WILLOW_TRUNK_ROW := 22
 ## The atlas row of the reeds: after the last trunk.
 const REEDS_ROW := 24
-## The atlas row of the dead tree's stump, after the reeds.
-const _DEAD_STUMP_ROW := 25
 ## The atlas row of the chest, after the dead tree's stump.
 const _CHEST_ROW := 26
 const _KNICK_ROW := 27
 const _WATTLE_FENCE_ROW := 28
 const _STONE_WALL_ROW := 29
-const _WILLOW_ROW := 31
-const _BEECH_ROW := 32
-const _BEECH_TRUNK_ROW := 33
-const _BIRCH_ROW := 35
-const _BIRCH_TRUNK_ROW := 36
-const _ALDER_ROW := 38
-const _ALDER_TRUNK_ROW := 39
 const _WORKBENCH_ROW := 41
 const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
@@ -255,33 +238,6 @@ const TOPICS_DIR := "res://game/state/world_objects"
 const _OWN_SOURCE := "res://game/state/world_object_types.gd"
 
 const _OTHER_TYPES := {
-	OAK:
-	{
-		"hp": 5,
-		"tool": &"axe",
-		"seed": &"acorn",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 3, "hp": 4, "atlas_row": _OAK_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": 0,
-		"sprite_height": 130,
-		"variants": 3,
-	},
-	STONE:
-	{
-		"hp": 3,
-		"tool": &"pickaxe",
-		"drops": {&"stone": 2},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": 1,
-		"variants": 2,
-	},
 	FIREPLACE:
 	{
 		"footprint": Vector2i(1, 1),
@@ -308,155 +264,6 @@ const _OTHER_TYPES := {
 		"bed": Vector2i.UP,
 		"interior_sprite": "res://assets/interior/sleeping_bag.png",
 		"placeable_in": OUTDOORS,
-	},
-	SPRUCE:
-	{
-		"hp": 4,
-		"tool": &"axe",
-		"seed": &"spruce_cone",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 3, "hp": 3, "atlas_row": _SPRUCE_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": 4,
-		"sprite_height": 140,
-		"variants": 3,
-	},
-	PINE:
-	{
-		"hp": 7,
-		"tool": &"axe",
-		"seed": &"pine_cone",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 4, "hp": 5, "atlas_row": _PINE_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 2,
-		"atlas_row": 5,
-		"sprite_height": 156,
-		"variants": 3,
-	},
-	DEAD_TREE:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"trunk": {"logs": 2, "hp": 2, "atlas_row": _DEAD_TREE_TRUNK_ROW},
-		"leaves": DEAD_STUMP,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": 6,
-		"sprite_height": 110,
-		"variants": 3,
-	},
-	# The pollard willow of the ditches, cut back to a head that sprouts rods.
-	WILLOW:
-	{
-		"hp": 4,
-		"tool": &"axe",
-		"seed": &"willow_cutting",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 2, "hp": 3, "atlas_row": _WILLOW_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _WILLOW_ROW,
-		"sprite_height": 118,
-		"variants": 3,
-	},
-	# The beech of the woods: smooth grey bark, a dense dome of a crown.
-	BEECH:
-	{
-		"hp": 5,
-		"tool": &"axe",
-		"seed": &"beechnut",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 3, "hp": 4, "atlas_row": _BEECH_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _BEECH_ROW,
-		"sprite_height": 126,
-		"variants": 3,
-	},
-	# The birch of the Geest and the wet woods: white bark, a light, open crown, soft wood.
-	BIRCH:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"seed": &"birch_catkin",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 2, "hp": 2, "atlas_row": _BIRCH_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _BIRCH_ROW,
-		"sprite_height": 136,
-		"variants": 3,
-	},
-	# The black alder of wet ground: dark bark, a narrow cone of dark leaves, cones in winter.
-	ALDER:
-	{
-		"hp": 4,
-		"tool": &"axe",
-		"seed": &"alder_cone",
-		"seed_chance": 0.25,
-		"trunk": {"logs": 2, "hp": 3, "atlas_row": _ALDER_TRUNK_ROW},
-		"leaves": STUMP,
-		"regrows": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _ALDER_ROW,
-		"sprite_height": 134,
-		"variants": 3,
-	},
-	BOULDER:
-	{
-		"hp": 6,
-		"tool": &"pickaxe",
-		"drops": {&"stone": 5},
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 2,
-		"atlas_row": 11,
-		"variants": 2,
-	},
-	STUMP:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": 12,
-		"variants": 2,
-		"hp": 2,
-		"tool": &"axe",
-		"drops": {&"logs": 1},
-		"rots_after_days": 14,
-		"rots_into_sapling_chance": 0.3,
-	},
-	DEAD_STUMP:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _DEAD_STUMP_ROW,
-		"variants": 2,
-		"hp": 2,
-		"tool": &"axe",
-		"drops": {&"logs": 1},
-		"rots_after_days": 14,
 	},
 	# A hedge of hazel and hawthorn on an earth bank, between fields. The axe cuts it down to
 	# the ground for its wood.
