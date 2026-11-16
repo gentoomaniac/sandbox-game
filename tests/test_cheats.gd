@@ -54,11 +54,11 @@ func test_noweight_drops_the_weight_surcharge() -> void:
 
 func test_god_keeps_the_health_through_a_pass_out() -> void:
 	_console.run("god")
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.player.health, _state.player.attributes.max_health())
 	assert_true(_state.player.is_debuffed)
 
 
 func test_without_god_a_pass_out_costs_health() -> void:
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.player.health, RULES["debuff"]["health"])

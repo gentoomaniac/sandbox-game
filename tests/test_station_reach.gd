@@ -70,7 +70,7 @@ func test_planks_are_refused_at_a_workbench_of_the_other_map() -> void:
 			if house == null and _world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
 				house = _world.place_building(BuildingTypes.KATE, origin)
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	_assert_refused_without_side_effects(
 		_workbench, Crafting.Result.NO_STATION, "a workbench outside"

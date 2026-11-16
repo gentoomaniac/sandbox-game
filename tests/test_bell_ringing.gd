@@ -62,7 +62,7 @@ func test_e_leaves_the_bell_to_a_bed_in_reach_but_a_click_still_rings() -> void:
 	for tile in bag.tiles():
 		_world.remove_object(tile)
 	_world.add_object(bag)
-	assert_not_null(_state.bed_in_reach())
+	assert_not_null(PlayerRest.bed_in_reach(_state))
 	assert_null(Interaction.bell_frame_to_ring(_state), "E sleeps")
 	assert_eq(Interaction.bell_frame_to_ring(_state, frame.origin), frame, "a click rings")
 

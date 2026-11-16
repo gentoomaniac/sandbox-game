@@ -67,7 +67,7 @@ func test_a_lit_lantern_burns_its_candle_down_and_the_candle_keeps_the_burn() ->
 	_state.switch_held_lantern()
 	_state.switch_held_lantern()
 
-	_state.pass_awake_time(6 * 60)
+	PlayerRest.pass_awake_time(_state, 6 * 60)
 
 	assert_eq(_candle_in_lantern(), {"burnt_minutes": 360})
 	assert_true(_state.player.is_lantern_shining())
@@ -114,7 +114,7 @@ func test_a_candle_that_burns_out_is_gone_and_the_lantern_goes_out() -> void:
 	_inventory.slots[7]["state"] = {"candle": {"burnt_minutes": LIFE - 10}}
 	_state.player.is_lantern_lit = true
 
-	_state.pass_awake_time(10)
+	PlayerRest.pass_awake_time(_state, 10)
 
 	assert_false(_inventory.slots[7].has("state"), "no candle, none given back")
 	assert_eq(_inventory.count_of(ItemTypes.CANDLE), 0)
@@ -124,11 +124,11 @@ func test_a_candle_that_burns_out_is_gone_and_the_lantern_goes_out() -> void:
 
 func test_an_unlit_or_unheld_lantern_burns_nothing() -> void:
 	_inventory.slots[7]["state"] = {"candle": {}}
-	_state.pass_awake_time(120)
+	PlayerRest.pass_awake_time(_state, 120)
 	assert_eq(_candle_in_lantern(), {}, "not lit")
 	_state.switch_held_lantern()
 	_inventory.select(0)
-	_state.pass_awake_time(120)
+	PlayerRest.pass_awake_time(_state, 120)
 	assert_eq(_candle_in_lantern(), {}, "lit but in the bag")
 
 
@@ -142,7 +142,7 @@ func test_going_to_bed_puts_the_lantern_out_and_the_candle_burns_nothing_overnig
 	_state.world.add_object(bed)
 	_state.clock.set_time(21, 0)
 
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 
 	assert_false(_state.player.is_lantern_lit)
 	assert_eq(_candle_in_lantern(), {})
@@ -152,7 +152,7 @@ func test_passing_out_puts_the_lantern_out_too() -> void:
 	_inventory.slots[7]["state"] = {"candle": {}}
 	_state.switch_held_lantern()
 
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 
 	assert_false(_state.player.is_lantern_lit)
 	assert_eq(_candle_in_lantern(), {})

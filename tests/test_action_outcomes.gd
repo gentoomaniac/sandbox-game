@@ -49,7 +49,7 @@ func test_placing_and_taking_down_inside_a_house_tell_the_interior_as_the_map() 
 			if kate == null and _world.placement_blockers(BuildingTypes.KATE, origin).is_empty():
 				kate = _world.place_building(BuildingTypes.KATE, origin)
 	_state.player.position = Vector2(kate.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_state.player.position = Vector2(3.5, 4.5)
 	_state.player.facing = Vector2i.DOWN
 	_state.player.inventory.add(ItemTypes.CHEST, 1)

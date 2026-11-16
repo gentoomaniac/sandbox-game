@@ -26,7 +26,7 @@ func test_a_candle_in_a_lantern_and_one_on_its_own_keep_their_burn() -> void:
 	assert_eq(LanternCandle.burnt_minutes(inventory.slots[6]["state"]["candle"]), 700)
 	assert_eq(LanternCandle.burnt_minutes(inventory.slots[5]["state"]), 90)
 	assert_true(restored.player.is_lantern_shining())
-	restored.pass_awake_time(60)
+	PlayerRest.pass_awake_time(restored, 60)
 	assert_eq(LanternCandle.burnt_minutes(inventory.slots[6]["state"]["candle"]), 760)
 
 

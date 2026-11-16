@@ -26,13 +26,13 @@ func _stand_on(tile: Vector2i) -> void:
 
 func _go_in() -> Interior:
 	_stand_on(_house.door_tile())
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	return _state.current_map as Interior
 
 
 func _go_out() -> void:
 	_stand_on(_house.interior.exit_tile)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_stand_on(_door_front + Vector2i.DOWN)
 
 
@@ -95,7 +95,7 @@ func test_the_cost_cheat_gives_no_materials() -> void:
 func test_a_home_bed_in_it_is_the_camp_sleeping_bag_again() -> void:
 	var bed := _go_in().object_at(Vector2i(1, 2))
 	_stand_on(Vector2i(2, 3))
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 	_go_out()
 	var bag := CampSite.sleeping_bag_of_seed(SEED)
 	assert_ne(_state.player.home_bed, bag)
@@ -121,13 +121,13 @@ func test_waking_after_the_home_house_is_gone_stands_at_the_start_point_when_the
 ) -> void:
 	var bed := _go_in().object_at(Vector2i(1, 2))
 	_stand_on(Vector2i(2, 3))
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 	_go_out()
 	_state.take_down_building(_house)
 	# The test world has no camp objects: the spot is empty, as when the bag was picked up.
 	var start := CampSite.spawn_of_seed(SEED)
 	_state.world.add_chunk(Chunk.new(Chunk.world_to_chunk(start)))
-	_state.go_to_home_bed()
+	PlayerRest.go_to_home_bed(_state)
 	assert_eq(_state.player.tile(), start)
 	assert_false(_state.is_inside())
 	assert_null(_state.player.bed_lying_in)
@@ -137,7 +137,7 @@ func test_a_save_after_taking_a_house_down_loads_and_plays_on() -> void:
 	var other := _state.world.place_building(BuildingTypes.SHACK, Vector2i(10, 2))
 	var bed := _go_in().object_at(Vector2i(1, 2))
 	_stand_on(Vector2i(2, 3))
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 	_go_out()
 	_state.take_down_building(_house)
 	var restored := RealLoad.of(self, _state)
@@ -149,5 +149,5 @@ func test_a_save_after_taking_a_house_down_loads_and_plays_on() -> void:
 	restored.world.add_chunk(Chunk.new(Vector2i.ZERO))
 	var shack := restored.world.buildings()[0]
 	restored.player.position = Vector2(shack.door_tile()) + Vector2(0.5, 0.5)
-	restored.pass_door()
+	PlayerRest.pass_door(restored)
 	assert_true(restored.is_inside())

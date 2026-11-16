@@ -35,31 +35,31 @@ func test_new_game_is_deterministic() -> void:
 
 
 func test_a_bed_is_in_reach_at_the_camp() -> void:
-	assert_eq(_state.bed_in_reach(), _bed())
+	assert_eq(PlayerRest.bed_in_reach(_state), _bed())
 
 
 func test_no_bed_in_reach_far_away() -> void:
 	_state.player.position += Vector2(5, 5)
-	assert_null(_state.bed_in_reach())
+	assert_null(PlayerRest.bed_in_reach(_state))
 
 
 func test_sleeping_wakes_at_half_past_six_the_next_morning() -> void:
 	_state.clock.set_time(22, 0)
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	assert_eq(_state.clock.day, 2)
 	assert_eq(_state.clock.time_text(), "06:30")
 
 
 func test_sleeping_after_midnight_wakes_the_same_morning() -> void:
 	_state.clock.set_time(3, 15)
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	assert_eq(_state.clock.day, 1)
 	assert_eq(_state.clock.time_text(), "06:30")
 
 
 func test_sleeping_at_half_past_six_sharp_wakes_the_next_morning() -> void:
 	_state.clock.set_time(6, 30)
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	assert_eq(_state.clock.day, 2)
 	assert_eq(_state.clock.time_text(), "06:30")
 
@@ -69,14 +69,14 @@ func test_every_bed_wakes_at_the_same_time() -> void:
 		_state.clock.set_time(21, 0)
 		var bed := WorldObject.new(bed_type, _state.player.tile())
 		assert_true(bed.is_bed(), bed_type)
-		_state.sleep_in(bed)
+		PlayerRest.sleep_in(_state, bed)
 		assert_eq(_state.clock.time_text(), "06:30", bed_type)
 
 
 func test_sleeping_sets_home() -> void:
 	var other_bed := _sleeping_bag_below_the_player()
 	_state.world.add_object(other_bed)
-	_state.sleep_in(other_bed)
+	PlayerRest.sleep_in(_state, other_bed)
 	assert_eq(_state.player.home_bed, other_bed.pos)
 
 

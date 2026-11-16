@@ -124,8 +124,8 @@ func test_a_night_in_bed_is_the_hours_of_the_night_played() -> void:
 	var bed := _world.object_at(_state.player.home_bed)
 	_state.clock.set_time(22, 0)
 	_stepped.clock.set_time(22, 0)
-	var minutes := _state.clock.minutes_until(GameState.WAKE_UP_MINUTE)
-	_state.sleep_in(bed)
+	var minutes := _state.clock.minutes_until(PlayerRest.WAKE_UP_MINUTE)
+	PlayerRest.sleep_in(_state, bed)
 	_play_in_steps(_stepped, minutes - minutes % STEP_MINUTES)
 	_stepped.simulation.advance(minutes % STEP_MINUTES)
 	_assert_same_world(_state, _stepped, "a night")
@@ -135,7 +135,7 @@ func test_a_night_in_bed_is_the_hours_of_the_night_played() -> void:
 func test_passing_out_is_the_hours_of_the_collapse_played() -> void:
 	_state.clock.set_time(15, 0)
 	_stepped.clock.set_time(15, 0)
-	var minutes := _state.pass_out()
+	var minutes := PlayerRest.pass_out(_state)
 	_play_in_steps(_stepped, minutes)
 	_assert_same_world(_state, _stepped, "passing out")
 

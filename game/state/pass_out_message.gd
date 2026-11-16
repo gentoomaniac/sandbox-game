@@ -6,7 +6,7 @@ extends RefCounted
 ## midnight."
 
 
-## The message for a player who has just passed out (see GameState `pass_out`) after
+## The message for a player who has just passed out (see PlayerRest `pass_out`) after
 ## `minutes_slept`, from staying up too late or else from exhaustion.
 static func text(state: GameState, was_up_too_late: bool, minutes_slept: int) -> String:
 	var what_happened := (

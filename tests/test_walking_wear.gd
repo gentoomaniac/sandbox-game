@@ -35,7 +35,7 @@ func test_walking_inside_a_house_wears_no_ground() -> void:
 			if house == null:
 				house = _world.place_building(BuildingTypes.KATE, _tile + Vector2i(x, y))
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	for direction in [Vector2.UP, Vector2.LEFT, Vector2.RIGHT, Vector2.DOWN]:
 		_state.travel.walk(_state, direction, ONE_TILE_SECONDS * 2)
 	assert_true(_state.is_inside())

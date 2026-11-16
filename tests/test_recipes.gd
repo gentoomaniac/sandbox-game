@@ -158,7 +158,7 @@ func test_the_slot_the_materials_free_takes_the_result_before_anything_is_droppe
 func test_a_craft_that_does_not_fit_indoors_drops_the_result_on_the_floor() -> void:
 	var house := _state.world.place_building(BuildingTypes.KATE, _free_house_origin())
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	_fill_inventory()
 	_inventory().slots[3] = {"item": ItemTypes.LOGS, "count": 6}

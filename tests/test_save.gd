@@ -63,9 +63,9 @@ func _lived_in_state() -> GameState:
 	_state.player.inventory.select(4)
 	var house := _place_house()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_state.player.position = Vector2(2.5, 3.5)
-	_state.sleep_in(_bed_in(house.interior))
+	PlayerRest.sleep_in(_state, _bed_in(house.interior))
 	return _state
 
 
@@ -222,9 +222,9 @@ func test_loading_does_not_make_a_second_camp() -> void:
 func test_the_restored_game_carries_on() -> void:
 	_lived_in_state()
 	var restored := RealLoad.of(self, _state)
-	assert_true(restored.door_underfoot() == _state.door_underfoot())
+	assert_true(PlayerRest.door_underfoot(restored) == PlayerRest.door_underfoot(_state))
 	restored.player.position = Vector2(restored.current_map.exit_tile) + Vector2(0.5, 0.5)
-	restored.pass_door()
+	PlayerRest.pass_door(restored)
 	assert_false(restored.is_inside())
 	# The new day still weathers the crops of the restored world, as it does the original's.
 	_load_chunks_like(_state.world, restored.world)

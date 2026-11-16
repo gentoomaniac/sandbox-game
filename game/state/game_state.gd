@@ -1,10 +1,10 @@
 # gdlint: disable=max-public-methods
-# (GameState is the one entry point the scenes and the console act through: tool uses, sleeping,
-# passing out and the doors all go via it.)
+# (GameState is the one entry point the scenes and the console act through: tool uses, the held
+# item, pickup and demolition go via it.)
 class_name GameState
 extends RefCounted
 ## Everything that makes up one game: the world, the clock and the player. Plain state with
-## no rendering or input; scenes read it and send it actions such as `sleep_in`.
+## no rendering or input; scenes read it and send it actions such as `use_at`.
 ##
 ## The player is on one map at a time: the world, or the interior of a building. The world
 ## stays as it is while they are inside.
@@ -18,14 +18,6 @@ enum LanternUse { NONE, PUT_OUT, LIGHT, FIT_CANDLE }
 
 ## What is said of a thing of the village that the player may not take down or up.
 const THE_VILLAGES := "That is the village's."
-## Sleeping and passing out wake the player the next time the clock shows this.
-const WAKE_UP_MINUTE := 6 * GameClock.MINUTES_PER_HOUR + 30
-## Passing out sleeps at least this long, even when the morning comes sooner.
-const PASS_OUT_MINUTES := 10 * GameClock.MINUTES_PER_HOUR
-## The sleep fills of data/energy.cfg are in percent of the energy and health bars.
-const PERCENT := 100.0
-## A player who is still awake when the clock shows this has stayed up too late and passes out.
-const LATE_NIGHT_MINUTE := 1 * GameClock.MINUTES_PER_HOUR
 ## Items on the ground within this many tiles of the player (their feet) are pulled to them.
 const PULL_RADIUS := 1.25
 ## How fast a pulled item moves, in tiles per second: faster than the player walks, so it
@@ -86,20 +78,20 @@ var judge: StoryJudge
 var energy_rules := EnergyRules.default_rules()
 ## What every use costs is multiplied by this (the Game setting: 0.5, 1 or 1.5).
 var energy_drain := 1.0
-## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
-## not slept since: they pass out. Not saved.
+## The player was awake when the clock reached PlayerRest.LATE_NIGHT_MINUTE (see `pass_awake_time`)
+## and has not slept since: they pass out. Not saved.
 var is_up_too_late := false
 ## How the player walks and rides (see PlayerTravel); it is given this game on each call.
 var travel := PlayerTravel.new()
 ## Where the player is: the world, or the interior of the building they are inside.
 var current_map: GameMap:
 	get:
-		return world if _building_inside == null else _building_inside.interior
+		return world if building_inside == null else building_inside.interior
 
 ## The building the player is inside, or null when they are out in the world.
-var _building_inside: Building:
+var building_inside: Building:
 	set(building):
-		_building_inside = building
+		building_inside = building
 		homes.building_with_player = building
 
 
@@ -162,73 +154,7 @@ func frame_work(delta: float) -> void:
 
 
 func is_inside() -> bool:
-	return _building_inside != null
-
-
-## Whether the player stands on a tile that leads to another map: the door of a building in
-## the world, or the exit of the interior they are in. Never on horseback: a horse that stood in a
-## doorway when they got on it is ridden out of it, not into the house.
-func door_underfoot() -> bool:
-	if player.horse != null:
-		return false
-	var tile := player.tile()
-	if is_inside():
-		return tile == _building_inside.interior.exit_tile
-	var building := world.building_at(tile)
-	return building != null and building.door_tile() == tile and building.has_inside()
-
-
-## Takes the player through the door under their feet: into the building (making its interior
-## the first time), or out to the tile in front of its door.
-func pass_door() -> void:
-	assert(door_underfoot(), "No door under the player")
-	if is_inside():
-		player.position = _tile_centre(_building_inside.door_tile() + Vector2i.DOWN)
-		_building_inside = null
-		return
-	_building_inside = world.building_at(player.tile())
-	player.position = _tile_centre(_building_inside.inside().entry_tile())
-
-
-## The nearest bed the player can reach, or null. Their own tile counts.
-func bed_in_reach() -> WorldObject:
-	return Interaction.nearest_in_reach(
-		self, func(object: WorldObject) -> bool: return object.is_bed()
-	)
-
-
-## Sleeps until the next morning (WAKE_UP_MINUTE), makes the bed home and fills energy and
-## health as far as the bed does (and a debuff still allows).
-func sleep_in(bed: WorldObject) -> void:
-	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
-	_pass_time(clock.minutes_until(WAKE_UP_MINUTE), false)
-	_wake_up_in(bed)
-
-
-## `sleep_in` spread over frames (see Simulation `skip_over_frames`): `await` it.
-func sleep_in_over_frames(bed: WorldObject, next_frame: Callable) -> void:
-	assert(bed.is_bed(), "Not a bed: %s" % bed.type)
-	await _skip_time_over_frames(clock.minutes_until(WAKE_UP_MINUTE), next_frame)
-	_wake_up_in(bed)
-
-
-func _wake_up_in(bed: WorldObject) -> void:
-	is_up_too_late = false
-	_lie_in(bed)
-	player.home_map = current_map
-	player.home_bed = bed.pos
-	var fill := energy_rules.sleep_fill(bed.type)
-	var energy_fill := fill * player.attributes.max_energy() / PERCENT
-	player.energy = minf(maxf(player.energy, energy_fill), energy_cap())
-	player.health = maxf(player.health, fill * player.attributes.max_health() / PERCENT)
-
-
-## A bed set up while the home has no bed (the bedroll that was home was taken down) becomes the
-## home: the bed follows the bedroll to where it is set up again.
-func make_home_if_bedless(bed: WorldObject) -> void:
-	if bed.is_bed() and _home_bed() == null:
-		player.home_map = current_map
-		player.home_bed = bed.pos
+	return building_inside != null
 
 
 ## The weather the player sees: at their tile, or outside the door of the house they are in
@@ -305,25 +231,13 @@ func refresh_mud() -> void:
 
 ## The tile whose weather the player sees: theirs, or outside the door of the house they are in.
 func outdoor_tile() -> Vector2i:
-	return _building_inside.door_tile() if is_inside() else player.tile()
+	return building_inside.door_tile() if is_inside() else player.tile()
 
 
 ## The most energy the player can have now.
 func energy_cap() -> float:
 	var max_energy := player.attributes.max_energy()
 	return minf(energy_rules.debuff_energy_max(), max_energy) if player.is_debuffed else max_energy
-
-
-## Whether the tile the player faces is the door of a building (which they can't ride through);
-## the bell frame has none to go through.
-func is_door_ahead() -> bool:
-	var building := world.building_at(player.facing_tile())
-	return (
-		not is_inside()
-		and building != null
-		and building.door_tile() == player.facing_tile()
-		and building.has_inside()
-	)
 
 
 ## Rings the bell frame in reach, the one with the clicked tile (see Interaction). Returns whether
@@ -390,65 +304,6 @@ func is_out_of_energy() -> bool:
 	return player.energy <= 0.0
 
 
-## Lets time pass while the player is awake. Reaching LATE_NIGHT_MINUTE means they have stayed
-## up too late (`is_up_too_late`), unless the `nolate` cheat is on.
-func pass_awake_time(minutes: int) -> void:
-	if not cheats.is_late_off and minutes >= clock.minutes_until(LATE_NIGHT_MINUTE):
-		is_up_too_late = true
-	_pass_time(minutes, true)
-
-
-## The player passes out: they sleep until the next morning (WAKE_UP_MINUTE) but at least
-## PASS_OUT_MINUTES, and wake in the home bed with the debuff of that day (it ends at the next
-## new day) and no items lost. Returns how many minutes they slept.
-func pass_out() -> int:
-	var minutes := _pass_out_minutes()
-	_pass_time(minutes, false)
-	_wake_up_after_pass_out()
-	return minutes
-
-
-## `pass_out` spread over frames (see Simulation `skip_over_frames`): `await` it.
-func pass_out_over_frames(next_frame: Callable) -> int:
-	var minutes := _pass_out_minutes()
-	await _skip_time_over_frames(minutes, next_frame)
-	_wake_up_after_pass_out()
-	return minutes
-
-
-func _pass_out_minutes() -> int:
-	return maxi(clock.minutes_until(WAKE_UP_MINUTE), PASS_OUT_MINUTES)
-
-
-func _wake_up_after_pass_out() -> void:
-	is_up_too_late = false
-	go_to_home_bed()
-	player.is_debuffed = true
-	player.energy = energy_cap()
-	if not cheats.is_god:
-		player.health = energy_rules.debuff_health()
-
-
-## Puts the player in their home bed, on its map (the world or the inside of a house): lying in
-## its middle until they move. With no bed at the home (taken down, or something else on its
-## tile) they stand at the world's start point, where a new game begins, and that is home until a
-## bed is set up or they sleep in one (decided by the user, 2026-11-09). If something now
-## stands on that spot they are put on the nearest free ground.
-func go_to_home_bed() -> void:
-	travel.leave_horse(self)
-	_building_inside = _building_with_interior(player.home_map)
-	var bed := _home_bed()
-	if bed != null:
-		_lie_in(bed)
-		return
-	_building_inside = null
-	player.home_map = world
-	player.home_bed = CampSite.spawn_of_seed(world.world_seed)
-	player.position = _tile_centre(player.home_bed)
-	player.bed_lying_in = null
-	travel.put_player_on_free_ground(self)
-
-
 ## What taking a building down gives, item id to count: half of what it cost, rounded down
 ## (nothing with the cost cheat on, which built it for nothing).
 func refund_of_building(building: Building) -> Dictionary:
@@ -509,16 +364,6 @@ func take_down_building(building: Building) -> bool:
 	world.drop_items(building.door_tile() + Vector2i.DOWN, refund)
 	report(ActionOutcome.DEMOLISH, building.origin, building.type, refund)
 	return true
-
-
-## Puts the player on a tile of the world, out of the house they are in (and off the horse they
-## ride, which stays).
-func teleport_to(tile: Vector2i) -> void:
-	travel.leave_horse(self)
-	_building_inside = null
-	player.position = _tile_centre(tile)
-	player.bed_lying_in = null
-	explored.see(tile)
 
 
 ## What `use_tile` would do on a tile (see ToolUse). The use rules get a ToolUse made for the
@@ -663,7 +508,7 @@ static func from_dict(data: Dictionary) -> GameState:
 	state.shops.load_dict(data["shops"])
 	state.quests.load_dict(data["quests"])
 	state.deeds.load_array(data["deeds"])
-	state._building_inside = state._building_of_ref(data["current_map"])
+	state.building_inside = state._building_of_ref(data["current_map"])
 	# The land about the player is seen from where they stand (a save from before the record has
 	# none).
 	if not state.is_inside():
@@ -671,7 +516,9 @@ static func from_dict(data: Dictionary) -> GameState:
 	# No sleep wakes between 01:00 and 06:30, so a game saved then was quit by a player who
 	# stayed up: they still pass out (`is_up_too_late` itself is not saved).
 	var minute := state.clock.minute_of_day
-	state.is_up_too_late = minute >= LATE_NIGHT_MINUTE and minute < WAKE_UP_MINUTE
+	state.is_up_too_late = (
+		minute >= PlayerRest.LATE_NIGHT_MINUTE and minute < PlayerRest.WAKE_UP_MINUTE
+	)
 	# The rain of the hours before the save still lies on the ground.
 	state.refresh_mud()
 	return state
@@ -680,7 +527,7 @@ static func from_dict(data: Dictionary) -> GameState:
 func _map_to_ref(map: GameMap) -> Dictionary:
 	if map == world:
 		return {"kind": "world"}
-	var building := _building_with_interior(map)
+	var building := building_with_interior(map)
 	assert(building != null, "A map that belongs to no building")
 	return {"kind": "interior", "building": SaveCodec.vector_to_json(building.origin)}
 
@@ -700,36 +547,6 @@ func _building_of_ref(ref: Dictionary) -> Building:
 			return building
 	assert(false, "No building at %s" % origin)
 	return null
-
-
-## The player lives through `minutes`, awake (played: the frames move the animals) or asleep
-## (skipped: they are made up for): a new day ends the debuff of the last one. The console's
-## `skip` does not come this way, it leaves the player alone.
-func _pass_time(minutes: int, is_played: bool) -> void:
-	var day_before := clock.day
-	if is_played:
-		simulation.advance(minutes)
-	else:
-		_put_lantern_out_for_sleep()
-		simulation.skip(minutes)
-	_end_debuff_on_new_day(day_before)
-
-
-func _skip_time_over_frames(minutes: int, next_frame: Callable) -> void:
-	var day_before := clock.day
-	_put_lantern_out_for_sleep()
-	await simulation.skip_over_frames(minutes, next_frame)
-	_end_debuff_on_new_day(day_before)
-
-
-## Going to bed, or passing out, puts the lantern out: the candle never burns unattended.
-func _put_lantern_out_for_sleep() -> void:
-	player.is_lantern_lit = false
-
-
-func _end_debuff_on_new_day(day_before: int) -> void:
-	if clock.day != day_before:
-		player.is_debuffed = false
 
 
 ## Puts what changes with time under the simulation, once the world and the weather exist. The
@@ -785,41 +602,9 @@ func _player_feet() -> Vector2:
 	return Vector2.INF if is_inside() else player.position
 
 
-## The bed object of the home bed, or null if there is none at that tile now (the bedroll was
-## taken down, perhaps for something else to stand there). A bed in the world may be in a chunk
-## that is not loaded: that chunk is generated for the look and dropped again, as in the
-## console's `tp`.
-func _home_bed() -> WorldObject:
-	var coords := Chunk.world_to_chunk(player.home_bed)
-	var object: WorldObject
-	if player.home_map != world or world.is_chunk_loaded(coords):
-		object = player.home_map.object_at(player.home_bed)
-	else:
-		world.add_chunk(WorldGenerator.new(world.world_seed).generate_chunk(coords))
-		object = world.object_at(player.home_bed)
-		world.remove_chunk(coords)
-	return object if object != null and object.is_bed() else null
-
-
 ## The building whose interior this is, or null for the world.
-func _building_with_interior(map: GameMap) -> Building:
+func building_with_interior(map: GameMap) -> Building:
 	for building in world.buildings():
 		if building.interior == map:
 			return building
 	return null
-
-
-## The middle of the bed's footprint, in tiles: where the player lies.
-static func _bed_middle(bed: WorldObject) -> Vector2:
-	var footprint: Vector2i = bed.type_data()["footprint"]
-	return Vector2(bed.pos) + Vector2(footprint) / 2.0
-
-
-## Puts the player in the middle of the bed, lying under its blanket until they move.
-func _lie_in(bed: WorldObject) -> void:
-	player.position = _bed_middle(bed)
-	player.bed_lying_in = bed
-
-
-func _tile_centre(tile: Vector2i) -> Vector2:
-	return Vector2(tile) + Vector2(0.5, 0.5)

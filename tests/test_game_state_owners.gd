@@ -18,3 +18,15 @@ func test_a_game_is_freed_after_the_player_travelled_and_rode() -> void:
 
 	assert_null(state_ref.get_ref())
 	assert_null(travel_ref.get_ref())
+
+
+func test_a_game_is_freed_after_the_player_slept_and_passed_a_door() -> void:
+	var state := GameState.new_game(7)
+	PlayerRest.pass_awake_time(state, 5)
+	PlayerRest.go_to_home_bed(state)
+	PlayerRest.teleport_to(state, Vector2i(3, 3))
+	var state_ref: WeakRef = weakref(state)
+
+	state = null
+
+	assert_null(state_ref.get_ref())

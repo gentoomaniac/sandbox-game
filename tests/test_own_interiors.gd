@@ -208,7 +208,7 @@ func test_a_home_bed_in_a_house_that_gets_an_own_inside_stays_the_players_home()
 
 	_state.homes.move_in(_villager("antje"), hall)
 	var restored := RealLoad.of(self, _state)
-	restored.go_to_home_bed()
+	PlayerRest.go_to_home_bed(restored)
 
 	assert_true(restored.is_inside(), "they wake in the house, at the same bed")
 	assert_eq(restored.player.home_bed, bed.pos)
@@ -217,7 +217,7 @@ func test_a_home_bed_in_a_house_that_gets_an_own_inside_stays_the_players_home()
 func test_a_villager_with_an_own_inside_does_not_move_in_while_the_player_is_inside() -> void:
 	var hall := _hall()
 	_state.player.position = Vector2(hall.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 
 	assert_eq(_state.homes.move_in(_villager("antje"), hall), "Not while you are inside.")
 	assert_null(_state.npcs.find("antje").house)
@@ -226,7 +226,7 @@ func test_a_villager_with_an_own_inside_does_not_move_in_while_the_player_is_ins
 func test_other_villagers_move_in_while_the_player_is_inside() -> void:
 	var hall := _hall()
 	_state.player.position = Vector2(hall.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	hall.inside().set_terrain(Vector2i(2, 4), Tile.Terrain.CLAY_FLOOR)
 
 	assert_eq(_state.homes.move_in(_villager("antje"), hall), "", "a changed room stays as it is")

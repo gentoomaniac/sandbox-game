@@ -18,7 +18,7 @@ func before_each() -> void:
 	_state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	_kate = _state.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	_stand_on(_kate.door_tile())
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_interior = _state.current_map as Interior
 	_stand_on(Vector2i(3, 4))
 	_state.player.facing = Vector2i.DOWN
@@ -122,7 +122,7 @@ func test_e_opens_the_targeted_chest_even_with_a_bed_in_reach() -> void:
 	_stand_on(Vector2i(2, 3))
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i(3, 4))
 	_interior.add_object(chest)
-	assert_not_null(_state.bed_in_reach())
+	assert_not_null(PlayerRest.bed_in_reach(_state))
 	assert_eq(Interaction.object_to_open(_state, Vector2i(3, 4)), chest)
 
 
@@ -134,7 +134,7 @@ func test_e_sleeps_when_the_chest_in_reach_is_not_the_target() -> void:
 
 func test_the_chest_in_the_room_of_a_house_opens_with_no_bed_in_reach() -> void:
 	var chest := _place_chest_in_front()
-	assert_null(_state.bed_in_reach())
+	assert_null(PlayerRest.bed_in_reach(_state))
 	assert_eq(Interaction.object_to_open(_state, Vector2i(3, 5)), chest)
 
 

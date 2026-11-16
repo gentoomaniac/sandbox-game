@@ -43,7 +43,7 @@ func test_a_rabbit_is_a_tame_one_and_a_wild_rabbit_is_wildlife() -> void:
 func test_no_farm_animals_are_spawned_in_a_house() -> void:
 	var house := _place_house()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_eq(_console.run("spawn sheep"), ["No animals here"] as Array[String])
 	assert_eq(_state.livestock.all().size(), 0)
 

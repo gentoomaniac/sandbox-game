@@ -27,7 +27,7 @@ func has_map_changed() -> bool:
 
 ## The player goes through the door underfoot.
 func pass_door() -> void:
-	state.pass_door()
+	PlayerRest.pass_door(state)
 	show_current_map()
 
 

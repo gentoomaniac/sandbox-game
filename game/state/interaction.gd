@@ -70,7 +70,7 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 	var frame := bell_frame_to_ring(state)
 	if frame != null:
 		return Choice.new(Kind.RING_BELL, frame)
-	var bed := state.bed_in_reach()
+	var bed := PlayerRest.bed_in_reach(state)
 	return Choice.new(Kind.SLEEP, bed) if bed != null else Choice.new(Kind.NOTHING)
 
 
@@ -100,7 +100,7 @@ static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObje
 static func bell_frame_to_ring(state: GameState, clicked: Variant = null) -> Building:
 	if state.is_inside() or state.player.horse != null:
 		return null
-	if clicked == null and state.bed_in_reach() != null:
+	if clicked == null and PlayerRest.bed_in_reach(state) != null:
 		return null
 	if clicked != null and state.use_at(clicked) != ToolUse.Use.NOTHING:
 		return null
@@ -128,7 +128,7 @@ static func object_to_open(state: GameState, target: Vector2i) -> WorldObject:
 		and Targeting.is_tile_in_reach(state.player.tile(), target)
 	):
 		return targeted
-	if state.bed_in_reach() != null:
+	if PlayerRest.bed_in_reach(state) != null:
 		return null
 	return nearest_in_reach(state, _opens)
 

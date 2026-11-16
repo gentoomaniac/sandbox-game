@@ -74,7 +74,7 @@ func test_here_inside_a_house_is_refused() -> void:
 				house = _state.world.place_building(BuildingTypes.KATE, around + Vector2i(x, y))
 	assert_not_null(house)
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	assert_eq(
 		_console.run("goto antje here"),

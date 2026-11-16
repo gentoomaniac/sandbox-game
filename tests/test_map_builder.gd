@@ -100,7 +100,7 @@ func test_the_fog_clears_where_the_player_walks_on() -> void:
 	_builder.update([coords], NO_LIMIT)
 	var fogged := _pixel(coords, local)
 
-	_state.teleport_to(unseen)
+	PlayerRest.teleport_to(_state, unseen)
 	_builder.update([coords], NO_LIMIT)
 
 	var chunk := _state.world.chunk_at(coords)

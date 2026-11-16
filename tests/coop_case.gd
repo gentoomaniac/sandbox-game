@@ -55,7 +55,7 @@ func _eggs() -> int:
 ## Walks the player into the coop to the middle of its floor, and holds an empty hand.
 func _go_in() -> void:
 	_state.player.position = Vector2(_coop.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_state.player.position = Vector2(2.5, 3.5)
 	HotbarHold.hold(_state.player.inventory, ItemTypes.NONE)
 

@@ -42,7 +42,7 @@ func fade_through(change: Callable) -> void:
 
 ## Out of energy or up too late: the player collapses where they stand (the world keeps
 ## running), the screen goes black, and a message says what happened until a key or a click.
-## Then they wake in their home bed (see GameState `pass_out`).
+## Then they wake in their home bed (see PlayerRest `pass_out`).
 func pass_out() -> void:
 	is_in_transition = true
 	# Nothing else may move the player meanwhile.
@@ -56,7 +56,7 @@ func pass_out() -> void:
 	await get_tree().create_timer(PlayerView.COLLAPSE_SECONDS).timeout
 	await fade_screen.fade_out()
 	_hold_world(true)
-	var minutes_slept: int = await state.pass_out_over_frames(_next_frame)
+	var minutes_slept: int = await PlayerRest.pass_out_over_frames(state, _next_frame)
 	_hold_world(false)
 	player_view.stand_up()
 	show_current_map.call()
@@ -73,13 +73,13 @@ func pass_out() -> void:
 ## black screen. The world goes on meanwhile: the wait is time for what is made ready in the
 ## background, such as the villagers' plans for the day.
 func try_sleep() -> void:
-	var bed := state.bed_in_reach()
+	var bed := PlayerRest.bed_in_reach(state)
 	if bed == null:
 		return
 	fade_through(
 		func() -> void:
 			_hold_world(true)
-			await state.sleep_in_over_frames(bed, _next_frame)
+			await PlayerRest.sleep_in_over_frames(state, bed, _next_frame)
 			_hold_world(false)
 			show_clock.call()
 			await get_tree().process_frame

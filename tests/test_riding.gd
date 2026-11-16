@@ -173,8 +173,8 @@ func test_a_horse_is_not_ridden_through_a_door() -> void:
 	_ride(Vector2.UP, 1.0)
 
 	assert_false(PlayerState.touches_building(_world, _state.player.position))
-	assert_false(_state.door_underfoot())
-	assert_true(_state.is_door_ahead())
+	assert_false(PlayerRest.door_underfoot(_state))
+	assert_true(PlayerRest.is_door_ahead(_state))
 
 
 func test_the_bell_frame_has_no_door_to_get_off_for() -> void:
@@ -185,14 +185,14 @@ func test_the_bell_frame_has_no_door_to_get_off_for() -> void:
 
 	_ride(Vector2.UP, 1.0)
 
-	assert_false(_state.is_door_ahead())
+	assert_false(PlayerRest.is_door_ahead(_state))
 
 
 func test_a_horse_in_a_doorway_is_ridden_out_not_in() -> void:
 	_horse.position = Vector2(_place_shack().door_tile()) + Vector2(0.5, 0.5)
 	_state.travel.mount(_state, _horse)
 
-	assert_false(_state.door_underfoot())
+	assert_false(PlayerRest.door_underfoot(_state))
 	_ride(Vector2.DOWN, 0.5)
 	assert_false(PlayerState.touches_building(_world, _state.player.position))
 
@@ -213,11 +213,11 @@ func test_a_game_saved_on_horseback_loads_with_the_player_beside_the_horse() -> 
 
 func test_passing_out_or_a_teleport_leaves_the_horse_where_it_is() -> void:
 	_state.travel.mount(_state, _horse)
-	_state.teleport_to(_tile + Vector2i(10, 0))
+	PlayerRest.teleport_to(_state, _tile + Vector2i(10, 0))
 	assert_null(_state.player.horse)
 	assert_false(_horse.is_ridden)
 
 	_state.travel.mount(_state, _horse)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_null(_state.player.horse)
 	assert_eq(_horse.position, Vector2(_tile) + Vector2(0.5, 0.5))

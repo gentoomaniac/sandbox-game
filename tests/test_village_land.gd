@@ -39,7 +39,7 @@ func test_the_console_says_where_the_village_is_and_what_it_holds() -> void:
 
 
 func test_on_the_land_the_console_says_so() -> void:
-	_state.teleport_to(_state.world.village.meeting_spot)
+	PlayerRest.teleport_to(_state, _state.world.village.meeting_spot)
 	assert_string_contains(Console.new(_state).run("village")[0], "You are on its land")
 
 
@@ -78,7 +78,7 @@ func _cobble_on_the_land() -> WorldObject:
 	var coords := Chunk.world_to_chunk(tile)
 	if not _state.world.is_chunk_loaded(coords):
 		_state.world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
-	_state.teleport_to(tile + Vector2i(0, 1))
+	PlayerRest.teleport_to(_state, tile + Vector2i(0, 1))
 	return _state.world.object_at(tile)
 
 
@@ -109,7 +109,7 @@ func test_no_cobble_is_set_on_the_land_where_it_could_never_be_taken_up() -> voi
 	if not _state.world.is_chunk_loaded(coords):
 		_state.world.add_chunk(WorldGenerator.new(1).generate_chunk(coords))
 	_state.world.remove_object(tile)
-	_state.teleport_to(tile + Vector2i(0, 1))
+	PlayerRest.teleport_to(_state, tile + Vector2i(0, 1))
 	_state.player.inventory.add(ItemTypes.STONE_PATH, 1)
 	_state.player.inventory.hold(ItemTypes.STONE_PATH)
 	assert_ne(_state.use_at(tile), ToolUse.Use.PLACE)

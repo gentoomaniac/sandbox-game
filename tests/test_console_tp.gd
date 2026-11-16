@@ -60,7 +60,7 @@ func test_tp_refuses_a_tile_covered_by_a_building_door_included() -> void:
 
 func _walk_into(house: Building) -> void:
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 
 
 func test_tp_from_inside_a_house_steps_out_onto_the_tile() -> void:
@@ -86,7 +86,7 @@ func test_tp_from_inside_a_house_refuses_a_tile_that_cannot_be_walked_on() -> vo
 
 
 func test_tp_gets_a_player_in_bed_up() -> void:
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	var tile := _tile_where(true)
 	_console.run("tp %d %d" % [tile.x, tile.y])
 	assert_null(_state.player.bed_lying_in)

@@ -73,11 +73,12 @@ Warft and an Ewer here and there.
   the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
-  `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
+  `use_tile`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
   Walking and riding are `PlayerTravel` (`GameState.travel`, `travel.walk(state, ...)`): it keeps
   the riding state and is given the game on each call, as a helper the game holds must not hold
-  the game back (a cycle would leak the whole game).
+  the game back (a cycle would leak the whole game). The doors, the bed that is home, sleeping,
+  passing out and `teleport_to` are `PlayerRest`, functions that are given the game.
 - **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
   whatever moves the clock goes through it, and whatever changes with time is a
   `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played

@@ -35,6 +35,6 @@ func tick(delta: float) -> void:
 	var whole_minutes := int(_pending_minutes)
 	if whole_minutes > 0:
 		_pending_minutes -= whole_minutes
-		_state.pass_awake_time(whole_minutes)
+		PlayerRest.pass_awake_time(_state, whole_minutes)
 		_weather_view.minutes_passed(whole_minutes)
 		_show_clock.call()

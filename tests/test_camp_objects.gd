@@ -46,7 +46,7 @@ func test_they_are_named_for_what_they_are_when_the_hammer_aims_at_them() -> voi
 
 
 func test_one_lying_in_the_bedroll_gets_up_before_it_is_taken_down() -> void:
-	_state.sleep_in(_camp_bed)
+	PlayerRest.sleep_in(_state, _camp_bed)
 	assert_ne(_builder.why_not_take_down(TakeDownTarget.of_object(_camp_bed)), "")
 	assert_false(_take_down(_camp_bed))
 
@@ -91,7 +91,7 @@ func test_the_home_follows_the_bedroll_that_is_set_up_again() -> void:
 	var moved := _set_up(ItemTypes.SLEEPING_BAG)
 	assert_eq(_state.player.home_bed, moved.pos)
 	_state.player.position += Vector2(6, 0)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.player.bed_lying_in, moved)
 	assert_eq(_state.player.tile(), moved.pos + Vector2i(0, 1))
 
@@ -106,7 +106,7 @@ func test_without_any_bed_the_player_wakes_at_the_start_point_and_that_is_home()
 	assert_eq(CampSite.spawn_of_seed(SEED), start)
 	_state.player.position = Vector2(_camp_bed.pos) + Vector2(2.5, 0.5)
 	_take_down(_camp_bed)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_null(_state.player.bed_lying_in)
 	assert_eq(_state.player.tile(), start)
 	assert_eq(_state.player.home_bed, start)
@@ -116,7 +116,7 @@ func test_something_else_on_the_old_bedroll_spot_is_no_bed() -> void:
 	_state.player.position = Vector2(_camp_bed.pos) + Vector2(2.5, 0.5)
 	_take_down(_camp_bed)
 	_world.add_object(WorldObject.new(WorldObjectTypes.CHEST, _camp_bed.pos))
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_null(_state.player.bed_lying_in)
 	assert_eq(
 		_state.player.tile(), _camp_bed.pos - CampSite.SLEEPING_BAG_OFFSET + CampSite.SPAWN_OFFSET
@@ -127,7 +127,7 @@ func test_a_start_point_with_something_on_it_does_not_trap_the_player() -> void:
 	var start := _camp_bed.pos - CampSite.SLEEPING_BAG_OFFSET + CampSite.SPAWN_OFFSET
 	_take_down(_camp_bed)
 	_world.add_object(WorldObject.new(WorldObjectTypes.STONE, start))
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_ne(_state.player.tile(), start)
 	assert_true(PlayerState.can_stand_at(_state.current_map, _state.player.position))
 

@@ -77,7 +77,7 @@ func test_the_console_freeze_holds_the_flood() -> void:
 func test_the_flood_goes_on_while_the_player_is_indoors() -> void:
 	var building := _state.world.place_building(BuildingTypes.SHACK, _open_origin())
 	_state.player.position = Vector2(building.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	_begin_flood()
 	_play_seconds(1.0)

@@ -28,7 +28,7 @@ func test_reset_takes_the_player_into_the_house_whose_bed_is_home() -> void:
 func test_reset_takes_the_player_out_of_a_house_to_a_home_in_the_world() -> void:
 	var camp_bed := _bed()
 	_make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_true(_state.is_inside())
 	_state.player.home_map = _world
 	_state.player.home_bed = camp_bed.pos

@@ -112,13 +112,13 @@ func test_turned_off_in_a_house_the_player_is_put_outside_it_not_through_its_doo
 		for x in range(body.position.x, body.end.x):
 			assert_null(_world.building_at(Vector2i(x, y)), "not on the house or its door")
 	assert_true(PlayerState.can_stand_at(_world, _state.player.position))
-	assert_false(_state.door_underfoot(), "not on the door, which would take them in")
+	assert_false(PlayerRest.door_underfoot(_state), "not on the door, which would take them in")
 
 
 func test_indoors_the_player_stays_within_the_room() -> void:
 	var house := _placed_shack()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	var room := _state.current_map
 	_state.cheats.is_noclip = true
 	for direction in [Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN]:

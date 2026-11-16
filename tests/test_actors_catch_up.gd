@@ -331,8 +331,8 @@ func test_passing_out_over_frames_ends_as_passing_out_in_one_go() -> void:
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
 
-	var minutes := in_one_go.pass_out()
-	var minutes_over_frames: int = await over_frames.pass_out_over_frames(_next_frame)
+	var minutes := PlayerRest.pass_out(in_one_go)
+	var minutes_over_frames: int = await PlayerRest.pass_out_over_frames(over_frames, _next_frame)
 
 	assert_eq(minutes_over_frames, minutes)
 	_assert_same_game(over_frames, in_one_go)
@@ -343,7 +343,7 @@ func test_sleeping_over_frames_ends_as_sleeping_in_one_go() -> void:
 	var in_one_go := _reloaded()
 	var over_frames := _reloaded()
 
-	in_one_go.sleep_in(_home_bed_of(in_one_go))
-	await over_frames.sleep_in_over_frames(_home_bed_of(over_frames), _next_frame)
+	PlayerRest.sleep_in(in_one_go, _home_bed_of(in_one_go))
+	await PlayerRest.sleep_in_over_frames(over_frames, _home_bed_of(over_frames), _next_frame)
 
 	_assert_same_game(over_frames, in_one_go)

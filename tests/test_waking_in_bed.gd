@@ -9,28 +9,28 @@ func _middle_of(bed: WorldObject) -> Vector2:
 func test_passing_out_wakes_in_the_middle_of_the_camp_bed() -> void:
 	var bed := _bed()
 	_state.player.position += Vector2(5, 0)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.player.position, _middle_of(bed))
 	assert_eq(_state.player.bed_lying_in, bed)
 
 
 func test_sleeping_wakes_in_the_middle_of_the_bed() -> void:
 	var bed := _bed()
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 	assert_eq(_state.player.position, _middle_of(bed))
 	assert_eq(_state.player.bed_lying_in, bed)
 
 
 func test_passing_out_wakes_in_the_middle_of_a_bed_in_a_house() -> void:
 	var bed := _make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_true(_state.is_inside())
 	assert_eq(_state.player.position, _middle_of(bed))
 	assert_eq(_state.player.bed_lying_in, bed)
 
 
 func test_the_player_gets_up_on_the_first_move() -> void:
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	_state.player.move(_state.current_map, Vector2.ZERO, 0.1)
 	assert_not_null(_state.player.bed_lying_in, "standing still keeps them in bed")
 	_state.player.move(_state.current_map, Vector2.RIGHT, 0.1)
@@ -46,7 +46,7 @@ func test_every_bed_blocks_walking_but_the_bedroll() -> void:
 
 func test_the_player_cannot_walk_into_a_bed() -> void:
 	var bed := _make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	var map := _state.current_map
 	_state.player.bed_lying_in = null
 	_state.player.position = Vector2(2.5, 3.5)
@@ -58,7 +58,7 @@ func test_the_player_cannot_walk_into_a_bed() -> void:
 
 func test_getting_out_of_bed_goes_to_the_side_pressed() -> void:
 	_make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	_state.player.move(_state.current_map, Vector2.RIGHT, 0.0)
 	assert_eq(_state.player.tile().x, 2)
 	assert_null(_state.player.bed_lying_in)
@@ -69,7 +69,7 @@ func test_getting_out_of_bed_goes_to_the_side_pressed() -> void:
 func test_getting_out_of_bed_towards_a_wall_goes_to_the_front() -> void:
 	_make_a_house_home()
 	for direction in [Vector2.LEFT, Vector2.UP]:
-		_state.pass_out()
+		PlayerRest.pass_out(_state)
 		_state.player.move(_state.current_map, direction, 0.0)
 		assert_eq(_state.player.tile(), Vector2i(1, 4), "in front of the foot of the bed")
 
@@ -99,14 +99,14 @@ func test_getting_out_of_any_house_bed_never_goes_behind_it_or_into_a_wall() -> 
 func test_reset_and_then_a_move_works() -> void:
 	_make_a_house_home()
 	_state.player.position = Vector2(3.5, 3.5)
-	_state.go_to_home_bed()
+	PlayerRest.go_to_home_bed(_state)
 	_state.player.move(_state.current_map, Vector2.DOWN, 0.5)
 	assert_gt(_state.player.position.y, 4.0)
 
 
 func test_the_player_can_walk_out_of_a_bed_in_a_house() -> void:
 	_make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	var start := _state.player.position
 	_state.player.move(_state.current_map, Vector2.DOWN, 0.5)
 	assert_gt(_state.player.position.y, start.y + 1.0)
@@ -114,14 +114,14 @@ func test_the_player_can_walk_out_of_a_bed_in_a_house() -> void:
 
 func test_a_home_bed_that_is_gone_leaves_the_player_standing_on_its_tile() -> void:
 	_world.remove_object(_state.player.home_bed)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.player.tile(), _state.player.home_bed)
 	assert_null(_state.player.bed_lying_in)
 
 
 func test_a_game_saved_with_the_player_on_the_bed_loads_and_they_can_walk() -> void:
 	_make_a_house_home()
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	_state.player.position = Vector2(1.5, 2.5)
 	var loaded := RealLoad.of(self, _state)
 	assert_true(loaded.is_inside())

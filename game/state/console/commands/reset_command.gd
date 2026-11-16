@@ -14,5 +14,5 @@ func help() -> String:
 
 
 func run(_arguments: PackedStringArray) -> Array[String]:
-	context.state.go_to_home_bed()
+	PlayerRest.go_to_home_bed(context.state)
 	return ["Back in bed"]

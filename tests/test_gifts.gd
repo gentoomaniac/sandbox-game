@@ -100,7 +100,7 @@ func test_the_receiver_alone_knows_a_gift_given_indoors() -> void:
 	_state.npcs.add(bystander)
 	var house := _state.world.place_building(BuildingTypes.KATE, Vector2i(20, 20))
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 
 	Gifts.give(_state, _antje)
 

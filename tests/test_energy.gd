@@ -135,7 +135,7 @@ func test_eating_on_a_full_bar_does_nothing() -> void:
 
 
 func test_eating_on_a_debuff_day_stops_at_the_debuff_cap() -> void:
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	_state.player.energy = 38.0
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
 	_hold(ItemTypes.TURNIP)
@@ -167,7 +167,7 @@ func test_a_bed_fills_the_share_of_the_bars_it_gives() -> void:
 	_state.player.attributes.set_level(Attributes.HP, 5)
 	_state.player.energy = 0.0
 	_state.player.health = 0.0
-	_state.sleep_in(_bed())
+	PlayerRest.sleep_in(_state, _bed())
 	assert_eq(_state.player.energy, 160.0, "80 % of 200")
 	assert_eq(_state.player.health, 40.0, "80 % of 50")
 
@@ -181,5 +181,5 @@ func test_a_lower_maximum_takes_energy_and_health_above_it_away() -> void:
 
 func test_the_debuff_cap_stays_below_a_lower_maximum() -> void:
 	_state.player.attributes.set_level(Attributes.STAMINA, 3)
-	_state.pass_out()
+	PlayerRest.pass_out(_state)
 	assert_eq(_state.energy_cap(), 30.0)

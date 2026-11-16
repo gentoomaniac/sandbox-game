@@ -54,7 +54,7 @@ func test_here_gives_the_house_at_whose_door_the_player_stands() -> void:
 
 func test_here_inside_a_house_gives_that_house() -> void:
 	_state.player.position = Vector2(_house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 
 	_console.run("home antje here")

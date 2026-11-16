@@ -135,7 +135,7 @@ func test_nothing_is_collected_inside_a_house_and_the_piles_stay_filed() -> void
 	var pile := GroundItem.new(ItemTypes.LOGS, 1, Vector2(house.door_tile()) + Vector2(0.5, 0.9))
 	state.world.ground_items.add(pile)
 	state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	state.pass_door()
+	PlayerRest.pass_door(state)
 	assert_true(state.is_inside())
 	for _frame in 30:
 		state.collect_ground_items(FRAME)

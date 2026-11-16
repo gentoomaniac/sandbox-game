@@ -63,10 +63,14 @@ func update(delta: float, is_screen_open: bool) -> void:
 	_player_view.walk_speed = _state.travel.walk_speed_factor(_state)
 	_player_view.is_trotting = _state.travel.is_trotting(_state)
 	_state.travel.walk(_state, direction, delta, _player_view.walk_speed)
-	if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
+	if (
+		_state.player.horse != null
+		and direction != Vector2.ZERO
+		and PlayerRest.is_door_ahead(_state)
+	):
 		_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
 	_state.collect_ground_items(delta)
 	_interior_view.cover_bed(_state.player.bed_lying_in)
 	_object_cover.cover(_state.player.bed_lying_in)
-	if _state.door_underfoot():
+	if PlayerRest.door_underfoot(_state):
 		_blackout.fade_through(_pass_door)

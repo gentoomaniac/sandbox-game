@@ -26,7 +26,7 @@ func test_the_weather_follows_the_clock() -> void:
 func test_inside_a_house_the_weather_is_the_one_outside_its_door() -> void:
 	var house := _place_house()
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	var outside := _state.weather.at(
 		house.door_tile(), _state.clock.day, _state.clock.minute_of_day

@@ -51,7 +51,7 @@ func run(arguments: PackedStringArray) -> Array[String]:
 		return ["Tile %d, %d is covered by a building" % [tile.x, tile.y]]
 	if not _is_walkable_even_if_unloaded(tile):
 		return ["Can't walk on tile %d, %d" % [tile.x, tile.y]]
-	context.state.teleport_to(tile)
+	PlayerRest.teleport_to(context.state, tile)
 	return ["Teleported to %d, %d" % [tile.x, tile.y]]
 
 
@@ -64,7 +64,7 @@ func _to_villager(word: String) -> Array[String]:
 	for offset in BESIDE:
 		var tile := at + offset
 		if _is_free(tile):
-			context.state.teleport_to(tile)
+			PlayerRest.teleport_to(context.state, tile)
 			return ["Teleported next to %s, at %d, %d" % [npc.name, tile.x, tile.y]]
 	return ["No free tile next to %s, at %d, %d" % [npc.name, at.x, at.y]]
 

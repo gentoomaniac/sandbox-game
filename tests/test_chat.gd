@@ -61,7 +61,7 @@ func test_the_villager_comes_before_a_chest_and_a_bed_in_reach() -> void:
 	_world.add_object(chest)
 	assert_eq(Interaction.object_to_open(_state, _tile), chest, "the chest is in reach")
 	_world.add_object(WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _tile + Vector2i(-1, -2)))
-	assert_not_null(_state.bed_in_reach(), "and a bed")
+	assert_not_null(PlayerRest.bed_in_reach(_state), "and a bed")
 	assert_eq(Interaction.npc_to_chat(_state, _tile), _npc)
 
 

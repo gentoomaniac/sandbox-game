@@ -291,7 +291,7 @@ func _do_use(target: Vector2i) -> Use:
 				placed.state["placed_day"] = _state.clock.day
 			_state.current_map.add_object(placed)
 			_state.player.inventory.consume_held()
-			_state.make_home_if_bedless(placed)
+			PlayerRest.make_home_if_bedless(_state, placed)
 			_done(ActionOutcome.PLACE, target, placed.type, {held: 1})
 		Use.TAKE_DOWN:
 			var taken_down := _state.current_map.remove_object(target)

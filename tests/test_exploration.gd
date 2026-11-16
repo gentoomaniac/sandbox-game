@@ -19,7 +19,7 @@ func test_walking_on_explores_the_land_behind_and_keeps_it() -> void:
 	var state := GameState.new_game(7)
 	var start := state.player.tile()
 
-	state.teleport_to(start + Vector2i(60, 0))
+	PlayerRest.teleport_to(state, start + Vector2i(60, 0))
 
 	assert_true(state.explored.is_explored(start))
 	assert_true(state.explored.is_explored(start + Vector2i(60, 0)))

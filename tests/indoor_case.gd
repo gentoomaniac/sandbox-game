@@ -21,7 +21,7 @@ func _place_house() -> Building:
 ## Has the player walk in through the door of `house`.
 func _walk_in(house: Building) -> Interior:
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_true(_state.is_inside())
 	return house.interior
 
@@ -29,5 +29,5 @@ func _walk_in(house: Building) -> Interior:
 ## Has the player walk out through the exit of `interior`.
 func _leave_house(interior: Interior) -> void:
 	_state.player.position = Vector2(interior.exit_tile) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	assert_false(_state.is_inside())

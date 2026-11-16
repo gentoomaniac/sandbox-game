@@ -16,7 +16,7 @@ func _inside_a_house(item: StringName) -> GameState:
 	state.player.home_map = state.world
 	var kate := state.world.place_building(BuildingTypes.KATE, Vector2i(2, 2))
 	state.player.position = Vector2(kate.door_tile()) + Vector2(0.5, 0.5)
-	state.pass_door()
+	PlayerRest.pass_door(state)
 	state.player.position = Vector2(3.5, 4.5)
 	state.player.inventory.add(ItemTypes.RUSTY_IRON_AXE, 1)
 	state.player.inventory.add(item, 1)

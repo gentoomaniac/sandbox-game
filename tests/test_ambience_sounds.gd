@@ -71,7 +71,7 @@ func _enter_kate() -> Building:
 			break
 	assert_not_null(kate, "a place for the house")
 	_state.player.position = TerrainTileset.tile_centre(kate.door_tile()) / TerrainTileset.TILE_SIZE
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	return kate
 
 
@@ -122,7 +122,7 @@ func test_leaving_the_house_fades_the_crackle_out_and_ends_it() -> void:
 	await wait_seconds(0.8)
 	assert_gt(player.volume_db, -20.0, "audible while inside")
 	_state.player.position = Vector2(kate.inside().exit_tile) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	_ambience._process(0.1)
 	assert_eq(_ambience._fire_loops.size(), 0)
 	var fade_seconds: float = AmbienceRules.default_rules().value("indoors", "fire_fade_seconds")
@@ -158,7 +158,7 @@ func test_being_taken_to_the_home_bed_outside_ends_the_crackle() -> void:
 	assert_eq(_ambience._fire_loops.size(), 1)
 	_state.player.home_map = _state.world
 	_state.player.home_bed = Vector2i.ZERO
-	_state.go_to_home_bed()
+	PlayerRest.go_to_home_bed(_state)
 	_ambience._process(0.1)
 	assert_eq(_ambience._fire_loops.size(), 0)
 

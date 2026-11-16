@@ -52,10 +52,10 @@ func _make_a_house_home() -> WorldObject:
 				)
 			)
 	_state.player.position = Vector2(house.door_tile()) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	var bed: WorldObject = house.interior.object_at(Vector2i(1, 2))
 	_state.player.position = Vector2(2.5, 3.5)
-	_state.sleep_in(bed)
+	PlayerRest.sleep_in(_state, bed)
 	_state.player.position = Vector2(house.interior.exit_tile) + Vector2(0.5, 0.5)
-	_state.pass_door()
+	PlayerRest.pass_door(_state)
 	return bed
