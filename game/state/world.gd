@@ -148,6 +148,7 @@ func replay_edits(chunk: Chunk) -> void:
 	for pos: Vector2i in _object_edit_positions_by_chunk.get(chunk.coords, {}):
 		chunk.remove_object(Chunk.local_pos(pos))
 		if _object_edits[pos] != null:
+			chunk.remove_objects_under(_object_edits[pos])
 			chunk.add_object(_object_edits[pos])
 
 
@@ -175,7 +176,9 @@ static func replay_snapshot(chunk: Chunk, snapshot: Dictionary) -> void:
 	for pos: Vector2i in objects:
 		chunk.remove_object(Chunk.local_pos(pos))
 		if objects[pos] != &"":
-			chunk.add_object(WorldObject.new(objects[pos], pos))
+			var object := WorldObject.new(objects[pos], pos)
+			chunk.remove_objects_under(object)
+			chunk.add_object(object)
 
 
 func remove_chunk(chunk_coords: Vector2i) -> void:

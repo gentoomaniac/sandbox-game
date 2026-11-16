@@ -69,3 +69,33 @@ func test_an_edit_in_a_chunk_that_is_not_loaded_tells_too() -> void:
 func test_loading_a_chunk_is_no_edit() -> void:
 	_world.add_chunk(_generator.generate_chunk(Vector2i(1, -2)))
 	assert_eq(_edited_chunks, [] as Array[Vector2i])
+
+
+func test_a_replayed_wide_object_clears_the_generated_object_under_its_other_tile() -> void:
+	var tree := _tree()
+	var trunk := WorldObject.new(&"oak_trunk", tree.pos + Vector2i.LEFT)
+	assert_eq(trunk.tiles(), [trunk.pos, tree.pos] as Array[Vector2i], "covers the tree's tile")
+	_world.replace_object(trunk, trunk)
+	var fresh := _generator.generate_chunk(COORDS)
+	_world.replay_edits(fresh)
+	assert_same(fresh.object_at(Chunk.local_pos(trunk.pos)), trunk)
+	assert_null(fresh.object_at(Chunk.local_pos(tree.pos)), "the tree is not left overlapping")
+
+
+func test_a_replayed_snapshot_of_a_wide_object_clears_the_same_way() -> void:
+	var tree := _tree()
+	var trunk := WorldObject.new(&"oak_trunk", tree.pos + Vector2i.LEFT)
+	_world.replace_object(trunk, trunk)
+	var fresh := _generator.generate_chunk(COORDS)
+	World.replay_snapshot(fresh, _world.edits_snapshot(COORDS))
+	assert_eq(fresh.object_at(Chunk.local_pos(trunk.pos)).type, trunk.type)
+	assert_null(fresh.object_at(Chunk.local_pos(tree.pos)))
+
+
+func test_a_wide_object_reaching_into_the_next_chunk_leaves_that_chunks_own_tiles_to_it() -> void:
+	var edge := Chunk.to_world(COORDS, Vector2i(Chunk.CHUNK_SIZE - 1, 3))
+	var trunk := WorldObject.new(&"oak_trunk", edge)
+	_world.replace_object(trunk, trunk)
+	var fresh := _generator.generate_chunk(COORDS)
+	_world.replay_edits(fresh)
+	assert_same(fresh.object_at(Chunk.local_pos(edge)), trunk)

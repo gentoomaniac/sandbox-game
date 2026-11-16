@@ -16,7 +16,11 @@
   "this object stands here" or "the generated object here was removed" (later also
   changed terrain, e.g. grass turned to soil).
 - When a chunk is generated, the edits for its area are applied on top. Changes survive
-  chunk unloading, and object state (e.g. crop growth) is kept.
+  chunk unloading, and object state (e.g. crop growth) is kept. An edited object takes off
+  every generated object under its footprint, not only the one at its own tile. Left open: a
+  generated object that begins in the neighbour chunk to the left or above and reaches under
+  an edit is not found while only this chunk loads (placing one over it is refused in play, so
+  only a changed generator could bring it about).
 - Buildings are stored at world level as well.
 - **Save format later:** seed + edits + buildings + player and clock state. Edits are also
   the natural unit to synchronise in multiplayer.

@@ -101,6 +101,21 @@ func remove_object(local: Vector2i) -> WorldObject:
 	return object
 
 
+## Takes off the objects of this chunk that stand on any tile of `object` that lies in this chunk,
+## itself not included. One that began in the chunk to the left or above is not found: it is in
+## another chunk.
+func remove_objects_under(object: WorldObject) -> void:
+	for tile in object.tiles():
+		if Chunk.world_to_chunk(tile) != coords:
+			continue
+		for y in WorldObjectTypes.MAX_FOOTPRINT.y:
+			for x in WorldObjectTypes.MAX_FOOTPRINT.x:
+				var origin := Chunk.local_pos(tile) - Vector2i(x, y)
+				var other := _objects.get(origin) as WorldObject
+				if other != null and other != object and other.covers(tile):
+					_objects.erase(origin)
+
+
 func objects() -> Array[WorldObject]:
 	return _objects.values()
 
