@@ -132,3 +132,17 @@ func test_every_registered_kind_has_words_and_the_screen_kinds_open_theirs() -> 
 			assert_eq(screens.size(), 1, "%s opens its screen" % name)
 			for screen in screens:
 				screen.close()
+
+
+## A flow made in FeatureFlows but left out of `all()` would be missed by the tests that go
+## through `all()`, Main's tree among them.
+func test_all_holds_every_flow_feature_flows_makes() -> void:
+	var flows := FlowsCase.make(self, _state, _interactions)
+	var made: Array[Node] = []
+	for property in flows.get_property_list():
+		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE and flows.get(property.name) is Node:
+			made.append(flows.get(property.name))
+	var listed := flows.all()
+	assert_eq(listed.size(), made.size())
+	for flow in made:
+		assert_has(listed, flow, flow.name)
