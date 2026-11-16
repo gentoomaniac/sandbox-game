@@ -1,7 +1,8 @@
 class_name AudioPage
 extends VBoxContainer
 ## The audio settings: a volume slider each for Master, Effects, Ambience and Music, and whether
-## the game keeps playing sound while its window is not focused. The rules are GameSettings'.
+## the game keeps playing sound while its window is not focused. The rules are GameSettings'. The
+## settings scroll when the window has no room for them; the title and Back stay in place.
 
 signal back_requested
 ## The player moved a volume slider: the menu plays a sound to hear the new volume by.
@@ -33,25 +34,27 @@ func _init(settings: GameSettings) -> void:
 	title.text = "Audio"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
+	var rows := VBoxContainer.new()
+	add_child(ScrollingList.new(rows))
 	for channel in GameSettings.VOLUME_CHANNELS:
 		var label := Label.new()
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		TooltipView.set_text(label, VOLUME_TIPS[channel])
 		label.mouse_filter = Control.MOUSE_FILTER_PASS
-		add_child(label)
+		rows.add_child(label)
 		_labels[channel] = label
 		var slider := HSlider.new()
 		slider.max_value = GameSettings.MAX_VOLUME
 		slider.step = GameSettings.VOLUME_STEP
 		slider.value_changed.connect(_on_volume_changed.bind(channel))
 		TooltipView.set_text(slider, VOLUME_TIPS[channel], "setting_%s_volume" % channel)
-		add_child(slider)
+		rows.add_child(slider)
 		_sliders[channel] = slider
 	first_focus = _sliders[GameSettings.VOLUME_CHANNELS[0]]
 	_background_button = Button.new()
 	_background_button.pressed.connect(_toggle_sound_in_background)
 	TooltipView.set_text(_background_button, BACKGROUND_TIP, "setting_sound_in_background")
-	add_child(_background_button)
+	rows.add_child(_background_button)
 	var back := Button.new()
 	back.text = "Back"
 	back.pressed.connect(back_requested.emit)

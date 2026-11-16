@@ -70,7 +70,9 @@ rows. The base puts every list back to the top when the window opens. To swap wh
 growing part (a chest with other slots), keep the part as a fixed container and swap its children.
 A list a page builds itself, not through `_scrolling`, is not known to the base. The character
 window puts the lists of its tabs in `_lists` itself, so they are fitted and reset when the window
-opens, and does the same when a tab is shown (a refresh of the rows keeps the place).
+opens, and does the same when a tab is shown (a refresh of the rows keeps the place). The pause
+menu finds the lists of the page it shows with `find_children`, puts them back to the top and fits
+them each time the page is shown.
 
 The character window (`CharacterScreen`, C) is another window whose methods take arguments:
 `open_tab(tab)` stores the tab and calls `open()` (or switches tab when the window is open), and

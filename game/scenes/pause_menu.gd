@@ -261,6 +261,9 @@ func _show_page(page: Page) -> void:
 		_pages[page].show_settings()
 	for list: ScrollingList in _pages[page].find_children("*", "ScrollingList", true, false):
 		list.scroll_vertical = 0
+		# A list fits itself only while it is shown, so one of a page shown again after the window
+		# changed size while the menu was closed is sized here.
+		list.fit()
 	_first_focus[page].grab_focus()
 
 
