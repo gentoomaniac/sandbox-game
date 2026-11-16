@@ -10,9 +10,10 @@ import livestock
 import livestock_cattle
 import livestock_pigs
 import livestock_poultry
+import livestock_rabbit
 import livestock_sheep
 
-FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep, livestock_poultry)
+FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep, livestock_poultry, livestock_rabbit)
 
 
 def sheets():
