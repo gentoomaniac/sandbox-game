@@ -151,6 +151,10 @@ const _TOOL_KINDS := {
 const ICON_PATH := "res://assets/items/%s.png"
 const GROUND_ICON_PATH := "res://assets/ground_items/%s.png"
 
+## The folder of the topic scripts that define the items (see CatalogTopics).
+const TOPICS_DIR := "res://game/state/items"
+const _OWN_SOURCE := "res://game/state/item_types.gd"
+
 const _OTHER_TYPES := {
 	CHEST:
 	{
@@ -159,126 +163,6 @@ const _OTHER_TYPES := {
 		"weight": 4.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.CHEST,
-	},
-	HAY:
-	{
-		"name": "Hay",
-		"description": "Dry cut grass. Good for stuffing and thatch.",
-		"weight": 0.2,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	REEDS:
-	{
-		"name": "Reeds",
-		"description": "Tough stalks from the waterside.",
-		"weight": 0.3,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	CLAY:
-	{
-		"name": "Clay",
-		"description": "Wet, sticky earth from the riverbank.",
-		"weight": 1.0,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	LOGS:
-	{
-		"name": "Logs",
-		"description": "Rough timber from a felled tree.",
-		"weight": 1.0,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	STONE:
-	{
-		"name": "Stone",
-		"description": "A solid chunk of rock for building.",
-		"weight": 1.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	FIBRE:
-	{
-		"name": "Fibre",
-		"description": "Stringy plant fibre.",
-		"weight": 0.1,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	BERRIES:
-	{
-		"name": "Berries",
-		"description": "Wild berries. Sweet and quick to eat.",
-		"weight": 0.05,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	ACORN:
-	{
-		"name": "Acorn",
-		"description": "The seed of an oak.",
-		"weight": 0.05,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.OAK},
-	},
-	SPRUCE_CONE:
-	{
-		"name": "Spruce cone",
-		"description": "The seed of a spruce.",
-		"weight": 0.05,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.SPRUCE},
-	},
-	PINE_CONE:
-	{
-		"name": "Pine cone",
-		"description": "The seed of a pine.",
-		"weight": 0.05,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.PINE},
-	},
-	BEECHNUT:
-	{
-		"name": "Beechnut",
-		"description": "The seed of a beech, from its prickly husk.",
-		"weight": 0.02,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.BEECH},
-	},
-	BIRCH_CATKIN:
-	{
-		"name": "Birch catkin",
-		"description": "The seed catkin of a birch: it crumbles into tiny winged seeds.",
-		"weight": 0.01,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.BIRCH},
-	},
-	ALDER_CONE:
-	{
-		"name": "Alder cone",
-		"description": "A tiny woody cone of an alder. Its seeds float on the water.",
-		"weight": 0.01,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.ALDER},
-	},
-	# Willows are not grown from seed but from cut rods stuck in the ground.
-	WILLOW_CUTTING:
-	{
-		"name": "Willow cutting",
-		"description": "A rod cut from a willow. Stuck in the ground, it takes root.",
-		"weight": 0.05,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-		"plants": WorldObjectTypes.SAPLING,
-		"plants_on": Tile.Terrain.GRASS,
-		"plants_state": {"tree": WorldObjectTypes.WILLOW},
 	},
 	WAISTCOAT:
 	{
@@ -385,13 +269,6 @@ const _OTHER_TYPES := {
 		"stack_limit": 5,
 		"places": WorldObjectTypes.SLEEPING_BAG,
 	},
-	PLANKS:
-	{
-		"name": "Planks",
-		"description": "Boards split and planed from a log.",
-		"weight": 0.5,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
 	STOOL:
 	{
 		"name": "Stool",
@@ -416,20 +293,6 @@ const _OTHER_TYPES := {
 		"weight": 12.0,
 		"stack_limit": 1,
 		"places": WorldObjectStall.SALES_CART,
-	},
-	RAW_BRICK:
-	{
-		"name": "Raw brick",
-		"description": "Clay moulded into a brick and dried. The kiln fires it hard.",
-		"weight": 1.0,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	BRICK:
-	{
-		"name": "Brick",
-		"description": "A fired red brick, as the marsh brickworks make them.",
-		"weight": 1.0,
-		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	CUPBOARD:
 	{
@@ -496,13 +359,6 @@ const _OTHER_TYPES := {
 		"weight": 12.0,
 		"stack_limit": 1,
 		"places": WorldObjectTypes.NOTICE_BOARD,
-	},
-	EGG:
-	{
-		"name": "Egg",
-		"description": "A hen's egg, still warm from the nest.",
-		"weight": 0.06,
-		"stack_limit": DEFAULT_STACK_LIMIT,
 	},
 	TROUGH:
 	{
@@ -681,20 +537,6 @@ const _OTHER_TYPES := {
 		"weight": 8.0,
 		"stack_limit": 1,
 	},
-	WAX:
-	{
-		"name": "Wax",
-		"description": "A cake of beeswax. Make candles of it.",
-		"weight": 0.2,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
-	CANDLE:
-	{
-		"name": "Candle",
-		"description": "Wax round a fibre wick. It burns in a lantern.",
-		"weight": 0.1,
-		"stack_limit": DEFAULT_STACK_LIMIT,
-	},
 	LANTERN:
 	{
 		"name": "Lantern",
@@ -721,7 +563,7 @@ static var build_problems: Array[String] = []
 # The name is that of a constant, but the items made from the files are only known once they are
 # read.
 # gdlint: ignore=class-variable-name
-static var TYPES := _with_crop_items(_with_tool_items(_OTHER_TYPES))
+static var TYPES := _with_crop_items(_with_tool_items(_declared_types()))
 
 
 ## The item's 32x32 icon, which the UI shows at half size (see tools/art/items.py).
@@ -767,6 +609,13 @@ static func energy_factor(item: StringName) -> float:
 ## The name of the kind of tool the item is ("axe"), for what it needs ("Needs a better axe").
 static func tool_name(tool_item_id: StringName) -> String:
 	return _TOOL_KINDS[TYPES[tool_item_id]["tool"]]["name"]
+
+
+## The items of the topic scripts, checked for ids two of them define.
+static func _declared_types() -> Dictionary:
+	var sources := {_OWN_SOURCE: _OTHER_TYPES}
+	sources.merge(CatalogTopics.read_folder(TOPICS_DIR, build_problems))
+	return CatalogTopics.merged("item", sources, build_problems)
 
 
 ## The tools in every grade of data/tools.cfg, added to the fixed types.
