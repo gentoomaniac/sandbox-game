@@ -18,6 +18,12 @@ const MAX_HEIGHT_CM := 400
 const HEIGHT_SEED_OFFSET := 41
 const STRENGTH_SEED_OFFSET := 42
 
+## The looks of a dyke by its height (see `look`): the names of its other rows in the atlas
+## (WorldObjectTypes `look_rows`); a dyke of no special height has its type's own row.
+const LOW := &"low"
+const HIGH := &"high"
+const NORMAL := &""
+
 ## From what strength a dyke is called turfed, and well turfed.
 const TURFED_FROM := 0.4
 const WELL_TURFED_FROM := 0.7
@@ -111,14 +117,25 @@ func strength_at(tile: Vector2i) -> float:
 func words(dyke: WorldObject) -> String:
 	var height := height_of(dyke)
 	var strength := strength_of(dyke)
-	var size := ""
-	if height < _landscape.value("surge", "low_below"):
-		size = "low, "
-	elif height > _landscape.value("surge", "high_above"):
-		size = "high, "
+	var size := String(_size(height))
+	if not size.is_empty():
+		size += ", "
 	var turf := "bare"
 	if strength >= WELL_TURFED_FROM:
 		turf = "well turfed"
 	elif strength >= TURFED_FROM:
 		turf = "turfed"
 	return "Dyke, %s%.1f m, %s" % [size, height, turf]
+
+
+## The look a dyke is drawn in: LOW under `low_below`, HIGH over `high_above`, else NORMAL.
+func look(dyke: WorldObject) -> StringName:
+	return _size(height_of(dyke))
+
+
+func _size(height: float) -> StringName:
+	if height < _landscape.value("surge", "low_below"):
+		return LOW
+	if height > _landscape.value("surge", "high_above"):
+		return HIGH
+	return NORMAL

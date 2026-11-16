@@ -17,6 +17,7 @@ right. Each line is rimmed in the darkest shade of its own colours where it stan
 ground; the dyke, which is turf like the ground, is not.
 """
 
+import collections
 import math
 import random
 
@@ -488,16 +489,28 @@ def stone_wall_row():
 
 # --- The dyke ---
 
-# A long smooth bank of clay under turf, the whole tile wide: this many px high on its crest,
-# which is DYKE_CREST px either side of the skeleton, and down to the ground at the tile's edges
-# across it. Where it turns a corner it bends round in a quarter circle, so a dyke that runs on the
-# slant (a stair of corners) is one bank winding along.
-DYKE_HEIGHT = 14
-DYKE_CREST = 3.0
-DYKE_FOOT = TILE / 2
+# A long smooth bank of clay under turf: `height` px high on its crest, which is `crest` px
+# either side of the skeleton, and down to the ground `foot` px out from it (at most the tile's
+# edge across it). Where it turns a corner it bends round in a quarter circle, so a dyke that runs
+# on the slant (a stair of corners) is one bank winding along. The sheep keep a track along the
+# crest, `track` px either side of the skeleton (none at 0), and the turf is grazed short, its
+# tufts standing out by `tufts` (1 is the usual turf).
+#
+# A dyke is drawn in a look per height (DykeProfile `look` in the game: low under `low_below`,
+# high over `high_above` of [surge] in data/landscape.cfg), each a row of the atlas: the low one
+# a squat, narrow bank in rough turf with tufts of dry grass, the high one taller, with a broad,
+# even crest of well-kept turf and no track worn in it.
+DykeLook = collections.namedtuple("DykeLook", "height crest foot track tufts")
+DYKE_LOOKS = {
+    "low": DykeLook(height=9, crest=1.5, foot=12.0, track=1.0, tufts=1.6),
+    "normal": DykeLook(height=14, crest=3.0, foot=TILE / 2, track=1.5, tufts=1.0),
+    "high": DykeLook(height=18, crest=6.0, foot=TILE / 2, track=0.0, tufts=1.0),
+}
 DYKE_TURF = ("green_light", "green", "green_dark", "green_deep")
-# The sheep keep a track along the crest: it is this wide, in px either side of the skeleton.
-DYKE_TRACK = 1.5
+# The tufts of dry grass in the rough turf of a low dyke (tufts over 1): the clusters whose value
+# is over this, and their shades.
+DYKE_DRY_TUFTS_OVER = 0.75
+DYKE_DRY_TURF = ("dry_light", "dry", "olive", "green_deep")
 
 
 def dyke_skeleton_distance(mask, x, y):
@@ -523,51 +536,61 @@ def dyke_skeleton_distance(mask, x, y):
     return best
 
 
-def _dyke_layers(mask, x, y):
-    return _dyke_bank(dyke_skeleton_distance(mask, x + 0.5, y + 0.5), DYKE_FOOT)
-
-
-def _dyke_bank(distance, foot):
+def _dyke_bank(look, distance, foot):
     """The layers on a ground pixel `distance` px from the skeleton where the foot is `foot` px
-    out from it."""
+    out from it, for a dyke of `look`."""
     if distance >= foot:
         return []
-    slope = max(0.0, distance - DYKE_CREST) / (foot - DYKE_CREST)
-    height = round(DYKE_HEIGHT * (math.cos(math.pi * slope) + 1) / 2)
+    slope = max(0.0, distance - look.crest) / (foot - look.crest)
+    height = round(look.height * (math.cos(math.pi * slope) + 1) / 2)
     if height < 1:
         return []
-    return [(height, "track" if distance < DYKE_TRACK else "turf")]
+    return [(height, "track" if distance < look.track else "turf")]
 
 
-def _dyke_colour(material, x, y, z, light, is_top):
-    # Grazed short: a turf of tufts in clusters, smoother than the hedge's leaves, its blades
-    # lit at the tip; on the crest the sheep's track, worn to the paler, drier grass.
-    if material == "track" and is_top:
-        return "dry_light" if _cluster(x, y, z, 7, 1) > -0.4 else "dry"
-    tuft = 0.12 * _cluster(x, y, z, 5) + 0.1 * _cluster(x, y, z, 8, 1)
-    return ramp_shade(DYKE_TURF, light + tuft)
+def _dyke_colour(look):
+    """The colour of a pixel of a dyke of `look`, as draw_line asks it."""
+
+    def colour(material, x, y, z, light, is_top):
+        # Grazed short: a turf of tufts in clusters, smoother than the hedge's leaves, its blades
+        # lit at the tip; on the crest the sheep's track, worn to the paler, drier grass.
+        if material == "track" and is_top:
+            return "dry_light" if _cluster(x, y, z, 7, 1) > -0.4 else "dry"
+        tuft = look.tufts * (0.12 * _cluster(x, y, z, 5) + 0.1 * _cluster(x, y, z, 8, 1))
+        if look.tufts > 1 and _cluster(x, y, z, 9) > DYKE_DRY_TUFTS_OVER:
+            return ramp_shade(DYKE_DRY_TURF, light + tuft)
+        return ramp_shade(DYKE_TURF, light + tuft)
+
+    return colour
 
 
 def _dyke_outline(material):
     return None
 
 
-def dyke(mask, slanted=0):
-    """The dyke on a tile with connection `mask`; a corner with `slanted` sides crosses them on
-    the slant (see slants.py)."""
+def _dyke_skeleton(mask, slanted, foot):
+    """(distance from the skeleton, foot) of each ground point of a dyke tile, as a function."""
     if not slanted:
-        return draw_line(mask, _dyke_layers, _dyke_colour, _dyke_outline, has_faces=False)
-    skeleton = slants.Skeleton(mask, slanted, TILE, DYKE_FOOT)
+        return lambda x, y: (dyke_skeleton_distance(mask, x, y), foot)
+    return slants.Skeleton(mask, slanted, TILE, foot).at
+
+
+def dyke(mask, slanted=0, look=DYKE_LOOKS["normal"]):
+    """The dyke of `look` on a tile with connection `mask`; a corner with `slanted` sides crosses
+    them on the slant (see slants.py)."""
+    skeleton = _dyke_skeleton(mask, slanted, look.foot)
 
     def layers(_mask, x, y):
-        return _dyke_bank(*skeleton.at(x + 0.5, y + 0.5))
+        return _dyke_bank(look, *skeleton(x + 0.5, y + 0.5))
 
-    return draw_line(mask, layers, _dyke_colour, _dyke_outline, has_faces=False)
+    return draw_line(mask, layers, _dyke_colour(look), _dyke_outline, has_faces=False)
 
 
-def dyke_row():
-    """The atlas row of the dyke: one picture per connection mask, then the slanted corners."""
-    return [dyke(mask) for mask in MASKS] + [dyke(mask, slanted) for mask, slanted in slants.SLANTED]
+def dyke_row(name="normal"):
+    """The atlas row of the dyke in the look `name` (see DYKE_LOOKS): one picture per connection
+    mask, then the slanted corners."""
+    look = DYKE_LOOKS[name]
+    return [dyke(mask, look=look) for mask in MASKS] + [dyke(mask, slanted, look) for mask, slanted in slants.SLANTED]
 
 
 def one_tile(picture):

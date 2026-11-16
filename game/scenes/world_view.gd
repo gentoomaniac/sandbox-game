@@ -807,8 +807,9 @@ func _atlas_cell(object: WorldObject) -> Vector2i:
 	var slanted := (
 		LineSlants.slanted_sides(world, object) if object_type.get("slants", false) else 0
 	)
+	var look := world.dykes.look(object) if object.type == WorldObjectTypes.DYKE else &""
 	return ObjectTileset.atlas_cell(
-		object, world.is_bare(object), connections, _scarecrow_frame, slanted
+		object, world.is_bare(object), connections, _scarecrow_frame, slanted, look
 	)
 
 

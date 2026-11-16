@@ -431,6 +431,11 @@ for _kind in SNAG_KINDS:
     if _kind in _WINTER_LOOKS:
         _surfaces, _edges, _depth = _WINTER_LOOKS[_kind]["snow"]
         _WINTER_LOOKS[f"half_dead_{_kind}"] = _WINTER_LOOKS[_kind] | {"specks": _DEAD_WOOD_LIT, "snow": (_surfaces | _DEAD_WOOD_LIT, _edges, _depth)}
+# The dyke's other looks (its heights, boundaries.DYKE_LOOKS) turn with the seasons as the dyke.
+DYKE_LOOK_KINDS = ("dyke_low", "dyke_high")
+TURNS_AS = LIVING_KIND | {kind: "dyke" for kind in DYKE_LOOK_KINDS}
+for _kind in DYKE_LOOK_KINDS:
+    _WINTER_LOOKS[_kind] = _WINTER_LOOKS["dyke"]
 
 
 def _season_object(look, kind, variant, canvas, redraw):
@@ -439,7 +444,7 @@ def _season_object(look, kind, variant, canvas, redraw):
     rng = random.Random(f"{look}-{kind}-{variant}")
     centre = len(canvas[0]) // 2
     # A half-dead tree's leaves turn as its living kind's.
-    turns_as = LIVING_KIND.get(kind, kind)
+    turns_as = TURNS_AS.get(kind, kind)
     if look in LEAF_OUT_LOOKS:
         if turns_as not in _LEAF_OUT_KINDS:
             # Everything else is as in spring meanwhile.

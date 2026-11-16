@@ -300,7 +300,10 @@ straight bank from corner to corner, and a corner slanted on one side only bends
 into the diagonal; its 12 pictures follow the 16 of the connection masks in the dyke's row, in
 both arts. On the diagonal the bank is narrower across (its foot half the tile's diagonal from
 the crest line, not half the tile), so it comes down to the ground in the notches of the stair
-and stays on its own tiles. The camp's fireplace: a ring of rounded field
+and stays on its own tiles. A dyke is drawn by its height (issue #103, `DYKE_LOOKS`; DykeProfile
+`look` in the game), each look a row of the atlas: under 1.5 m a squat, narrow bank in rough turf
+with tufts of dry grass, over 2.8 m a taller bank with a broad, even crest and no sheep track,
+the usual one between. Where two looks meet the bank steps up at the seam. The camp's fireplace: a ring of rounded field
 stones, ash with embers and three split logs with pale cut ends; the bedroll a quilted sack of
 linen ticking with the grey blanket rolled at its head. The chest of oak planks with iron bands
 and a brass lock, the carved chest painted blue-green with tulips, the workbench with its vice

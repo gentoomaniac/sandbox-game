@@ -68,6 +68,9 @@ extends RefCounted
 ## - slants: a line that runs on the diagonal where it steps like a stair (the dyke): its variants
 ##   also have a picture of each corner for the sides it crosses on the slant (see LineSlants and
 ##   `connection_look`);
+## - look_rows: the atlas rows of its other looks, by name, each with the pictures of its
+##   `atlas_row` (the dyke's heights, see DykeProfile `look`); a look not named is drawn from the
+##   `atlas_row`;
 ## - turf: it is turf like the ground (the dyke), so it takes the colour the ground has now, all
 ##   its tiles at once, not a look of its own tile's day like a plant (see WorldView);
 ## - placed_on: the player places it on these terrains (and only on them) instead of on ground
@@ -126,6 +129,7 @@ const REEDS := &"reeds"
 const KNICK := &"knick"
 const WATTLE_FENCE := &"wattle_fence"
 const STONE_WALL := &"stone_wall"
+## The dyke, its data in WorldObjectDyke.
 const DYKE := &"dyke"
 ## The ways the player lays (#62): a walk of planks and a path of cobbles, a piece a tile.
 const PLANK_WALK := &"plank_walk"
@@ -211,7 +215,6 @@ const _CHEST_ROW := 26
 const _KNICK_ROW := 27
 const _WATTLE_FENCE_ROW := 28
 const _STONE_WALL_ROW := 29
-const _DYKE_ROW := 30
 const _WILLOW_ROW := 31
 const _BEECH_ROW := 32
 const _BEECH_TRUNK_ROW := 33
@@ -494,19 +497,6 @@ const _OTHER_TYPES := {
 		"atlas_row": _STONE_WALL_ROW,
 		"variants": 3,
 		"placeable_in": OUTDOORS,
-	},
-	# A turfed bank of clay along the water: walked on like the grass, but nothing is built on
-	# it, tilled or cut out of it.
-	DYKE:
-	{
-		"connects": &"dyke",
-		"slants": true,
-		"turf": true,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": _DYKE_ROW,
-		"variants": 1,
 	},
 	SMALL_BED:
 	{
@@ -963,6 +953,7 @@ static func _build_types() -> Dictionary:
 	var added := WorldObjectPlants.TYPES.merged(WorldObjectWays.TYPES)
 	added.merge(WorldObjectVillage.TYPES)
 	added.merge(WorldObjectStall.TYPES)
+	added.merge(WorldObjectDyke.TYPES)
 	var types := _with_crops(_OTHER_TYPES.merged(added))
 	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())

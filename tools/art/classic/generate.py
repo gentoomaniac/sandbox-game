@@ -250,6 +250,8 @@ def object_atlas():
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
         ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
+        ("dyke_low", boundaries.dyke_row("low")),
+        ("dyke_high", boundaries.dyke_row("high")),
     ]
 
 

@@ -234,6 +234,8 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
 # 78 notice_board (1, see notice_board.py)
 # 79 sales_cart (1, see sales_cart.py)
+# 80 dyke_low (28, as the dyke: its look under 1.5 m, see boundaries.DYKE_LOOKS)
+# 81 dyke_high (28, the same: its look over 2.8 m)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -298,6 +300,8 @@ def object_atlas():
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
         ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
+        ("dyke_low", boundaries.dyke_row("low")),
+        ("dyke_high", boundaries.dyke_row("high")),
     ]
 
 

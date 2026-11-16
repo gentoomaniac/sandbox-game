@@ -280,6 +280,8 @@ objects/dead_tree_trunk_16x16.png 48 80
 objects/dead_willow_16x16.png 48 80
 objects/draw_well_16x16.png 48 80
 objects/dyke_16x16.png 48 80
+objects/dyke_high_16x16.png 48 80
+objects/dyke_low_16x16.png 48 80
 objects/eel_traps_16x16.png 48 80
 objects/ewer_16x16.png 48 80
 objects/feed_trough_16x16.png 48 80

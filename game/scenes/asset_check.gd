@@ -59,14 +59,18 @@ static func _can_load(path: String) -> bool:
 	return ResourceLoader.exists(path) and load(path) != null
 
 
-## Whether the atlas has the row of the type, with the cells of all its looks.
+## Whether the atlas has the rows of the type (see ObjectTileset `atlas_rows`), with the cells
+## of all its looks.
 static func _atlas_has_cells(atlas: Texture2D, object: Dictionary) -> bool:
 	if atlas == null:
 		return false
 	var cells_wide: int = object.get("cells_wide", 1)
 	var looks := ObjectTileset.looks_count(object) * cells_wide
 	return (
-		atlas.get_height() >= (object["atlas_row"] + 1) * ObjectTileset.CELL_HEIGHT
+		(
+			atlas.get_height()
+			>= (ObjectTileset.atlas_rows(object).max() + 1) * ObjectTileset.CELL_HEIGHT
+		)
 		and atlas.get_width() >= looks * ObjectTileset.CELL_WIDTH
 	)
 

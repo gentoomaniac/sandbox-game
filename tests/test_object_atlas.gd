@@ -62,18 +62,25 @@ func test_the_atlas_rows_are_those_of_the_art_generator() -> void:
 		var object_type: Dictionary = WorldObjectTypes.TYPES[type_name]
 		if not object_type.has("atlas_row"):
 			continue
-		types_by_row[object_type["atlas_row"]] = type_name
-		var row: int = object_type["atlas_row"]
-		assert_true(rows.has(row), "%s: row %d is in the atlas" % [type_name, row])
-		if rows.has(row):
-			var generated: Dictionary = rows[row]
-			var kind: String = ART_KINDS.get(type_name, _art_kind_of_trunk(type_name))
-			assert_eq(generated["kind"], kind, "row %d is drawn as %s" % [row, type_name])
-			assert_eq(
-				generated["looks"],
-				ObjectTileset.looks_count(object_type) * object_type.get("cells_wide", 1),
-				"%s cells" % type_name
-			)
+		var kind: String = ART_KINDS.get(type_name, _art_kind_of_trunk(type_name))
+		# Its other looks (the dyke's) are rows of their own, drawn as `<kind>_<look>`.
+		var kinds_by_row := {object_type["atlas_row"]: kind}
+		var look_rows: Dictionary = object_type.get("look_rows", {})
+		for look: StringName in look_rows:
+			kinds_by_row[look_rows[look]] = "%s_%s" % [kind, look]
+		for row: int in kinds_by_row:
+			types_by_row[row] = type_name
+			assert_true(rows.has(row), "%s: row %d is in the atlas" % [type_name, row])
+			if rows.has(row):
+				var generated: Dictionary = rows[row]
+				assert_eq(
+					generated["kind"], kinds_by_row[row], "row %d is drawn as %s" % [row, type_name]
+				)
+				assert_eq(
+					generated["looks"],
+					ObjectTileset.looks_count(object_type) * object_type.get("cells_wide", 1),
+					"%s cells" % type_name
+				)
 	for row: int in rows:
 		if row == WorldObjectWays.EDGE_ROW:
 			assert_eq(rows[row]["kind"], "way_edge", "the road edge has a row, and no type")

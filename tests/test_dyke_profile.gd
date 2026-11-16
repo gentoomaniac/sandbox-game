@@ -66,6 +66,12 @@ func test_the_words_name_the_height_and_the_turf() -> void:
 	assert_eq(_profile.words(_dyke_at(_tile, 300, 10)), "Dyke, high, 3.0 m, bare")
 
 
+func test_the_look_follows_the_height() -> void:
+	assert_eq(_profile.look(_dyke_at(_tile, 120, 50)), DykeProfile.LOW)
+	assert_eq(_profile.look(_dyke_at(_tile, 210, 50)), DykeProfile.NORMAL)
+	assert_eq(_profile.look(_dyke_at(_tile, 300, 50)), DykeProfile.HIGH)
+
+
 func test_a_dyke_nobody_changed_has_the_generated_values() -> void:
 	var dyke := WorldObject.new(WorldObjectTypes.DYKE, _tile)
 	assert_eq(_profile.height_of(dyke), _profile.height_at(_tile))

@@ -67,8 +67,8 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 			if not object_type.has("atlas_row"):
 				continue
 			var cells_wide: int = object_type.get("cells_wide", 1)
-			for variant in looks_count(object_type):
-				var atlas_cell := Vector2i(variant * cells_wide, object_type["atlas_row"])
+			for atlas_cell in _cells_of(object_type):
+				var variant := atlas_cell.x / cells_wide
 				# A dead tree's trunk is drawn from the cell of its kind's trunk, which has the tile.
 				if source.has_tile(atlas_cell):
 					assert(
@@ -92,6 +92,25 @@ func _init(crop_rules := CropRules.default_rules(), motion: AmbientMotion = null
 					tile_data.material = motion.object_material(type)
 	for crop_id in crop_rules.crop_ids():
 		_add_crop_sheet(crop_id, crop_rules.crop(crop_id)["sheet"])
+
+
+## The atlas rows of a type: its own and those of its other looks (see WorldObjectTypes
+## `look_rows`).
+static func atlas_rows(object_type: Dictionary) -> Array[int]:
+	var rows: Array[int] = [object_type["atlas_row"]]
+	rows.append_array(object_type.get("look_rows", {}).values())
+	return rows
+
+
+## The atlas cells of a type's pictures in all its looks (see WorldObjectTypes `look_rows`): the
+## first cell of each picture.
+static func _cells_of(object_type: Dictionary) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var cells_wide: int = object_type.get("cells_wide", 1)
+	for row in atlas_rows(object_type):
+		for picture in looks_count(object_type):
+			cells.append(Vector2i(picture * cells_wide, row))
+	return cells
 
 
 ## Shows the atlases and the crops' sheets of the chosen art set (see ArtSet), if they are not
@@ -189,9 +208,15 @@ static func cell_origin(footprint: Vector2i) -> Vector2i:
 ## LineSlants). A trough or a hay rack has the picture of how full it is
 ## (see ObjectStock `look`). A scarecrow has the picture of `sway_frame`, how the wind blows it
 ## (see AmbientMotion `scarecrow_frame`). A picked bush has its variant's picked look, and so
-## does a bush that is `is_bare` (out of its fruit season).
+## does a bush that is `is_bare` (out of its fruit season). A line with `look_rows` is drawn from
+## the row of its `look` (see WorldObjectTypes; the dyke's by DykeProfile `look`).
 static func atlas_cell(
-	object: WorldObject, is_bare := false, connections := 0, sway_frame := 0, slanted := 0
+	object: WorldObject,
+	is_bare := false,
+	connections := 0,
+	sway_frame := 0,
+	slanted := 0,
+	look := &"",
 ) -> Vector2i:
 	if object.is_crop():
 		return Vector2i(CropLife.look(object), 0)
@@ -207,7 +232,9 @@ static func atlas_cell(
 			variant * WorldObjectTypes.connection_looks(object_type)
 			+ WorldObjectTypes.connection_look(connections, slanted)
 		)
-		return Vector2i(column, object_type["atlas_row"])
+		return Vector2i(
+			column, object_type.get("look_rows", {}).get(look, object_type["atlas_row"])
+		)
 	if object.is_picked() or is_bare or Campfire.is_out(object):
 		variant += object_type["variants"]
 	return Vector2i(variant * object_type.get("cells_wide", 1), object_type["atlas_row"])

@@ -181,12 +181,32 @@ func test_the_view_draws_a_dyke_on_the_slant_and_redraws_it_when_a_step_goes() -
 	var step := stair[Vector2i(6, 5)]
 	assert_eq(
 		view._objects.get_cell_atlas_coords(step.pos),
-		ObjectTileset.atlas_cell(step, false, WEST | SOUTH, 0, WEST | SOUTH)
+		ObjectTileset.atlas_cell(
+			step, false, WEST | SOUTH, 0, WEST | SOUTH, _world.dykes.look(step)
+		)
 	)
 	# The end of the stair goes: the step below no longer turns, so this one turns straight there.
 	_world.remove_object(Vector2i(7, 6))
 	assert_eq(
 		view._objects.get_cell_atlas_coords(step.pos),
-		ObjectTileset.atlas_cell(step, false, WEST | SOUTH, 0, WEST)
+		ObjectTileset.atlas_cell(step, false, WEST | SOUTH, 0, WEST, _world.dykes.look(step))
 	)
 	assert_true(_world.is_walkable(step.pos), "walked on like any dyke")
+
+
+func test_the_view_draws_a_dyke_in_the_look_of_its_height_and_again_when_it_changes() -> void:
+	var view := WorldView.new()
+	add_child_autofree(view)
+	view.show_world(ChunkResidency.new(_world))
+	var dyke := _dykes([Vector2i(5, 5), Vector2i(6, 5)])[Vector2i(5, 5)]
+	var dyke_type: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.DYKE]
+	for case: Array in [
+		[3.0, dyke_type["look_rows"][DykeProfile.HIGH]],
+		[1.2, dyke_type["look_rows"][DykeProfile.LOW]],
+		[2.1, dyke_type["atlas_row"]],
+	]:
+		_world.dykes.change(_world, dyke, case[0], 0.6)
+		var cell := view._objects.get_cell_atlas_coords(dyke.pos)
+		assert_eq(
+			cell, Vector2i(WorldObjectTypes.connection_look(EAST), case[1]), "%.1f m" % case[0]
+		)
