@@ -140,3 +140,46 @@ func test_the_window_opens_on_the_neighbours_tab_and_the_rows_follow_a_change() 
 func test_every_benefit_has_its_words() -> void:
 	for benefit in FriendshipRules.BENEFITS:
 		assert_ne(_friendship.benefit_text(benefit), "", benefit)
+
+
+func _screen_in_a_short_window() -> CharacterScreen:
+	var window := SubViewport.new()
+	window.size = Vector2i(640, 240)
+	add_child_autofree(window)
+	for _i in 10:
+		_state.npcs.add(Npc.create_villager("antje", Vector2.ZERO, _state.npcs.villagers))
+	var screen := CharacterScreen.new(autofree(HotbarCase.new_hotbar()))
+	window.add_child(screen)
+	screen.show_player(_state.player)
+	screen.show_neighbours(_state)
+	screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
+	await wait_process_frames(3)
+	return screen
+
+
+func _list_of(screen: CharacterScreen) -> ScrollingList:
+	return screen.find_children("*", "NeighboursPanel", true, false)[0].list
+
+
+func test_in_a_short_window_the_rows_scroll_and_the_window_fits() -> void:
+	var screen := await _screen_in_a_short_window()
+	var list := _list_of(screen)
+
+	assert_lt(list.size.y, list.get_child(0).size.y, "the rows are taller than the list")
+	assert_lte(list.get_global_rect().end.y, 240.0, "the list ends inside the window")
+	assert_gt(list.get_v_scroll_bar().max_value, list.get_v_scroll_bar().page)
+
+
+func test_the_rows_keep_their_place_when_they_change_and_start_at_the_top_on_the_tab() -> void:
+	var screen := await _screen_in_a_short_window()
+	var list := _list_of(screen)
+	list.scroll_vertical = 40
+
+	_antje.opinion = _friendship.first_point_of(8)
+	screen.show_neighbours(_state)
+	await wait_process_frames(3)
+	assert_eq(list.scroll_vertical, 40, "a change of the rows keeps the place")
+
+	screen.open_tab(CharacterScreen.Tab.SKILLS)
+	screen.open_tab(CharacterScreen.Tab.NEIGHBOURS)
+	assert_eq(list.scroll_vertical, 0, "showing the tab starts at the top")

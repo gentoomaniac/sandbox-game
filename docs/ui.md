@@ -68,6 +68,9 @@ panel, as what the panel holds besides the list is what it measures, and it neve
 than `MIN_HEIGHT` (48 UI pixels), so a tiny window crosses the panel's edge rather than leave no
 rows. The base puts every list back to the top when the window opens. To swap what is in the
 growing part (a chest with other slots), keep the part as a fixed container and swap its children.
+A list a page builds itself, not through `_scrolling`, is not known to the base. The character
+window puts the lists of its tabs in `_lists` itself, so they are fitted and reset when the window
+opens, and does the same when a tab is shown (a refresh of the rows keeps the place).
 
 The character window (`CharacterScreen`, C) is another window whose methods take arguments:
 `open_tab(tab)` stores the tab and calls `open()` (or switches tab when the window is open), and

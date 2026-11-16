@@ -90,6 +90,7 @@ func _init(hotbar: HotbarHud) -> void:
 	page_column.add_child(_quests_panel)
 	page_column.add_child(_neighbours_panel)
 	_panel.add_child(page_column)
+	_lists.append(_neighbours_panel.list)
 
 
 ## Showing another player lets go of the old one.
@@ -147,6 +148,11 @@ func _show_tab(tab: Tab) -> void:
 		_pages[each].visible = each == tab
 		_tab_buttons[each].set_pressed_no_signal(each == tab)
 	_use_hotbar(visible and tab == Tab.CHARACTER)
+	# The list of the tab now shown starts at the top. It is sized before the panel refreshes its
+	# rows: new rows change the list's minimum size, which fits it again by itself.
+	for list in _lists:
+		list.scroll_vertical = 0
+	refit()
 	if tab == Tab.QUESTS:
 		_quests_panel.refresh()
 	if tab == Tab.NEIGHBOURS:

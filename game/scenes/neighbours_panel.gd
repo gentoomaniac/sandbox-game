@@ -3,7 +3,8 @@ extends VBoxContainer
 ## The neighbours tab of the character window: a row for each villager (see NeighbourRows) with
 ## their portrait, their name, the name of their level and the ten marks of it (FriendshipMarks);
 ## the tooltip of a row says what the next level brings, so the player knows what to work for. The
-## points are never shown. Read-only. The rows follow the game while the tab is open.
+## points are never shown. Read-only. The rows follow the game while the tab is open. The title
+## stays in place and the rows scroll in `list`, when there are more than the window has room for.
 
 const PANEL_WIDTH := 260
 const ROW_GAP := 6
@@ -15,14 +16,24 @@ const TITLE_TEXT := "Neighbours (%d)"
 ## Palette colour gold (see tools/art/palette.py), for the title.
 const TITLE_COLOR := Color("eec25a")
 
+## The rows' list: the character window fits it and starts it at the top when the tab is shown.
+var list: ScrollingList
+
 var _state: GameState
 var _rows_shown: Array[Dictionary] = []
 var _seconds_since_refresh := 0.0
+var _title := Label.new()
+var _rows := VBoxContainer.new()
 
 
 func _init() -> void:
 	add_theme_constant_override("separation", ROW_GAP)
+	_rows.add_theme_constant_override("separation", ROW_GAP)
 	custom_minimum_size.x = PANEL_WIDTH
+	_title.add_theme_color_override("font_color", TITLE_COLOR)
+	add_child(_title)
+	list = ScrollingList.new(_rows)
+	add_child(list)
 
 
 ## Shows the villagers of the game of `state`; showing another game lets go of the old one.
@@ -37,7 +48,7 @@ func refresh() -> void:
 	if _state == null:
 		return
 	var rows := NeighbourRows.of(_state)
-	if rows != _rows_shown or get_child_count() == 0:
+	if rows != _rows_shown or _rows.get_child_count() == 0:
 		_rows_shown = rows
 		_draw_rows(rows)
 
@@ -51,20 +62,17 @@ func _process(delta: float) -> void:
 
 
 func _draw_rows(rows: Array[Dictionary]) -> void:
-	for child in get_children():
+	for child in _rows.get_children():
 		# Out of the tree first, so nothing counts it while it is freed.
-		remove_child(child)
+		_rows.remove_child(child)
 		child.free()
-	var title := Label.new()
-	title.text = TITLE_TEXT % rows.size()
-	title.add_theme_color_override("font_color", TITLE_COLOR)
-	add_child(title)
+	_title.text = TITLE_TEXT % rows.size()
 	if rows.is_empty():
 		var empty := Label.new()
 		empty.text = EMPTY_TEXT
-		add_child(empty)
+		_rows.add_child(empty)
 	for row in rows:
-		add_child(_row(row))
+		_rows.add_child(_row(row))
 
 
 ## The row is what the mouse is over, whatever part of it, as it carries the tooltip.
