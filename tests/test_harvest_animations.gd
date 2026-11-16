@@ -71,11 +71,13 @@ func test_the_trunk_is_not_drawn_until_the_fall_ends() -> void:
 	_show_views()
 	_fell_oak_from(Vector2i.LEFT)
 	var trunk_tile := _trunk().pos
-	assert_eq(_view._objects.get_cell_source_id(trunk_tile), -1, "hidden")
+	assert_eq(_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "hidden")
 	_view._update_falling_trees(FallingTree.FALL_SECONDS)
-	assert_eq(_view._objects.get_cell_source_id(trunk_tile), -1, "hidden while it settles")
+	assert_eq(
+		_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "hidden while it settles"
+	)
 	_view._update_falling_trees(FallingTree.SETTLE_SECONDS)
-	assert_ne(_view._objects.get_cell_source_id(trunk_tile), -1, "drawn")
+	assert_ne(_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "drawn")
 	assert_true(_view._falling_trees.is_empty())
 
 
@@ -104,7 +106,7 @@ func test_landing_bursts_leaves_shakes_the_stump_and_says_so() -> void:
 	assert_eq(landed.size(), 1)
 	assert_eq(landed[0].type, WorldObjectTypes.OAK)
 	assert_gt(_view._hit_particles.particle_count(), 0)
-	assert_false(_view._object_sprites[_tile].is_plain(), "the stump shakes")
+	assert_false(_view._object_view._sprites[_tile].is_plain(), "the stump shakes")
 
 
 func test_unloading_the_chunk_cancels_the_fall() -> void:
@@ -113,7 +115,7 @@ func test_unloading_the_chunk_cancels_the_fall() -> void:
 	var fall: FallingTree = _view._falling_trees[0]
 	_residency.unload_chunk(Chunk.world_to_chunk(_tile))
 	assert_true(_view._falling_trees.is_empty())
-	assert_true(_view._hidden_trunks.is_empty())
+	assert_true(_view._object_view._hidden_tiles.is_empty())
 	assert_true(fall.is_queued_for_deletion())
 	_view._update_falling_trees(1.0)
 

@@ -126,12 +126,12 @@ func test_objects_are_drawn_on_load_and_erased_on_unload() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
 	var object := _view.world.chunk_at(RIGHT).objects()[0]
-	assert_ne(_view._objects.get_cell_source_id(object.pos), -1)
+	assert_ne(_view._object_view.cells.get_cell_source_id(object.pos), -1)
 	assert_eq(
 		_view.decorations._decorations.get_cell_source_id(object.pos), -1, "no decoration under it"
 	)
 	_residency.unload_chunk(RIGHT)
-	assert_eq(_view._objects.get_cell_source_id(object.pos), -1)
+	assert_eq(_view._object_view.cells.get_cell_source_id(object.pos), -1)
 
 
 func test_objects_are_redrawn_when_added_and_removed() -> void:
@@ -142,12 +142,12 @@ func test_objects_are_redrawn_when_added_and_removed() -> void:
 		var pos := Chunk.to_world(RIGHT, Vector2i(local, 0))
 		if _view.world.object_at(pos) == null:
 			free_pos = pos
-	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)
+	assert_eq(_view._object_view.cells.get_cell_source_id(free_pos), -1)
 	_view.world.add_object(WorldObject.new(WorldObjectTypes.OAK, free_pos))
-	assert_ne(_view._objects.get_cell_source_id(free_pos), -1)
+	assert_ne(_view._object_view.cells.get_cell_source_id(free_pos), -1)
 	assert_eq(_view.decorations._decorations.get_cell_source_id(free_pos), -1)
 	_view.world.remove_object(free_pos)
-	assert_eq(_view._objects.get_cell_source_id(free_pos), -1)
+	assert_eq(_view._object_view.cells.get_cell_source_id(free_pos), -1)
 
 
 func test_building_windows_are_lit_and_shine_only_in_the_dark() -> void:
@@ -209,11 +209,11 @@ func test_a_fern_is_drawn_in_summer_and_gone_in_winter() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
 	var fern := _find_object(RIGHT, WorldObjectTypes.FERN_BUSH)
-	assert_ne(_view._objects.get_cell_source_id(fern.pos), -1)
+	assert_ne(_view._object_view.cells.get_cell_source_id(fern.pos), -1)
 	_set_day(WINTER)
-	assert_eq(_view._objects.get_cell_source_id(fern.pos), -1)
+	assert_eq(_view._object_view.cells.get_cell_source_id(fern.pos), -1)
 	_set_day(SUMMER + GameClock.DAYS_PER_YEAR)
-	assert_ne(_view._objects.get_cell_source_id(fern.pos), -1)
+	assert_ne(_view._object_view.cells.get_cell_source_id(fern.pos), -1)
 
 
 func test_a_berry_bush_is_drawn_without_berries_out_of_season() -> void:
@@ -221,10 +221,13 @@ func test_a_berry_bush_is_drawn_without_berries_out_of_season() -> void:
 	_residency.load_chunk(RIGHT)
 	_view.finish_drawing()
 	var bush := _find_object(RIGHT, WorldObjectTypes.BERRY_BUSH)
-	var ripe := _view._objects.get_cell_atlas_coords(bush.pos)
+	var ripe := _view._object_view.cells.get_cell_atlas_coords(bush.pos)
 	_set_day(WINTER)
-	assert_eq(_view._objects.get_cell_atlas_coords(bush.pos), ObjectTileset.atlas_cell(bush, true))
-	assert_ne(_view._objects.get_cell_atlas_coords(bush.pos), ripe)
+	assert_eq(
+		_view._object_view.cells.get_cell_atlas_coords(bush.pos),
+		ObjectTileset.atlas_cell(bush, true)
+	)
+	assert_ne(_view._object_view.cells.get_cell_atlas_coords(bush.pos), ripe)
 
 
 ## What the game scene does when the clock passes midnight.

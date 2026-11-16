@@ -197,9 +197,12 @@ Warft and an Ewer here and there.
   chunk, the queues of chunks to draw (a chunk a few rows of cells at a time, so no frame holds a
   whole chunk's drawing; Main lets the residency load the next one when the view has drawn the
   last) and to refresh, and the `CoverMap`. It does not tick by itself: WorldView's `_process` calls
-  it. WorldView also draws objects, falling trees and the see-through effect, and owns two small
-  views, `BuildingViews` (building sprites, window lights, snowy roofs) and `DecorationView`
-  (flowers, pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
+  it. The objects are `WorldObjectView`: the object cells in the y-sorted `entities` node, the
+  choice of tile or sprite and of the atlas state (the connection mask of a line, the scarecrow in
+  the wind, a crop's own sheet, a dyke's profile and flood tear), the light of what shines and the
+  stand-in sprites that fade while an object hides the player. WorldView also owns the falling
+  trees, and two small views, `BuildingViews` (building sprites, window lights, snowy roofs) and
+  `DecorationView` (flowers, pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
   (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
   `Vegetation`; nothing about them is saved. The ground is drawn in the summer look only, from
   one terrain layer per tile (`TerrainTileset.Layer`, kept per chunk in `TerrainChunkView`); the colour of

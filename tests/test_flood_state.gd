@@ -140,10 +140,10 @@ func test_the_view_draws_a_damaged_dyke_torn_until_it_is_mended() -> void:
 	view.show_world(ChunkResidency.new(_world))
 	var dyke := CoastWorld.sea_dykes(_world)[0]
 	var rows: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.DYKE]["look_rows"]
-	assert_ne(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
+	assert_ne(view._object_view.cells.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
 	_flood.begin(_world, STRONGEST_LEVEL, NOW, 1)
 	assert_true(_flood.is_torn(dyke.pos))
-	assert_eq(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
+	assert_eq(view._object_view.cells.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
 	_flood.mend(_world, NOW + 6 * GameClock.MINUTES_PER_DAY)
 	assert_false(_flood.is_torn(dyke.pos))
-	assert_ne(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
+	assert_ne(view._object_view.cells.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])

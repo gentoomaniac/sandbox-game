@@ -121,7 +121,7 @@ func test_a_hit_that_leaves_the_tree_standing_shakes_it_and_drops_leaves() -> vo
 	_hold(ItemTypes.RUSTY_IRON_AXE)
 	_state.use_tile(_tile)
 	assert_same(_world.object_at(_tile), tree)
-	assert_false(_view._object_sprites[_tile].is_plain(), "shaking")
+	assert_false(_view._object_view._sprites[_tile].is_plain(), "shaking")
 	assert_gt(_view._hit_particles.particle_count(), 0)
 
 
@@ -135,7 +135,7 @@ func test_the_finishing_hit_fells_the_tree_and_the_stump_shakes_and_leaves_drop_
 	var stump := _world.object_at(_tile)
 	assert_eq(stump.type, WorldObjectTypes.STUMP)
 	_view._update_falling_trees(FallingTree.FALL_SECONDS)
-	assert_false(_view._object_sprites[_tile].is_plain(), "the stump shakes")
+	assert_false(_view._object_view._sprites[_tile].is_plain(), "the stump shakes")
 	assert_gt(_view._hit_particles.particle_count(), 0)
 
 

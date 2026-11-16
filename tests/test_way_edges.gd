@@ -118,4 +118,4 @@ func test_the_edge_follows_the_season_of_the_tile() -> void:
 	_lay(WorldObjectTypes.PLANK_WALK, MIDDLE)
 	var tile := MIDDLE + Vector2i.LEFT
 	var look: int = _view._way_edges.layer.get_cell_source_id(tile)
-	assert_eq(look, _view._look_at(tile))
+	assert_eq(look, _view._object_view.tile_look(tile))

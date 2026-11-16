@@ -142,16 +142,20 @@ func test_the_view_draws_a_way_again_when_a_way_is_laid_or_taken_up_beside_it() 
 	view.show_world(ChunkResidency.new(_world))
 	var stone := _lay(WorldObjectTypes.STONE_PATH, Vector2i.ZERO)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(stone.pos), ObjectTileset.atlas_cell(stone, false, 0)
+		view._object_view.cells.get_cell_atlas_coords(stone.pos),
+		ObjectTileset.atlas_cell(stone, false, 0)
 	)
 	var plank := _lay(WorldObjectTypes.PLANK_WALK, Vector2i.RIGHT)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(stone.pos), ObjectTileset.atlas_cell(stone, false, EAST)
+		view._object_view.cells.get_cell_atlas_coords(stone.pos),
+		ObjectTileset.atlas_cell(stone, false, EAST)
 	)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(plank.pos), ObjectTileset.atlas_cell(plank, false, WEST)
+		view._object_view.cells.get_cell_atlas_coords(plank.pos),
+		ObjectTileset.atlas_cell(plank, false, WEST)
 	)
 	_world.remove_object(plank.pos)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(stone.pos), ObjectTileset.atlas_cell(stone, false, 0)
+		view._object_view.cells.get_cell_atlas_coords(stone.pos),
+		ObjectTileset.atlas_cell(stone, false, 0)
 	)

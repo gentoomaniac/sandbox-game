@@ -81,18 +81,22 @@ func test_the_view_draws_the_picture_of_the_connections_and_redraws_the_neighbou
 	view.show_world(ChunkResidency.new(_world))
 	var west := _knick(Vector2i(5, 5))
 	assert_eq(
-		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, 0)
+		view._object_view.cells.get_cell_atlas_coords(west.pos),
+		ObjectTileset.atlas_cell(west, false, 0)
 	)
 	var east := _knick(Vector2i(6, 5))
 	assert_eq(
-		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, EAST)
+		view._object_view.cells.get_cell_atlas_coords(west.pos),
+		ObjectTileset.atlas_cell(west, false, EAST)
 	)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(east.pos), ObjectTileset.atlas_cell(east, false, WEST)
+		view._object_view.cells.get_cell_atlas_coords(east.pos),
+		ObjectTileset.atlas_cell(east, false, WEST)
 	)
 	_world.remove_object(east.pos)
 	assert_eq(
-		view._objects.get_cell_atlas_coords(west.pos), ObjectTileset.atlas_cell(west, false, 0)
+		view._object_view.cells.get_cell_atlas_coords(west.pos),
+		ObjectTileset.atlas_cell(west, false, 0)
 	)
 
 
@@ -180,7 +184,7 @@ func test_the_view_draws_a_dyke_on_the_slant_and_redraws_it_when_a_step_goes() -
 	var stair := _dyke_stair()
 	var step := stair[Vector2i(6, 5)]
 	assert_eq(
-		view._objects.get_cell_atlas_coords(step.pos),
+		view._object_view.cells.get_cell_atlas_coords(step.pos),
 		ObjectTileset.atlas_cell(
 			step, false, WEST | SOUTH, 0, WEST | SOUTH, _world.dykes.look(step)
 		)
@@ -188,7 +192,7 @@ func test_the_view_draws_a_dyke_on_the_slant_and_redraws_it_when_a_step_goes() -
 	# The end of the stair goes: the step below no longer turns, so this one turns straight there.
 	_world.remove_object(Vector2i(7, 6))
 	assert_eq(
-		view._objects.get_cell_atlas_coords(step.pos),
+		view._object_view.cells.get_cell_atlas_coords(step.pos),
 		ObjectTileset.atlas_cell(step, false, WEST | SOUTH, 0, WEST, _world.dykes.look(step))
 	)
 	assert_true(_world.is_walkable(step.pos), "walked on like any dyke")
@@ -206,7 +210,7 @@ func test_the_view_draws_a_dyke_in_the_look_of_its_height_and_again_when_it_chan
 		[2.1, dyke_type["atlas_row"]],
 	]:
 		_world.dykes.change(_world, dyke, case[0], 0.6)
-		var cell := view._objects.get_cell_atlas_coords(dyke.pos)
+		var cell := view._object_view.cells.get_cell_atlas_coords(dyke.pos)
 		assert_eq(
 			cell, Vector2i(WorldObjectTypes.connection_look(EAST), case[1]), "%.1f m" % case[0]
 		)

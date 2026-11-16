@@ -76,9 +76,9 @@ func test_a_tree_that_hides_the_player_before_its_chunk_is_drawn_stays_a_sprite(
 	var tree := _first_tall_object(RIGHT)
 	_view.player_feet = (Vector2(tree.pos) + Vector2(0.5, 0.1)) * TerrainTileset.TILE_SIZE
 	_view._update_see_through(0.0)
-	assert_true(_view._object_sprites.has(tree.pos), "the tree is a stand-in sprite")
+	assert_true(_view._object_view._sprites.has(tree.pos), "the tree is a stand-in sprite")
 	_view.finish_drawing()
-	assert_eq(_view._objects.get_cell_source_id(tree.pos), -1, "its cell stays empty")
+	assert_eq(_view._object_view.cells.get_cell_source_id(tree.pos), -1, "its cell stays empty")
 
 
 func test_the_stand_in_of_a_tree_shows_the_look_it_has_when_the_chunk_is_drawn() -> void:
@@ -88,14 +88,14 @@ func test_the_stand_in_of_a_tree_shows_the_look_it_has_when_the_chunk_is_drawn()
 	var tree := _first_tall_object(RIGHT)
 	_view.player_feet = (Vector2(tree.pos) + Vector2(0.5, 0.1)) * TerrainTileset.TILE_SIZE
 	_view._update_see_through(0.0)
-	var sprite: Sprite2D = _view._object_sprites[tree.pos]
+	var sprite: Sprite2D = _view._object_view._sprites[tree.pos]
 	var summer_picture := _atlas_path(sprite.texture)
 	_view.world.clock.day = WINTER
 	_view.refresh_looks(WINTER)
 	_view.finish_drawing()
 	_view.finish_refresh()
 	assert_ne(_atlas_path(sprite.texture), summer_picture)
-	assert_eq(_atlas_path(sprite.texture), _atlas_path(_view._object_texture(tree)))
+	assert_eq(_atlas_path(sprite.texture), _atlas_path(_view._object_view._object_texture(tree)))
 
 
 func test_an_object_added_while_its_chunk_is_drawn_covers_the_decoration_under_it() -> void:
@@ -172,8 +172,8 @@ func _assert_same_cells(view: WorldView, expected: WorldView, coords: Vector2i) 
 					drawn, expected._terrain.layers[layer].get_cell_atlas_coords(cell), "%s" % cell
 				)
 			assert_eq(
-				view._objects.get_cell_atlas_coords(cell),
-				expected._objects.get_cell_atlas_coords(cell),
+				view._object_view.cells.get_cell_atlas_coords(cell),
+				expected._object_view.cells.get_cell_atlas_coords(cell),
 				"object at %s" % cell
 			)
 

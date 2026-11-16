@@ -32,11 +32,6 @@ signal tree_landed(tree: WorldObject)
 ## The lower part of a tree's canopy, as a share of its picture's height above the picture's
 ## bottom: what falls from there passes the trunk and shows against the ground.
 const CANOPY_HEIGHT_SHARE := 0.45
-## An object state (see `_object_states`) for a plant that is dormant and not drawn.
-const DORMANT := -1
-## Added to an object state for a bush that is out of its fruit season.
-const BARE_OF_FRUIT_FLAG := 16
-
 ## The tiles whose line objects may look different once an object on a tile changes: those beside
 ## it, and for a line that slants (see LineSlants) the others up to two steps away.
 const _LINE_REDRAW_OFFSETS: Array[Vector2i] = [
@@ -72,15 +67,12 @@ var _residency: ChunkResidency
 var _hit_particles := HitParticles.new()
 var _falling_leaves := FallingLeaves.new()
 var _terrain: TerrainChunkView
-var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_motion)
+var _object_view: WorldObjectView
 var _soil_wetness := SoilWetness.new()
 var _footprint_view := FootprintView.new()
 var _flood_overlay := FloodOverlay.new(ambient_motion.flood)
-var _objects := TileMapLayer.new()
 ## The rims of trodden earth beside the ways, under the objects.
 var _way_edges: WayEdges
-## The light of each shining object, by tile.
-var _lights: Dictionary[Vector2i, ObjectLight] = {}
 var _light_strength := 1.0
 var _blend: SeasonBlend
 ## The colour of the ground and what lies on it (see GroundLook and CoverMap).
@@ -88,24 +80,14 @@ var _ground_look: GroundLook
 ## The day that the decorations, plants and houses are drawn for.
 var _look_day := -1
 var _conditions: SeasonBlend.Conditions
-## The look of the turf objects (the dyke): the ground's, the same for all of them.
-var _turf_look: SeasonBlend.Look
-## What each object cell was last drawn as, by tile: its look, plus BARE_OF_FRUIT_FLAG if it
-## showed as bare of fruit, or DORMANT if it was not drawn.
-var _object_states: Dictionary[Vector2i, int] = {}
-## Which picture of the wind-blown scarecrow is shown (see AmbientMotion `scarecrow_frame`).
-var _scarecrow_frame := 0
-## The sprites that stand in for object cells while they are see-through, by tile.
-var _object_sprites: Dictionary[Vector2i, SeeThroughSprite] = {}
 var _falling_trees: Array[FallingTree] = []
-## The trunks (by tile) that a falling tree is about to lie down as, and that are not drawn yet.
-var _hidden_trunks: Dictionary[Vector2i, bool] = {}
 var _buildings := BuildingViews.new(entities)
 
 
 func _init() -> void:
 	_ground_look = GroundLook.new(ambient_motion.decoration_sway, ambient_motion.ford)
 	_terrain = TerrainChunkView.new(ambient_motion, _ground_look)
+	_object_view = WorldObjectView.new(entities, ambient_motion, _ground_look)
 	decorations = DecorationView.new(_terrain.tileset)
 	decorations.show_ground_look(_ground_look)
 
@@ -120,16 +102,12 @@ func _ready() -> void:
 	add_child(_flood_overlay)
 	add_child(decorations)
 	add_child(RainSplashes.new(ambient_motion))
-	_way_edges = WayEdges.new(_object_tileset.tile_set, _ground_look.objects)
+	_way_edges = WayEdges.new(_object_view.tileset.tile_set, _ground_look.objects)
 	add_child(_way_edges.layer)
-	_objects.name = "Objects"
-	_objects.tile_set = _object_tileset.tile_set
-	_objects.y_sort_enabled = true
-	_objects.material = _ground_look.objects
 	entities.name = "Entities"
 	entities.y_sort_enabled = true
-	entities.add_child(_objects)
 	add_child(entities)
+	add_child(_object_view)
 	add_child(_hit_particles)
 	add_child(_falling_leaves)
 	add_child(_buildings)
@@ -139,7 +117,7 @@ func _ready() -> void:
 ## chosen art set (see ArtSet).
 func show_art_set() -> void:
 	_terrain.show_art_set()
-	_object_tileset.show_art_set()
+	_object_view.show_art_set()
 	_soil_wetness.show_art_set()
 	ambient_motion.show_art_set()
 	_ground_look.show_art_set()
@@ -159,11 +137,12 @@ func show_world(residency: ChunkResidency) -> void:
 	world = residency.world
 	# The view was made before Main chose the art set.
 	show_art_set()
-	_way_edges.show_world(world, _look_at)
+	_object_view.show_world(world)
+	_way_edges.show_world(world, _object_view.tile_look)
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
 	_terrain.show_world(residency, decorations, _way_edges)
-	_terrain.objects_due.connect(_draw_objects_of)
+	_terrain.objects_due.connect(_object_view.draw_chunk)
 	_terrain.chunk_refreshed.connect(_refresh_objects_of)
 	decorations.cover_map = _terrain.cover_map
 	world.object_hit.connect(_on_object_hit)
@@ -183,7 +162,7 @@ func show_world(residency: ChunkResidency) -> void:
 	decorations.day = world.clock.day
 	_conditions = _blend.conditions(decorations.day)
 	_look_day = decorations.day
-	_turf_look = _blend.turf_look(decorations.day)
+	_object_view.set_looks(_blend, _conditions, _blend.turf_look(decorations.day))
 	_buildings.set_looks(_blend, _conditions)
 	show_ground_cover(decorations.day, 0.0, 0.0, 0.0)
 	_terrain.sync_cover_focus()
@@ -212,7 +191,7 @@ func refresh_looks(day: int) -> void:
 	_look_day = day
 	decorations.day = day
 	_conditions = _blend.conditions(day)
-	_turf_look = _blend.turf_look(day)
+	_object_view.set_looks(_blend, _conditions, _blend.turf_look(day))
 	_terrain.queue_refresh()
 	_buildings.set_looks(_blend, _conditions)
 
@@ -250,8 +229,7 @@ func light_strength() -> float:
 ## Sets how brightly every light shines (see ObjectLight.strength).
 func set_light_strength(strength: float) -> void:
 	_light_strength = strength
-	for light in _lights.values():
-		light.strength = strength
+	_object_view.set_light_strength(strength)
 	_buildings.set_light_strength(strength)
 
 
@@ -271,6 +249,16 @@ func refresh_soil(last_hour_rain: float) -> void:
 	_soil_wetness.refresh_looks(coords, last_hour_rain)
 
 
+## Fades what hides the player and puts back what no longer does.
+func _update_see_through(delta: float) -> void:
+	_object_view.update_see_through(delta, player_feet, player_size)
+	_buildings.update_see_through(
+		delta,
+		player_feet,
+		Occlusion.occluding_buildings(player_feet, world.buildings(), player_size)
+	)
+
+
 func _process(delta: float) -> void:
 	if world == null:
 		return
@@ -281,17 +269,23 @@ func _process(delta: float) -> void:
 		_terrain.refresh_within_budget()
 	is_settled = is_drawn and not _terrain.has_refresh_pending()
 	_update_see_through(delta)
-	_sway_scarecrows()
+	_object_view.sway_scarecrows()
 	_update_falling_trees(delta)
 	_shed_leaves(delta)
+
+
+## Draws again the objects of a refreshed chunk whose look changed.
+func _refresh_objects_of(chunk: Chunk) -> void:
+	for object in chunk.objects():
+		if _object_view.is_stale(object):
+			_on_objects_changed(object.pos)
 
 
 ## Called for every tile an object covers; it is drawn from its own tile only.
 func _on_objects_changed(world_pos: Vector2i) -> void:
 	var object := world.object_at(world_pos)
 	if object == null or object.pos == world_pos:
-		_drop_object_sprite(world_pos)
-		_draw_object(world_pos)
+		_object_view.redraw(world_pos)
 	decorations.redraw(world_pos, _terrain.layer_at(world_pos))
 	# A way laid or taken up changes the edges of the free tiles beside it.
 	if object == null or object.type_data().has("way"):
@@ -307,8 +301,7 @@ func _on_objects_changed(world_pos: Vector2i) -> void:
 			and neighbour.type_data().has("connects")
 			and (offset in World.CONNECTION_SIDES or neighbour.type_data().get("slants", false))
 		):
-			_drop_object_sprite(neighbour.pos)
-			_draw_object(neighbour.pos)
+			_object_view.redraw(neighbour.pos)
 
 
 ## A house was put up or taken down: its lee changes what lies behind it.
@@ -331,11 +324,11 @@ func _on_object_hit(object: WorldObject) -> void:
 	_hit_particles.emit(_hit_effect(object), _hit_origin(object))
 	var standing := world.object_at(object.pos)
 	if standing != null:
-		_shake_object(standing)
+		_object_view.shake(standing)
 
 
 func _hit_effect(object: WorldObject) -> HitEffect.Kind:
-	return HitEffect.kind_for(object.type, _object_look(object), is_snowed_over(object.pos))
+	return HitEffect.kind_for(object.type, _object_view.look_of(object), is_snowed_over(object.pos))
 
 
 ## Lets the trees among a few tiles picked around the player shed leaves into the wind.
@@ -345,7 +338,7 @@ func _shed_leaves(delta: float) -> void:
 		var tree := world.object_at(tile)
 		if tree == null:
 			continue
-		var look := _object_look(tree)
+		var look := _object_view.look_of(tree)
 		var kind := HitEffect.kind_for(tree.type, look, is_snowed_over(tree.pos))
 		_falling_leaves.shed(kind, look, world.clock.day, _hit_origin(tree), ambient_motion.wind)
 
@@ -362,212 +355,15 @@ func _hit_origin(object: WorldObject) -> Vector2:
 	return Vector2(middle.x, bottom - CANOPY_HEIGHT_SHARE * type_data["sprite_height"])
 
 
-## Shakes an object: as a sprite, since a cell of the objects layer can't move alone.
-func _shake_object(object: WorldObject) -> void:
-	if _hidden_trunks.has(object.pos):
-		return
-	if not _object_sprites.has(object.pos):
-		_swap_cell_for_sprite(object)
-	_object_sprites[object.pos].shake()
-
-
 ## Erases a chunk that was dropped from the world.
 func _on_chunk_unloaded(chunk: Chunk) -> void:
-	for object in chunk.objects():
-		_drop_object_sprite(object.pos)
-		_objects.erase_cell(object.pos)
-		_object_states.erase(object.pos)
-		_remove_light(object.pos)
+	_object_view.forget_chunk(chunk)
 	_terrain.forget_chunk(chunk)
 	_footprint_view.forget_chunk(chunk.coords)
 	_way_edges.forget_chunk(chunk.coords)
 	for fall in _falling_trees.duplicate():
 		if Chunk.world_to_chunk(fall.tree.pos) == chunk.coords:
 			_end_fall(fall)
-
-
-## Draws the objects of a chunk that is being drawn.
-func _draw_objects_of(chunk: Chunk) -> void:
-	for object in chunk.objects():
-		_draw_object(object.pos)
-
-
-## Draws again the objects of a refreshed chunk whose look changed.
-func _refresh_objects_of(chunk: Chunk) -> void:
-	for object in chunk.objects():
-		if _object_states.get(object.pos, DORMANT) != _object_state(object):
-			_on_objects_changed(object.pos)
-
-
-func _draw_object(world_pos: Vector2i) -> void:
-	var object := world.object_at(world_pos)
-	_remove_light(world_pos)
-	if object == null or _hidden_trunks.has(world_pos):
-		_objects.erase_cell(world_pos)
-		_object_states.erase(world_pos)
-		return
-	if _object_sprites.has(world_pos):
-		# A stand-in sprite is showing it (the player stands behind it before its chunk is
-		# drawn): the cell stays empty until the sprite goes, and the sprite shows it as it is now.
-		_place_object_sprite(_object_sprites[world_pos], object)
-		_object_states[world_pos] = _object_state(object)
-	else:
-		_set_object_cell(object)
-	if not object.light().is_empty():
-		var light := ObjectLight.new(object.light(), world_pos)
-		light.strength = _light_strength
-		_lights[world_pos] = light
-		add_child(light)
-
-
-## Shows the scarecrows in the picture the wind gives them now, redrawing them when it changes.
-func _sway_scarecrows() -> void:
-	var frame := ambient_motion.scarecrow_frame()
-	if frame == _scarecrow_frame:
-		return
-	_scarecrow_frame = frame
-	for scarecrow in world.scarecrows():
-		if world.is_chunk_loaded(Chunk.world_to_chunk(scarecrow.pos)):
-			_draw_object(scarecrow.pos)
-
-
-func _set_object_cell(object: WorldObject) -> void:
-	_objects.set_cell(object.pos, _object_source(object), _atlas_cell(object))
-	_object_states[object.pos] = _object_state(object)
-
-
-## The source that an object is drawn from: its own sheet for a crop, else the object atlas in
-## its look.
-func _object_source(object: WorldObject) -> int:
-	if object.is_crop():
-		return _object_tileset.crop_source_id(object.type)
-	return _object_look(object)
-
-
-## The look of an object: of the foliage of its season, which each tree and bush changes to on a
-## day of its own (see SeasonBlend); turf has the ground's. The frost and snow lie over it by the
-## shader.
-func _object_look(object: WorldObject) -> SeasonBlend.Look:
-	if object.type_data().get("turf", false):
-		return _turf_look
-	return _look_at(object.pos)
-
-
-## The look of whatever is drawn at a tile, which changes on a day of its own for each tile.
-func _look_at(world_pos: Vector2i) -> SeasonBlend.Look:
-	return _conditions.foliage_season_look(_blend.season_threshold(world_pos))
-
-
-## What an object is drawn as: its look, with a flag if it is out of its fruit season, or
-## DORMANT if it is not drawn. A change of the state means the cell must be drawn again. A crop
-## has the same look all year; its growth comes through `objects_changed`.
-func _object_state(object: WorldObject) -> int:
-	if object.is_crop():
-		return 0
-	if world.is_dormant(object):
-		return DORMANT
-	return _object_look(object) + (BARE_OF_FRUIT_FLAG if world.is_bare(object) else 0)
-
-
-func _remove_light(world_pos: Vector2i) -> void:
-	var light: ObjectLight = _lights.get(world_pos)
-	if light != null:
-		_lights.erase(world_pos)
-		light.queue_free()
-
-
-## Fades what hides the player and puts back what no longer does.
-func _update_see_through(delta: float) -> void:
-	for sprite in _object_sprites.values():
-		sprite.is_occluding = false
-	for object in Occlusion.occluding_objects(player_feet, world, player_size):
-		if not _object_sprites.has(object.pos):
-			_swap_cell_for_sprite(object)
-		_object_sprites[object.pos].is_occluding = true
-	for pos in _object_sprites.keys():
-		var sprite := _object_sprites[pos]
-		sprite.update(delta, player_feet)
-		if sprite.is_plain():
-			_drop_object_sprite(pos)
-			_set_object_cell(world.object_at(pos))
-	_buildings.update_see_through(
-		delta,
-		player_feet,
-		Occlusion.occluding_buildings(player_feet, world.buildings(), player_size)
-	)
-
-
-## Erases an object's cell and draws the same picture as a sprite, sorted the same way.
-func _swap_cell_for_sprite(object: WorldObject) -> void:
-	var sprite := SeeThroughSprite.new()
-	_place_object_sprite(sprite, object)
-	entities.add_child(sprite)
-	_object_sprites[object.pos] = sprite
-	_objects.erase_cell(object.pos)
-
-
-## Gives a sprite the picture of an object as it looks now, at the place and sorted the same way
-## as the tile map draws it (see ObjectTileset): sorted by the middle of the footprint's bottom
-## row, the cell's bottom on the footprint's bottom edge.
-func _place_object_sprite(sprite: Sprite2D, object: WorldObject) -> void:
-	var cell_size := _picture_size(object)
-	sprite.texture = _object_texture(object)
-	sprite.centered = false
-	var footprint: Vector2i = WorldObjectTypes.TYPES[object.type]["footprint"]
-	# The ground it stands on: the middle of the tile at the foot of its cell.
-	SeeThroughSprite.show_cover(
-		sprite,
-		Vector2(
-			(object.pos.x + footprint.x / 2.0) * TerrainTileset.TILE_SIZE,
-			(object.pos.y + footprint.y - 0.5) * TerrainTileset.TILE_SIZE
-		)
-	)
-	var sort_shift := Vector2(0, (footprint.y - 1) * TerrainTileset.TILE_SIZE)
-	sprite.position = TerrainTileset.tile_centre(object.pos)
-	sprite.position += sort_shift
-	sprite.offset = (
-		-Vector2(cell_size) / 2 - Vector2(ObjectTileset.cell_origin(footprint)) - sort_shift
-	)
-
-
-## The picture of an object as it looks now, for its stand-in sprite.
-func _object_texture(object: WorldObject) -> AtlasTexture:
-	var cell_size := Vector2i(ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
-	var texture := AtlasTexture.new()
-	texture.atlas = load(ObjectTileset.picture(_object_look(object)))
-	texture.region = Rect2(_atlas_cell(object) * cell_size, _picture_size(object))
-	return texture
-
-
-## The size of an object's picture in the atlas: a cell, or `cells_wide` of them.
-func _picture_size(object: WorldObject) -> Vector2i:
-	var cells_wide: int = object.type_data().get("cells_wide", 1)
-	return Vector2i(cells_wide * ObjectTileset.CELL_WIDTH, ObjectTileset.CELL_HEIGHT)
-
-
-## The object's cell in its source as it looks now (see ObjectTileset.atlas_cell).
-func _atlas_cell(object: WorldObject) -> Vector2i:
-	var object_type := object.type_data()
-	var connections := world.connections(object) if object_type.has("connects") else 0
-	var slanted := (
-		LineSlants.slanted_sides(world, object) if object_type.get("slants", false) else 0
-	)
-	var look := (
-		world.dykes.look(object, world.flood.is_torn(object.pos))
-		if object.type == WorldObjectTypes.DYKE
-		else &""
-	)
-	return ObjectTileset.atlas_cell(
-		object, world.is_bare(object), connections, _scarecrow_frame, slanted, look
-	)
-
-
-## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.
-func _drop_object_sprite(world_pos: Vector2i) -> void:
-	var sprite: SeeThroughSprite = _object_sprites.get(world_pos)
-	if sprite != null:
-		_object_sprites.erase(world_pos)
-		sprite.queue_free()
 
 
 ## Whether snow lies on most of a tile now (what hit effects ask).
@@ -592,15 +388,13 @@ func snow_checker_for(snow_cover: float) -> Callable:
 func _start_fall(tree: WorldObject) -> void:
 	var fall := FallingTree.beside_trunk_of(tree, world, player_feet.x)
 	fall.impact_effect = _hit_effect(tree)
-	_place_object_sprite(fall, tree)
+	_object_view.place_sprite(fall, tree)
 	fall.landed.connect(_on_tree_landed.bind(fall))
 	fall.finished.connect(_end_fall.bind(fall))
 	entities.add_child(fall)
 	_falling_trees.append(fall)
 	if fall.trunk != null:
-		_hidden_trunks[fall.trunk.pos] = true
-		_drop_object_sprite(fall.trunk.pos)
-		_draw_object(fall.trunk.pos)
+		_object_view.hide_object(fall.trunk.pos)
 	tree_felled.emit(tree.pos, FallingTree.FALL_SECONDS)
 
 
@@ -615,7 +409,7 @@ func _on_tree_landed(fall: FallingTree) -> void:
 	_hit_particles.emit(fall.impact_effect, fall.impact_point())
 	var stump := world.object_at(fall.tree.pos)
 	if stump != null:
-		_shake_object(stump)
+		_object_view.shake(stump)
 	tree_landed.emit(fall.tree)
 
 
@@ -624,6 +418,4 @@ func _end_fall(fall: FallingTree) -> void:
 	_falling_trees.erase(fall)
 	fall.queue_free()
 	if fall.trunk != null:
-		_hidden_trunks.erase(fall.trunk.pos)
-		if world.is_chunk_loaded(Chunk.world_to_chunk(fall.trunk.pos)):
-			_draw_object(fall.trunk.pos)
+		_object_view.reveal(fall.trunk.pos)
