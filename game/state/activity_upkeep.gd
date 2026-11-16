@@ -95,8 +95,8 @@ func skipped(_minutes: int, _clock_at_end: GameClock) -> void:
 ## The entries of a villager's day: the model's plan for it if there is one (over the default day
 ## if it is for the rest of the day only, and with the default entries that are fixed kept), else
 ## the default day. Made once and kept for the days around the one asked for: a field tilled or a
-## church built later shows in the days made after it, not in one already kept. A wild spot counts
-## as found, as it is only looked for (in the loaded land) when the entry is on.
+## church built later shows in the days made after it, not in one already kept. A target that is
+## only looked for when the entry is on (a wild spot, in the loaded land) counts as found.
 func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 	var days: Dictionary = _days_of_npc.get(npc, {})
 	if not days.has(day):
@@ -105,8 +105,11 @@ func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 				days.erase(kept_day)
 		var activities := VillagerActivities.of(npc, _npcs.villagers, _npcs.rules, _rules)
 		var has_place := func(activity: String) -> bool:
-			var target: String = _rules.activity(activity)["target"]
-			return target == "wild" or places.spot_of(npc, target, day) != ActivityPlaces.NOWHERE
+			var target := _rules.target(_rules.activity(activity)["target"])
+			return (
+				target.is_found_when_on()
+				or places.spot_of(npc, target.kind(), day) != ActivityPlaces.NOWHERE
+			)
 		var default_day := DefaultDay.of(npc, activities, day, _world.world_seed, _rules, has_place)
 		var plan: DayPlan = npc.day_plans.get(day)
 		var fixed := default_day.filter(
@@ -119,17 +122,17 @@ func entries_of(npc: Npc, day: int) -> Array[DayEntry]:
 
 ## The activities a villager with a house may be given on game day `day`, for the model to choose
 ## from: theirs but the fixed ones, with their days and seasons holding and their place found,
-## each `{id, walk_minutes}` with the walk from the yard of their home to that place. A wild spot
-## is not looked for before the entry is on, so its walk is 0.
+## each `{id, walk_minutes}` with the walk from the yard of their home to that place. A spot that
+## is not looked for before the entry is on (wild) has no walk: 0.
 func offers_of(npc: Npc, day: int) -> Array[Dictionary]:
 	var offers: Array[Dictionary] = []
 	var activities := VillagerActivities.of(npc, _npcs.villagers, _npcs.rules, _rules)
 	for id in activities.on_day(day, _rules):
 		if _rules.is_fixed(id):
 			continue
-		var target: String = _rules.activity(id)["target"]
-		var spot := places.spot_of(npc, target, day)
-		if spot == ActivityPlaces.NOWHERE and target != "wild":
+		var target := _rules.target(_rules.activity(id)["target"])
+		var spot := places.spot_of(npc, target.kind(), day)
+		if spot == ActivityPlaces.NOWHERE and not target.is_found_when_on():
 			continue
 		var walk := 0.0
 		if spot != ActivityPlaces.NOWHERE:

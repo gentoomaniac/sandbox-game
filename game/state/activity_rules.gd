@@ -117,6 +117,12 @@ func number(key: String) -> float:
 	return float(_values[RULES_SECTION][key])
 
 
+## The kind of place an activity with `target_name` is done at.
+func target(target_name: String) -> ActivityTarget:
+	assert(_targets.has(target_name), "Not a target: %s" % target_name)
+	return _targets[target_name]
+
+
 ## How many tiles from home `kind` ("field", "church", ...) is looked for.
 func search_tiles(kind: String) -> float:
 	return float(_values[RULES_SECTION]["search_tiles"][kind])

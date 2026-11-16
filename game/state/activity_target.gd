@@ -19,3 +19,16 @@ func is_searched() -> bool:
 ## Whether it is a building with a door, so an activity there may be `inside`.
 func has_door() -> bool:
 	return false
+
+
+## Whether its spot is only looked for when the entry is on (the land far from the player is not
+## loaded), so a villager has the activity in their day, and is offered it, with no spot yet.
+func is_found_when_on() -> bool:
+	return false
+
+
+## The spot of the target for `npc` on game day `day`, the middle of a tile, or
+## `ActivityPlaces.NOWHERE` if they have none. `places` knows the world and the rules. The same day
+## gives the same spot for the same villager.
+func spot_of(_npc: Npc, _day: int, _places: ActivityPlaces) -> Vector2:
+	return ActivityPlaces.NOWHERE

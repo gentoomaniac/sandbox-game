@@ -383,7 +383,7 @@ fixed=true
   `wild` (a walkable meadow tile 8 to `wild` tiles from home, picked from the day and the name,
   so it is the same spot all day and tomorrow's is another; only the tiles of loaded chunks are
   known, so a villager far from the player has none and the entry is skipped, as for a target that
-  is gone: built in `ActivityPlaces`).
+  is gone: each kind's `spot_of`, asked through `ActivityPlaces`).
 - **`field`** is the nearest tilled tile or the middle of the nearest field of the village
   (`Village.field_spots`) within `search_tiles.field` of their home; with none, the workplace if it
   is a field spot (the sheet's `workplace_spot`), else the activity is not offered to the villager.
