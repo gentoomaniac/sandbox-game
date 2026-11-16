@@ -3,7 +3,7 @@ extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_43` and so on). Older ones are refused.
+## (see `_upgrade_from_version_44` and so on). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
@@ -23,19 +23,14 @@ extends RefCounted
 ## So a field added in step 1 is checked there too: add its check to the validator.
 
 const VERSION := 53
-## The oldest version we still upgrade.
-const OLDEST_VERSION := VERSION - 10
+## The oldest version we still upgrade. Nine steps back for the moment: the commit that raises
+## VERSION (the purse, #49) makes it ten again.
+const OLDEST_VERSION := VERSION - 9
 ## The world's save path: its saves are named after it (see SaveList).
 const DEFAULT_PATH := "user://saves/world.json"
 ## What ends the name of a backup (see `free_backup_path`): a save we can't use is
 ## moved there, and one loaded without its missing content is copied there.
 const BACKUP_SUFFIX := ".bak"
-## The day and minute stamps the upgrade from version 43 moves to the 35-day seasons. The names are
-## written out, so that a later field of the same name is left alone.
-const DAY_STAMP_KEYS := [
-	"day", "placed_day", "last_petted_day", "last_petted_asleep_day", "opinion_day"
-]
-const MINUTE_STAMP_KEYS := ["follow_until_minute", "start_minute", "done_minute", "learned_at"]
 
 
 ## Writes the game as a new save of the world at `base`. Returns whether it worked.
@@ -219,8 +214,6 @@ static func copy_aside(path: String, backup: String) -> String:
 
 ## Brings the data of a save of `version` up to the current one.
 static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 43:
-		_upgrade_from_version_43(game)
 	if version <= 44:
 		_upgrade_from_version_44(game)
 	if version <= 45:
@@ -239,50 +232,6 @@ static func _upgrade(game: Dictionary, version: int) -> void:
 		_upgrade_from_version_51(game)
 	if version <= 52:
 		_upgrade_from_version_52(game)
-
-
-## Version 43 had seasons of 30 days and years of 120 (#85); they have 35 and 140 now. A saved day
-## keeps its year, season and day of the season, so the save stays in the season it was in: day
-## 130, the 10th day of spring in year 2, is day 150. Every other day and minute the save holds
-## (the deeds, chats and memories, what a kiln, a rooster or a scarecrow counts from) moves the
-## same way, so each is as long ago as it was, give or take the five new days of a season.
-static func _upgrade_from_version_43(game: Dictionary) -> void:
-	_move_to_longer_seasons(game)
-
-
-static func _move_to_longer_seasons(data: Variant) -> void:
-	if data is Array:
-		for entry: Variant in data:
-			_move_to_longer_seasons(entry)
-	elif data is Dictionary:
-		for key: String in data:
-			var value: Variant = data[key]
-			var is_number: bool = value is int or value is float
-			if key in DAY_STAMP_KEYS and is_number:
-				data[key] = _day_in_longer_seasons(int(value))
-			elif key in MINUTE_STAMP_KEYS and is_number:
-				data[key] = _minute_in_longer_seasons(int(value))
-			elif key == "origin" and value is String and "|" in value:
-				# A story's deed, as "day|kind|place" (see DeedLog).
-				var parts: PackedStringArray = value.split("|", true, 1)
-				data[key] = "%d|%s" % [_day_in_longer_seasons(int(parts[0])), parts[1]]
-			else:
-				_move_to_longer_seasons(value)
-
-
-## Day 0 is "never" and stays so.
-static func _day_in_longer_seasons(day: int) -> int:
-	if day < 1:
-		return day
-	var days_since_start := day - 1
-	var year := days_since_start / 120
-	var day_of_year := days_since_start % 120
-	return year * 140 + day_of_year / 30 * 35 + day_of_year % 30 + 1
-
-
-static func _minute_in_longer_seasons(minute: int) -> int:
-	var day := _day_in_longer_seasons(minute / GameClock.MINUTES_PER_DAY + 1)
-	return (day - 1) * GameClock.MINUTES_PER_DAY + minute % GameClock.MINUTES_PER_DAY
 
 
 ## Version 44 had the old generator's land (a grid of fields and ditches, woods of single trees, a
