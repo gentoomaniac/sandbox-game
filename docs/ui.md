@@ -175,7 +175,9 @@ it has the palette's `INK`, `GOLD` and `MUD_DARK`, for what a screen draws itsel
 portrait's ground) and not for text or controls, which take theirs from the theme. Repeated looks
 are theme variations, set with `theme_type_variation` instead of a colour or style override:
 `TitleLabel` (a gold heading), `WarningLabel` (flame, for what is short or refused; set it to
-`&""` again when the state ends) and `RecipeButton` (a disabled recipe keeps the normal look). There are no shared builders for titles or button
+`&""` again when the state ends) and `RecipeButton` (a disabled recipe keeps the normal look).
+The build menu's compact looks are variations too: `BuildCell` and `BuildCellChosen` (with
+`ChosenLabel` for its name) for the cells, and `CompactPanel` for the preview and the note. There are no shared builders for titles or button
 rows yet: add one to the base when a second window needs the same.
 
 ## Testing a window headless

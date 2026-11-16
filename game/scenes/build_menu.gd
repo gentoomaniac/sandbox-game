@@ -45,11 +45,6 @@ var _note := PanelContainer.new()
 var _message := Label.new()
 ## One per material a building can take, in the order of BuildingTypes.COST_ITEMS.
 var _material_labels: Array[Label] = []
-## The boxes of the cells: the theme's buttons with narrower margins, the chosen one lit like a
-## button under the mouse, its name in the gold of one.
-var _cell_box := _narrowed(THEME.get_stylebox("normal", "Button"))
-var _chosen_box := _narrowed(THEME.get_stylebox("hover", "Button"))
-var _chosen_color := THEME.get_color("font_hover_color", "Button")
 ## What the menu was last drawn for (see `_process`).
 var _shown: Array = []
 ## What the chosen building was last brought into view for: dragging the row's bar changes
@@ -165,12 +160,9 @@ func _show_choice() -> void:
 		for style: StringName in _cells[building]:
 			var is_chosen: bool = building == _builder.choice and style == _builder.style
 			var cell: PanelContainer = _cells[building][style]
-			cell.add_theme_stylebox_override("panel", _chosen_box if is_chosen else _cell_box)
 			var name_label: Label = cell.get_node("Rows/Name")
-			if is_chosen:
-				name_label.add_theme_color_override("font_color", _chosen_color)
-			else:
-				name_label.remove_theme_color_override("font_color")
+			cell.theme_type_variation = &"BuildCellChosen" if is_chosen else &"BuildCell"
+			name_label.theme_type_variation = &"ChosenLabel" if is_chosen else &""
 	var entry := _builder.type_data()
 	_preview_picture.visible = true
 	_preview_picture.texture = load(ArtSet.path(entry["sprite"]))
@@ -240,6 +232,7 @@ func _place_on_screen(is_choosing: bool) -> void:
 func _cell(building: StringName, style: StringName) -> PanelContainer:
 	var entry := BuildingTypes.of(building, style)
 	var cell := PanelContainer.new()
+	cell.theme_type_variation = &"BuildCell"
 	cell.custom_minimum_size.x = CELL_WIDTH
 	cell.mouse_filter = Control.MOUSE_FILTER_STOP
 	cell.gui_input.connect(_on_cell_input.bind(building, style))
@@ -264,15 +257,10 @@ func _build_preview() -> void:
 	_preview.theme = THEME
 	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# The theme's panel margins are meant for menus.
-	var style: StyleBoxTexture = THEME.get_stylebox("panel", "PanelContainer").duplicate()
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	_preview.add_theme_stylebox_override("panel", style)
+	_preview.theme_type_variation = &"CompactPanel"
 	_note.theme = THEME
 	_note.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_note.add_theme_stylebox_override("panel", style)
+	_note.theme_type_variation = &"CompactPanel"
 	_note.visible = false
 	var rows := VBoxContainer.new()
 	rows.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -287,13 +275,6 @@ func _build_preview() -> void:
 	_message.theme_type_variation = &"WarningLabel"
 	_note.add_child(_message)
 	add_child(_note)
-
-
-static func _narrowed(box: StyleBox) -> StyleBox:
-	var narrow: StyleBox = box.duplicate()
-	narrow.content_margin_left = 3
-	narrow.content_margin_right = 3
-	return narrow
 
 
 ## A building's picture fitted into `box`, its bottom on the box's bottom like on the ground.

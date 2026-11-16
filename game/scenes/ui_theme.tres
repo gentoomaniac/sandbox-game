@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=23 format=3]
+[gd_resource type="Theme" load_steps=26 format=3]
 
 [ext_resource type="FontFile" path="res://assets/ui/font.fnt" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/panel.png" id="2_panel"]
@@ -117,6 +117,39 @@ content_margin_top = 2.0
 content_margin_bottom = 2.0
 bg_color = Color(0.702, 0.635, 0.486, 1)
 
+[sub_resource type="StyleBoxTexture" id="CompactPanel"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+texture = ExtResource("2_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="BuildCell"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+texture = ExtResource("3_normal")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxTexture" id="BuildCellChosen"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+texture = ExtResource("4_hover")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 9
@@ -142,6 +175,15 @@ WarningLabel/base_type = &"Label"
 WarningLabel/colors/font_color = Color(0.8627451, 0.47843137, 0.21568628, 1)
 RecipeButton/base_type = &"Button"
 RecipeButton/styles/disabled = SubResource("ButtonNormal")
+CompactPanel/base_type = &"PanelContainer"
+CompactPanel/styles/panel = SubResource("CompactPanel")
+BuildCell/base_type = &"PanelContainer"
+BuildCell/styles/panel = SubResource("BuildCell")
+BuildCellChosen/base_type = &"PanelContainer"
+BuildCellChosen/styles/panel = SubResource("BuildCellChosen")
+; The gold of Button/font_hover_color above, repeated: a theme cannot point at another item.
+ChosenLabel/base_type = &"Label"
+ChosenLabel/colors/font_color = Color(0.99, 0.84, 0.46, 1)
 VBoxContainer/constants/separation = 4
 VScrollBar/styles/grabber = SubResource("ScrollGrabber")
 VScrollBar/styles/grabber_highlight = SubResource("ScrollGrabberHighlight")

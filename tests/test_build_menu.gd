@@ -74,7 +74,7 @@ func test_a_click_on_a_cell_picks_its_building_and_style_and_does_not_reach_the_
 
 
 func _is_lit(cell: Control) -> bool:
-	return cell.get_theme_stylebox("panel") == _menu._chosen_box
+	return cell.theme_type_variation == &"BuildCellChosen"
 
 
 func test_picking_with_the_keys_lights_the_cell_and_shows_its_style_in_the_preview() -> void:
