@@ -117,6 +117,7 @@ var _object_tileset := ObjectTileset.new(CropRules.default_rules(), ambient_moti
 var _layers: Array[TileMapLayer] = []
 var _soil_wetness := SoilWetness.new()
 var _footprint_view := FootprintView.new()
+var _flood_overlay := FloodOverlay.new(ambient_motion.flood)
 var _objects := TileMapLayer.new()
 ## The rims of trodden earth beside the ways, under the objects.
 var _way_edges: WayEdges
@@ -187,6 +188,7 @@ func _ready() -> void:
 	_soil_wetness.show_ground_look(_ground_look)
 	add_child(_soil_wetness)
 	add_child(_footprint_view)
+	add_child(_flood_overlay)
 	add_child(decorations)
 	add_child(RainSplashes.new(ambient_motion))
 	_way_edges = WayEdges.new(_object_tileset.tile_set, _ground_look.objects)
@@ -238,6 +240,7 @@ func show_world(residency: ChunkResidency) -> void:
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world)
 	_footprint_view.show_world(world, _cover_map.ground_cover.is_snowed)
+	_flood_overlay.show_world(world, residency)
 	world.building_placed.connect(_buildings.add)
 	world.building_placed.connect(_on_building_changed)
 	world.building_removed.connect(_buildings.remove)

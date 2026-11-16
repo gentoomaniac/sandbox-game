@@ -20,6 +20,7 @@ const DECORATION_SWAY_SHADER := preload("res://game/scenes/decoration_sway.gdsha
 const LILY_PAD_SHADER := preload("res://game/scenes/lily_pad.gdshader")
 const WATER_SHADER := preload("res://game/scenes/water.gdshader")
 const MUD_SHADER := preload("res://game/scenes/mud.gdshader")
+const FLOOD_SHADER := preload("res://game/scenes/flood.gdshader")
 const FORD_SHADER := preload("res://game/scenes/ford.gdshader")
 const FIRE_SHADER := preload("res://game/scenes/fire.gdshader")
 const RAIN_SPLASH_SHADER := preload("res://game/scenes/rain_splashes.gdshader")
@@ -142,6 +143,8 @@ static var SWAY_PROFILES := _with_half_dead(_LIVING_SWAY)  # gdlint: ignore=clas
 var water := _material(WATER_SHADER)
 ## On the mud layer of the terrain: the tide (see `show_tide`), whose water ripples like the river.
 var mud := _material(MUD_SHADER)
+## On the water of a storm surge over the land (see FloodOverlay): it ripples like the river.
+var flood := _material(FLOOD_SHADER)
 ## On the ford layer of the terrain: its plain water ripples like the creek's, and GroundLook gives
 ## it the looks of the ground for its stones (see ford.gdshader).
 var ford := _material(FORD_SHADER)
@@ -297,7 +300,7 @@ func update(delta: float, new_wind: Vector2, rain: float) -> void:
 	var chop := chop_for(speed)
 	_scarecrow_phase += speed * SCARECROW_STEPS_PER_SECOND * delta
 	_water_drift += (WATER_BASE_DRIFT + wind * WATER_DRIFT_PER_WIND) * delta
-	for material in [water, mud, ford]:
+	for material in [water, mud, ford, flood]:
 		material.set_shader_parameter("chop", chop)
 		material.set_shader_parameter("drift", _water_drift)
 	lily_pads.set_shader_parameter("drift", LILY_DRIFT + LILY_DRIFT_IN_WIND * chop)
@@ -367,7 +370,7 @@ static func splash_chance_for(rain: float) -> float:
 ## The ground's shaders work on the pixels of its art: the world's, or the 16 px art's in the
 ## classic art.
 func _show_ground_art_set() -> void:
-	for material in [water, mud, ford, decoration_sway, lily_pads]:
+	for material in [water, mud, ford, flood, decoration_sway, lily_pads]:
 		material.set_shader_parameter("art_scale", art_pixel_size())
 
 
