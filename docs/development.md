@@ -68,8 +68,8 @@ the next tag.
   place the player did not touch is new land: no field grid, fences or ditches, woods in patches
   instead of lone trees, a winding river with creeks. A new game with the same seed starts at
   another camp and looks different from before. Seams between old edits and new land may
-  look odd. A save of version 44 needs no upgrade: nothing in the file changes. Saves of version 35
-  and older are no longer read (their upgrade was dropped to keep ten steps).
+  look odd. Saves of version 44 and older are no longer read (their upgrade was dropped to keep
+  ten steps).
 
 ## Language model
 

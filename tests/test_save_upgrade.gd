@@ -19,18 +19,6 @@ func test_a_save_older_than_the_oldest_supported_version_is_refused_and_kept_as_
 	assert_eq(SaveFile.backups_of(SAVE_PATH).size(), 1)
 
 
-func test_a_version_44_save_loads_with_the_land_of_the_generator_now() -> void:
-	_write_save(44, _current_game())
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_not_null(restored)
-	var generator := WorldGenerator.new(restored.world.world_seed)
-	var pos := Vector2i(40, 40)
-	restored.world.add_chunk(generator.generate_chunk(Chunk.world_to_chunk(pos)))
-	assert_eq(restored.world.tile_at(pos).terrain, generator.terrain_at(pos))
-
-
 func test_a_current_save_keeps_its_ground_items() -> void:
 	var state := GameState.new_game(7)
 	state.world.ground_items.add(GroundItem.new(ItemTypes.LOGS, 2, Vector2(1.5, 2.25)))
