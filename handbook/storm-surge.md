@@ -9,10 +9,10 @@ behind them are in the [design](../design/world/storm-surge.md).)
 Every stretch of the sea dyke has a height (in metres over the mean high water) and a strength (how
 well it is turfed and packed). Point at a dyke and the hover says it: "Dyke, 2.1 m, well turfed", or
 "Dyke, low, 1.2 m, bare". A stretch of about 60 tiles shares one value, and some stretches are low:
-those are the places where a surge comes through. The sea dyke is about 2.4 m high, give or take 0.8
-(the river's dykes are lower and the sea never reaches them). A dyke the sea runs over breaks
-down to 0.3 m; one that holds but was nearly overtopped is damaged, a weak one more than a strong
-one. The villagers mend a damaged dyke after six days.
+those are the places where a surge comes through. The sea dyke is about 2.0 m high, give or take
+1.5 (about a tenth of it comes out low; the river's dykes are lower and the sea never reaches
+them). A dyke the sea runs over breaks down to 0.3 m; one that holds but was nearly overtopped
+is damaged, a weak one more than a strong one. The villagers mend a damaged dyke after six days.
 
 You can't build or raise a dyke yet: that comes with terraforming
 ([#59](https://github.com/gentoomaniac/sandbox-game/issues/59)), and with it clay for height and sods

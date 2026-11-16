@@ -47,9 +47,10 @@ Every dyke tile, generated or built, has two values:
 - **height** in metres over mean high water,
 - **strength** 0..1: how well it is turfed and packed.
 
-**Generated:** height is 2.4 +- 0.8 from the generator's slow dyke noise, so a stretch of a few
-dozen tiles shares one value and some stretches are low: the places a surge comes through. River
-dykes are lower (1.0 +- 0.3); a river flood is not part of this plan. Strength is 0.6 +- 0.2.
+**Generated:** height is 2.0 +- 1.5 from the generator's slow dyke noise (which seldom reaches
+its ends: about a tenth of the coast is low), so a stretch of a few dozen tiles shares one value
+and some stretches are low: the places a surge comes through. River dykes are lower (1.0 +- 0.3);
+a river flood is not part of this plan. Strength is 0.6 +- 0.2.
 They are computed from the seed on demand; only a tile the game changed is saved.
 
 **Player-built** (needs #59, which adds building and removing a dyke; this plan adds the value).

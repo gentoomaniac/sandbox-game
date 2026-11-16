@@ -32,9 +32,9 @@ func test_the_sea_dyke_stays_within_its_spread_and_some_stretches_are_low() -> v
 		assert_true(_profile.is_sea_dyke(tile))
 		lowest = minf(lowest, _profile.height_at(tile))
 		highest = maxf(highest, _profile.height_at(tile))
-	assert_between(lowest, 1.6, 3.2)
-	assert_between(highest, 1.6, 3.2)
-	assert_lt(lowest, 2.4, "a stretch is low, where a surge can come through")
+	assert_between(lowest, 0.5, 3.5)
+	assert_between(highest, 0.5, 3.5)
+	assert_lt(lowest, 1.5, "a stretch is low, where a surge can come through")
 
 
 func test_a_stretch_of_dyke_shares_one_height() -> void:
