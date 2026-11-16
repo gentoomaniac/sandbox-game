@@ -184,14 +184,14 @@ func test_tiles_last_seen_in_different_hours_catch_up_as_hour_by_hour() -> void:
 
 
 func test_a_save_with_moisture_kept_for_a_tile_that_is_not_soil_loads_without_it() -> void:
-	var data := _state.to_dict()
+	var data := GameCodec.to_dict(_state)
 	var grass := _tile + Vector2i(0, 5)
 	(data["world"]["soil_moisture"] as Array).append(SaveCodec.vector_to_json(grass) + [0.9])
-	var restored := GameState.from_dict(data)
+	var restored := GameCodec.from_dict(data)
 	assert_eq(
 		restored.world.moisture_at(grass), CropRules.default_rules().farming("default_moisture")
 	)
-	var kept := restored.to_dict()["world"]["soil_moisture"] as Array
+	var kept := GameCodec.to_dict(restored)["world"]["soil_moisture"] as Array
 	assert_false(kept.any(func(entry: Array) -> bool: return entry[2] == 0.9))
 
 

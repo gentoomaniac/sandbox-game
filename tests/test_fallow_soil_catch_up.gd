@@ -80,8 +80,8 @@ func test_the_weeds_of_a_sleep_come_up_over_frames_as_in_one_go_and_as_played() 
 	assert_gt(Engine.get_process_frames() - frame_before, _field.size(), "a tile a frame")
 	for pos in _field:
 		assert_true(over_frames.world.fallow.is_weedy(pos), str(pos))
-	assert_eq(over_frames.to_dict()["world"], in_one_go.to_dict()["world"])
-	assert_eq(over_frames.to_dict()["world"], played.to_dict()["world"])
+	assert_eq(GameCodec.to_dict(over_frames)["world"], GameCodec.to_dict(in_one_go)["world"])
+	assert_eq(GameCodec.to_dict(over_frames)["world"], GameCodec.to_dict(played)["world"])
 
 
 func test_a_field_grows_over_in_a_sleep() -> void:

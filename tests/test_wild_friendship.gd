@@ -63,4 +63,4 @@ func test_nothing_about_wild_animals_is_saved() -> void:
 	for kind in WildlifeRules.GROUND_KINDS:
 		_spawn_at(kind, Vector2i(3, 5))
 
-	assert_false(JSON.stringify(_state.to_dict()).contains("friendship"))
+	assert_false(JSON.stringify(GameCodec.to_dict(_state)).contains("friendship"))

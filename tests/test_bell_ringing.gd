@@ -96,12 +96,12 @@ func test_ringing_says_which_bell_and_changes_nothing_else() -> void:
 	var frame := _place_building_nearby(BuildingTypes.BELL_FRAME)
 	_state.world.bell_rung.connect(func(building: Building) -> void: _rung.append(building))
 	_stand_on(_state, frame.origin + Vector2i(-1, 0))
-	var snapshot := _state.to_dict()
+	var snapshot := GameCodec.to_dict(_state)
 	assert_true(_state.ring_bell_in_reach())
 	assert_true(_state.ring_bell_in_reach(frame.origin))
 	assert_false(_state.ring_bell_in_reach(frame.origin + Vector2i(-1, 1)))
 	assert_eq(_rung, [frame, frame])
-	assert_eq(_state.to_dict(), snapshot)
+	assert_eq(GameCodec.to_dict(_state), snapshot)
 
 
 func test_e_and_a_click_in_the_game_ring_the_bell() -> void:

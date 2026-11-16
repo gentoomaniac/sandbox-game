@@ -74,7 +74,7 @@ func revision_around(coords: Vector2i) -> int:
 	return latest
 
 
-## A copy of the bits of every chunk, for `array_of` (see GameState `snapshot`).
+## A copy of the bits of every chunk, for `array_of` (see GameCodec `snapshot`).
 func snapshot() -> Dictionary:
 	return _seen_by_chunk.duplicate(true)
 

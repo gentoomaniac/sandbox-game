@@ -73,14 +73,15 @@ Warft and an Ewer here and there.
   the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`use_at`,
-  `use_tile`), and what gets saved (`to_dict`, see `SaveFile`). It owns
+  `use_tile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
   Walking and riding are `PlayerTravel` (`GameState.travel`, `travel.walk(state, ...)`): it keeps
   the riding state and is given the game on each call, as a helper the game holds must not hold
   the game back (a cycle would leak the whole game). The doors, the bed that is home, sleeping,
   passing out and `teleport_to` are `PlayerRest`, functions that are given the game.
   A new game and the putting of the world and the ordered simulation systems under a game are
-  `GameFactory` (`new_game`, `attach_world`), which a loaded game goes through as well.
+  `GameFactory` (`new_game`, `attach_world`), which a loaded game goes through as well. What gets
+  saved is `GameCodec` (`to_dict`, `snapshot`, `from_dict`): the game part of a `SaveFile`.
 - **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
   whatever moves the clock goes through it, and whatever changes with time is a
   `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played
@@ -457,7 +458,7 @@ keeps ten upgrade steps: versions VERSION - 10 to VERSION load). Things marked "
 comment (cheats, a forced weather) live only for the session. A timed or quick save
 (`SaveService`) takes `SaveFile.snapshot` on the main thread (the game of that moment, copied: the
 big maps as they are, the rest as save data) and makes the save data of that, the text and the
-write on a worker thread (`GameState.dict_of`, `SaveFile.text_of`), so a `snapshot` must copy
+write on a worker thread (`GameCodec.dict_of`, `SaveFile.text_of`), so a `snapshot` must copy
 every array, dictionary or object of the running game that it hands out instead of sharing it.
 
 `SaveFile` owns the files and the version window only. What happens to the data of a loaded save

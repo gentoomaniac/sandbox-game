@@ -43,7 +43,7 @@ func test_a_version_52_save_keeps_the_opinion_and_has_the_defaults() -> void:
 	var antje := Npc.create_villager("antje", Vector2(3.5, 4.5), state.npcs.villagers)
 	antje.opinion = 150
 	state.npcs.add(antje)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = JSON.parse_string(JSON.stringify(GameCodec.to_dict(state)))
 	for npc: Dictionary in game["npcs"]:
 		for key in [
 			"action_day",

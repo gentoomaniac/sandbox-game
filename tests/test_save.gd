@@ -169,18 +169,18 @@ func test_a_building_keeps_its_style_and_one_the_file_no_longer_has_looks_as_its
 
 
 func test_a_new_game_codec_round_trip() -> void:
-	var data := _through_json(_state.to_dict())
-	assert_eq(_through_json(GameState.from_dict(data).to_dict()), data)
+	var data := _through_json(GameCodec.to_dict(_state))
+	assert_eq(_through_json(GameCodec.to_dict(GameCodec.from_dict(data))), data)
 
 
 func test_a_lived_in_game_codec_round_trip() -> void:
 	var removed_tree := _remove_a_tree()
 	_lived_in_state()
-	var data := _through_json(_state.to_dict())
+	var data := _through_json(GameCodec.to_dict(_state))
 
-	var restored := GameState.from_dict(data)
+	var restored := GameCodec.from_dict(data)
 
-	assert_eq(_through_json(restored.to_dict()), data)
+	assert_eq(_through_json(GameCodec.to_dict(restored)), data)
 	assert_eq(restored.player.inventory.count_of(ItemTypes.TURNIP), 3)
 	assert_eq(restored.player.inventory.held_item(), ItemTypes.TURNIP_SEEDS)
 	assert_eq(restored.clock.day, 2)
@@ -247,7 +247,7 @@ func test_file_round_trip() -> void:
 	_lived_in_state()
 	assert_true(SaveFile.write(_state, SAVE_PATH))
 	var restored := SaveFile.read(SAVE_PATH)
-	assert_eq(_through_json(restored.to_dict()), _through_json(_state.to_dict()))
+	assert_eq(_through_json(GameCodec.to_dict(restored)), _through_json(GameCodec.to_dict(_state)))
 
 
 func test_without_a_file_there_is_no_game_to_load() -> void:

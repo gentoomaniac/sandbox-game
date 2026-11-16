@@ -25,13 +25,13 @@ func _state_with_a_village() -> GameState:
 
 
 func _saved_village() -> Dictionary:
-	return JSON.parse_string(JSON.stringify(_state_with_a_village().to_dict()))
+	return JSON.parse_string(JSON.stringify(GameCodec.to_dict(_state_with_a_village())))
 
 
 func test_a_world_without_a_village_saves_null_and_loads_without_one() -> void:
 	var state := GameFactory.new_game(7)
 	assert_null(state.world.village)
-	assert_null(state.to_dict()["world"]["village"])
+	assert_null(GameCodec.to_dict(state)["world"]["village"])
 	assert_true(SaveFile.write(state, SAVE_PATH))
 
 	assert_null(SaveFile.read(SAVE_PATH).world.village)

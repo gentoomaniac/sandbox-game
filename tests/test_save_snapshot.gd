@@ -115,13 +115,13 @@ func _change_everything() -> void:
 
 
 func test_what_the_game_does_after_a_snapshot_does_not_reach_it() -> void:
-	var before := JSON.stringify(_state.to_dict(), "\t")
+	var before := JSON.stringify(GameCodec.to_dict(_state), "\t")
 	var snapshot := SaveFile.snapshot(_state)
-	var game_before := _state.to_dict()
+	var game_before := GameCodec.to_dict(_state)
 
 	_change_everything()
 
-	var game_after := _state.to_dict()
+	var game_after := GameCodec.to_dict(_state)
 	for part in ["clock", "player", "livestock", "npcs"]:
 		assert_true(game_after[part] != game_before[part], "%s changed" % part)
 	for part in game_before["world"]:

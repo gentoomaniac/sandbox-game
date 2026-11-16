@@ -1,6 +1,6 @@
 class_name SaveFile
 extends RefCounted
-## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
+## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameCodec.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
 ## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step (see
 ## SaveMigrations). Older ones are refused.
@@ -42,15 +42,15 @@ static func write(
 ## The game of this moment, copied so that it shares nothing with the running game: another thread
 ## can make text of it (`text_of`) while the game goes on. Taking it must happen on the main
 ## thread, and it takes little of it: the big parts of the game are copied as they are, not made
-## into save data yet (see GameState `snapshot`).
+## into save data yet (see GameCodec `snapshot`).
 static func snapshot(state: GameState) -> Dictionary:
-	return {"version": VERSION, "game": state.snapshot()}
+	return {"version": VERSION, "game": GameCodec.snapshot(state)}
 
 
 ## The text of a save file for a snapshot. Safe to call from a thread.
 static func text_of(snapshot_data: Dictionary) -> String:
 	var data := snapshot_data.duplicate()
-	data["game"] = GameState.dict_of(snapshot_data["game"])
+	data["game"] = GameCodec.dict_of(snapshot_data["game"])
 	return JSON.stringify(data, "\t")
 
 
@@ -140,7 +140,7 @@ static func load_game(path: String) -> LoadResult:
 		return LoadResult.refused(validator.problems)
 	if not validator.missing.is_empty():
 		return LoadResult.asking(game, validator, path)
-	return LoadResult.ready(GameState.from_dict(game))
+	return LoadResult.ready(GameCodec.from_dict(game))
 
 
 ## The newest save of the world at `base` that gives a game, or null if there is none. A save

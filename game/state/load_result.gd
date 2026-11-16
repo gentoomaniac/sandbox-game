@@ -88,6 +88,6 @@ func load_dropping_missing() -> GameState:
 	if copy_error != "":
 		return null
 	_validator.drop_missing()
-	state = GameState.from_dict(_game)
+	state = GameCodec.from_dict(_game)
 	outcome = Outcome.READY
 	return state

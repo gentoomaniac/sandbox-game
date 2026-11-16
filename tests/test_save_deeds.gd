@@ -51,7 +51,7 @@ func test_a_story_heard_is_kept_with_who_told_it() -> void:
 
 func test_a_story_without_an_origin_or_a_minute_learned_is_refused() -> void:
 	var game: Dictionary = JSON.parse_string(
-		JSON.stringify(_state_with_a_deed_seen_by_antje().to_dict())
+		JSON.stringify(GameCodec.to_dict(_state_with_a_deed_seen_by_antje()))
 	)
 	game["npcs"][0]["stories"][0].erase("origin")
 	game["npcs"][0]["stories"][0]["learned_at"] = "yesterday"
@@ -64,7 +64,7 @@ func test_a_story_without_an_origin_or_a_minute_learned_is_refused() -> void:
 
 func test_a_deed_of_an_unknown_kind_or_without_a_place_is_refused() -> void:
 	var state := _state_with_a_deed_seen_by_antje()
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = JSON.parse_string(JSON.stringify(GameCodec.to_dict(state)))
 	game["deeds"][0]["kind"] = "pilfered"
 	game["npcs"][0]["stories"][0].erase("place")
 	game["npcs"][0]["stories"][0]["weight"] = "huge"
@@ -96,7 +96,7 @@ func test_a_story_not_judged_yet_is_still_in_the_queue_after_loading() -> void:
 
 func test_a_story_without_the_mark_that_it_is_judged_is_refused() -> void:
 	var game: Dictionary = JSON.parse_string(
-		JSON.stringify(_state_with_a_deed_seen_by_antje().to_dict())
+		JSON.stringify(GameCodec.to_dict(_state_with_a_deed_seen_by_antje()))
 	)
 	game["npcs"][0]["stories"][0].erase("is_judged")
 

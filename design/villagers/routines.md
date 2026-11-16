@@ -660,7 +660,7 @@ day is never saved: it is made again, the same. A trip and the current entry are
   is the key of `DayPlan.is_whole_day`; the failed and waiting marks of `asked_plans` are not saved,
   so a villager whose answer was lost is asked once more after a load. Saves rotate (#16): each file carries its plans, nothing
   to do.
-- **After a load** `ActivityUpkeep.resume` runs once for each villager (`GameState.from_dict`): it
+- **After a load** `ActivityUpkeep.resume` runs once for each villager (`GameCodec.from_dict`): it
   drops the plans of days gone by, and the villager gets the entry that is on and is sent from
   where they stand (`walk_to`): one search each, no trip for one that is there. A visible one stands
   a moment while its search runs; nobody jumps. A villager who comes into the world (`spawn npc`,

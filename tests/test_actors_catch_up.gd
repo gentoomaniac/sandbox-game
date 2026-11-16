@@ -261,7 +261,7 @@ func _assert_island_poses(hour: int) -> void:
 ## The games are the same: what is saved, the dice, and what the animals and villagers are in the
 ## middle of, which a save leaves out.
 func _assert_same_game(game: GameState, expected: GameState) -> void:
-	assert_eq(game.to_dict(), expected.to_dict())
+	assert_eq(GameCodec.to_dict(game), GameCodec.to_dict(expected))
 	assert_eq(game.npcs.rng.state, expected.npcs.rng.state, "the villagers' dice")
 	assert_eq(game.livestock.rng.state, expected.livestock.rng.state, "the animals' dice")
 	assert_eq(_doings_of(game), _doings_of(expected))

@@ -41,7 +41,7 @@ func test_a_big_thirsty_herd_skips_over_frames_a_few_animals_a_frame_and_ends_th
 	await over_frames.simulation.skip_over_frames(8 * GameClock.MINUTES_PER_HOUR, _next_frame)
 
 	assert_gt(Engine.get_process_frames() - frame_before, 10, "spread over frames")
-	assert_eq(over_frames.to_dict(), in_one_go.to_dict())
+	assert_eq(GameCodec.to_dict(over_frames), GameCodec.to_dict(in_one_go))
 	assert_eq(over_frames.livestock.rng.state, in_one_go.livestock.rng.state, "the dice")
 	for animal in over_frames.livestock.all():
 		assert_lt(animal.thirst, 0.5, "every one drank in the skip")

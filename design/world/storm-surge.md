@@ -148,7 +148,7 @@ A surge is rolled at the high water before, so it is known **6 game hours ahead*
 ## Saving
 
 The next free `SaveFile` version (50 today; the build checks), by the steps in `save_file.gd`.
-Fields in `GameState.to_dict`, checked in `SaveValidator`:
+Fields in `GameCodec.to_dict`, checked in `SaveValidator`:
 
 - `surge`: whether one is active, its level, the tide number, when it started, its breach tiles
   and how far it has drained;

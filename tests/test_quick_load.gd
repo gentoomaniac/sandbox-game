@@ -85,7 +85,9 @@ func test_the_restarted_scene_keeps_the_view_flags_and_drops_the_rest() -> void:
 
 
 func _write_save_missing_an_item() -> void:
-	var game: Dictionary = JSON.parse_string(JSON.stringify(GameFactory.new_game(7).to_dict()))
+	var game: Dictionary = JSON.parse_string(
+		JSON.stringify(GameCodec.to_dict(GameFactory.new_game(7)))
+	)
 	game["player"]["inventory"]["slots"][4] = {"item": "old_seeds", "count": 3}
 	DirAccess.make_dir_recursive_absolute(DIR)
 	var file := FileAccess.open(PATH, FileAccess.WRITE)

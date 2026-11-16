@@ -185,7 +185,7 @@ func test_a_lived_in_game_passes_the_validator_and_round_trips() -> void:
 	var state := GameFactory.new_game(7)
 	state.world.drop_items(state.player.tile(), {ItemTypes.LOGS: 3})
 	state.player.inventory.add(ItemTypes.LOGS, 40)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
+	var game: Dictionary = JSON.parse_string(JSON.stringify(GameCodec.to_dict(state)))
 	var run := {"recipe": "bricks", "start_minute": 0, "done_minute": 100, "products": {"brick": 6}}
 	_with_object_edit(game, _kiln_object(run))
 

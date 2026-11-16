@@ -266,7 +266,7 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
     each `update` (`Livestock._account_needs`), so a slow frame, a fast-forward and a skip all give
     the same rise, a frozen clock (`freeze`) gives none and a ridden horse gets hungry too. The player
     in a house stops the animals' updates while the clock runs, so a save brings them up to the
-    clock first (`Livestock.account_needs` in `GameState.snapshot`): the hours indoors are in the
+    clock first (`Livestock.account_needs` in `GameCodec.snapshot`): the hours indoors are in the
     saved game, and the game loaded from it.
   - **Looking for what meets a need:** when an awake animal picks what to do next and a need has
     reached `seek_at` (0.5), it looks within `search_tiles` (10) of where it stands, over the

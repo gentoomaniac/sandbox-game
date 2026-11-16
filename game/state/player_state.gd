@@ -234,7 +234,7 @@ static func _tiles_beside(area: Rect2i, side: Vector2i) -> Array[Vector2i]:
 
 
 ## The home map is not saved here: a map is saved as a reference into the world (see
-## GameState.to_dict), so GameState writes and restores it.
+## GameCodec.to_dict), so GameCodec writes and restores it.
 func to_dict() -> Dictionary:
 	return {
 		"position": SaveCodec.float_vector_to_json(position),
