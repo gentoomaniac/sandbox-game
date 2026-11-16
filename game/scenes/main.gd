@@ -70,7 +70,7 @@ var _blackout: BlackoutFlow
 var _screen_keys: ScreenKeys
 var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
-var _clock_ticker: GameClockTicker
+var _play_loop: PlayLoop
 var _interact: InteractFlow
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
@@ -279,9 +279,19 @@ func _connect_state_and_views() -> void:
 	_interact.storage_screen = _storage_screen
 	_interact.crafting_screen = _crafting_screen
 	_trade_screen.talk_requested.connect(_interact.open_chat)
-	_clock_ticker = GameClockTicker.new(_state, _weather_view, _show_clock)
-	_clock_ticker.is_held = func() -> bool:
+	var clock_ticker := GameClockTicker.new(_state, _weather_view, _show_clock)
+	clock_ticker.is_held = func() -> bool:
 		return _debug.is_clock_stopped() or _fade_screen.is_black()
+	_play_loop = PlayLoop.new(
+		_state,
+		clock_ticker,
+		_blackout,
+		_residency,
+		_view,
+		_player_view,
+		_ground_item_view,
+		_npc_views
+	)
 	_view.show_world(_residency)
 	_ground_item_view.show_items(_state.world, _view.entities)
 	_view.tree_felled.connect(_ground_item_view.hold_hops_from)
@@ -501,7 +511,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("toggle_paths"):
 		_paths_hud.toggle()
 	elif event.is_action_pressed("toggle_fast_forward"):
-		_clock_ticker.is_fast_forward = not _clock_ticker.is_fast_forward
+		_play_loop.toggle_fast_forward()
 	elif _hotbar_keys.take(event):
 		pass
 	elif event.is_action_pressed("drop_item") and can_use:
@@ -524,8 +534,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	_clock_ticker.tick(delta)
-	_state.frame_work(delta)
+	_play_loop.begin_frame(delta)
 	var hour := _state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
 	if hour != _soil_shown_hour:
 		_soil_shown_hour = hour
@@ -602,24 +611,7 @@ func _process(delta: float) -> void:
 		_object_cover.cover(_state.player.bed_lying_in)
 		if _state.door_underfoot():
 			_blackout.fade_through(_pass_door)
-	# The world, its animals too, stands still while the player is in a house, and while the sleep
-	# is made up for in steps; but the villagers on a trip go on over the masks, so they are where
-	# one expects them when the player comes out.
-	if not _blackout.is_making_up_time:
-		if _state.is_inside():
-			_state.npcs.update_unseen(delta, _state.world, _state.clock)
-			_state.npcs.update_inside(delta, _state.current_map as Interior, _state.clock)
-		else:
-			_state.livestock.update(delta, _state.world, _state.player.position, _state.clock)
-			_state.npcs.update(delta, _state.world, _state.player.position, _state.clock)
-			_view.player_feet = _player_view.position
-			_view.player_size = (
-				Occlusion.RIDER_SIZE if _state.player.horse != null else Occlusion.PLAYER_SIZE
-			)
-			_residency.set_focus(_state.player.tile())
-			_residency.update(func() -> bool: return not _view.is_drawing())
-			_ground_item_view.set_focus(_state.player.tile())
-			_npc_views.set_focus(_state.player.tile())
+	_play_loop.move_world(delta)
 	_debug.update(delta)
 
 
@@ -718,7 +710,7 @@ func _show_current_map() -> void:
 	_view.visible = not is_inside
 	_weather_view.visible = not is_inside
 	_view.process_mode = PROCESS_MODE_DISABLED if is_inside else PROCESS_MODE_INHERIT
-	_residency.is_held = is_inside or _blackout.is_making_up_time
+	_play_loop.update_streaming_hold()
 	_interior_view.visible = is_inside
 	if is_inside:
 		_wildlife.clear()

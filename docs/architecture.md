@@ -47,9 +47,10 @@ Warft and an Ewer here and there.
   reload), `BlackoutFlow` (door, sleep and passing out), `InteractFlow` (E, and the opening of a
   chat or trade; the words and the opening of each `Interaction.Kind` are registered in an
   `InteractionRegistry`, which also gives the action hint its words for E), `UseSwing` and
-  `UseNotes` (a use of the held item and its note), `ScreenKeys` and
-  `HotbarKeys` (the window and hotbar keys) and `GameClockTicker` (real time to game minutes,
-  F2).
+  `UseNotes` (a use of the held item and its note), `ScreenKeys` and `HotbarKeys` (the window and
+  hotbar keys) and `PlayLoop` (what moves each frame and when: the `GameClockTicker`, which turns
+  real time into game minutes (F2 speeds it up), `frame_work`, and the villagers, animals and
+  chunk streaming, which stand still indoors and while a sleep is made up for).
   A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
   `QuestFlow` and `BarterFlow`): it takes what it needs in `_init`, adds its screens as children
   and registers the words and the opening of its `Interaction.Kind` in the `InteractionRegistry`.
@@ -76,12 +77,13 @@ Warft and an Ewer here and there.
   a skip's rest is about to be made up for, sees to the soil at its end,
   `World.settle_fallow_soil_over_frames`), each within `Simulation.frame_budget_usec` a frame.
   The work of the frames themselves is `GameState.frame_work(delta)` (Simulation `frame_work`, each
-  `SimulationSystem.frame_work`), called once a frame by Main: the flood fills and drains there
-  (`SurgeUpkeep`, `fill_tiles_per_second` within `fill_tiles_per_step` a frame), not in a scene.
+  `SimulationSystem.frame_work`), called once a frame by Main (through `PlayLoop`): the flood fills
+  and drains there (`SurgeUpkeep`, `fill_tiles_per_second` within `fill_tiles_per_step` a frame),
+  not in a scene.
   The console's freeze holds it; indoors and under a black screen it goes on (the water is the
   world's, not the player's); a skip spread over frames holds it until it has made up for the
   flood itself (`tests/test_frame_work.gd`).
-  Main holds the world still meanwhile, the chunk
+  Main and `PlayLoop` hold the world still meanwhile, the chunk
   residency's streaming (no chunk loads or drops by `update`; `require` still loads what an
   action needs) and the views too (wildlife), until the player has woken, and a quit waits
   for that: so the world ends as after `skip` and a save is of a whole morning. The systems:
