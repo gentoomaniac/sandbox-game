@@ -30,6 +30,8 @@ signal answered
 ## The art switch key (the `toggle_art_set` action, F7 by default) was pressed in the chat, which
 ## pauses the game and so Main's input.
 signal art_set_switch_pressed
+## The player pressed [Barter]: they want to swap goods with the villager (see BarterFlow).
+signal barter_requested(npc: Npc)
 
 ## What the player is called in the chat.
 const PLAYER_NAME := "You"
@@ -86,6 +88,7 @@ var _is_following := true
 var _log_size := LOG_SIZE
 var _line_edit := LineEdit.new()
 var _give_button := Button.new()
+var _barter_button := Button.new()
 
 
 func _init() -> void:
@@ -124,6 +127,10 @@ func _init() -> void:
 	_give_button.focus_mode = Control.FOCUS_NONE
 	_give_button.pressed.connect(_on_give_pressed)
 	chat.add_child(_give_button)
+	_barter_button.focus_mode = Control.FOCUS_NONE
+	_barter_button.text = "Barter"
+	_barter_button.pressed.connect(_on_barter_pressed)
+	chat.add_child(_barter_button)
 	row.add_child(chat)
 	var player_name := Label.new()
 	player_name.text = PLAYER_NAME
@@ -218,13 +225,21 @@ func _on_give_pressed() -> void:
 	_update_give_button()
 
 
+func _on_barter_pressed() -> void:
+	close()
+	barter_requested.emit(_npc)
+
+
 ## The villager's name with the name of their level of friendship under it, which a gift or a line
-## may change.
+## may change, and the barter button, which is there for a villager with goods to swap and is on
+## once their friendship opens it.
 func _show_level() -> void:
 	var friendship := FriendshipRules.default_rules()
 	_npc_name.text = (
 		"%s\n%s" % [_npc.name, friendship.level_name(friendship.level_of(_npc.opinion))]
 	)
+	_barter_button.visible = BarterRules.default_rules().has(_npc.id)
+	_barter_button.disabled = not Barter.new().is_open(_npc)
 
 
 ## The button offers the item in the player's hand, or says there is none.

@@ -154,6 +154,15 @@ a line changes it. A villager who has shunned the player (level 1, no `talk` ben
 says why, and answers anything the player writes with one, asking no model (`TalkFriendship.greet`,
 `NpcDialogue.reply`). The window needs no art: the level is text.
 
+## Barter (#49)
+
+A villager of `data/barter.cfg` shows a **Barter** button under the window, on once the benefit
+`barter` is the player's (level Neighbour, `Barter.is_open`). It closes the chat and opens the
+`BarterScreen`: what they offer and what they want, each with its worth, the counts, the line and
+**Trade**; **Talk** goes back. The game decides every number (`Barter`), the model is not asked
+and says nothing of a price. A deal counts as the day's contact for friendship, as a first chat.
+See [../economy/README.md](../economy/README.md), "Barter with villagers".
+
 ## Rating the player's words
 
 What the player says counts for friendship ([relationships.md](relationships.md)): the first line of

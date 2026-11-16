@@ -153,13 +153,31 @@ needs money to be done. A coin reward (`reward.schilling`, a whole number from 1
 
 ## Barter with villagers
 
+**Built (step 9), with differences from the plan below:**
+
+- **Who:** `data/barter.cfg` names, for each villager who barters, `offers` and `wants` (items with a
+  worth, none in both lists) and the `[deal] cap` (100). Today Antje, Hinrich, Momme, Ocke, Gesche,
+  Kerrin, Inken and Boy; Trienke has her shop. Made-up villagers do not barter yet.
+- **Level:** only the benefit `barter` of #48 decides (`Barter.is_open`, level 5 today). The plan's
+  "levels without `trade` don't trade at all" needs no code: `trade` (3) is below `barter` (5).
+- **No friendship cut (a change from the plan's "a fifth less at Friend"):** barter always runs at
+  the plain worth both ways. A cut would let a player loop goods between two villagers (4 eggs for
+  flour, the flour for 6 eggs) and gain on every turn. Friendship opens barter (the benefit `barter`)
+  and changes nothing of its rates; `tests/test_barter_loop.gd` checks that no chain of deals
+  returns more worth than it started with.
+- **No stock and no daily limit:** a villager has no purse and no stock; the cap and the lists bound
+  a deal, and no good is both offered and wanted, so goods never swap back.
+- **Contact:** a deal that is done counts as the day's first chat (`TalkFriendship.count_chat`,
+  `first_chat_points`, 5), not as a separate rule.
+- **The panel** is the chat's "Barter" button and the `BarterScreen` (`BarterFlow` wires it).
+
 - Any villager at the level **Neighbour** (5) or better trades small things for small things: the
   benefit `barter` of [relationships](../villagers/relationships.md), asked as
   `FriendshipRules.allows("barter", level)` and never by a number. Below it they don't.
 - "Small" is a cap of **100 Schilling** a deal (the draft's one Mark, as a round number). Nobody
   barters a cow.
 - Both sides use the value table. A villager accepts if what they get is worth at least what they
-  give; at Friend (7) they accept up to a fifth less; the levels without `trade` (below 3) don't
+  give (see the built note above: no friendship cut); the levels without `trade` (below 3) don't
   trade at all.
 - What they offer comes from their trade and sheet (Antje butter and eggs, Momme smoked eel, Ocke
   flour, Gesche herbs); what they want is their `wants` and `likes`.

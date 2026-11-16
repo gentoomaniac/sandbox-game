@@ -147,6 +147,15 @@ the loom, five turnips, six pieces of wattle fence by a garden. Nothing is lost 
   the limits. The console's `quest` posts and hands in quests for you. Quest lines of the same
   design: [design/villagers/quests.md](../design/villagers/quests.md).
 
+## Barter
+
+A villager who knows you as a neighbour (or better) will swap goods for goods. Open the chat and press
+**Barter**: on the left is what they offer, on the right what they want. Each good has a worth in
+Schilling (ß), and a swap is fair when what you give is worth at least what you get; a deal is at most
+100 ß. Friendship opens barter but never changes its rates, so everybody swaps at the same worth,
+and no coin changes hands: where the worths differ, add goods. A done swap counts as the day's chat
+for friendship.
+
 ## Setting up a language model
 
 Villagers need no model: nothing answering means scripted lines. To have them talk freely, pick
