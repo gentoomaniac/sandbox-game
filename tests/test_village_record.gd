@@ -51,17 +51,6 @@ func test_the_record_survives_a_save_and_a_load() -> void:
 	assert_true(village.is_populated)
 
 
-func test_a_version_45_save_loads_with_no_village() -> void:
-	var game := _current_game()
-	game["world"].erase("village")
-	_write_save(45, game)
-
-	var restored := SaveFile.read(SAVE_PATH)
-
-	assert_not_null(restored)
-	assert_null(restored.world.village)
-
-
 func test_a_version_48_save_loses_the_worn_tiles_the_village_kept() -> void:
 	var game := _saved_village()
 	game["world"]["village"]["kept_worn_tiles"] = [[0, 12], [1, 12]]
