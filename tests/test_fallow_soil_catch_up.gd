@@ -55,7 +55,7 @@ func _play_to_the_evening_before(days: int) -> void:
 
 ## The game saved and loaded, with its chunks.
 func _reloaded() -> GameState:
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	for coords in _state.world.loaded_chunk_coords():
 		restored.world.add_chunk(WorldGenerator.new(SEED).generate_chunk(coords))
 	return restored

@@ -238,7 +238,7 @@ func test_a_spent_spot_stays_spent_through_the_save() -> void:
 	_hold_shovel()
 	_dig(spot)
 	_state.simulation.advance(GameClock.MINUTES_PER_DAY)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	_load_chunks_of(restored, _spots)
 	assert_false(restored.world.has_clay(spot))
 	for night in World.CLAY_SPENT_NIGHTS - 1:
