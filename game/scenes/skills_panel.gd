@@ -2,7 +2,8 @@ class_name SkillsPanel
 extends VBoxContainer
 ## The skills tab of the character screen: a row per skill with its points as a number and as a
 ## bar up to the cap of one skill, and a Fade button that marks it to fade (it then reads
-## "Fading"); below them the total against the total cap, and the rule of the cap (see Skills).
+## "Fading"); below them the total against the total cap, and the rule of the cap (see Skills). The
+## rows scroll in `list` when the window has no room for them, the total and the rule stay in place.
 
 const NAME_WIDTH := 64
 const BAR_SIZE := Vector2(96, 6)
@@ -25,12 +26,21 @@ const FADE_TIP := (
 	+ " while you are below the cap."
 )
 
+## The rows' list: the character window fits it and starts it at the top when the tab is shown.
+var list: ScrollingList
+
 var _skills: Skills
 ## Skill id -> its bar, points label and fade button.
 var _bars := {}
 var _points_labels := {}
 var _fade_buttons := {}
 var _total_label := Label.new()
+var _rows := VBoxContainer.new()
+
+
+func _init() -> void:
+	list = ScrollingList.new(_rows)
+	add_child(list)
 
 
 ## The rows are made for the first skills shown; showing others lets go of the old ones.
@@ -46,8 +56,9 @@ func show_skills(skills: Skills) -> void:
 
 func _add_rows(rules: SkillRules) -> void:
 	add_theme_constant_override("separation", ROW_GAP)
+	_rows.add_theme_constant_override("separation", ROW_GAP)
 	for skill in rules.skill_ids():
-		add_child(_skill_row(skill, rules))
+		_rows.add_child(_skill_row(skill, rules))
 	add_child(_total_label)
 	var rule := Label.new()
 	rule.text = RULE_TEXT % roundi(rules.total_cap())
