@@ -530,6 +530,7 @@ func _use_outdoors(item: Dictionary, pos: Vector2i) -> Use:
 	if (
 		item.has("plants")
 		and _state.world.is_free_on(pos, item.get("plants_on", Tile.Terrain.SOIL))
+		and _state.world.flood.salt_days_at(pos) == 0
 	):
 		return Use.PLANT
 	var object := _state.world.object_at(pos)

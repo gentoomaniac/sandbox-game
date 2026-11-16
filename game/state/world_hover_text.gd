@@ -26,6 +26,9 @@ static func object_text_at(state: GameState, tile: Vector2i) -> String:
 		return Campfire.state_text(crop)
 	if crop != null and crop.type == WorldObjectTypes.DYKE:
 		return state.world.dykes.words(crop)
+	var salt_days := state.world.flood.salt_days_at(tile)
+	if (crop == null or not crop.is_crop()) and salt_days > 0:
+		return "Salt: %d days" % salt_days
 	if crop == null or not crop.is_crop():
 		return ""
 	var day_weather := state.weather.day_summary(crop.pos, state.clock.day)

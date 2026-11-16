@@ -196,7 +196,9 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
    the version 45 upgrade came first). The fields are in the world's data, not the game's
    (`World.snapshot`); the wet tiles, their salt, the mud and the dykes to mend are `[x, y, value]`
    lists. The salt and mud days are set by the flood and saved, the harm that reads them is step 8.
-8. The harm: crops, salt and its hover, wet ground after, items washing away.
+8. The harm: crops, salt and its hover, wet ground after, items washing away. **Built.** The
+   mud is footprints and the slow walk of wet ground (`World.is_muddy_at`); the terrain is not
+   drawn muddy, and desire paths do not wear off faster there (not done).
 9. Animals and villagers flee and return; the routines' hold.
 10. The warning: forced storm, surf, talk, and the bell (the sound first, a sound-designer task).
 11. Player dykes: clay and sods, raising, repair. Needs #59 merged; if not, this waits and the

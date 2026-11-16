@@ -48,6 +48,11 @@ const REQUIRED_KEYS := {
 		"wade_depth",
 		"salt_days",
 		"mud_days",
+		"crop_depth",
+		"crop_hours",
+		"wash_depth",
+		"wash_tiles",
+		"item_loss_chance",
 	],
 }
 static var _default: LandscapeRules

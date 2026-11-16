@@ -8,17 +8,19 @@ extends SimulationSystem
 var _world: World
 var _event: SurgeEvent
 var _flood: FloodState
+var _weather: Weather
 var _roll: SurgeRoll
 var _rules: WeatherRules
 ## A skip of time is under way: the fill and the drain finish at once, as no frame will do them.
 var _is_skipping := false
 
 
-func _init(world: World, roll: SurgeRoll, rules := WeatherRules.default_rules()) -> void:
+func _init(world: World, weather: Weather, rules := WeatherRules.default_rules()) -> void:
 	_world = world
 	_event = world.surge
 	_flood = world.flood
-	_roll = roll
+	_weather = weather
+	_roll = SurgeRoll.new(world.world_seed, weather, rules)
 	_rules = rules
 
 
@@ -42,12 +44,25 @@ func advance(_minutes: int, clock: GameClock) -> void:
 		_settle_if_skipping()
 	if is_hour_end(clock):
 		_flood.mend(_world, now)
+		_drown_crops()
 		_roll_ahead(now)
+	if is_day_end(clock):
+		var rain_hours := _weather.day_summary(Vector2i.ZERO, clock.day - 1).rain_hours
+		_flood.end_day(rain_hours)
 
 
 func _settle_if_skipping() -> void:
 	if _is_skipping:
 		_flood.settle(_world)
+
+
+# The crops under water suffer an hour of it.
+func _drown_crops() -> void:
+	if _flood.wet_count() == 0:
+		return
+	for crop in _world.crops():
+		if CropLife.live_through_flood_hour(crop, _flood.depth_at(crop.pos)):
+			_world.change_object(crop)
 
 
 # Rolls the next high water when it is `warning_hours` away or less, once.

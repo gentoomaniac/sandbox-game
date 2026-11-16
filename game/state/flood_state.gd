@@ -24,8 +24,9 @@ const FLOODABLE_TERRAINS: Array[Tile.Terrain] = [
 	Tile.Terrain.GRASS, Tile.Terrain.SOIL, Tile.Terrain.WETLAND, Tile.Terrain.FLOODPLAIN
 ]
 const METRES_TO_CM := 100.0
-## Hash salt of the length of a flood's stay.
+## Hash salts of the length of a flood's stay and of what happens to an item it washes over.
 const STAY_SALT := 1032
+const WASH_SALT := 1033
 
 var phase := Phase.IDLE
 ## How high the water stands over mean high water, in metres.
@@ -41,6 +42,8 @@ var _wet_by_chunk: Dictionary[Vector2i, Dictionary] = {}
 var _queue: Array[Vector2i] = []
 var _queue_depth_cm: Array[int] = []
 var _queue_head := 0
+## The piles of items this flood has washed already, so that one is not washed on and on.
+var _washed: Dictionary[GroundItem, bool] = {}
 ## The tiles looked at in this fill, so that none is looked at twice.
 var _seen: Dictionary[Vector2i, bool] = {}
 ## What is left to fill, in tile-metres (see `volume_per_breach`).
@@ -68,6 +71,16 @@ func _init(landscape := LandscapeRules.default_rules()) -> void:
 ## How deep the water stands on a tile, in metres; 0 on dry ground.
 func depth_at(tile: Vector2i) -> float:
 	return _depth_cm.get(tile, 0) / METRES_TO_CM
+
+
+## The days of salt a tile still carries after it stood under the sea (0 for none).
+func salt_days_at(tile: Vector2i) -> int:
+	return _salt_days.get(tile, 0)
+
+
+## Whether a tile that dried is still muddy.
+func is_muddy_at(tile: Vector2i) -> bool:
+	return _mud_days.has(tile)
 
 
 ## Whether the water is too deep to walk on (it can be waded, see `World.is_wadeable`).
@@ -111,6 +124,7 @@ func begin(world: World, new_level: float, now: int, tide_number: int) -> void:
 	_queue_head = 0
 	_volume_left = 0.0
 	_seen.clear()
+	_washed.clear()
 	_met_chunks.clear()
 	var stay_hours: float = _landscape.value("surge", "stay_hours")
 	var spread: float = _landscape.value("surge", "stay_spread_hours")
@@ -131,6 +145,20 @@ func advance(world: World, now: int, is_holding: bool) -> void:
 		_meet_new_chunks(world, now)
 	if now >= drain_minute:
 		_start_draining()
+
+
+## A day has ended: the salt and the mud of the tiles lose a day, and the salt a day more for each
+## hour of rain (`rain_hours`, see WeatherDay).
+func end_day(rain_hours: float) -> void:
+	var salt_lost := 1 + int(rain_hours)
+	for tile in _salt_days.keys():
+		_salt_days[tile] -= salt_lost
+		if _salt_days[tile] <= 0:
+			_salt_days.erase(tile)
+	for tile in _mud_days.keys():
+		_mud_days[tile] -= 1
+		if _mud_days[tile] <= 0:
+			_mud_days.erase(tile)
 
 
 ## The villagers mend the damaged dykes that are due at game minute `now`. A dyke in a chunk that
@@ -300,6 +328,7 @@ func _fill(world: World, count: int) -> void:
 		_set_depth(tile, depth_cm)
 		_salt_days[tile] = int(_landscape.value("surge", "salt_days"))
 		_mud_days.erase(tile)
+		_wet_the_ground(world, tile, depth_cm / METRES_TO_CM)
 		_volume_left -= depth_cm / METRES_TO_CM
 		filled += 1
 		for side in World.CONNECTION_SIDES:
@@ -310,6 +339,26 @@ func _fill(world: World, count: int) -> void:
 		_queue_head = 0
 		_volume_left = 0.0
 		phase = Phase.STANDING
+
+
+# Tilled soil under the water is soaked, and the items lying on ground under deep water drift
+# inland or are lost.
+func _wet_the_ground(world: World, tile: Vector2i, depth: float) -> void:
+	if world.is_tilled(tile):
+		world.set_moisture(tile, 1.0)
+	if depth <= _landscape.value("surge", "wash_depth"):
+		return
+	for pile in world.ground_items.near(Vector2(tile) + Vector2(0.5, 0.5), 0.71):
+		if _washed.has(pile):
+			continue
+		_washed[pile] = true
+		var roll := PositionHash.of(tile, world.world_seed + WASH_SALT)
+		var is_lost := roll % 100 < _landscape.value("surge", "item_loss_chance") * 100.0
+		if is_lost:
+			world.ground_items.remove(pile)
+		else:
+			var tiles := 1 + roll / 100 % int(_landscape.value("surge", "wash_tiles"))
+			world.ground_items.move(pile, pile.position + Vector2(tiles, 0))
 
 
 func _start_draining() -> void:

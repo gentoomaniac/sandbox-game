@@ -153,3 +153,8 @@
   the scythe mows, and saplings (an acorn) give none.
 - The biome decides which resources are available and what the land is good for
   agriculturally (see [Biomes](../world/generation.md)).
+- **The storm surge** (#103, `CropLife.live_through_flood_hour`): a seedling the sea's water covers
+  dies at once, any other crop once it has stood under more than 0.1 m of it for 24 hours. The
+  tilled soil stays tilled, but the water leaves salt on it for 40 days (rain shortens that): the
+  hover says "Salt: 31 days" and nothing can be planted there until it has run out. See
+  [../world/storm-surge.md](../world/storm-surge.md).

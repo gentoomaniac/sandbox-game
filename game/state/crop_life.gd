@@ -214,6 +214,24 @@ static func live_through_hour(crop: WorldObject, day: WeatherDay, moisture: floa
 	return look(crop) != look_before
 
 
+## Lets a crop live through one hour under water `depth` metres deep (see the flood, FloodState): a
+## seedling dies at once, any other crop when it has stood deeper than `crop_depth` for `crop_hours`
+## hours (`[surge]` of data/landscape.cfg). Returns whether it died.
+static func live_through_flood_hour(crop: WorldObject, depth: float) -> bool:
+	if is_dead(crop) or depth <= 0.0:
+		return false
+	var rules := LandscapeRules.default_rules()
+	var is_seedling := stage(crop) == 0
+	if not is_seedling and depth <= rules.value("surge", "crop_depth"):
+		return false
+	var hours_under := int(crop.state.get("hours_under_water", 0)) + 1
+	crop.state["hours_under_water"] = hours_under
+	if is_seedling or hours_under >= rules.value("surge", "crop_hours"):
+		crop.state["crop_damage"] = 1.0
+		return true
+	return false
+
+
 ## What the console `crop` command shows: how a crop is doing and what it needs.
 static func describe(crop: WorldObject) -> Array[String]:
 	var crop_type := crop.type_data()

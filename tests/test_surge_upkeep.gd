@@ -17,7 +17,7 @@ func before_each() -> void:
 		func(level: float, _start: int) -> void: _comings.append(level)
 	)
 	_simulation = Simulation.new(_state.clock)
-	_simulation.add_system(SurgeUpkeep.new(_state.world, SurgeRoll.new(SEED, _weather)))
+	_simulation.add_system(SurgeUpkeep.new(_state.world, _weather))
 	_state.clock.day = AUTUMN_DAY
 	_comings.clear()
 
@@ -77,8 +77,7 @@ func test_the_surge_command_starts_shows_and_ends_one() -> void:
 
 func _coast_simulation(world: World) -> Simulation:
 	var simulation := Simulation.new(world.clock)
-	var roll := SurgeRoll.new(CoastWorld.SEED, StormyWeather.new(CoastWorld.SEED))
-	simulation.add_system(SurgeUpkeep.new(world, roll))
+	simulation.add_system(SurgeUpkeep.new(world, StormyWeather.new(CoastWorld.SEED)))
 	return simulation
 
 

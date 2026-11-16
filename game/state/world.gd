@@ -810,9 +810,13 @@ func _wears_at(world_pos: Vector2i) -> bool:
 	)
 
 
-## Whether the ground at a tile is mud: worn ground when the rain has made it so.
+## Whether the ground at a tile is mud: worn ground when the rain has made it so, and land the
+## sea has left.
 func is_muddy_at(world_pos: Vector2i) -> bool:
-	return is_muddy and wear_stage(world_pos) != PathRules.Stage.UNWORN
+	return (
+		(is_muddy and wear_stage(world_pos) != PathRules.Stage.UNWORN)
+		or flood.is_muddy_at(world_pos)
+	)
 
 
 ## Makes worn ground mud or dry again (GameState decides by the weather). Emits `tile_changed` for
