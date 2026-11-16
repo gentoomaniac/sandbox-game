@@ -114,7 +114,7 @@ func _reload_chunk() -> void:
 
 ## The game saved and loaded, with the chunks that are loaded now and that of the tile.
 func _through_save() -> GameState:
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	var to_load := _world.loaded_chunk_coords()
 	if not to_load.has(Chunk.world_to_chunk(_tile)):
 		to_load.append(Chunk.world_to_chunk(_tile))

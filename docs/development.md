@@ -78,6 +78,14 @@ The rule for full or cut-down villager sheets is `needs_key` of the provider's r
 make test` also runs the tests that ask the real model, and `ANTHROPIC_API_KEY=... make test` asks the
 real Claude once.
 
+## Tests of saves
+
+A test of what a feature saves gets the game back with `RealLoad.of(self, state)`
+([tests/real_load.gd](../tests/real_load.gd)): it writes a current save, loads it with
+`SaveFile.load_game` and fails with the problems unless the result is READY. Calling `from_dict` on
+`to_dict` directly skips the validator, so a save the loader refuses would pass; only a test of the
+codec itself does that, and its name says "codec".
+
 ## Pictures for the README and the handbook
 
 The pictures are in `screenshots/`. Take them with `make screenshot`; re-take the ones a change makes
