@@ -12,8 +12,6 @@ extends CanvasLayer
 ## (see `_process`).
 
 const THEME := preload("res://game/scenes/ui_theme.tres")
-# Palette colour (see tools/art/palette.py): what is short, and the mode that takes down.
-const SHORT_COLOR := Color("dc7a37")
 const TAKING_DOWN_TEXT := "Taking down (X: build)"
 ## Where the note of a refused spot sits from the tip of the mouse pointer.
 const NOTE_OFFSET := Vector2(10, 12)
@@ -177,7 +175,7 @@ func _show_choice() -> void:
 	_preview_picture.visible = true
 	_preview_picture.texture = load(ArtSet.path(entry["sprite"]))
 	_preview_name.text = entry["name"]
-	_preview_name.remove_theme_color_override("font_color")
+	_preview_name.theme_type_variation = &""
 	var costs := _builder.costs()
 	var short := _builder.shortfalls()
 	var items: Array = costs.keys()
@@ -191,17 +189,14 @@ func _show_choice() -> void:
 			"%s %d/%d" % [ItemTypes.TYPES[item]["name"], _inventory.count_of(item), costs[item]]
 		)
 		label.text = text + (" !" if short.has(item) else "")
-		if short.has(item):
-			label.add_theme_color_override("font_color", SHORT_COLOR)
-		else:
-			label.remove_theme_color_override("font_color")
+		label.theme_type_variation = &"WarningLabel" if short.has(item) else &""
 
 
 ## The mode is on the preview's panel: red "Taking down" instead of the building.
 func _show_taking_down() -> void:
 	_preview_picture.visible = false
 	_preview_name.text = TAKING_DOWN_TEXT
-	_preview_name.add_theme_color_override("font_color", SHORT_COLOR)
+	_preview_name.theme_type_variation = &"WarningLabel"
 	for label in _material_labels:
 		label.visible = false
 
@@ -289,7 +284,7 @@ func _build_preview() -> void:
 		_material_labels.append(label)
 	_preview.add_child(rows)
 	add_child(_preview)
-	_message.add_theme_color_override("font_color", SHORT_COLOR)
+	_message.theme_type_variation = &"WarningLabel"
 	_note.add_child(_message)
 	add_child(_note)
 

@@ -13,8 +13,6 @@ const ROW_GAP := 6
 const REFRESH_SECONDS := 0.25
 const EMPTY_TEXT := "No open quests."
 const TITLE_TEXT := "Open quests (%d)"
-## Palette colour gold (see tools/art/palette.py), for the title.
-const TITLE_COLOR := UiColors.GOLD
 
 ## The rows' list: the character window fits it and starts it at the top when the tab is shown.
 var list: ScrollingList
@@ -30,7 +28,7 @@ func _init() -> void:
 	add_theme_constant_override("separation", ROW_GAP)
 	_rows.add_theme_constant_override("separation", ROW_GAP)
 	custom_minimum_size.x = PANEL_WIDTH
-	_title.add_theme_color_override("font_color", TITLE_COLOR)
+	_title.theme_type_variation = &"TitleLabel"
 	add_child(_title)
 	list = ScrollingList.new(_rows)
 	add_child(list)

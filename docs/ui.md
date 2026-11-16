@@ -172,7 +172,10 @@ extend `HotbarWindow`, which lends them the HUD's hotbar as their quick bar.
 the scroll bar) and the dimmed backdrop is `UiColors.BACKDROP`. Use the theme's controls and
 `UiColors` for colours rather than your own: besides the backdrop and the speech and error plates
 it has the palette's `INK`, `GOLD` and `MUD_DARK`, for what a screen draws itself (a bar, a
-portrait's ground) and not for text or controls, which take theirs from the theme. There are no shared builders for titles or button
+portrait's ground) and not for text or controls, which take theirs from the theme. Repeated looks
+are theme variations, set with `theme_type_variation` instead of a colour or style override:
+`TitleLabel` (a gold heading), `WarningLabel` (flame, for what is short or refused; set it to
+`&""` again when the state ends) and `RecipeButton` (a disabled recipe keeps the normal look). There are no shared builders for titles or button
 rows yet: add one to the base when a second window needs the same.
 
 ## Testing a window headless

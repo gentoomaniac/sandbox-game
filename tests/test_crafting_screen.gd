@@ -43,6 +43,17 @@ func test_a_recipe_that_cant_be_afforded_is_greyed_and_cannot_be_pressed() -> vo
 	assert_true(row.disabled)
 	assert_lt(row.modulate.a, 1.0)
 	assert_string_contains(_tooltip(row), "Missing: 2 logs")
+	assert_eq(
+		row.get_theme_stylebox("disabled"),
+		row.get_theme_stylebox("normal"),
+		"a disabled row keeps the look of the others"
+	)
+	assert_true(
+		row.find_children("*", "Label", true, false).any(
+			func(label: Label) -> bool: return label.theme_type_variation == &"WarningLabel"
+		),
+		"what is missing is marked"
+	)
 
 
 func test_an_affordable_recipe_is_bright_and_its_tooltip_is_that_of_the_item() -> void:

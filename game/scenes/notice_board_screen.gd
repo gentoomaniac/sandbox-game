@@ -7,8 +7,6 @@ extends Modal
 
 const TITLE_TEXT := "Notice board"
 const WIDTH := 280
-## Palette colour gold (see tools/art/palette.py), for the title.
-const TITLE_COLOR := UiColors.GOLD
 const LINE_GAP := 8
 
 var _title_label := Label.new()
@@ -21,7 +19,7 @@ func _init() -> void:
 	pauses_game = true
 	close_actions = [&"interact"]
 	_title_label.text = TITLE_TEXT
-	_title_label.add_theme_color_override("font_color", TITLE_COLOR)
+	_title_label.theme_type_variation = &"TitleLabel"
 	_lines.add_theme_constant_override("separation", LINE_GAP)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", LINE_GAP)

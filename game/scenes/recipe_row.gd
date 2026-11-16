@@ -9,8 +9,6 @@ extends Button
 const ROW_WIDTH := 180
 const MIN_HEIGHT := 22
 const GAP := 6
-## Palette colour flame (see tools/art/palette.py), as in the build panel.
-const SHORT_COLOR := Color("dc7a37")
 const UNAFFORDABLE_ALPHA := 0.5
 
 var recipe_id: StringName
@@ -28,6 +26,7 @@ func _init(id: StringName, crafting: Crafting, inventory: Inventory) -> void:
 	_crafting = crafting
 	_rules = crafting.rules
 	_inventory = inventory
+	theme_type_variation = &"RecipeButton"
 	custom_minimum_size = Vector2(ROW_WIDTH, MIN_HEIGHT)
 
 	var row := HBoxContainer.new()
@@ -66,8 +65,6 @@ func _ready() -> void:
 	var lines := maxi(_rules.materials(recipe_id).size(), 2 if _has_level() else 1)
 	var height := lines * _materials_label.get_line_height() + 8
 	custom_minimum_size.y = maxf(MIN_HEIGHT, height)
-	# A disabled row keeps the look of the others, just dimmer.
-	add_theme_stylebox_override("disabled", get_theme_stylebox("normal"))
 
 
 ## Shows what the player has against what the recipe takes and needs.
@@ -81,10 +78,8 @@ func refresh() -> void:
 		var line := "%s %d/%d" % [item_name, _inventory.count_of(item), materials[item]]
 		lines.append(line + (" !" if short.has(item) else ""))
 	_materials_label.text = "\n".join(lines)
-	_materials_label.add_theme_color_override(
-		"font_color", SHORT_COLOR if not short.is_empty() else Color.WHITE
-	)
-	_level_label.add_theme_color_override("font_color", SHORT_COLOR if is_locked else Color.WHITE)
+	_materials_label.theme_type_variation = &"WarningLabel" if not short.is_empty() else &""
+	_level_label.theme_type_variation = &"WarningLabel" if is_locked else &""
 	disabled = is_locked or not short.is_empty()
 	modulate.a = UNAFFORDABLE_ALPHA if disabled else 1.0
 	TooltipView.set_text(self, _tooltip(short, is_locked), "recipe_%s" % recipe_id)

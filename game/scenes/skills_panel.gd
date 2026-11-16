@@ -11,11 +11,9 @@ const POINTS_WIDTH := 28
 ## Wide enough for "Fading", so the rows stay aligned.
 const FADE_WIDTH := 48
 const ROW_GAP := 6
-## Palette colours ink (the empty bar), gold (the points) and flame (the total at its cap), see
-## tools/art/palette.py.
+## Palette colours ink (the empty bar) and gold (the points), see tools/art/palette.py.
 const BAR_BACK := UiColors.INK
 const BAR_FILL := UiColors.GOLD
-const AT_CAP_COLOR := Color("dc7a37")
 const RULE_WIDTH := 240
 const RULE_TEXT := (
 	"Your skills together reach at most %d points. There, a skill only grows by taking points"
@@ -113,4 +111,4 @@ func _refresh() -> void:
 	var total_cap := _skills.rules.total_cap()
 	_total_label.text = "Total %.1f / %d" % [_skills.total(), roundi(total_cap)]
 	var is_at_cap := _skills.total() >= total_cap
-	_total_label.add_theme_color_override("font_color", AT_CAP_COLOR if is_at_cap else Color.WHITE)
+	_total_label.theme_type_variation = &"WarningLabel" if is_at_cap else &""

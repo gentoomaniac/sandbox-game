@@ -46,6 +46,7 @@ func _init(id: StringName, station: ProcessStation, rules: RecipeRules, skills: 
 	_station = station
 	_rules = rules
 	_skills = skills
+	_button.theme_type_variation = &"RecipeButton"
 	add_theme_constant_override("separation", 1)
 
 	_button.custom_minimum_size = Vector2(ROW_WIDTH, RecipeRow.MIN_HEIGHT)
@@ -101,11 +102,6 @@ func _init(id: StringName, station: ProcessStation, rules: RecipeRules, skills: 
 	add_child(amount_row)
 
 
-func _ready() -> void:
-	# The theme comes from the window that holds the row, so it is not there yet in `_init`.
-	_button.add_theme_stylebox_override("disabled", _button.get_theme_stylebox("normal"))
-
-
 ## The loads a press fills the grid to.
 func amount() -> int:
 	return _amount
@@ -118,9 +114,7 @@ func refresh(available: Dictionary) -> void:
 	_can_fill = _station.can_fill(recipe_id)
 	_limits = _station.amounts(recipe_id)
 	var is_locked := _station.is_locked(recipe_id)
-	_level_label.add_theme_color_override(
-		"font_color", RecipeRow.SHORT_COLOR if is_locked else Color.WHITE
-	)
+	_level_label.theme_type_variation = &"WarningLabel" if is_locked else &""
 	_button.disabled = not _can_fill
 	modulate.a = 1.0 if _can_fill else UNAFFORDABLE_ALPHA
 	TooltipView.set_text(_button, _tooltip(is_locked), "recipe_%s" % recipe_id)
