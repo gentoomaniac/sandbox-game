@@ -74,6 +74,11 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 	return Choice.new(Kind.SLEEP, bed) if bed != null else Choice.new(Kind.NOTHING)
 
 
+## What the thing is called in the words of E, as "sales cart".
+static func name_of(object: WorldObject) -> String:
+	return String(object.type).replace("_", " ")
+
+
 ## The nearest object on the player's map within reach that `is_wanted` says yes to, or null.
 static func nearest_in_reach(state: GameState, is_wanted: Callable) -> WorldObject:
 	var player_tile := state.player.tile()

@@ -12,7 +12,6 @@ var console_view: ConsoleView
 var chat_screen: ChatScreen
 var trade_screen: TradeScreen
 var process_screen: ProcessScreen
-var storage_screen: StorageScreen
 var crafting_screen: CraftingScreen
 var quest_voice: QuestVoice
 
@@ -33,18 +32,13 @@ func register_kinds(interactions: InteractionRegistry) -> void:
 	interactions.register(Interaction.Kind.MOUNT, "Get on the horse", state.mount)
 	interactions.register(
 		Interaction.Kind.OPEN_STATION_GRID,
-		func(station: WorldObject) -> String: return "Use %s" % _name_of(station),
+		func(station: WorldObject) -> String: return "Use %s" % Interaction.name_of(station),
 		func(station: WorldObject) -> void:
 			process_screen.open_station(ProcessStation.new(state, Crafting.new(state), station))
 	)
 	interactions.register(
-		Interaction.Kind.OPEN_CHEST,
-		func(chest: WorldObject) -> String: return "Open %s" % _name_of(chest),
-		func(chest: WorldObject) -> void: storage_screen.open_chest(chest, state)
-	)
-	interactions.register(
 		Interaction.Kind.OPEN_CRAFTING,
-		func(station: WorldObject) -> String: return "Craft at %s" % _name_of(station),
+		func(station: WorldObject) -> String: return "Craft at %s" % Interaction.name_of(station),
 		func(station: WorldObject) -> void: crafting_screen.open_station(station)
 	)
 	interactions.register(
@@ -67,10 +61,6 @@ func interact(interactions: InteractionRegistry) -> void:
 func _dismount(_no_subject: Variant) -> void:
 	if not state.dismount():
 		harvest_hud.show_note("No room to get off here.")
-
-
-func _name_of(object: WorldObject) -> String:
-	return String(object.type).replace("_", " ")
 
 
 ## Opens the trade with a shopkeeper, who turns to the player (the trade pauses the game).

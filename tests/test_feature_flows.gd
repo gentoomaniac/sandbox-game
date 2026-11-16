@@ -31,6 +31,14 @@ func test_the_campfire_flow_registers_the_fire() -> void:
 	assert_eq(_words(Interaction.Kind.OPEN_FIRE), "Tend the fire")
 
 
+func test_the_storage_flow_registers_the_chest() -> void:
+	var hotbar: HotbarHud = add_child_autofree(HotbarCase.new_hotbar())
+	var sounds: GameSounds = add_child_autofree(GameSounds.new())
+	add_child_autofree(StorageFlow.new(_state, hotbar, _interactions, sounds))
+
+	assert_eq(_words(Interaction.Kind.OPEN_CHEST), "Open chest")
+
+
 func test_the_quest_flow_registers_the_notice_board() -> void:
 	var settings := GameSettings.new("user://test_feature_flows/settings.cfg")
 	var dialogue: NpcDialogue = add_child_autofree(NpcDialogue.new(settings))
@@ -53,6 +61,7 @@ func test_every_kind_of_e_but_nothing_is_registered_as_main_does() -> void:
 	interact.state = _state
 	interact.register_kinds(_interactions)
 	add_child_autofree(StallFlow.new(_state, _interactions))
+	add_child_autofree(StorageFlow.new(_state, hotbar, _interactions, sounds))
 	add_child_autofree(CampfireFlow.new(_state, hotbar, crafting_screen, _interactions, sounds))
 	add_child_autofree(QuestFlow.new(_state, dialogue, notifications, entities, _interactions))
 

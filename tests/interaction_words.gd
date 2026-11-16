@@ -1,12 +1,10 @@
 class_name InteractionWords
 extends RefCounted
-## What the hint over the hotbar says E does on a tile: the words the game scene registers for the
-## kinds of Interaction, with no screens behind them (nothing is opened).
+## What the hint over the hotbar says E does on a tile: the words the flows of the game scene
+## register for the kinds of Interaction (nothing is opened).
 
 
-static func e_text(state: GameState, target: Vector2i) -> String:
-	var flow := InteractFlow.new()
-	flow.state = state
+static func e_text(test: GutTest, state: GameState, target: Vector2i) -> String:
 	var interactions := InteractionRegistry.new()
-	flow.register_kinds(interactions)
+	FlowsCase.make(test, state, interactions)
 	return interactions.e_text(state, target)

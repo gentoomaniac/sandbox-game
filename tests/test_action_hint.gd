@@ -27,23 +27,23 @@ func _assert_use_named(use: ToolUse.Use, words: String) -> void:
 
 
 func test_e_has_no_words_with_nothing_to_do() -> void:
-	assert_eq(InteractionWords.e_text(_state, _tile), "")
+	assert_eq(InteractionWords.e_text(self, _state, _tile), "")
 
 
 func test_e_names_the_villager_and_goes_before_the_chest() -> void:
 	_npc = Npc.create(5, Vector2(_tile) + Vector2(0.5, 0.5), _state.npcs.rules)
 	_state.npcs.add(_npc)
 	_place(WorldObjectTypes.CHEST)
-	assert_eq(InteractionWords.e_text(_state, _tile), "Talk to " + _npc.name)
+	assert_eq(InteractionWords.e_text(self, _state, _tile), "Talk to " + _npc.name)
 
 
 func test_e_names_getting_on_a_saddled_horse_and_getting_off() -> void:
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", Vector2(_tile) + Vector2(0.5, 0.5))
 	horse.is_saddled = true
 	_state.livestock.add(horse)
-	assert_eq(InteractionWords.e_text(_state, _tile), "Get on the horse")
+	assert_eq(InteractionWords.e_text(self, _state, _tile), "Get on the horse")
 	_state.mount(horse)
-	assert_eq(InteractionWords.e_text(_state, _tile), "Get off the horse")
+	assert_eq(InteractionWords.e_text(self, _state, _tile), "Get off the horse")
 
 
 func test_e_names_the_chest_and_the_stations() -> void:
@@ -54,19 +54,19 @@ func test_e_names_the_chest_and_the_stations() -> void:
 	for type: StringName in words:
 		_world.remove_object(_tile)
 		_place(type)
-		assert_eq(InteractionWords.e_text(_state, _tile), words[type], str(type))
+		assert_eq(InteractionWords.e_text(self, _state, _tile), words[type], str(type))
 
 
 func test_e_names_the_bed_in_reach() -> void:
 	_place(WorldObjectTypes.SLEEPING_BAG)
-	assert_eq(InteractionWords.e_text(_state, _tile + Vector2i(0, 1)), "Sleep")
+	assert_eq(InteractionWords.e_text(self, _state, _tile + Vector2i(0, 1)), "Sleep")
 
 
 func test_e_names_the_bell() -> void:
 	var frame := _place_building_nearby(BuildingTypes.BELL_FRAME)
 	var beside := TerrainTileset.tile_centre(frame.origin + Vector2i(-1, 0))
 	_state.player.position = beside / TerrainTileset.TILE_SIZE
-	assert_eq(InteractionWords.e_text(_state, _state.player.facing_tile()), "Ring the bell")
+	assert_eq(InteractionWords.e_text(self, _state, _state.player.facing_tile()), "Ring the bell")
 
 
 # --- Use ---

@@ -65,7 +65,7 @@ func test_e_trades_with_the_keeper_in_hours_and_speaks_to_her_otherwise() -> voi
 	var choice := _choice()
 	assert_eq(choice.kind, Interaction.Kind.TRADE)
 	assert_eq(choice.subject, _trienke)
-	assert_eq(InteractionWords.e_text(_state, _trienke.tile()), "Trade with Trienke Lorenzen")
+	assert_eq(InteractionWords.e_text(self, _state, _trienke.tile()), "Trade with Trienke Lorenzen")
 	_at_the_stall(SUNDAY, 8)
 	assert_eq(_choice().kind, Interaction.Kind.CHAT)
 

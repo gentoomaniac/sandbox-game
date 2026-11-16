@@ -8,16 +8,14 @@ const PATH := DIR + "/settings.cfg"
 
 var _settings: GameSettings
 var _view: ActionHintView
-var _flow := InteractFlow.new()
 
 
 func before_each() -> void:
 	super.before_each()
 	_settings = GameSettings.new(PATH)
 	_view = ActionHintView.new()
-	_flow.state = _state
 	_view.interactions = InteractionRegistry.new()
-	_flow.register_kinds(_view.interactions)
+	FlowsCase.make(self, _state, _view.interactions)
 	add_child_autofree(_view)
 	_place(WorldObjectTypes.CHEST)
 
