@@ -72,6 +72,7 @@ var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _play_loop: PlayLoop
 var _aim_views: AimViews
+var _walk_flow: WalkFlow
 var _interact: InteractFlow
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
@@ -341,6 +342,18 @@ func _connect_state_and_views() -> void:
 	_aim_views.action_hint = _action_hint
 	_aim_views.tooltip_view = _tooltip_view
 	_aim_views.npc_name_tag = _npc_name_tag
+	_walk_flow = WalkFlow.new(
+		_state,
+		_blackout,
+		_view,
+		_build_mode,
+		_builder,
+		_player_view,
+		_harvest_hud,
+		_interior_view,
+		_object_cover,
+		_pass_door
+	)
 	_screen_keys = ScreenKeys.new(
 		_state, _bag_screen, _character_screen, _crafting_flow.screen, _harvest_hud
 	)
@@ -556,31 +569,7 @@ func _process(delta: float) -> void:
 			)
 		)
 	_aim_views.update(not _is_any_screen_open())
-	# Out of energy after a use (or in a game saved while passing out), or up too late. A game
-	# that starts so shows the world first.
-	var is_drawn := _view.is_settled or _state.is_inside()
-	if (
-		(_state.is_out_of_energy() or _state.is_up_too_late)
-		and is_drawn
-		and not _blackout.is_in_transition
-	):
-		_blackout.pass_out()
-	if not _blackout.is_in_transition:
-		var direction := Vector2.ZERO
-		if not _is_any_screen_open():
-			var is_menu_up := _build_mode.is_active() and not _builder.is_taking_down()
-			direction = BuildMode.walk_direction(is_menu_up)
-		_state.is_sprint_held = Input.is_action_pressed("sprint")
-		_player_view.walk_speed = _state.walk_speed_factor()
-		_player_view.is_trotting = _state.is_trotting()
-		_state.walk(direction, delta, _player_view.walk_speed)
-		if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
-			_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
-		_state.collect_ground_items(delta)
-		_interior_view.cover_bed(_state.player.bed_lying_in)
-		_object_cover.cover(_state.player.bed_lying_in)
-		if _state.door_underfoot():
-			_blackout.fade_through(_pass_door)
+	_walk_flow.update(delta, _is_any_screen_open())
 	_play_loop.move_world(delta)
 	_debug.update(delta)
 

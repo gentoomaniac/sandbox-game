@@ -50,9 +50,10 @@ Warft and an Ewer here and there.
   `UseNotes` (a use of the held item and its note), `ScreenKeys` and `HotbarKeys` (the window and
   hotbar keys), `PlayLoop` (what moves each frame and when: the `GameClockTicker`, which turns
   real time into game minutes (F2 speeds it up), `frame_work`, and the villagers, animals and
-  chunk streaming, which stand still indoors and while a sleep is made up for) and `AimViews` (what
+  chunk streaming, which stand still indoors and while a sleep is made up for), `AimViews` (what
   the views show of what the player points at each frame: the use highlight, the action hint, the
-  tooltip's world text, the name tag, build mode and its menu).
+  tooltip's world text, the name tag, build mode and its menu) and `WalkFlow` (the player's own
+  frame: passing out, walking, picking up, the bed and the door).
   A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
   `QuestFlow`, `BarterFlow` and the core screens' `StorageFlow`, `ProcessFlow`, `CraftingFlow`,
   `ChatFlow` and `TradeFlow`): it takes what it needs in `_init`, adds its screens as children,
