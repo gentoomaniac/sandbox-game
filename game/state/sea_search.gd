@@ -72,8 +72,5 @@ func _is_water(tile: Vector2i) -> bool:
 	return (
 		is_flooded_mud_sea
 		and terrain == Tile.Terrain.MUD
-		and (
-			Tide.relief_at((Vector2(tile) + Vector2(0.5, 0.5)) * TerrainTileset.TILE_SIZE)
-			< _water_height
-		)
+		and Tide.relief_at_tile_point(Vector2(tile) + Vector2(0.5, 0.5)) < _water_height
 	)

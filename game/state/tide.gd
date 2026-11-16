@@ -56,6 +56,12 @@ static func relief_at(point: Vector2) -> float:
 	)
 
 
+## The height of the mud's relief at a point of the world in tiles (see `relief_at`): the middle
+## of the tile (3, 4) is (3.5, 4.5).
+static func relief_at_tile_point(point: Vector2) -> float:
+	return relief_at(point * WildlifeRules.TILE_SIZE)
+
+
 ## Whether the water covers the mud of a tile at a tide level (see `level`): when it covers most of
 ## the tile's picture, which is what a player sees and where they expect to be able to step.
 static func floods(tile: Vector2i, tide_level: float) -> bool:
@@ -75,7 +81,7 @@ static func flood_height(tile: Vector2i) -> float:
 	for y in SAMPLES_PER_SIDE:
 		for x in SAMPLES_PER_SIDE:
 			var offset := (Vector2(x, y) + Vector2(0.5, 0.5)) / SAMPLES_PER_SIDE
-			heights.append(relief_at((Vector2(tile) + offset) * WildlifeRules.TILE_SIZE))
+			heights.append(relief_at_tile_point(Vector2(tile) + offset))
 	heights.sort()
 	@warning_ignore("integer_division")
 	var height := heights[heights.size() / 2]

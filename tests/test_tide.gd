@@ -55,6 +55,10 @@ func test_the_relief_gives_the_numbers_of_the_shader() -> void:
 	assert_almost_eq(Tide.relief_at(Vector2(123, 456)), 0.500749, 0.0001)
 
 
+func test_the_relief_of_a_point_in_tiles_is_the_one_of_its_world_pixel() -> void:
+	assert_eq(Tide.relief_at_tile_point(Vector2(31.25, -2.5)), Tide.relief_at(Vector2(1000, -80)))
+
+
 func test_the_relief_has_no_seams_between_cells() -> void:
 	for edge in [Tide.HOLLOW_SIZE * 7.0, Tide.SWELL_SIZE * -3.0, Tide.SWELL_SIZE * 2.0]:
 		var before := Tide.relief_at(Vector2(edge - 0.001, 33.0))
