@@ -134,10 +134,10 @@ func test_a_shortfall_says_what_the_player_pays_from_the_purse() -> void:
 
 
 func test_the_player_may_sell_for_coin_with_nothing_wanted() -> void:
-	_carry(ItemTypes.TURNIP, 2)
+	_carry(ItemTypes.LOGS, 2)
 	_open()
-	_screen.step_give(ItemTypes.TURNIP, 2)
-	assert_eq(_screen.status_text(), "She pays you 6 ß.")
+	_screen.step_give(ItemTypes.LOGS, 2)
+	assert_eq(_screen.status_text(), "She pays you 8 ß.")
 	assert_false(_screen._trade_button.disabled)
 
 

@@ -104,10 +104,11 @@ func is_taken(shop: String, item: StringName) -> bool:
 
 ## What she asks of the player for one of the item, in Schilling: its worth at `sell_percent`,
 ## rounded up. `standing_percent` is the share of that price the player pays by their
-## friendship with her (see ShopStanding), a whole percent.
-func price(shop: String, item: StringName, standing_percent := 100) -> int:
+## friendship with her (see ShopStanding), a whole percent. The worth is that of the `season` (see
+## Prices `worth_in`), so the percents are applied once and the price is rounded once.
+func price(shop: String, item: StringName, standing_percent := 100, season := Prices.FLAT) -> int:
 	var percent: int = _values[_section(shop)]["sell_percent"]
-	return ceili(_prices.worth(item) * percent * standing_percent / 10000.0)
+	return ceili(_prices.worth_in(item, season) * percent * standing_percent / 10000.0)
 
 
 ## Whether the item is one of her best wares (`best` of its section), which she sells only to
@@ -117,10 +118,10 @@ func is_best(shop: String, item: StringName) -> bool:
 
 
 ## What one of the item the player gives is worth to her, in Schilling: its worth at `take_percent`,
-## rounded down.
-func value(shop: String, item: StringName) -> int:
+## rounded down, of the worth in the `season`.
+func value(shop: String, item: StringName, season := Prices.FLAT) -> int:
 	var percent: int = _values[_section(shop)]["take_percent"]
-	return floori(_prices.worth(item) * percent / 100.0)
+	return floori(_prices.worth_in(item, season, LEAST_TAKEN_WORTH) * percent / 100.0)
 
 
 ## The most of the item she has at once.

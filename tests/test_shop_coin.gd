@@ -49,12 +49,12 @@ func test_the_player_may_buy_with_coin_only() -> void:
 
 
 func test_the_player_may_sell_for_coin_only() -> void:
-	_carry(ItemTypes.TURNIP, 5)
+	_carry(ItemTypes.LOGS, 5)
 	var purse := Purse.new(0)
-	assert_eq(_shops.trade(SHOP, {}, {ItemTypes.TURNIP: 5}, _bag, ShopStanding.new(), purse), "")
-	assert_eq(purse.schilling, 15, "3 each")
+	assert_eq(_shops.trade(SHOP, {}, {ItemTypes.LOGS: 5}, _bag, ShopStanding.new(), purse), "")
+	assert_eq(purse.schilling, 20, "4 each")
 	assert_eq(_bag.totals(), {})
-	assert_eq(_shops.room_of(SHOP, ItemTypes.TURNIP), 5)
+	assert_eq(_shops.room_of(SHOP, ItemTypes.LOGS), 5)
 
 
 func test_selling_beyond_the_room_is_still_refused() -> void:

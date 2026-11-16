@@ -108,6 +108,10 @@ chest). E on the keeper **out of hours** opens the chat (below).
 - She **sells at 125 %** of the worth, rounded up, and **takes at 60 %**, rounded down (the draft's
   ratios). The village sheet's money topic names these prices, and a test keeps them in line
   (`tests/test_money_lore.gd`). Whole Schilling throughout, no fractions.
+- **Seasons in the price** (#49 step 11): a good of a kind (grain, eggs, vegetables) is worth a
+  percent of its worth in the season, rounded once to the nearest whole (see
+  [README.md](README.md)); the trade screen shows today's. The tables of this page are the plain
+  worths.
 - **Friendship in the price** (#48 and #49 step 10): a shopkeeper with the benefit `better_prices`
   (level 6, Good neighbour) sells at 80 % of her price (`ShopStanding`), applied to the worth once
   and rounded up once, so a price is whole, at least 1 and never past the full price. What she pays

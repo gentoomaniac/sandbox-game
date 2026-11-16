@@ -218,6 +218,13 @@ needs money to be done. A coin reward (`reward.schilling`, a whole number from 1
   This replaces the draft's levels, which predate the ten of
   [relationships](../villagers/relationships.md). The percentages go into `[friendship]` of
   `data/prices.cfg`. `best_wares` (9) adds goods.
+- **Built (step 11):** `[kind]` and `[seasons.<kind>]` in `data/prices.cfg`, `Prices.worth_in`,
+  `ShopRules.price` and `value` with a `season`, `Shops.price_of` and `value_of` (today's season),
+  `tests/test_price_seasons.gd`. Kinds today: grain (flour, bread: spring 120, summer 100, autumn
+  80, winter 100), farm (egg: summer 90, winter 120), vegetable (turnip, berries: spring 130,
+  summer 100, autumn 80, winter 130); the rest is flat (seeds, candle, wood, fibre, reeds, hay,
+  clay), and fish, salt, nails and cloth come with their goods. Barter values at the plain worth.
+  Cheap goods hardly move (an egg stays 2).
 - **Seasons change prices**: a factor by kind of good in `[seasons.<kind>]` (grain 80 % in autumn
   and 120 % in spring; butter and eggs 120 % in winter and 90 % in summer; fresh vegetables 80 % in
   their season and 130 % out of it; fish a little dearer in winter; salt, nails and cloth flat). A

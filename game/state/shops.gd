@@ -31,6 +31,17 @@ func room_of(shop: String, item: StringName) -> int:
 	return _worked_out(shop)["room"].get(item, 0)
 
 
+## What she asks today of the player, with the `standing` they have with her, for one of the item:
+## the price of the season (see ShopRules `price`).
+func price_of(shop: String, item: StringName, standing := ShopStanding.new()) -> int:
+	return _rules.price(shop, item, standing.price_percent, _clock.season())
+
+
+## What she gives today for one of the item the player brings (see ShopRules `value`).
+func value_of(shop: String, item: StringName) -> int:
+	return _rules.value(shop, item, _clock.season())
+
+
 ## What the deal comes to and whether it can be done: `want` is what the player gets (item to
 ## count, from the shop's `sells`), `give` what they give (from its `takes`) out of `bag`. Either
 ## may be empty: the player may sell for coin or buy with it. The difference between the price and
@@ -50,10 +61,10 @@ func quote(
 	var deal := ShopQuote.new()
 	for item: StringName in want:
 		if _rules.is_sold(shop, item):
-			deal.price += _rules.price(shop, item, standing.price_percent) * want[item]
+			deal.price += price_of(shop, item, standing) * want[item]
 	for item: StringName in give:
 		if _rules.is_taken(shop, item):
-			deal.value += _rules.value(shop, item) * give[item]
+			deal.value += value_of(shop, item) * give[item]
 	deal.player_pays = maxi(deal.price - deal.value, 0)
 	deal.she_pays = maxi(deal.value - deal.price, 0)
 	deal.problem = _problem(shop, want, give, bag, deal, standing, purse)
@@ -102,13 +113,13 @@ func cover(
 	var price := maxi(quote(shop, want, {}, bag, standing).price - purse.schilling, 0)
 	var in_file_order := _rules.taken(shop)
 	var takable := in_file_order.filter(
-		func(item: StringName) -> bool: return _rules.value(shop, item) > 0
+		func(item: StringName) -> bool: return value_of(shop, item) > 0
 	)
 	# Sorting is not stable: what is worth the same keeps the order of the file by itself.
 	takable.sort_custom(
 		func(first: StringName, second: StringName) -> bool:
-			var first_value := _rules.value(shop, first)
-			var second_value := _rules.value(shop, second)
+			var first_value := value_of(shop, first)
+			var second_value := value_of(shop, second)
 			if first_value != second_value:
 				return first_value < second_value
 			return in_file_order.find(first) < in_file_order.find(second)
@@ -119,7 +130,7 @@ func cover(
 		var most := mini(bag.count_of(item), room_of(shop, item))
 		while covered < price and give.get(item, 0) < most:
 			give[item] = give.get(item, 0) + 1
-			covered += _rules.value(shop, item)
+			covered += value_of(shop, item)
 	return give
 
 

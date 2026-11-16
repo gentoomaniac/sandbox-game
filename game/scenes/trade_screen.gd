@@ -197,18 +197,19 @@ func _set_count(counts: Dictionary, item: StringName, count: int) -> void:
 
 
 func _refresh() -> void:
-	var rules := ShopRules.default_rules()
 	var shops := _state.shops
 	var bag := _state.player.inventory
 	for row in _sell_rows:
 		var stock := shops.stock_of(_shop, row.item)
-		var price := rules.price(_shop, row.item, _standing.price_percent)
+		var price := shops.price_of(_shop, row.item, _standing)
 		var detail := "%d ß, %d left" % [price, stock]
 		row.show_state(detail, want.get(row.item, 0), want.get(row.item, 0) < stock, stock == 0)
 	for row in _take_rows:
 		var room := shops.room_of(_shop, row.item)
 		var carried := bag.count_of(row.item)
-		var detail := "%d ß, room %d, you have %d" % [rules.value(_shop, row.item), room, carried]
+		var detail := (
+			"%d ß, room %d, you have %d" % [shops.value_of(_shop, row.item), room, carried]
+		)
 		var can_add: bool = give.get(row.item, 0) < _most_to_give(row.item)
 		row.show_state(detail, give.get(row.item, 0), can_add, carried == 0 or room == 0)
 	_quote = shops.quote(_shop, want, give, bag, _standing, _state.player.purse)

@@ -51,14 +51,19 @@ Schilling, the coin of the village, and in goods: the purse is in your bag.
 
 | She takes | Value | A day |
 |---|---|---|
-| Egg, berries | 1 ß | 12 each |
-| Turnip | 3 ß | 10 |
+| Egg | 1 ß | 12 |
+| Berries | 1 to 2 ß | 12 |
+| Turnip | 3 to 4 ß | 10 |
 | Fibre, reeds, hay | 1 ß | 20 each |
 | Logs | 4 ß | 10 |
 | Clay | 2 ß | 10 |
-| Flour | 6 ß | 6 |
-| Bread | 7 ß | 6 |
+| Flour | 4 to 7 ß | 6 |
+| Bread | 6 to 8 ß | 6 |
 
+- What a good is worth moves with the season, and so what she gives for it: grain (flour, bread) is
+  cheap after the harvest in autumn and dear in spring, vegetables (turnips, berries) are cheap in
+  autumn and dear in winter and spring, eggs a little dearer in winter. The tables show the range.
+  Seeds, candles, wood, fibre, reeds, hay and clay cost the same all year.
 - Her stock fills up over the days, and what she takes in a day is back to its number the next
   day. A shop you leave alone for a long time is full again when you come back; one you empty
   stays empty for the day. It is saved with the game.
