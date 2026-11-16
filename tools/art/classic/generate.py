@@ -252,6 +252,7 @@ def object_atlas():
         ("sales_cart", [standing_outdoors(sales_cart.sales_cart())]),
         ("dyke_low", boundaries.dyke_row("low")),
         ("dyke_high", boundaries.dyke_row("high")),
+        ("dyke_torn", boundaries.torn_dyke_row()),
     ]
 
 

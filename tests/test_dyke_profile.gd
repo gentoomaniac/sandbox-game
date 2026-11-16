@@ -92,3 +92,7 @@ func test_the_hover_over_a_dyke_gives_its_height_and_turf() -> void:
 	_world.add_object(dyke)
 	assert_eq(WorldHoverText.object_text_at(_state, _tile), _world.dykes.words(dyke))
 	assert_true(WorldHoverText.object_text_at(_state, _tile).begins_with("Dyke, "))
+
+
+func test_a_torn_dyke_looks_torn_whatever_its_height() -> void:
+	assert_eq(_profile.look(_dyke_at(_tile, 300, 50), true), DykeProfile.TORN)

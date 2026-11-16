@@ -78,6 +78,12 @@ func salt_days_at(tile: Vector2i) -> int:
 	return _salt_days.get(tile, 0)
 
 
+## Whether the dyke on a tile is torn: the sea damaged or broke it, and the villagers have not
+## mended it yet.
+func is_torn(tile: Vector2i) -> bool:
+	return _repair_minute.has(tile)
+
+
 ## Whether a tile that dried is still muddy.
 func is_muddy_at(tile: Vector2i) -> bool:
 	return _mud_days.has(tile)
@@ -169,8 +175,9 @@ func mend(world: World, now: int) -> void:
 			continue
 		var dyke := world.object_at(tile)
 		if dyke != null and dyke.type == WorldObjectTypes.DYKE:
-			world.dykes.restore(world, dyke)
+			# Mended before it changes, so it is drawn whole.
 			_repair_minute.erase(tile)
+			world.dykes.restore(world, dyke)
 
 
 ## Does `delta` seconds of work: fills or drains at `fill_tiles_per_second`, at most
@@ -279,19 +286,21 @@ func _meet_dyke(world: World, dyke: WorldObject, now: int) -> void:
 	var height := world.dykes.height_of(dyke)
 	var strength := world.dykes.strength_of(dyke)
 	var weakness := 1.0 - strength
-	if level > height:
+	var is_breach := level > height
+	if not is_breach and level <= height - weakness * _landscape.value("surge", "damage_margin"):
+		return
+	# Torn before it changes, so it is drawn torn.
+	_repair_minute[dyke.pos] = (
+		now + int(_landscape.value("surge", "repair_days")) * GameClock.MINUTES_PER_DAY
+	)
+	if is_breach:
 		world.dykes.change(world, dyke, _landscape.value("surge", "breach_height"), strength)
 		_volume_left += _landscape.value("surge", "volume_per_breach")
 		_enqueue(world, dyke.pos)
 		breached.emit(1)
-	elif level > height - weakness * _landscape.value("surge", "damage_margin"):
+	else:
 		var worn: float = height - weakness * _landscape.value("surge", "damage_height")
 		world.dykes.change(world, dyke, worn, strength)
-	else:
-		return
-	_repair_minute[dyke.pos] = (
-		now + int(_landscape.value("surge", "repair_days")) * GameClock.MINUTES_PER_DAY
-	)
 
 
 # Queues a tile for filling if it is land lower than the water, once per fill. A chunk that is

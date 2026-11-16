@@ -493,6 +493,65 @@ def dyke_row(name="normal"):
     look = DYKE_LOOKS[name]
     return [dyke(mask, look=look) for mask in MASKS] + [dyke(mask, slanted, look) for mask, slanted in slants.SLANTED]
 
+# The torn crest of a dyke the sea damaged or broke through, as the 32 px one (see
+# tools/art/boundaries.py `torn_dyke`): a gap torn through the crest in the middle of the tile,
+# DYKE_GAP px across (less near a side), flat at DYKE_GAP_FLOOR px within DYKE_GAP_FLAT of its
+# middle, its sides and floor raw clay.
+DYKE_GAP = 6.5
+DYKE_GAP_FLAT = 3.0
+DYKE_GAP_FLOOR = 1
+DYKE_GAP_RAGGED = 1.0
+DYKE_CLAY = ("sand", "mud", "mud_dark", "soil_dark")
+DYKE_TORN_TURF = ("olive", "green_deep")
+
+
+def _nearest_skeleton_point(skeleton):
+    """The ground point of the tile on the skeleton nearest the tile's centre."""
+    points = [(x + 0.5, y + 0.5) for y in range(TILE) for x in range(TILE)]
+    return min(points, key=lambda p: (round(skeleton(*p)[0], 1), math.dist(p, (_CENTRE, _CENTRE))))
+
+
+def torn_dyke(mask, slanted=0):
+    """The dyke with a torn crest on a tile with connection `mask` (see `dyke`)."""
+    look = DYKE_LOOKS["normal"]
+    skeleton = _dyke_skeleton(mask, slanted, look.foot)
+    gap_x, gap_y = _nearest_skeleton_point(skeleton)
+    reach = min(DYKE_GAP, gap_x, TILE - gap_x, gap_y, TILE - gap_y)
+    flat = min(DYKE_GAP_FLAT, reach / 2)
+
+    def layers(_mask, x, y):
+        bank = _dyke_bank(look, *skeleton(x + 0.5, y + 0.5))
+        if not bank:
+            return bank
+        height, material = bank[0]
+        ragged = DYKE_GAP_RAGGED * cluster_value(x, y, 0, 31)
+        across = math.hypot(x + 0.5 - gap_x, y + 0.5 - gap_y) + ragged
+        if across >= reach:
+            return bank
+        rise = max(0.0, across - flat) / (reach - flat)
+        cut = round(DYKE_GAP_FLOOR + (height - DYKE_GAP_FLOOR) * rise * rise)
+        if cut >= height:
+            return bank
+        return [(cut, "torn" if height - cut <= 1 else "clay")]
+
+    turf = _dyke_colour(look)
+
+    def colour(material, x, y, z, light, is_top):
+        if material == "clay":
+            streak = 0.12 * cluster_value(x, y, z, 11) - (0.3 if z <= DYKE_GAP_FLOOR else 0.0)
+            return ramp_shade(DYKE_CLAY, light + streak)
+        if material == "torn":
+            return DYKE_TORN_TURF[0] if light > 0.3 else DYKE_TORN_TURF[1]
+        return turf(material, x, y, z, light, is_top)
+
+    return draw_line(mask, layers, colour, _dyke_outline, has_faces=False)
+
+
+def torn_dyke_row():
+    """The atlas row of the torn dyke, in the order of `dyke_row`."""
+    return [torn_dyke(mask) for mask in MASKS] + [torn_dyke(mask, slanted) for mask, slanted in slants.SLANTED]
+
+
 
 def icons():
     """The icons of the items that put a wattle fence or a stone wall down, by item id."""

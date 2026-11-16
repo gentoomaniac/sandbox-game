@@ -18,10 +18,12 @@ const MAX_HEIGHT_CM := 400
 const HEIGHT_SEED_OFFSET := 41
 const STRENGTH_SEED_OFFSET := 42
 
-## The looks of a dyke by its height (see `look`): the names of its other rows in the atlas
-## (WorldObjectTypes `look_rows`); a dyke of no special height has its type's own row.
+## The looks of a dyke by its height, and torn while the sea has damaged it (see `look`): the
+## names of its other rows in the atlas (WorldObjectTypes `look_rows`); a dyke of no special height
+## has its type's own row.
 const LOW := &"low"
 const HIGH := &"high"
+const TORN := &"torn"
 const NORMAL := &""
 
 ## From what strength a dyke is called turfed, and well turfed.
@@ -128,9 +130,10 @@ func words(dyke: WorldObject) -> String:
 	return "Dyke, %s%.1f m, %s" % [size, height, turf]
 
 
-## The look a dyke is drawn in: LOW under `low_below`, HIGH over `high_above`, else NORMAL.
-func look(dyke: WorldObject) -> StringName:
-	return _size(height_of(dyke))
+## The look a dyke is drawn in: TORN while it `is_torn` (damaged and not mended yet, see
+## FloodState `is_torn`), else LOW under `low_below`, HIGH over `high_above`, or NORMAL.
+func look(dyke: WorldObject, is_torn := false) -> StringName:
+	return TORN if is_torn else _size(height_of(dyke))
 
 
 func _size(height: float) -> StringName:

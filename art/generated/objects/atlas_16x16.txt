@@ -82,3 +82,4 @@ notice_board 1
 sales_cart 1
 dyke_low 28
 dyke_high 28
+dyke_torn 28

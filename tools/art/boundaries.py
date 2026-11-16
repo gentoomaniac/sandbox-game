@@ -592,6 +592,71 @@ def dyke_row(name="normal"):
     look = DYKE_LOOKS[name]
     return [dyke(mask, look=look) for mask in MASKS] + [dyke(mask, slanted, look) for mask, slanted in slants.SLANTED]
 
+# The torn crest of a dyke the sea damaged or broke through (FloodState in the game: shown until
+# the villagers mend it): the usual bank with a gap torn through its crest in the middle of the
+# tile, its floor and sides raw clay, the turf hanging ragged over the edge. The gap is a bowl
+# round the point of the skeleton nearest the tile's centre, DYKE_GAP px across (less where that
+# point is nearer to a side, so the bank meets its neighbours whole at the seams), flat at
+# DYKE_GAP_FLOOR px over the ground within DYKE_GAP_FLAT of its middle, and its rim torn unevenly
+# by up to DYKE_GAP_RAGGED px.
+DYKE_GAP = 13.0
+DYKE_GAP_FLAT = 6.0
+DYKE_GAP_FLOOR = 1
+DYKE_GAP_RAGGED = 1.5
+# Wet clay, lit to dark, and the dark of the turf torn over the edge of the gap.
+DYKE_CLAY = ("sand", "mud", "mud_dark", "soil_dark")
+DYKE_TORN_TURF = ("olive", "green_deep")
+
+
+def _nearest_skeleton_point(skeleton):
+    """The ground point of the tile on the skeleton nearest the tile's centre."""
+    points = [(x + 0.5, y + 0.5) for y in range(TILE) for x in range(TILE)]
+    return min(points, key=lambda p: (round(skeleton(*p)[0], 1), math.dist(p, (_CENTRE, _CENTRE))))
+
+
+def torn_dyke(mask, slanted=0):
+    """The dyke with a torn crest on a tile with connection `mask` (see `dyke`)."""
+    look = DYKE_LOOKS["normal"]
+    skeleton = _dyke_skeleton(mask, slanted, look.foot)
+    gap_x, gap_y = _nearest_skeleton_point(skeleton)
+    reach = min(DYKE_GAP, gap_x, TILE - gap_x, gap_y, TILE - gap_y)
+    flat = min(DYKE_GAP_FLAT, reach / 2)
+
+    def layers(_mask, x, y):
+        bank = _dyke_bank(look, *skeleton(x + 0.5, y + 0.5))
+        if not bank:
+            return bank
+        height, material = bank[0]
+        ragged = DYKE_GAP_RAGGED * _cluster(x, y, 0, 31)
+        across = math.hypot(x + 0.5 - gap_x, y + 0.5 - gap_y) + ragged
+        if across >= reach:
+            return bank
+        rise = max(0.0, across - flat) / (reach - flat)
+        cut = round(DYKE_GAP_FLOOR + (height - DYKE_GAP_FLOOR) * rise * rise)
+        if cut >= height:
+            return bank
+        # Cut a pixel only: the turf torn at the edge; deeper: the clay laid bare.
+        return [(cut, "torn" if height - cut <= 1 else "clay")]
+
+    turf = _dyke_colour(look)
+
+    def colour(material, x, y, z, light, is_top):
+        if material == "clay":
+            # Smeared by the water: streaks along the slope, darker where it is wet below.
+            streak = 0.12 * _cluster(x, y, z, 11) - (0.3 if z <= DYKE_GAP_FLOOR else 0.0)
+            return ramp_shade(DYKE_CLAY, light + streak)
+        if material == "torn":
+            return DYKE_TORN_TURF[0] if light > 0.3 else DYKE_TORN_TURF[1]
+        return turf(material, x, y, z, light, is_top)
+
+    return draw_line(mask, layers, colour, _dyke_outline, has_faces=False)
+
+
+def torn_dyke_row():
+    """The atlas row of the torn dyke, in the order of `dyke_row`."""
+    return [torn_dyke(mask) for mask in MASKS] + [torn_dyke(mask, slanted) for mask, slanted in slants.SLANTED]
+
+
 
 def one_tile(picture):
     """A line's cell cut to the tile it stands on (the middle third of the cell), for an icon."""

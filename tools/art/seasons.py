@@ -579,8 +579,9 @@ for _kind in SNAG_KINDS:
     if _kind in _WINTER_LOOKS:
         _surfaces, _edges, _depth = _WINTER_LOOKS[_kind]["snow"]
         _WINTER_LOOKS[f"half_dead_{_kind}"] = _WINTER_LOOKS[_kind] | {"specks": _DEAD_WOOD_LIT, "snow": (_surfaces | _DEAD_WOOD_LIT, _edges, _depth)}
-# The dyke's other looks (its heights, boundaries.DYKE_LOOKS) turn with the seasons as the dyke.
-DYKE_LOOK_KINDS = ("dyke_low", "dyke_high")
+# The dyke's other looks (its heights, boundaries.DYKE_LOOKS, and its torn crest) turn with the
+# seasons as the dyke.
+DYKE_LOOK_KINDS = ("dyke_low", "dyke_high", "dyke_torn")
 TURNS_AS = LIVING_KIND | {kind: "dyke" for kind in DYKE_LOOK_KINDS}
 for _kind in DYKE_LOOK_KINDS:
     _WINTER_LOOKS[_kind] = _WINTER_LOOKS["dyke"]

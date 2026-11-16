@@ -132,3 +132,18 @@ func test_a_damaged_dyke_is_mended_after_the_repair_days() -> void:
 	assert_almost_eq(_world.dykes.height_of(dyke), 0.3, 0.001, "not yet")
 	_flood.mend(_world, NOW + 6 * GameClock.MINUTES_PER_DAY)
 	assert_almost_eq(_world.dykes.height_of(dyke), generated, 0.001)
+
+
+func test_the_view_draws_a_damaged_dyke_torn_until_it_is_mended() -> void:
+	var view := WorldView.new()
+	add_child_autofree(view)
+	view.show_world(ChunkResidency.new(_world))
+	var dyke := CoastWorld.sea_dykes(_world)[0]
+	var rows: Dictionary = WorldObjectTypes.TYPES[WorldObjectTypes.DYKE]["look_rows"]
+	assert_ne(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
+	_flood.begin(_world, STRONGEST_LEVEL, NOW, 1)
+	assert_true(_flood.is_torn(dyke.pos))
+	assert_eq(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])
+	_flood.mend(_world, NOW + 6 * GameClock.MINUTES_PER_DAY)
+	assert_false(_flood.is_torn(dyke.pos))
+	assert_ne(view._objects.get_cell_atlas_coords(dyke.pos).y, rows[DykeProfile.TORN])

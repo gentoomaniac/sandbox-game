@@ -320,6 +320,7 @@ objects/draw_well_32x32.png 96 160
 objects/dyke_32x32.png 96 160
 objects/dyke_high_32x32.png 96 160
 objects/dyke_low_32x32.png 96 160
+objects/dyke_torn_32x32.png 96 160
 objects/eel_traps_32x32.png 96 160
 objects/ewer_32x32.png 96 160
 objects/feed_trough_32x32.png 96 160
