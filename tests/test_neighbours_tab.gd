@@ -86,8 +86,10 @@ func test_the_points_are_never_in_a_row() -> void:
 	_antje.opinion = 321
 
 	for row in NeighbourRows.of(_state):
+		# Not the look: an object's text holds its instance id, which may contain the digits.
 		for value: Variant in row.values():
-			assert_false(str(value).contains("321"))
+			if not value is Object:
+				assert_false(str(value).contains("321"))
 
 
 func test_the_marks_are_filled_up_to_the_level_cold_then_warm_then_gilded() -> void:
