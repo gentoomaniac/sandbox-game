@@ -6,21 +6,28 @@ var _inventory: Inventory
 var _chest: WorldObject
 var _screen: StorageScreen
 var _trash_can: TrashCan
+var _taken: Array[Dictionary] = []
 
 
 func before_each() -> void:
+	_taken.clear()
 	_inventory = Inventory.new()
 	_chest = WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
-	var player := PlayerState.new()
-	player.inventory = _inventory
+	var state := GameState.new_game(7)
+	state.player.inventory = _inventory
 	_make_window()
 	var hotbar := HotbarCase.new_hotbar()
 	_window.add_child(hotbar)
 	hotbar.show_inventory(_inventory)
 	_screen = StorageScreen.new(hotbar)
 	_window.add_child(_screen)
-	_screen.open_chest(_chest, player)
+	_screen.open_chest(_chest, state)
 	_trash_can = _screen._trash_can
+	state.action_done.connect(
+		func(outcome: ActionOutcome) -> void:
+			if outcome.kind == ActionOutcome.TAKE_FROM_CHEST:
+				_taken.append(outcome.items)
+	)
 	# The window's centre container places the panel a frame later.
 	await wait_process_frames(2)
 
@@ -57,6 +64,21 @@ func test_a_stack_of_the_chest_is_destroyed_after_the_question() -> void:
 	_trash_can._destroy_button.pressed.emit()
 	assert_eq(_chest.storage.count_of(ItemTypes.LOGS), 0)
 	assert_eq(_chest.storage.count_of(ItemTypes.STONE), 3)
+
+
+func test_destroying_a_stack_of_the_chest_tells_it_was_taken_at_once() -> void:
+	_drag_logs_to_the_trash_can(StorageScreen.CHEST)
+	assert_eq(_taken, [] as Array[Dictionary], "only asked so far")
+
+	_trash_can._destroy_button.pressed.emit()
+
+	assert_eq(_taken, [{ItemTypes.LOGS: 12}] as Array[Dictionary])
+
+
+func test_destroying_a_stack_of_the_backpack_tells_nothing() -> void:
+	_drag_logs_to_the_trash_can(StorageScreen.INVENTORY)
+	_trash_can._destroy_button.pressed.emit()
+	assert_eq(_taken, [] as Array[Dictionary])
 
 
 func test_keep_leaves_the_stack_where_it_was() -> void:

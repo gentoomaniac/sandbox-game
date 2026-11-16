@@ -65,7 +65,7 @@ func test_the_real_windows_keys_do_nothing_over_each_other_but_close_themselves(
 	assert_false(character.can_open_on_key(), "C and K do nothing over crafting")
 	assert_true(crafting.can_open_on_key(), "Shift+C closes crafting")
 	crafting.close()
-	storage.open_chest(chest, state.player)
+	storage.open_chest(chest, state)
 	assert_false(character.can_open_on_key(), "everything is swallowed with a chest open")
 	assert_false(bag.can_open_on_key())
 	assert_false(crafting.can_open_on_key())

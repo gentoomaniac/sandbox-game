@@ -40,7 +40,7 @@ func interact() -> void:
 				ProcessStation.new(state, Crafting.new(state), choice.subject)
 			)
 		Interaction.Kind.OPEN_CHEST:
-			storage_screen.open_chest(choice.subject, state.player)
+			storage_screen.open_chest(choice.subject, state)
 		Interaction.Kind.OPEN_CART:
 			cart_screen.open_cart(choice.subject, state.player)
 		Interaction.Kind.READ_BOARD:

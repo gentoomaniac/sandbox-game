@@ -88,7 +88,7 @@ func test_closing_a_closed_pause_menu_does_not_say_closed() -> void:
 func test_storage_screen() -> void:
 	var screen := StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
-	_opened_and_closed(screen, screen.open_chest.bind(_chest, _state.player))
+	_opened_and_closed(screen, screen.open_chest.bind(_chest, _state))
 
 
 func test_storage_screen_listens_once_however_often_it_is_opened() -> void:
@@ -97,8 +97,8 @@ func test_storage_screen_listens_once_however_often_it_is_opened() -> void:
 	var changed := _state.player.inventory.changed
 	# The player's own look of the held item listens too.
 	var listeners := changed.get_connections().size()
-	screen.open_chest(_chest, _state.player)
-	screen.open_chest(_chest, _state.player)
+	screen.open_chest(_chest, _state)
+	screen.open_chest(_chest, _state)
 	assert_eq(changed.get_connections().size(), listeners + 1)
 	screen.close()
 	assert_eq(changed.get_connections().size(), listeners)

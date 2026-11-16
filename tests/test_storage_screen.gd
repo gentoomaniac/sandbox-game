@@ -17,15 +17,15 @@ func before_each() -> void:
 ## The storage screen open on a chest with `_chest`'s slots, for `_inventory`'s player. Returns
 ## the views the player sees: the backpack's, the hotbar's (the HUD's), then the chest's.
 func _open_screen() -> Array[SlotView]:
-	var player := PlayerState.new()
-	player.inventory = _inventory
+	var state := GameState.new_game(7)
+	state.player.inventory = _inventory
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
 	var hotbar: HotbarHud = autofree(HotbarCase.new_hotbar())
 	hotbar.show_inventory(_inventory)
 	_screen = StorageScreen.new(hotbar)
 	add_child_autofree(_screen)
-	_screen.open_chest(chest, player)
+	_screen.open_chest(chest, state)
 	var in_screen: Array[SlotView] = []
 	in_screen.assign(_screen.find_children("*", "SlotView", true, false))
 	in_screen.erase(_screen._trash_can._slot)
@@ -147,12 +147,12 @@ func test_a_chest_of_many_slots_scrolls_inside_a_small_window() -> void:
 	var window := SubViewport.new()
 	window.size = Vector2i(320, 180)
 	add_child_autofree(window)
-	var player := PlayerState.new()
+	var state := GameState.new_game(7)
 	var chest := WorldObject.new(WorldObjectTypes.CHEST, Vector2i.ZERO)
 	chest.storage = _chest
 	_screen = StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	window.add_child(_screen)
-	_screen.open_chest(chest, player)
+	_screen.open_chest(chest, state)
 	await wait_process_frames(2)
 	var list: ScrollingList = _screen.find_children("*", "ScrollingList", true, false)[0]
 	assert_true(list.get_v_scroll_bar().visible, "the window is too small for the slots")

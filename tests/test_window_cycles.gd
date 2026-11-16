@@ -5,11 +5,13 @@ extends GutTest
 const ROUNDS := 8
 
 var _hotbar: HotbarHud
+var _state: GameState
 var _player: PlayerState
 
 
 func before_each() -> void:
-	_player = PlayerState.new()
+	_state = GameState.new_game(7)
+	_player = _state.player
 	_hotbar = add_child_autofree(HotbarHud.new())
 	_hotbar.show_inventory(_player.inventory)
 
@@ -43,9 +45,9 @@ func test_storage_screens_opened_and_freed_leave_no_nodes() -> void:
 		func() -> void:
 			var screen := StorageScreen.new(_hotbar)
 			add_child(screen)
-			screen.open_chest(chest, _player)
+			screen.open_chest(chest, _state)
 			screen.close()
-			screen.open_chest(chest, _player)
+			screen.open_chest(chest, _state)
 			remove_child(screen)
 			screen.free()
 	)

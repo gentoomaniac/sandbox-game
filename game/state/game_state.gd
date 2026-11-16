@@ -550,11 +550,6 @@ func eat_held() -> bool:
 	return true
 
 
-## The player closed a chest's screen having taken `items` out of it.
-func report_taken_from_chest(chest: WorldObject, items: Dictionary) -> void:
-	report(ActionOutcome.TAKE_FROM_CHEST, chest.pos, chest.type, items)
-
-
 ## Tells that an action of the player worked: what it did on the player's map at `tile`, to the
 ## `object` type (if any), and with `items` (item id to count).
 func report(kind: StringName, tile: Vector2i, object := &"", items := {}) -> void:

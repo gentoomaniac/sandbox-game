@@ -10,7 +10,7 @@ extends CanvasLayer
 ##   `_scrolling(part)`, which wraps it in a ScrollingList and returns that to add to the layout.
 ## - `open()`, `close()`, `toggle()` and `is_open()` are the base's; they take no arguments, so a
 ##   window that needs some (a chest, a station, a villager) has a method of its own that stores
-##   them and calls `open()`, e.g. `open_chest(chest, player)`. If that window can already be open,
+##   them and calls `open()`, e.g. `open_chest(chest, state)`. If that window can already be open,
 ##   the method calls `close()` first, so the close hook still sees the old arguments and
 ##   `open()`, which does nothing for a window that is open, starts afresh.
 ## - Hooks, all optional: `_on_open()` (fill the contents; the lists are fitted after it),

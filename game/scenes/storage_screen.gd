@@ -12,9 +12,6 @@ extends Modal
 ## Like the character screen, it takes the input while it is open (Main sees to that, and closes it
 ## on E; Escape is the Modal's).
 
-## The screen was closed and the player took `items` (item id to count) out of the chest.
-signal taken_from(chest: WorldObject, items: Dictionary)
-
 ## The player let go of a picked backpack or hotbar stack outside the screen (see GameState
 ## `drop_from_inventory`).
 signal drop_requested(slot: int)
@@ -34,9 +31,8 @@ const CHEST_ICON := preload("res://assets/ui/chest_icon.png")
 var _hotbar: HotbarHud
 var _inventory: Inventory
 var _chest: ItemSlots
-## The chest's object and what it held when the screen opened, to tell what was taken.
-var _chest_object: WorldObject
-var _held_when_opened := {}
+## Moves the goods and tells what was taken out of the chest.
+var _transfers: ChestTransfers
 ## The slot views of each side, by slot.
 var _views := {INVENTORY: {}, CHEST: {}}
 ## What the chest's grid of slots is swapped in and out of: the part that grows.
@@ -57,6 +53,7 @@ func _init(hotbar: HotbarHud) -> void:
 	inventory_column.add_child(
 		_new_grid(INVENTORY, Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT, INVENTORY_COLUMNS)
 	)
+	_trash_can.destroy_rule = _destroy
 	inventory_column.add_child(_trash_can)
 	row.add_child(inventory_column)
 	var chest_column := _new_column(CHEST_ICON)
@@ -69,13 +66,11 @@ func _init(hotbar: HotbarHud) -> void:
 
 
 ## Shows the chest next to the player's inventory. Opening it again moves it to that chest.
-func open_chest(chest: WorldObject, player: PlayerState) -> void:
-	assert(chest.storage != null, "Not a chest: %s" % chest.type)
+func open_chest(chest: WorldObject, state: GameState) -> void:
 	close()
-	_inventory = player.inventory
+	_inventory = state.player.inventory
 	_chest = chest.storage
-	_chest_object = chest
-	_held_when_opened = _held_in(_chest)
+	_transfers = ChestTransfers.new(state, chest)
 	open()
 
 
@@ -97,28 +92,11 @@ func _on_open() -> void:
 func _on_close() -> void:
 	_inventory.changed.disconnect(_refresh)
 	_chest.changed.disconnect(_refresh)
-	var taken := {}
-	var held_now := _held_in(_chest)
-	for item: StringName in _held_when_opened:
-		var count: int = _held_when_opened[item] - held_now.get(item, 0)
-		if count > 0:
-			taken[item] = count
-	if not taken.is_empty():
-		taken_from.emit(_chest_object, taken)
 	_trash_can.keep()
 	# The hotbar may have been freed first, when the whole scene goes.
 	if is_instance_valid(_hotbar):
 		_hotbar.release(self)
 		_hotbar.slot_quick_move_requested.disconnect(_on_hotbar_slot_quick_move_requested)
-
-
-## What the slots hold, item id to count.
-static func _held_in(slots: ItemSlots) -> Dictionary:
-	var held := {}
-	for stack in slots.slots:
-		if not stack.is_empty():
-			held[stack["item"]] = held.get(stack["item"], 0) + stack["count"]
-	return held
 
 
 ## Makes the grid of the chest's side, for a chest of this many slots. A chest of many slots is
@@ -153,6 +131,8 @@ func _new_grid(side: int, first: int, last: int, columns: int) -> GridContainer:
 		var view := SlotView.new()
 		view.tooltip_id = "%s_%d" % ["inventory" if side == INVENTORY else "chest", slot]
 		view.quick_move_requested.connect(_on_slot_quick_move_requested.bind(side, slot))
+		if side == CHEST:
+			view.move_rule = _move
 		grid.add_child(view)
 		_views[side][slot] = view
 	return grid
@@ -164,9 +144,24 @@ func _slots_of(side: int) -> ItemSlots:
 
 func _on_slot_quick_move_requested(side: int, slot: int) -> void:
 	if side == CHEST:
-		_chest.send(slot, _inventory, _inventory.backpack_first_order())
+		_transfers.take_to_backpack(slot)
 	else:
-		_inventory.send(slot, _chest)
+		_transfers.put_in(slot)
+
+
+## The move rule of the chest's slots (see SlotView `move_rule`): any drag from or onto them moves.
+func _move(source: SlotView, target: SlotView, is_dropping: bool) -> bool:
+	if is_dropping:
+		_transfers.drag(source.container, source.slot, target.container, target.slot)
+	return true
+
+
+## What the trash can destroys: a stack of the chest is told as taken, one of the backpack is not.
+func _destroy(source: SlotView) -> void:
+	if source.container == _chest:
+		_transfers.destroy(source.slot)
+	else:
+		source.destroy()
 
 
 func _on_hotbar_slot_quick_move_requested(slot: int) -> void:

@@ -96,13 +96,11 @@ func test_the_carved_chest_holds_twenty_slots_and_the_storage_screen_shows_them(
 	assert_eq(carved.storage.slots.size(), 20)
 	var screen := StorageScreen.new(autofree(HotbarCase.new_hotbar()))
 	add_child_autofree(screen)
-	screen.open_chest(carved, _state.player)
+	screen.open_chest(carved, _state)
 	var views := screen.find_children("*", "SlotView", true, false)
 	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 20 + 1, "with the trash can")
 	screen.close()
-	screen.open_chest(
-		WorldObject.new(WorldObjectTypes.CHEST, _tile + Vector2i.RIGHT), _state.player
-	)
+	screen.open_chest(WorldObject.new(WorldObjectTypes.CHEST, _tile + Vector2i.RIGHT), _state)
 	views = screen.find_children("*", "SlotView", true, false)
 	assert_eq(views.size(), Inventory.BACKPACK_SIZE + 15 + 1, "a plain chest again")
 

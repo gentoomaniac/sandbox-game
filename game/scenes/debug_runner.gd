@@ -338,7 +338,7 @@ func _place_chests_and_floor_items() -> void:
 		_floor_items_tile = StartupOptions.NO_TILE
 	if _is_storage_to_open and _opened_chest != null:
 		_is_storage_to_open = false
-		storage_screen.open_chest(_opened_chest, state.player)
+		storage_screen.open_chest(_opened_chest, state)
 
 
 func _open_process_station() -> void:

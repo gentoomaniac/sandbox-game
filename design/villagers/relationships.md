@@ -49,7 +49,8 @@ built", as the pages of [gossip](gossip.md) and [quests](quests.md) do.
   [dialogue.md](dialogue.md), "Rating the player's words".
 - Step 8: harm. `Harm` (`GameState.harm`) listens to the finished actions and to the player's feet.
   **Stealing** (`stole`, -50): a harvest, a nest's eggs (`COLLECT`) or what is taken out of a chest
-  (`ActionOutcome.TAKE_FROM_CHEST`, told by `StorageScreen` when it is closed). **Damage**
+  (`ActionOutcome.TAKE_FROM_CHEST`, told by `ChestTransfers` as each move is done, so the
+  witnesses are those there at that moment; putting goods back does not undo it). **Damage**
   (`damaged`, -20): cutting down or taking down a line across the land (a Knick, a fence, a wall).
   **Rudeness** (`rude`, -20): standing within `push_tiles` (0.4) of a villager outdoors, who
   otherwise keeps 0.8 from the player, once a day for each. The witnesses (`DeedLog.witnesses_at`,

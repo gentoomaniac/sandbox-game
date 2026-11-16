@@ -13,6 +13,9 @@ extends HBoxContainer
 const BIN_ICON := preload("res://assets/ui/trash_icon.png")
 const GAP := 4
 
+## What destroys the asked stack, given its slot view, if a screen has more to do than the slot's
+## own `destroy` (a chest tells what was taken out of it).
+var destroy_rule: Callable
 var _slot := SlotView.new()
 ## The slot of the stack the question is about, and what the stack was when it was asked.
 var _source: SlotView
@@ -101,4 +104,7 @@ func _input(event: InputEvent) -> void:
 func _on_destroy_pressed() -> void:
 	keep()
 	if _source.item() == _asked_item and _source.count() == _asked_count:
-		_source.destroy()
+		if destroy_rule.is_valid():
+			destroy_rule.call(_source)
+		else:
+			_source.destroy()

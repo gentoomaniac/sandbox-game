@@ -2,6 +2,7 @@ extends GutTest
 ## The bag and the chest screen share the HUD's hotbar: only the open one answers
 ## its clicks and marks its slots.
 
+var _state: GameState
 var _player: PlayerState
 var _hotbar: HotbarHud
 var _bag: BagScreen
@@ -10,7 +11,9 @@ var _chest: WorldObject
 
 
 func before_each() -> void:
-	_player = PlayerState.new()
+	_state = GameState.new_game(7)
+	_player = _state.player
+	_player.inventory = Inventory.new()
 	_hotbar = HotbarCase.new_hotbar()
 	add_child_autofree(_hotbar)
 	_hotbar.show_inventory(_player.inventory)
@@ -25,7 +28,7 @@ func before_each() -> void:
 
 func test_a_drag_from_the_hotbar_with_only_the_bag_screen_open_is_its_alone() -> void:
 	_bag.open()
-	_storage.open_chest(_chest, _player)
+	_storage.open_chest(_chest, _state)
 	_storage.close()
 	_bag.open()
 	var backpack_view: SlotView = _bag._backpack_views[Inventory.HOTBAR_SIZE]
@@ -36,7 +39,7 @@ func test_a_drag_from_the_hotbar_with_only_the_bag_screen_open_is_its_alone() ->
 
 
 func test_shift_click_on_the_hotbar_goes_to_the_backpack_not_into_a_chest_seen_before() -> void:
-	_storage.open_chest(_chest, _player)
+	_storage.open_chest(_chest, _state)
 	_storage.close()
 	_bag.open()
 	_hotbar._slot_views[2].quick_move_requested.emit()
@@ -46,7 +49,7 @@ func test_shift_click_on_the_hotbar_goes_to_the_backpack_not_into_a_chest_seen_b
 
 
 func test_shift_click_on_the_hotbar_with_the_chest_open_goes_into_the_chest_only() -> void:
-	_storage.open_chest(_chest, _player)
+	_storage.open_chest(_chest, _state)
 	_hotbar._slot_views[2].quick_move_requested.emit()
 	assert_eq(_chest.storage.count_of(ItemTypes.LOGS), 5)
 	assert_eq(_player.inventory.count_of(ItemTypes.LOGS), 0)
@@ -69,7 +72,7 @@ func _assert_hotbar_is_back_with_the_game() -> void:
 
 
 func test_freeing_an_open_chest_screen_gives_the_hotbar_back() -> void:
-	_storage.open_chest(_chest, _player)
+	_storage.open_chest(_chest, _state)
 	_hotbar._slot_views[2].modulate.a = SlotView.DRAGGED_ALPHA
 	remove_child(_storage)
 	_storage.free()
@@ -90,7 +93,7 @@ func test_a_screen_that_does_not_have_the_hotbar_cannot_release_it() -> void:
 
 
 func test_screens_open_when_their_hotbar_is_freed_first_close_without_it() -> void:
-	_storage.open_chest(_chest, _player)
+	_storage.open_chest(_chest, _state)
 	remove_child(_hotbar)
 	_hotbar.free()
 	remove_child(_storage)
