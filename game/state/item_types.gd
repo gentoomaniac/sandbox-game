@@ -156,39 +156,6 @@ const TOPICS_DIR := "res://game/state/items"
 const _OWN_SOURCE := "res://game/state/item_types.gd"
 
 const _OTHER_TYPES := {
-	WATTLE_FENCE:
-	{
-		"name": "Wattle fence",
-		"description": "Hazel rods woven between stakes, a light fence for a field or a yard.",
-		"weight": 1.0,
-		"stack_limit": 20,
-		"places": WorldObjectTypes.WATTLE_FENCE,
-	},
-	STONE_WALL:
-	{
-		"name": "Stone wall",
-		"description": "A piece of dry stone wall, fieldstones stacked without mortar.",
-		"weight": 4.5,
-		"stack_limit": 10,
-		"places": WorldObjectTypes.STONE_WALL,
-	},
-	PLANK_WALK:
-	{
-		"name": "Plank walk",
-		"description":
-		"A piece of boardwalk. Laid on grass or mud, it never wears or turns to mud.",
-		"weight": 1.0,
-		"stack_limit": 20,
-		"places": WorldObjectTypes.PLANK_WALK,
-	},
-	STONE_PATH:
-	{
-		"name": "Stone path",
-		"description": "Cobbles set in the earth. Laid on grass, it never wears or turns to mud.",
-		"weight": 3.0,
-		"stack_limit": 10,
-		"places": WorldObjectTypes.STONE_PATH,
-	},
 	BERRY_BUSH:
 	{
 		"name": "Berry bush",
