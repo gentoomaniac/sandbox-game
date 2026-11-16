@@ -52,14 +52,16 @@ Warft and an Ewer here and there.
   real time into game minutes (F2 speeds it up), `frame_work`, and the villagers, animals and
   chunk streaming, which stand still indoors and while a sleep is made up for).
   A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
-  `QuestFlow` and `BarterFlow`): it takes what it needs in `_init`, adds its screens as children,
+  `QuestFlow`, `BarterFlow` and the core screens' `StorageFlow`, `ProcessFlow`, `CraftingFlow`,
+  `ChatFlow` and `TradeFlow`): it takes what it needs in `_init`, adds its screens as children,
   registers the words and the opening of its `Interaction.Kind` in the `InteractionRegistry` and
-  the sounds of its screens (`GameSounds.click_on_press_in`, `watch_panel`).
+  the sounds of its screens (`GameSounds.click_on_press_in`, `watch_panel`). What other code needs
+  of a screen (the debug runner, the screen keys) it takes from the flow's `screen`.
   Main lists the flows in `_connect_state_and_views`, one line each, in the order their screens
   are layered and take input; nothing is discovered. A flow whose window must stay under the HUD
-  and the console (`CampfireFlow`) is added in `_make_views`, at its place among the screens. To
-  add a screen like the sales cart: the domain's kind and its place in `Interaction.choice_at`
-  (state), the screen, the flow, and one line in that list.
+  and the console (`CampfireFlow` and the core screens' flows) is added in `_make_views`, at its
+  place among the screens. To add a screen like the sales cart: the domain's kind and its place in
+  `Interaction.choice_at` (state), the screen, the flow, and one line in that list.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns

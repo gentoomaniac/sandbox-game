@@ -54,6 +54,20 @@ func test_the_crafting_flow_registers_the_stations() -> void:
 	assert_eq(_words(Interaction.Kind.OPEN_CRAFTING), "Craft at chest")
 
 
+func test_the_chat_and_trade_flows_make_their_screens() -> void:
+	var settings := GameSettings.new("user://test_feature_flows/settings.cfg")
+	var notifications: NotificationHud = add_child_autofree(NotificationHud.new())
+	var sounds: GameSounds = add_child_autofree(GameSounds.new())
+	var chat_flow: ChatFlow = add_child_autofree(
+		ChatFlow.new(settings, notifications, func() -> void: pass, sounds)
+	)
+	var trade_flow: TradeFlow = add_child_autofree(TradeFlow.new(sounds))
+
+	assert_eq(chat_flow.screen.dialogue, chat_flow.dialogue)
+	assert_true(chat_flow.screen.is_inside_tree())
+	assert_true(trade_flow.screen.is_inside_tree())
+
+
 func test_the_quest_flow_registers_the_notice_board() -> void:
 	var settings := GameSettings.new("user://test_feature_flows/settings.cfg")
 	var dialogue: NpcDialogue = add_child_autofree(NpcDialogue.new(settings))

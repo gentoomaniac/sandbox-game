@@ -50,11 +50,11 @@ var _bag_screen := BagScreen.new(_hotbar)
 var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_flow: CraftingFlow
 var _storage_flow: StorageFlow
-var _trade_screen := TradeScreen.new()
+var _trade_flow: TradeFlow
 var _process_flow: ProcessFlow
 var _console_view := ConsoleView.new()
 var _map_screen := MapScreen.new()
-var _chat_screen := ChatScreen.new()
+var _chat_flow: ChatFlow
 var _npc_name_tag := NpcNameTag.new()
 var _action_hint := ActionHintView.new()
 var _cheat_hud := CheatHud.new()
@@ -213,18 +213,16 @@ func _make_views() -> void:
 	add_child(_map_screen)
 	_storage_flow = StorageFlow.new(_state, _hotbar, _interactions, _sounds)
 	add_child(_storage_flow)
-	add_child(_trade_screen)
+	_trade_flow = TradeFlow.new(_sounds)
+	add_child(_trade_flow)
 	_process_flow = ProcessFlow.new(_state, _hotbar, _interactions, _sounds)
 	add_child(_process_flow)
 	# Where the fire's window was layered, before the HUD and the console over it.
 	add_child(CampfireFlow.new(_state, _hotbar, _crafting_flow.screen, _interactions, _sounds))
 	add_child(_cheat_hud)
 	add_child(_console_view)
-	_chat_screen.dialogue = NpcDialogue.new(_settings)
-	add_child(_chat_screen.dialogue)
-	add_child(ModelNotices.new(_chat_screen.dialogue, _notifications))
-	add_child(_chat_screen)
-	_chat_screen.art_set_switch_pressed.connect(_toggle_classic_art)
+	_chat_flow = ChatFlow.new(_settings, _notifications, _toggle_classic_art, _sounds)
+	add_child(_chat_flow)
 	_menu = PauseMenu.new(_settings)
 	add_child(_menu)
 	add_child(_load_dialog)
@@ -242,7 +240,7 @@ func _apply_villager_memory_settings() -> void:
 	var profile := _settings.profiles.active
 	_state.deeds.stories_kept = profile["stories_kept"]
 	_state.deeds.memories_kept = profile["memories_kept"]
-	_chat_screen.dialogue.compact_all(_state)
+	_chat_flow.dialogue.compact_all(_state)
 
 
 ## Shows the state in the views and wires what they report back.
@@ -276,9 +274,9 @@ func _connect_state_and_views() -> void:
 	_interact.harvest_hud = _harvest_hud
 	_interact.blackout = _blackout
 	_interact.console_view = _console_view
-	_interact.chat_screen = _chat_screen
-	_interact.trade_screen = _trade_screen
-	_trade_screen.talk_requested.connect(_interact.open_chat)
+	_interact.chat_screen = _chat_flow.screen
+	_interact.trade_screen = _trade_flow.screen
+	_trade_flow.screen.talk_requested.connect(_interact.open_chat)
 	var clock_ticker := GameClockTicker.new(_state, _weather_view, _show_clock)
 	clock_ticker.is_held = func() -> bool:
 		return _debug.is_clock_stopped() or _fade_screen.is_black()
@@ -299,7 +297,7 @@ func _connect_state_and_views() -> void:
 	_state.simulation.skipped.connect(_on_time_skipped)
 	_state.crop_warnings.warned.connect(_notifications.post_line)
 	var quest_flow := QuestFlow.new(
-		_state, _chat_screen.dialogue, _notifications, _view.entities, _interactions
+		_state, _chat_flow.dialogue, _notifications, _view.entities, _interactions
 	)
 	_interact.quest_voice = quest_flow.voice
 	_interact.register_kinds(_interactions)
@@ -309,7 +307,7 @@ func _connect_state_and_views() -> void:
 		quest_flow,
 		FriendshipFlow.new(_state, _notifications, _view.entities),
 		SurgeFlow.new(_state, _notifications),
-		BarterFlow.new(_state, _chat_screen, _interact.open_chat),
+		BarterFlow.new(_state, _chat_flow.screen, _interact.open_chat),
 		StallFlow.new(_state, _interactions),
 	]:
 		add_child(feature)
@@ -319,14 +317,14 @@ func _connect_state_and_views() -> void:
 	# applied once it is closed rather than at every step) are compacted.
 	_apply_villager_memory_settings()
 	_menu.closed.connect(_apply_villager_memory_settings)
-	add_child(StoryJudging.new(_chat_screen.dialogue, _state))
-	add_child(WordRating.new(_chat_screen.dialogue, _state))
-	var day_planner := DayPlanner.new(_chat_screen.dialogue, _state)
+	add_child(StoryJudging.new(_chat_flow.dialogue, _state))
+	add_child(WordRating.new(_chat_flow.dialogue, _state))
+	var day_planner := DayPlanner.new(_chat_flow.dialogue, _state)
 	add_child(day_planner)
 	var speech := NpcSpeech.new()
 	add_child(speech)
 	speech.is_nonstop = _options.bubbles
-	speech.show_for(_state, _chat_screen.dialogue, _camera.view_rect, _camera.world_to_ui)
+	speech.show_for(_state, _chat_flow.dialogue, _camera.view_rect, _camera.world_to_ui)
 	_builder = Builder.new(_state)
 	_hotbar_keys = HotbarKeys.new(_state.player.inventory, _builder)
 	_screen_keys = ScreenKeys.new(
@@ -448,7 +446,7 @@ func _apply_start_options() -> void:
 	_debug.storage_screen = _storage_flow.screen
 	_debug.crafting_screen = _crafting_flow.screen
 	_debug.process_screen = _process_flow.screen
-	_debug.chat_screen = _chat_screen
+	_debug.chat_screen = _chat_flow.screen
 	_debug.open_chat = _interact.open_chat
 	_debug.open_shop = _interact.open_shop
 	_debug.try_sleep = _blackout.try_sleep
@@ -726,11 +724,11 @@ func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_sounds.click_on_press_in(_hotbar)
-	for panel: Node in [
-		_menu, _console_view, _chat_screen, _bag_screen, _character_screen, _trade_screen
-	]:
+	for panel: Node in [_menu, _console_view, _bag_screen, _character_screen]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
+	_sounds.watch_panel(_chat_flow.screen.is_open)
+	_sounds.watch_panel(_trade_flow.screen.is_open)
 	_sounds.watch_panel(_crafting_flow.screen.is_open)
 	_sounds.watch_panel(_process_flow.screen.is_open)
 	_sounds.watch_panel(_storage_flow.screen.is_open, &"chest_open", &"chest_close")
