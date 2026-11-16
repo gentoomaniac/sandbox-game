@@ -39,14 +39,22 @@ func test_the_other_version_blends_in_on_the_bar_without_starting_the_piece_agai
 	var full := _heard_stream()
 	_music.set_classic(true)
 	assert_false(_music._mixes.has(FULL), "the other version's mixes go")
+	# The crossfade holds while the blend is asked for: the looping row is 0.12 s, and a busy
+	# machine could let its bar pass before the test looks.
+	_music._crossfade.set_process(false)
 	await wait_until(func() -> bool: return _music._crossfade._is_in_step, PATIENCE_SECONDS)
 	assert_true(_music._crossfade._waits_for_bar, "on the bar")
-	await wait_until(func() -> bool: return not _music._crossfade.is_crossfading(), 5.0)
+	_music._crossfade.set_process(true)
+	await wait_until(
+		func() -> bool: return not _music._crossfade.is_crossfading(), PATIENCE_SECONDS
+	)
 	assert_eq(_heard_stream(), _music._mixes[CHIPTUNE])
 	assert_ne(_heard_stream(), full)
 	_music.set_classic(false)
 	await wait_until(func() -> bool: return _music._mixes.has(FULL), PATIENCE_SECONDS)
-	await wait_until(func() -> bool: return not _music._crossfade.is_crossfading(), 5.0)
+	await wait_until(
+		func() -> bool: return not _music._crossfade.is_crossfading(), PATIENCE_SECONDS
+	)
 	assert_eq(_heard_stream(), _music._mixes[FULL], "and back")
 	assert_signal_emit_count(_music, "started", 1)
 
