@@ -11,9 +11,29 @@ var _openers := {}
 
 ## Registers `kind`: `label` is its words in the hint, a String or a Callable that takes the
 ## choice's subject and returns one; `open` is called with the subject when E is pressed.
+## A kind is owned by one feature: a second registration is an error and is refused, so the first
+## stays.
 func register(kind: Interaction.Kind, label: Variant, open: Callable) -> void:
+	if _openers.has(kind):
+		push_error(
+			(
+				"InteractionRegistry: %s is registered by %s, and again by %s"
+				% [Interaction.Kind.find_key(kind), _owner_of(_openers[kind]), _owner_of(open)]
+			)
+		)
+		return
 	_labels[kind] = label
 	_openers[kind] = open
+
+
+func _owner_of(open: Callable) -> String:
+	var owner: Object = open.get_object()
+	if owner == null:
+		return "nobody"
+	var script: Script = owner.get_script()
+	if script == null or script.get_global_name() == &"":
+		return owner.get_class()
+	return script.get_global_name()
 
 
 func is_registered(kind: Interaction.Kind) -> bool:

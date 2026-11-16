@@ -19,6 +19,18 @@ func test_a_registered_kind_has_words_and_is_opened_with_its_subject() -> void:
 	assert_eq(opened, ["box"])
 
 
+func test_a_second_registration_of_a_kind_is_refused_naming_both_owners() -> void:
+	var registry := InteractionRegistry.new()
+	var first := StallFlow.new(GameFactory.new_game(7), registry)
+	var second := InteractFlow.new()
+	registry.register(Interaction.Kind.OPEN_CART, "Again", second.open_chat)
+	var choice := Interaction.Choice.new(Interaction.Kind.OPEN_CART)
+
+	assert_push_error("OPEN_CART is registered by StallFlow, and again by InteractFlow")
+	assert_eq(registry.label_of(choice), "Tend the cart")
+	first.free()
+
+
 func test_a_kind_nobody_registered_says_and_does_nothing() -> void:
 	var registry := InteractionRegistry.new()
 	var choice := Interaction.Choice.new(Interaction.Kind.SLEEP)
