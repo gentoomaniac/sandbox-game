@@ -101,7 +101,7 @@ func test_a_keeper_with_better_prices_asks_less_and_the_rest_the_full_price() ->
 	assert_eq(ShopStanding.with_keeper(keeper).price_percent, 100)
 	_at_level(6)
 	var standing := ShopStanding.with_keeper(keeper)
-	assert_eq(standing.price_percent, _friendship.better_prices_percent())
+	assert_eq(standing.price_percent, _friendship.value("shop", "better_prices_percent"))
 	assert_lt(shop_rules.price("trienke", ItemTypes.CANDLE, standing.price_percent), full)
 	assert_eq(shop_rules.price("trienke", seeds, 100), shop_rules.price("trienke", seeds))
 

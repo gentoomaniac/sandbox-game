@@ -98,7 +98,7 @@ func test_with_the_switch_off_the_reply_is_asked_but_not_the_rating() -> void:
 
 
 func test_a_villager_is_asked_for_a_few_ratings_a_day_only() -> void:
-	var cap := _friendship.rating_requests_per_day()
+	var cap: int = _friendship.value("rating", "requests_per_day")
 	for round in cap + 2:
 		await _say("Line %d" % round, "neutral")
 
@@ -107,7 +107,7 @@ func test_a_villager_is_asked_for_a_few_ratings_a_day_only() -> void:
 
 
 func test_the_next_day_the_requests_come_again() -> void:
-	for round in _friendship.rating_requests_per_day():
+	for round in _friendship.value("rating", "requests_per_day"):
 		await _say("Line %d" % round, "neutral")
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
 	_antje.chat_counted_day = _state.clock.day

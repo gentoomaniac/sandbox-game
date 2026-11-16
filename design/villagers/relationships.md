@@ -1,7 +1,7 @@
 # Relationships
 
 **Decided (the user, 2026-11-15, [#48](https://github.com/gentoomaniac/sandbox-game/issues/48));
-the build is planned below and under way.** When a step is done, its part moves to the
+the build is planned below; steps 1 to 13 are built and 14 is built with placeholder art.** When a step is done, its part moves to the
 pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.md) and
 [quests](quests.md) do.
 
@@ -89,6 +89,16 @@ pages of [villagers](README.md) as "as built", as the pages of [gossip](gossip.m
   `data/friendship.cfg`. The points are never shown. **Placeholders for the art of step 14:** the marks
   are plain squares drawn in code (the first two dark blue, then ember red, the tenth gold, an empty
   one stone grey), to be replaced by drawn marks; the portraits are the villagers' own.
+- Step 14, the code side with placeholders: the heart, the cloud and the level line. `FriendshipNotes`
+  (state) looks at the villagers now and then (`FriendshipFlow`, a node of Main like `QuestFlow`)
+  and tells what moved since the last look, whoever moved it: `moved` (a rise or a fall) and
+  `level_crossed` (the line `crossed` of `[notice]` of `data/friendship.cfg`: "Antje now thinks of you as
+  a good neighbour.", up or down, through `NotificationHud`). `FriendshipPopups` puts a heart (a rise) or a
+  grey cloud (a fall) over the villager's head, which rises and fades in 1.4 s; none for a villager
+  indoors or when the player is. **The art is still to be done** (labels `art` and `needs-verdict`): the
+  heart and the cloud are shapes drawn in code, and the ten marks of the tab are squares; a pixel
+  artist is to replace them with drawn pictures in both art sets (`FriendshipPopups.Mark`,
+  `FriendshipMarks`). Nothing else of the design waits for the art.
 
 ## The user's words
 

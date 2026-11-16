@@ -73,7 +73,7 @@ func record(outcome: ActionOutcome) -> void:
 ## The player stands at `feet` out in the world: a villager they stand in is pushed through, which
 ## is rude, once a day for each (a villager keeps out of their way beyond `push_tiles`).
 func check_pushing(feet: Vector2) -> void:
-	var reach := FriendshipRules.default_rules().push_tiles()
+	var reach: float = FriendshipRules.default_rules().value("harm", "push_tiles")
 	for npc in _npcs.all():
 		var is_in_the_way := npc.inside == null and npc.position.distance_to(feet) <= reach
 		if is_in_the_way and _pushed_on_day.get(npc, 0) != _clock.day:
@@ -89,7 +89,7 @@ func _owner_on_village_land(world: World, tile: Vector2i) -> Npc:
 		return null
 	var owner: Npc
 	var nearest := INF
-	var reach := FriendshipRules.default_rules().owner_reach_tiles()
+	var reach: float = FriendshipRules.default_rules().value("harm", "owner_reach_tiles")
 	for npc in _npcs.all():
 		var distance := npc.anchor.distance_to(Vector2(tile) + Vector2(0.5, 0.5))
 		if npc.house != null and distance <= reach and distance < nearest:

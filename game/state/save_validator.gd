@@ -718,7 +718,7 @@ func _check_friendship(npc: Dictionary, path: String) -> void:
 	if moved != null and absi(moved) > cap:
 		_report(_join(path, "action_moved_today"), "should be within %d" % cap)
 	var requests: Variant = npc.get("ratings_today")
-	var request_cap := FriendshipRules.default_rules().rating_requests_per_day()
+	var request_cap: int = FriendshipRules.default_rules().value("rating", "requests_per_day")
 	if _is_kind(requests, Kind.WHOLE) and requests > request_cap:
 		_report(_join(path, "ratings_today"), "should be within the requests of a day")
 	var rated: Variant = _field(npc, "rating_moved_today", Kind.WHOLE, path)

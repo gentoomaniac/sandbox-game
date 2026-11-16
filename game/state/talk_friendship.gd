@@ -29,7 +29,10 @@ static func count_chat(state: GameState, npc: Npc) -> void:
 	npc.chat_counted_day = today
 	var friendship := FriendshipRules.default_rules()
 	npc.change_friendship(
-		friendship.first_chat_points(), today, friendship, GossipRules.default_rules()
+		friendship.value("talk", "first_chat_points"),
+		today,
+		friendship,
+		GossipRules.default_rules()
 	)
 
 
@@ -39,7 +42,7 @@ static func count_chat(state: GameState, npc: Npc) -> void:
 static func take_rating_request(state: GameState, npc: Npc) -> bool:
 	var friendship := FriendshipRules.default_rules()
 	_start_rating_day(state, npc)
-	if npc.ratings_today >= friendship.rating_requests_per_day():
+	if npc.ratings_today >= friendship.value("rating", "requests_per_day"):
 		return false
 	npc.ratings_today += 1
 	return true

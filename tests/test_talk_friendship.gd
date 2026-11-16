@@ -27,7 +27,7 @@ func _quick_rules() -> Dictionary:
 func test_the_first_chat_of_the_day_counts() -> void:
 	await _dialogue.say(_antje, "Moin", _state)
 
-	assert_eq(_antje.opinion, _friendship.first_chat_points())
+	assert_eq(_antje.opinion, _friendship.value("talk", "first_chat_points"))
 	assert_eq(_antje.chat_counted_day, _state.clock.day)
 
 
@@ -35,7 +35,7 @@ func test_a_second_chat_the_same_day_counts_nothing() -> void:
 	await _dialogue.say(_antje, "Moin", _state)
 	await _dialogue.say(_antje, "Fine weather", _state)
 
-	assert_eq(_antje.opinion, _friendship.first_chat_points())
+	assert_eq(_antje.opinion, _friendship.value("talk", "first_chat_points"))
 
 
 func test_the_next_day_counts_again() -> void:
@@ -43,7 +43,7 @@ func test_the_next_day_counts_again() -> void:
 	_state.clock.advance(GameClock.MINUTES_PER_DAY)
 	await _dialogue.say(_antje, "Moin again", _state)
 
-	assert_eq(_antje.opinion, 2 * _friendship.first_chat_points())
+	assert_eq(_antje.opinion, 2 * _friendship.value("talk", "first_chat_points"))
 
 
 func test_the_chat_counts_within_the_cap_of_the_actions() -> void:

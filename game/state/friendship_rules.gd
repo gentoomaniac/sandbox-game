@@ -108,6 +108,8 @@ func problems() -> Array[String]:
 					% [benefit, EARLIEST_BENEFIT_LEVEL, LEVEL_COUNT]
 				)
 			)
+	if not _values.get("notice", {}).get("crossed") is String:
+		bad.append("[notice] crossed must be a text")
 	for benefit in BENEFITS:
 		if not _values.get("benefit_text", {}).get(str(benefit)) is String:
 			bad.append("[benefit_text] %s must be a text" % benefit)
@@ -198,11 +200,6 @@ func gift_points(taste: StringName) -> int:
 	return _values["gifts"]["%s_points" % taste]
 
 
-## What the first chat of a day moves the opinion by, in points.
-func first_chat_points() -> int:
-	return _values["talk"]["first_chat_points"]
-
-
 ## What a rating of the player's words (`warm` or `rude`; `neutral` moves nothing) moves the
 ## opinion by, in points.
 func rating_points(rating: StringName) -> int:
@@ -215,30 +212,16 @@ func rating_daily_cap(rating: StringName) -> int:
 	return _values["rating"]["%s_daily_cap_points" % rating]
 
 
-## How many ratings of the player's words a villager is asked for in a day at most.
-func rating_requests_per_day() -> int:
-	return _values["rating"]["requests_per_day"]
-
-
-## The percent of the price that a shopkeeper with the `better_prices` benefit asks.
-func better_prices_percent() -> int:
-	return _values["shop"]["better_prices_percent"]
-
-
 ## What the villagers who see a harm of this kind (a GossipRules `STOLE`, `DAMAGED` or `RUDE`) lose
 ## of their opinion of the player, in points (a negative number).
 func harm_points(kind: StringName) -> int:
 	return _values["harm"]["%s_points" % kind]
 
 
-## How far from a thing on the village's land the house of its owner may be, in tiles.
-func owner_reach_tiles() -> float:
-	return float(_values["harm"]["owner_reach_tiles"])
-
-
-## How close the player's feet come to a villager that they push through them, in tiles.
-func push_tiles() -> float:
-	return float(_values["harm"]["push_tiles"])
+## A number or a text of the data file by its section and key, such as `value("harm",
+## "push_tiles")`: what has no logic of its own (for those the rules have a method of their own).
+func value(section: String, key: String) -> Variant:
+	return _values[section][key]
 
 
 func _entry(level: int) -> Array:

@@ -292,6 +292,7 @@ func _connect_state_and_views() -> void:
 	add_child(quest_flow)
 	_interact.board_screen = quest_flow.board_screen
 	_interact.quest_voice = quest_flow.voice
+	add_child(FriendshipFlow.new(_state, _notifications, _view.entities))
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
 	_interior_npc_views.show_npcs(_state.npcs, _interior_view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is

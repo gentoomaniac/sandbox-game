@@ -89,7 +89,7 @@ func test_what_ratings_moved_beyond_their_caps_is_refused() -> void:
 
 
 func test_more_rating_requests_than_a_day_allows_are_refused() -> void:
-	var requests := FriendshipRules.default_rules().rating_requests_per_day()
+	var requests: int = FriendshipRules.default_rules().value("rating", "requests_per_day")
 	assert_eq(_problems_with("ratings_today", requests + 1).size(), 1)
 
 

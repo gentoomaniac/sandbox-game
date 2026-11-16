@@ -12,6 +12,8 @@ var has_best_wares := false
 static func with_keeper(keeper: Npc) -> ShopStanding:
 	var standing := ShopStanding.new()
 	if Benefits.allows(keeper, &"better_prices"):
-		standing.price_percent = FriendshipRules.default_rules().better_prices_percent()
+		standing.price_percent = FriendshipRules.default_rules().value(
+			"shop", "better_prices_percent"
+		)
 	standing.has_best_wares = Benefits.allows(keeper, &"best_wares")
 	return standing
