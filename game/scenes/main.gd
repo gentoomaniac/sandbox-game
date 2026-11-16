@@ -1,8 +1,10 @@
 extends Node2D
-## The game scene: owns the GameState, turns real time into game minutes and feeds the
-## player's input to the state. The world is drawn into WorldViewport (one art pixel per
-## pixel) and shown on the window by CameraController; the UI is drawn on the window itself.
-## The camera and chunk streaming follow the player.
+## The game scene, the composition root: owns the GameState and makes the views, the flows and the
+## services around it, wires them to each other in an explicit order (the layers of the screens, the
+## order the input reaches them, the steps of a frame) and feeds the player's input to the state.
+## The world is drawn into WorldViewport (one art pixel per pixel) and shown on the window by
+## CameraController; the UI is drawn on the window itself. The camera and chunk streaming follow the
+## player.
 ##
 ## The game is loaded from the save at start and saved after sleeping, after passing out and on
 ## quit (see SaveFile). The debug flags after `--` on the Godot command line are documented in
