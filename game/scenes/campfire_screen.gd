@@ -12,14 +12,10 @@ extends Modal
 signal cook_requested(fire: WorldObject)
 
 const PANEL_GAP := 12
-const SLOT_GAP := 2
-const INVENTORY_COLUMNS := 5
-const BACKPACK_ICON := preload("res://assets/ui/backpack_icon.png")
 const LIGHT_TEXT := "Light the fire"
 const COOK_TEXT := "Cook at the fire"
 const WOOD_HINT := "Put wood in the slot."
 
-var _hotbar: HotbarHud
 var _state: GameState
 var _fire: WorldObject
 var _title_label := Label.new()
@@ -27,14 +23,12 @@ var _slot_view := SlotView.new()
 var _state_label := Label.new()
 var _light_button := Button.new()
 var _cook_button := Button.new()
-## The backpack's slot views, by inventory slot.
-var _backpack_views := {}
+var _backpack: BackpackGrid
 
 
 func _init(hotbar: HotbarHud) -> void:
 	super()
 	close_actions = [&"interact"]
-	_hotbar = hotbar
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", PANEL_GAP)
@@ -63,23 +57,10 @@ func _init(hotbar: HotbarHud) -> void:
 	_cook_button.pressed.connect(_cook)
 	row.add_child(fire_column)
 
-	var backpack_column := VBoxContainer.new()
-	var header := TextureRect.new()
-	header.texture = BACKPACK_ICON
-	header.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	backpack_column.add_child(header)
-	var backpack := GridContainer.new()
-	backpack.columns = INVENTORY_COLUMNS
-	backpack.add_theme_constant_override("h_separation", SLOT_GAP)
-	backpack.add_theme_constant_override("v_separation", SLOT_GAP)
-	for slot in range(Inventory.HOTBAR_SIZE, Inventory.SLOT_COUNT):
-		var view := SlotView.new()
-		view.tooltip_id = "inventory_%d" % slot
-		view.quick_move_requested.connect(_put_in.bind(slot))
-		backpack.add_child(view)
-		_backpack_views[slot] = view
-	backpack_column.add_child(backpack)
-	row.add_child(backpack_column)
+	_backpack = BackpackGrid.new(hotbar)
+	_backpack.dims_item = _is_not_wood
+	_backpack.quick_move_requested.connect(_put_in)
+	row.add_child(_backpack)
 	_panel.add_child(row)
 
 
@@ -95,13 +76,9 @@ func open_fire(fire: WorldObject, state: GameState) -> void:
 func _on_open() -> void:
 	_title_label.text = "Campfire"
 	_slot_view.bind_to(_fire.storage, Campfire.FUEL_SLOT)
-	var inventory := _state.player.inventory
-	for slot: int in _backpack_views:
-		_backpack_views[slot].bind_to(inventory, slot)
-	inventory.changed.connect(_refresh)
+	_state.player.inventory.changed.connect(_refresh)
 	_fire.storage.changed.connect(_refresh)
-	_hotbar.acquire(self)
-	_hotbar.slot_quick_move_requested.connect(_put_in)
+	_backpack.bind(_state.player.inventory)
 	_refresh()
 
 
@@ -109,12 +86,7 @@ func _on_open() -> void:
 func _on_close() -> void:
 	_state.player.inventory.changed.disconnect(_refresh)
 	_fire.storage.changed.disconnect(_refresh)
-	# The hotbar may have been freed first, when the whole scene goes.
-	if is_instance_valid(_hotbar):
-		for slot in Inventory.HOTBAR_SIZE:
-			_hotbar.dim(slot, false)
-		_hotbar.release(self)
-		_hotbar.slot_quick_move_requested.disconnect(_put_in)
+	_backpack.unbind()
 
 
 ## The words follow the burning, also with nothing else changing.
@@ -132,22 +104,15 @@ func _refresh() -> void:
 	_light_button.disabled = not Campfire.can_light(_fire)
 	_light_button.visible = Campfire.is_out(_fire)
 	_cook_button.disabled = Campfire.is_out(_fire)
-	var inventory := _state.player.inventory
-	for slot: int in _backpack_views:
-		var view: SlotView = _backpack_views[slot]
-		view.show_stack(inventory.slots[slot], false)
-		view.is_dimmed = (
-			not inventory.slots[slot].is_empty() and not _is_wood(inventory.item_in(slot))
-		)
-	for slot in Inventory.HOTBAR_SIZE:
-		var is_other := (
-			not inventory.slots[slot].is_empty() and not _is_wood(inventory.item_in(slot))
-		)
-		_hotbar.dim(slot, is_other)
+	_backpack.refresh()
 
 
 func _is_wood(item: StringName) -> bool:
 	return Campfire.burn_minutes_of(item) > 0
+
+
+func _is_not_wood(item: StringName) -> bool:
+	return not _is_wood(item)
 
 
 ## The move rule of the fuel slot (see SlotView `move_rule`): only wood goes in, and onto an empty
