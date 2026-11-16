@@ -15,6 +15,7 @@ const COPIES := {
 	},
 	"res://game/scenes/fire.gdshader": {"SPARK_HOT": "gold", "SPARK_COOL": "ember"},
 	"res://game/scenes/mud.gdshader": {"MUD_DARK": "mud_dark"},
+	"res://game/scenes/flood.gdshader": {"SHORE": "mud_dark"},
 }
 
 

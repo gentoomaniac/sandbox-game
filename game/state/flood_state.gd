@@ -11,8 +11,8 @@ extends RefCounted
 ## no reference to the world; whoever drives it passes the world in, so the two don't keep each
 ## other alive.
 
-## Some tiles of a chunk got more or less water (told once per chunk after each batch of work).
-signal chunk_changed(chunk_coords: Vector2i)
+## Some tiles of these chunks got more or less water (told once after each batch of work).
+signal chunks_changed(chunk_coords: Array[Vector2i])
 ## The sea ran over `count` more dyke tiles.
 signal breached(count: int)
 
@@ -196,9 +196,12 @@ func step_tiles(world: World, count: int) -> void:
 		_fill(world, count)
 	elif phase == Phase.DRAINING:
 		_drain(count)
-	for chunk_coords in _dirty_chunks:
-		chunk_changed.emit(chunk_coords)
+	if _dirty_chunks.is_empty():
+		return
+	var changed: Array[Vector2i] = []
+	changed.assign(_dirty_chunks.keys())
 	_dirty_chunks.clear()
+	chunks_changed.emit(changed)
 
 
 ## Does all the work that is left at once, for a skip of time.

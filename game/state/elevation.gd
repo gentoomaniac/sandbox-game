@@ -6,6 +6,8 @@ extends RefCounted
 
 ## Offsets the noise seed so it is independent of the generator's noises.
 const SEED_OFFSET := 40
+## Offsets the fine noise's seed so it is independent of the slow one.
+const FINE_SEED_OFFSET := 43
 ## What stays dry whatever the sea does: the floors and walls of the houses.
 const NEVER_FLOODED := 100.0
 
@@ -23,6 +25,7 @@ const BASE_KEYS := {
 
 var _generator: WorldGenerator
 var _noise := FastNoiseLite.new()
+var _fine_noise := FastNoiseLite.new()
 var _landscape: LandscapeRules
 
 
@@ -33,14 +36,23 @@ func _init(
 	_landscape = landscape
 	_noise.seed = world_seed + SEED_OFFSET
 	_noise.frequency = 1.0 / landscape.value("surge", "noise_size")
+	_fine_noise.seed = world_seed + FINE_SEED_OFFSET
+	_fine_noise.frequency = 1.0 / landscape.value("surge", "fine_noise_size")
 
 
-## The height of a tile of this terrain: its base, and the noise on top.
+## The height of a tile of this terrain: its base, and the two noises on top (the slow one shapes
+## the flood, the fine one makes its front wander).
 func at(world_pos: Vector2i, terrain: Tile.Terrain) -> float:
 	var base := _base_at(world_pos, terrain)
 	if base >= NEVER_FLOODED:
 		return base
-	return base + _landscape.value("surge", "noise") * _noise.get_noise_2d(world_pos.x, world_pos.y)
+	var slow: float = (
+		_landscape.value("surge", "noise") * _noise.get_noise_2d(world_pos.x, world_pos.y)
+	)
+	var fine: float = (
+		_landscape.value("surge", "fine_noise") * _fine_noise.get_noise_2d(world_pos.x, world_pos.y)
+	)
+	return base + slow + fine
 
 
 func _base_at(world_pos: Vector2i, terrain: Tile.Terrain) -> float:

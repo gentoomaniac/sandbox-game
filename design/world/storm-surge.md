@@ -192,7 +192,13 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
 6. The overlay: `flood.gdshader`, the chunk masks; the pictures. **Built** without the pictures
    (`FloodOverlay`, `FloodMask`, `flood.gdshader`): a mask of a chunk is made again in 0.35 ms
    at the most (1024 wet tiles), only for the chunks a batch of tiles touched. Checked that the
-   shader compiles and draws; the pictures for the user come later.
+   shader compiles and draws; the pictures for the user come later. The edge of the water is
+   soft: the mask carries a one-tile ring of its neighbours' depths and is read with a linear
+   filter, so the shader fades the water in and darkens it towards the shore without the tiles'
+   steps. A change of a chunk makes the masks of it and its 8 neighbours again, each once per
+   batch, and a chunk with water in its ring keeps a sprite, so no front is cut at a chunk seam.
+   A finer noise in `Elevation` (`fine_noise`, `fine_noise_size`) makes the front wander where the
+   land rises evenly.
 7. Saving the surge and the wet tiles (a second version bump). **Built** (version 56; the drop of
    the version 45 upgrade came first). The fields are in the world's data, not the game's
    (`World.snapshot`); the wet tiles, their salt, the mud and the dykes to mend are `[x, y, value]`
