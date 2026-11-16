@@ -1,6 +1,6 @@
 # gdlint: disable=max-public-methods
-# (GameState is the one entry point the scenes and the console act through: tool uses, the held
-# item, pickup and demolition go via it.)
+# (The aggregate: the weather the player sees, tool uses and the pieces the systems are built
+# from, with the owners of the rest, such as PlayerTravel, in their own classes.)
 class_name GameState
 extends RefCounted
 ## Everything that makes up one game: the world, the clock and the player. Plain state with
@@ -12,9 +12,6 @@ extends RefCounted
 ## The player finished an action that worked (see ActionOutcome). Told once, after it is done;
 ## nothing is told for a refusal or for loading a game.
 signal action_done(outcome: ActionOutcome)
-
-## What using the held lantern does (see `held_lantern_use`).
-enum LanternUse { NONE, PUT_OUT, LIGHT, FIT_CANDLE }
 
 var world: World
 var clock: GameClock
@@ -203,51 +200,6 @@ func ring_bell_in_reach(clicked: Variant = null) -> bool:
 	if frame != null:
 		world.bell_rung.emit(frame)
 	return frame != null
-
-
-## What the lantern in hand does when used (see `switch_held_lantern`): lit, it is put out; with a
-## candle in it, it is lit; with none, the freshest candle of the inventory is fitted (and it stays
-## dark); with none to fit, or with no lantern in hand, nothing.
-func held_lantern_use() -> LanternUse:
-	var inventory := player.inventory
-	if inventory.held_item() != ItemTypes.LANTERN:
-		return LanternUse.NONE
-	if LanternCandle.holds_candle(inventory.slots[inventory.selected_slot]):
-		return LanternUse.PUT_OUT if player.is_lantern_lit else LanternUse.LIGHT
-	return LanternUse.FIT_CANDLE if inventory.freshest_candle_slot() != -1 else LanternUse.NONE
-
-
-## Uses the held lantern, on any map, also on horseback (see `held_lantern_use`). Does nothing, and
-## returns false, when that is NONE.
-func switch_held_lantern() -> bool:
-	var use := held_lantern_use()
-	match use:
-		LanternUse.NONE:
-			return false
-		LanternUse.FIT_CANDLE:
-			player.inventory.fit_candle(player.inventory.selected_slot)
-			player.is_lantern_lit = false
-		_:
-			player.is_lantern_lit = use == LanternUse.LIGHT
-	report(ActionOutcome.SWITCH_LANTERN, player.tile(), &"", {ItemTypes.LANTERN: 1})
-	return true
-
-
-## Whether the held item is food and the energy is below the cap, so that `eat_held` eats it.
-func can_eat_held() -> bool:
-	return energy_rules.is_food(player.inventory.held_item()) and player.energy < energy_cap()
-
-
-## Eats one of the held food, on any map: it restores energy up to the cap. Does nothing, and
-## returns false, unless `can_eat_held`.
-func eat_held() -> bool:
-	if not can_eat_held():
-		return false
-	var food := player.inventory.held_item()
-	player.inventory.consume_held()
-	player.energy = minf(player.energy + energy_rules.food_restore(food), energy_cap())
-	report(ActionOutcome.EAT, player.tile(), &"", {food: 1})
-	return true
 
 
 ## Tells that an action of the player worked: what it did on the player's map at `tile`, to the

@@ -46,26 +46,26 @@ func test_the_lantern_is_made_at_the_workbench_without_a_candle() -> void:
 
 
 func test_using_a_lantern_without_a_candle_fits_the_freshest_and_stays_dark() -> void:
-	assert_false(_state.switch_held_lantern(), "no candle to fit")
+	assert_false(HeldItem.switch_lantern(_state), "no candle to fit")
 	_put_candle(8, 600)
 	_put_candle(9)
 	_put_candle(10, 1200)
 
-	assert_true(_state.switch_held_lantern())
+	assert_true(HeldItem.switch_lantern(_state))
 
 	assert_eq(_candle_in_lantern(), {}, "the fresh one")
 	assert_eq(_inventory.item_in(9), ItemTypes.NONE)
 	assert_eq(_inventory.item_in(8), ItemTypes.CANDLE)
 	assert_eq(_inventory.item_in(10), ItemTypes.CANDLE)
 	assert_false(_state.player.is_lantern_lit)
-	assert_true(_state.switch_held_lantern())
+	assert_true(HeldItem.switch_lantern(_state))
 	assert_true(_state.player.is_lantern_shining())
 
 
 func test_a_lit_lantern_burns_its_candle_down_and_the_candle_keeps_the_burn() -> void:
 	_put_candle(8)
-	_state.switch_held_lantern()
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
+	HeldItem.switch_lantern(_state)
 
 	PlayerRest.pass_awake_time(_state, 6 * 60)
 
@@ -126,7 +126,7 @@ func test_an_unlit_or_unheld_lantern_burns_nothing() -> void:
 	_inventory.slots[7]["state"] = {"candle": {}}
 	PlayerRest.pass_awake_time(_state, 120)
 	assert_eq(_candle_in_lantern(), {}, "not lit")
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	_inventory.select(0)
 	PlayerRest.pass_awake_time(_state, 120)
 	assert_eq(_candle_in_lantern(), {}, "lit but in the bag")
@@ -134,7 +134,7 @@ func test_an_unlit_or_unheld_lantern_burns_nothing() -> void:
 
 func test_going_to_bed_puts_the_lantern_out_and_the_candle_burns_nothing_overnight() -> void:
 	_inventory.slots[7]["state"] = {"candle": {}}
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	assert_true(_state.player.is_lantern_lit)
 	var bed := WorldObject.new(WorldObjectTypes.SLEEPING_BAG, _state.player.tile())
 	for tile in bed.tiles():
@@ -150,7 +150,7 @@ func test_going_to_bed_puts_the_lantern_out_and_the_candle_burns_nothing_overnig
 
 func test_passing_out_puts_the_lantern_out_too() -> void:
 	_inventory.slots[7]["state"] = {"candle": {}}
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 
 	PlayerRest.pass_out(_state)
 
@@ -162,7 +162,7 @@ func test_fitting_a_candle_puts_a_lit_flag_out_so_the_lantern_stays_dark() -> vo
 	_put_candle(8)
 	_state.player.is_lantern_lit = true
 
-	assert_true(_state.switch_held_lantern())
+	assert_true(HeldItem.switch_lantern(_state))
 
 	assert_false(_state.player.is_lantern_lit)
 	assert_false(_state.player.is_lantern_shining())
@@ -227,12 +227,12 @@ func test_the_tooltip_and_the_icon_tell_how_much_candle_is_left() -> void:
 
 
 func test_the_use_of_the_held_lantern_is_asked_before_it_is_done() -> void:
-	assert_eq(_state.held_lantern_use(), GameState.LanternUse.NONE, "no candle to fit")
+	assert_eq(HeldItem.lantern_use(_state), HeldItem.LanternUse.NONE, "no candle to fit")
 	_put_candle(8)
-	assert_eq(_state.held_lantern_use(), GameState.LanternUse.FIT_CANDLE)
-	_state.switch_held_lantern()
-	assert_eq(_state.held_lantern_use(), GameState.LanternUse.LIGHT, "fitted, and dark")
-	_state.switch_held_lantern()
-	assert_eq(_state.held_lantern_use(), GameState.LanternUse.PUT_OUT, "lit")
+	assert_eq(HeldItem.lantern_use(_state), HeldItem.LanternUse.FIT_CANDLE)
+	HeldItem.switch_lantern(_state)
+	assert_eq(HeldItem.lantern_use(_state), HeldItem.LanternUse.LIGHT, "fitted, and dark")
+	HeldItem.switch_lantern(_state)
+	assert_eq(HeldItem.lantern_use(_state), HeldItem.LanternUse.PUT_OUT, "lit")
 	_inventory.select(0)
-	assert_eq(_state.held_lantern_use(), GameState.LanternUse.NONE, "not the lantern in hand")
+	assert_eq(HeldItem.lantern_use(_state), HeldItem.LanternUse.NONE, "not the lantern in hand")

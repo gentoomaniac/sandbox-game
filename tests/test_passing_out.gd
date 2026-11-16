@@ -96,7 +96,7 @@ func test_eating_works_inside_a_house() -> void:
 	_state.player.energy = 30.0
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
 	_hold(ItemTypes.TURNIP)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 38.0)
 
 

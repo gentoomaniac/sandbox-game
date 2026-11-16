@@ -1,7 +1,7 @@
 class_name ActionHint
 extends RefCounted
 ## The words that name what the use action will do on a target tile, for the hint over the hotbar.
-## They ask the rules that do it (ToolUse `use_at`, GameState `can_eat_held`), so the hint can't
+## They ask the rules that do it (ToolUse `use_at`, HeldItem `can_eat`), so the hint can't
 ## differ from the action. An empty text means there is nothing to say. Plain logic on the
 ## GameState it is given. The words of E are the interaction registry's (see InteractionRegistry).
 
@@ -30,9 +30,9 @@ const USE_WORDS := {
 }
 ## What using the held lantern is called, for the uses that do something.
 const LANTERN_WORDS := {
-	GameState.LanternUse.PUT_OUT: "Put out the lantern",
-	GameState.LanternUse.LIGHT: "Light the lantern",
-	GameState.LanternUse.FIT_CANDLE: "Fit a candle",
+	HeldItem.LanternUse.PUT_OUT: "Put out the lantern",
+	HeldItem.LanternUse.LIGHT: "Light the lantern",
+	HeldItem.LanternUse.FIT_CANDLE: "Fit a candle",
 }
 
 
@@ -40,10 +40,10 @@ const LANTERN_WORDS := {
 ## come first, as they do when the key is pressed (see Main); a tile out of reach is not used.
 static func use_text(state: GameState, target: Vector2i) -> String:
 	var held := state.player.inventory.held_item()
-	if state.can_eat_held():
+	if HeldItem.can_eat(state):
 		return "Eat"
-	var lantern_use := state.held_lantern_use()
-	if lantern_use != GameState.LanternUse.NONE:
+	var lantern_use := HeldItem.lantern_use(state)
+	if lantern_use != HeldItem.LanternUse.NONE:
 		return LANTERN_WORDS[lantern_use]
 	var tool_use := ToolUse.new(state)
 	if not tool_use.is_in_reach(target):

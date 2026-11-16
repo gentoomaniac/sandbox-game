@@ -26,12 +26,12 @@ func test_the_held_lantern_is_lit_and_put_out_and_shows_so_in_the_hand() -> void
 	assert_false(_state.player.is_lantern_lit, "a new lantern is out")
 	assert_eq(_held_variant(), "lantern")
 
-	assert_true(_state.switch_held_lantern())
+	assert_true(HeldItem.switch_lantern(_state))
 	assert_true(_state.player.is_lantern_lit)
 	assert_true(_state.player.is_lantern_shining())
 	assert_eq(_held_variant(), "lantern_lit")
 
-	assert_true(_state.switch_held_lantern())
+	assert_true(HeldItem.switch_lantern(_state))
 	assert_false(_state.player.is_lantern_lit)
 	assert_false(_state.player.is_lantern_shining())
 	assert_eq(_held_variant(), "lantern")
@@ -39,17 +39,17 @@ func test_the_held_lantern_is_lit_and_put_out_and_shows_so_in_the_hand() -> void
 
 func test_nothing_but_the_held_lantern_is_switched() -> void:
 	_inventory.select(0)
-	assert_false(_state.switch_held_lantern(), "the hoe in the hand")
+	assert_false(HeldItem.switch_lantern(_state), "the hoe in the hand")
 	assert_false(_state.player.is_lantern_lit)
 	_inventory.slots[0] = {}
-	assert_false(_state.switch_held_lantern(), "an empty hand")
+	assert_false(HeldItem.switch_lantern(_state), "an empty hand")
 	assert_false(_state.player.is_lantern_lit)
 
 
 func test_switching_tells_an_outcome_that_pops() -> void:
 	var told: Array[ActionOutcome] = []
 	_state.action_done.connect(func(outcome: ActionOutcome) -> void: told.append(outcome))
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	assert_eq(told.size(), 1)
 	assert_eq(told[0].kind, ActionOutcome.SWITCH_LANTERN)
 	assert_eq(told[0].tile, _state.player.tile())
@@ -57,7 +57,7 @@ func test_switching_tells_an_outcome_that_pops() -> void:
 
 
 func test_a_lit_lantern_shines_only_in_the_hand() -> void:
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	_inventory.select(0)
 	assert_false(_state.player.is_lantern_shining(), "the hoe in the hand, the lantern in the bag")
 	assert_eq(_held_variant(), "rusty_iron_hoe")
@@ -87,7 +87,7 @@ func test_the_lit_lantern_lights_around_the_player_as_they_walk() -> void:
 	await wait_process_frames(1)
 	assert_false(light.visible, "out")
 
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	await wait_process_frames(1)
 	assert_true(light.visible, "lit")
 	assert_eq(light.strength, 1.0)
@@ -105,6 +105,6 @@ func test_the_lit_lantern_lights_around_the_player_as_they_walk() -> void:
 	assert_false(light.visible, "lit, but in daylight")
 
 	view.light_strength = 0.5
-	_state.switch_held_lantern()
+	HeldItem.switch_lantern(_state)
 	await wait_process_frames(1)
 	assert_false(light.visible, "put out")

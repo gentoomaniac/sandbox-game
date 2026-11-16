@@ -114,7 +114,7 @@ func test_eating_restores_energy_and_uses_up_one() -> void:
 	_state.player.energy = 50.0
 	_state.player.inventory.add(ItemTypes.TURNIP, 2)
 	_hold(ItemTypes.TURNIP)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 58.0)
 	assert_eq(_state.player.inventory.count_of(ItemTypes.TURNIP), 1)
 
@@ -123,14 +123,14 @@ func test_eating_stops_at_the_full_bar() -> void:
 	_state.player.energy = 98.0
 	_state.player.inventory.add(ItemTypes.BERRIES, 1)
 	_hold(ItemTypes.BERRIES)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 100.0)
 
 
 func test_eating_on_a_full_bar_does_nothing() -> void:
 	_state.player.inventory.add(ItemTypes.BERRIES, 1)
 	_hold(ItemTypes.BERRIES)
-	assert_false(_state.eat_held())
+	assert_false(HeldItem.eat(_state))
 	assert_eq(_state.player.inventory.count_of(ItemTypes.BERRIES), 1)
 
 
@@ -139,14 +139,14 @@ func test_eating_on_a_debuff_day_stops_at_the_debuff_cap() -> void:
 	_state.player.energy = 38.0
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
 	_hold(ItemTypes.TURNIP)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 40.0)
 
 
 func test_a_held_item_that_is_no_food_is_not_eaten() -> void:
 	_state.player.energy = 50.0
 	_hold(ItemTypes.RUSTY_IRON_HOE)
-	assert_false(_state.eat_held())
+	assert_false(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 50.0)
 
 
@@ -158,7 +158,7 @@ func test_a_higher_stamina_gives_a_longer_energy_bar_to_eat_up_to() -> void:
 	_state.player.energy = 150.0
 	_state.player.inventory.add(ItemTypes.TURNIP, 1)
 	_hold(ItemTypes.TURNIP)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_state.player.energy, 158.0)
 
 

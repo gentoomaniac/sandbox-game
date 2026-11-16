@@ -68,7 +68,7 @@ func test_eating_and_dropping_tell_the_item() -> void:
 	_state.player.energy = 10.0
 	_state.player.inventory.add(ItemTypes.BERRIES, 2)
 	_hold(ItemTypes.BERRIES)
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	_assert_one(ActionOutcome.EAT, _state.player.tile(), &"", {ItemTypes.BERRIES: 1})
 	_outcomes.clear()
 	assert_true(GroundPickup.drop(_state, _state.player.inventory.selected_slot))
@@ -188,7 +188,7 @@ func test_refusals_tell_nothing() -> void:
 	assert_eq(_state.use_tile(_tile + Vector2i(0, 5)), ToolUse.Use.OUT_OF_REACH)
 	_hold(ItemTypes.RUSTY_IRON_HOE)
 	_state.player.energy = _state.player.attributes.max_energy()
-	assert_false(_state.eat_held())
+	assert_false(HeldItem.eat(_state))
 	var campfire := _place_beside(WorldObjectTypes.FIREPLACE)
 	_state.player.inventory.add(ItemTypes.LOGS, 2)
 	assert_eq(Crafting.new(_state).craft(&"planks", campfire), Crafting.Result.WRONG_STATION)

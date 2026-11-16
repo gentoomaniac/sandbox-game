@@ -214,7 +214,7 @@ func test_eating_produce_restores_energy() -> void:
 	state.player.energy = 50.0
 	state.player.inventory.add(&"potato", 2)
 	HotbarHold.hold(state.player.inventory, &"potato")
-	assert_true(state.eat_held())
+	assert_true(HeldItem.eat(state))
 	assert_eq(state.player.energy, 60.0)
 	assert_eq(state.player.inventory.count_of(&"potato"), 1)
 
@@ -224,7 +224,7 @@ func test_wheat_cannot_be_eaten() -> void:
 	state.player.energy = 50.0
 	state.player.inventory.add(&"wheat", 1)
 	HotbarHold.hold(state.player.inventory, &"wheat")
-	assert_false(state.eat_held())
+	assert_false(HeldItem.eat(state))
 	assert_eq(state.player.inventory.count_of(&"wheat"), 1)
 
 

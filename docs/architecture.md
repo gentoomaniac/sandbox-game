@@ -81,7 +81,8 @@ Warft and an Ewer here and there.
   passing out and `teleport_to` are `PlayerRest`, functions that are given the game.
   A new game and the putting of the world and the ordered simulation systems under a game are
   `GameFactory` (`new_game`, `attach_world`), which a loaded game goes through as well. What gets
-  saved is `GameCodec` (`to_dict`, `snapshot`, `from_dict`): the game part of a `SaveFile`.
+  saved is `GameCodec` (`to_dict`, `snapshot`, `from_dict`): the game part of a `SaveFile`. Eating the
+  held food and the held lantern are `HeldItem`; picking up and dropping items `GroundPickup`.
 - **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
   whatever moves the clock goes through it, and whatever changes with time is a
   `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played
@@ -137,7 +138,7 @@ Warft and an Ewer here and there.
 - **ActionOutcome** (`game/state/action_outcome.gd`) is what one finished action of the player
   did: who, the kind (till, plant, harvest, break, place, build, craft, eat, pick up ...), the
   tile on its map, the object type and the items with counts. GameState tells it once through
-  `action_done`, after the action worked (`ToolUse`, `Builder`, `Crafting`, `eat_held`,
+  `action_done`, after the action worked (`ToolUse`, `Builder`, `Crafting`, `HeldItem`,
   `GroundPickup`'s `drop` and `collect`, `Demolition.take_down`): never for a refusal and
   never for loading a game. Whoever reacts (the sounds, later the deed log of the gossip)
   listens to it; there is no global event bus. Low-level setters (`World.set_terrain`, console

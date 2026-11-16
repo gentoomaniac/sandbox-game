@@ -15,15 +15,15 @@ func before_each() -> void:
 
 func test_eating_takes_a_berry_from_the_held_stack_not_the_last_one() -> void:
 	_state.player.energy = 0.0
-	assert_true(_state.eat_held())
+	assert_true(HeldItem.eat(_state))
 	assert_eq(_inventory.slots[0]["count"], 1)
 	assert_eq(_inventory.slots[Inventory.SLOT_COUNT - 1]["count"], 5)
 
 
 func test_eating_the_last_berry_of_the_held_stack_empties_the_hand() -> void:
 	_state.player.energy = 0.0
-	_state.eat_held()
-	_state.eat_held()
+	HeldItem.eat(_state)
+	HeldItem.eat(_state)
 	assert_eq(_inventory.held_item(), ItemTypes.NONE)
 	assert_eq(_inventory.count_of(ItemTypes.BERRIES), 5)
 
@@ -37,6 +37,6 @@ func test_consuming_an_empty_hand_does_nothing() -> void:
 
 
 func test_held_food_can_be_eaten_only_below_the_energy_cap() -> void:
-	assert_false(_state.can_eat_held(), "energy is full at the start")
+	assert_false(HeldItem.can_eat(_state), "energy is full at the start")
 	_state.player.energy = 50.0
-	assert_true(_state.can_eat_held())
+	assert_true(HeldItem.can_eat(_state))

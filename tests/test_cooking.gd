@@ -52,7 +52,7 @@ func test_a_cooked_dish_is_eaten_like_raw_food() -> void:
 	state.player.energy = 50.0
 	state.player.inventory.slots[0] = {"item": ItemTypes.POTTAGE, "count": 1}
 	state.player.inventory.select(0)
-	assert_true(state.eat_held())
+	assert_true(HeldItem.eat(state))
 	assert_eq(
 		state.player.energy, 50.0 + EnergyRules.default_rules().food_restore(ItemTypes.POTTAGE)
 	)

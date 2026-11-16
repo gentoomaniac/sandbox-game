@@ -538,7 +538,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	# the player to bed.
 	elif event.is_action_pressed("interact") and not _build_mode.is_active():
 		_interact.interact(_interactions)
-	elif _is_use_event(event) and can_use and (_eat_held() or _state.switch_held_lantern()):
+	elif _is_use_event(event) and can_use and (_eat_held() or HeldItem.switch_lantern(_state)):
 		pass  # No target: a held food is eaten, the lantern lit or put out, instead of a tile used.
 	elif event.is_action_pressed("use") and can_use:
 		_use_swing.use_on(_use_highlight.targeting())
@@ -565,7 +565,7 @@ func _process(delta: float) -> void:
 ## Eats the held food, if any, and says how much energy it gave. Returns whether it ate.
 func _eat_held() -> bool:
 	var energy_before := _state.player.energy
-	if not _state.eat_held():
+	if not HeldItem.eat(_state):
 		return false
 	_harvest_hud.show_note("+%s energy" % roundi(_state.player.energy - energy_before))
 	return true
