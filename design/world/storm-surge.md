@@ -136,8 +136,9 @@ A surge is rolled at the high water before, so it is known **6 game hours ahead*
 
 ## Performance
 
-- The fill and the drain run from `GameState._process` on a **budget of tiles per frame** (a few
-  hundred at most), with a queue and the wet set in a `FloodState`, never a scan of the world.
+- The fill and the drain run from `GameState.frame_work` (`SurgeUpkeep`, once a frame from Main)
+  on a **budget of tiles per frame** (a few hundred at most), with a queue and the wet set in a
+  `FloodState`, never a scan of the world.
 - The overlay mask is an image per chunk (a byte a tile), updated only when its tiles change. No
   chunk rebuild.
 - Unloaded chunks are not simulated: the wet tiles are kept in the list, a chunk that loads gets

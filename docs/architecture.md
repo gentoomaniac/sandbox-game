@@ -65,6 +65,12 @@ Warft and an Ewer here and there.
   days are up in the skip's nights: `NightUpkeep` counts the nights and, told by `skip_begins` that
   a skip's rest is about to be made up for, sees to the soil at its end,
   `World.settle_fallow_soil_over_frames`), each within `Simulation.frame_budget_usec` a frame.
+  The work of the frames themselves is `GameState.frame_work(delta)` (Simulation `frame_work`, each
+  `SimulationSystem.frame_work`), called once a frame by Main: the flood fills and drains there
+  (`SurgeUpkeep`, `fill_tiles_per_second` within `fill_tiles_per_step` a frame), not in a scene.
+  The console's freeze holds it; indoors and under a black screen it goes on (the water is the
+  world's, not the player's); a skip spread over frames holds it until it has made up for the
+  flood itself (`tests/test_frame_work.gd`).
   Main holds the world still meanwhile, the chunk
   residency's streaming (no chunk loads or drops by `update`; `require` still loads what an
   action needs) and the views too (wildlife), until the player has woken, and a quit waits

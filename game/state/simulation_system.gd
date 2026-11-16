@@ -16,6 +16,12 @@ func walked_minute(_clock: GameClock) -> void:
 	pass
 
 
+## A frame of play passed `delta` real seconds (see Simulation `frame_work`): for what a system does
+## a little at a time in real seconds, within its own budget for a frame.
+func frame_work(_delta: float) -> void:
+	pass
+
+
 ## The rest of a skip, `minutes` of it, is about to be made up for: its `advance` and then
 ## `skipped` (or `skipped_over_frames`) follow. For a system that leaves what the skip's spans
 ## would do for its end, to spread it over frames.

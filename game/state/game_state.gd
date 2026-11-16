@@ -162,6 +162,14 @@ static func new_game(world_seed: int, with_village := false) -> GameState:
 	return state
 
 
+## The work of a frame of play (see Simulation `frame_work`), called once a frame by Main. The
+## console's freeze holds it; indoors and under a black screen the world goes on.
+func frame_work(delta: float) -> void:
+	if cheats.is_time_stopped:
+		return
+	simulation.frame_work(delta)
+
+
 func is_inside() -> bool:
 	return _building_inside != null
 

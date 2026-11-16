@@ -22,6 +22,8 @@ static var frame_budget_usec := DEFAULT_FRAME_BUDGET_USEC
 var clock: GameClock
 ## In the order they run after each span: a system may rely on those before it.
 var _systems: Array[SimulationSystem] = []
+## A skip spread over frames is under way: it does the work the frames would (see `frame_work`).
+var _is_spreading_skip := false
 
 
 func _init(game_clock: GameClock) -> void:
@@ -30,6 +32,17 @@ func _init(game_clock: GameClock) -> void:
 
 func add_system(system: SimulationSystem) -> void:
 	_systems.append(system)
+
+
+## The work of one frame of play, `delta` real seconds long: what the systems do a little at a time
+## (see SimulationSystem `frame_work`), each within its own budget. Called once a frame by whatever
+## runs the play loop. It does nothing while a skip is spread over frames: that makes up for the
+## work at its end, so the frames must not race it.
+func frame_work(delta: float) -> void:
+	if _is_spreading_skip:
+		return
+	for system in _systems:
+		system.frame_work(delta)
 
 
 ## Lets `minutes` game minutes pass without the player living through them (sleep, passing out,
@@ -51,6 +64,7 @@ func skip(minutes: int) -> void:
 ## the world still meanwhile, as the world ends the same only then. `next_frame` is a Callable
 ## that gives the signal of the next frame.
 func skip_over_frames(minutes: int, next_frame: Callable) -> void:
+	_is_spreading_skip = true
 	var rest := _walk_through(minutes)
 	await next_frame.call()
 	if rest > 0:
@@ -61,6 +75,7 @@ func skip_over_frames(minutes: int, next_frame: Callable) -> void:
 			await system.skipped_over_frames(rest, clock, next_frame)
 	# What shows the world follows (`skipped`) in a frame of its own, and what the caller does
 	# after it in the next.
+	_is_spreading_skip = false
 	await next_frame.call()
 	skipped.emit(minutes)
 	await next_frame.call()

@@ -522,6 +522,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_clock_ticker.tick(delta)
+	_state.frame_work(delta)
 	var hour := _state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
 	if hour != _soil_shown_hour:
 		_soil_shown_hour = hour

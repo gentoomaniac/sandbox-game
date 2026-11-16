@@ -2,8 +2,8 @@ class_name SurgeUpkeep
 extends SimulationSystem
 ## Rolls the storm surge ahead of each high water, `warning_hours` before it, lets the sea rise
 ## over the dykes when the time comes and follows the flood it leaves (see SurgeRoll, SurgeEvent
-## and FloodState). The frames of play do the fill and the drain a little at a time (FloodState
-## `step`); a skip of time makes up for them at once.
+## and FloodState). The frames of play do the fill and the drain a little at a time, in real seconds
+## (`frame_work`, FloodState `step`); a skip of time makes up for them at once.
 
 var _world: World
 var _event: SurgeEvent
@@ -22,6 +22,10 @@ func _init(world: World, weather: Weather, rules := WeatherRules.default_rules()
 	_weather = weather
 	_roll = SurgeRoll.new(world.world_seed, weather, rules)
 	_rules = rules
+
+
+func frame_work(delta: float) -> void:
+	_flood.step(_world, delta)
 
 
 func skip_begins(_minutes: int) -> void:
