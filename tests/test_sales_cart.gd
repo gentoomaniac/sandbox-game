@@ -91,8 +91,7 @@ func test_the_prices_and_the_till_are_saved_with_the_cart() -> void:
 	_cart.set_price(0, 7)
 	_cart.sell_one(0)
 
-	var data: Dictionary = JSON.parse_string(JSON.stringify(_cart.object.to_dict()))
-	var restored := SalesCart.new(WorldObject.from_dict(data))
+	var restored: SalesCart = SalesCart.all_in(_through_save().world)[0]
 
 	assert_eq(restored.slots().count_of(EGG), 3)
 	assert_eq(restored.price_of(0), 7)
