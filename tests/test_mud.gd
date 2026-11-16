@@ -111,7 +111,7 @@ func test_a_loaded_game_is_muddy_at_once_if_it_rained_before_the_save() -> void:
 	_state.refresh_mud()
 	assert_true(_world.is_muddy)
 
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 
 	assert_true(restored.world.is_muddy)
 

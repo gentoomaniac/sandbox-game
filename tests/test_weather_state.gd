@@ -65,7 +65,7 @@ func test_the_last_hours_rain_is_that_of_the_hour_that_ended_or_the_forced_one()
 
 
 func test_a_new_game_and_a_loaded_one_have_the_same_weather() -> void:
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	assert_eq(restored.current_weather().temperature, _state.current_weather().temperature)
 
 
@@ -85,7 +85,7 @@ func test_a_forced_rain_makes_worn_ground_muddy_at_once_and_auto_dries_it() -> v
 
 func test_the_override_is_not_saved() -> void:
 	_state.weather_override = &"snow"
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	assert_eq(restored.weather_override, &"")
 
 

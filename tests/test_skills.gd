@@ -129,7 +129,7 @@ func test_the_skills_survive_a_save_round_trip() -> void:
 	var state := GameState.new_game(7)
 	state.player.skills.set_points(&"masonry", 12.3)
 	state.player.skills.set_fading(&"cooking", true)
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
+	var restored := RealLoad.of(self, state)
 	assert_eq(restored.player.skills.points(&"masonry"), 12.3)
 	assert_eq(restored.player.skills.points(&"cooking"), 0.0)
 	assert_true(restored.player.skills.is_fading(&"cooking"))

@@ -12,7 +12,7 @@ func _plan(day: int, entries: Array[DayEntry]) -> DayPlan:
 
 ## The game saved and loaded again, its villagers' houses being the same buildings.
 func _save_and_load() -> void:
-	_loaded = GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	_loaded = RealLoad.of(self, _state)
 
 
 func _plan_with_a_late_supper() -> Array[DayEntry]:

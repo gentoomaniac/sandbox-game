@@ -117,4 +117,4 @@ func test_a_game_saved_after_one_at_night_still_passes_out_on_load() -> void:
 
 
 func _reloaded() -> GameState:
-	return GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	return RealLoad.of(self, _state)

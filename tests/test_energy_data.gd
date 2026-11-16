@@ -17,7 +17,7 @@ func test_energy_health_and_the_debuff_survive_a_save_round_trip() -> void:
 	_state.player.energy = 12.5
 	_state.player.health = 33.0
 	_state.player.is_debuffed = true
-	var restored := GameState.from_dict(JSON.parse_string(JSON.stringify(_state.to_dict())))
+	var restored := RealLoad.of(self, _state)
 	assert_eq(restored.player.energy, 12.5)
 	assert_eq(restored.player.health, 33.0)
 	assert_true(restored.player.is_debuffed)
