@@ -62,22 +62,18 @@ var _interior_view := InteriorView.new()
 var _object_cover := ObjectCover.new()
 var _weather_view := WeatherView.new()
 var _wildlife := WildlifeView.new()
-var _weather: WeatherSample
-var _snow_cover := 0.0
-var _frost := 0.0
 var _fade_screen := FadeScreen.new()
 var _blackout: BlackoutFlow
 var _screen_keys: ScreenKeys
 var _hotbar_keys: HotbarKeys
 var _session: SessionFlow
 var _play_loop: PlayLoop
+var _clock_views: ClockViews
 var _aim_views: AimViews
 var _walk_flow: WalkFlow
 var _interact: InteractFlow
 var _interactions := InteractionRegistry.new()
 var _debug: DebugRunner
-## The game hour the wetness of the soil was last shown for.
-var _soil_shown_hour := -1
 ## The map the views show: the world or the interior of a house.
 var _shown_map: GameMap
 ## Which chunks of the world are loaded; the world view draws them.
@@ -129,7 +125,7 @@ func _ready() -> void:
 	_connect_state_and_views()
 	_apply_start_options()
 	_start_sounds()
-	_show_clock()
+	_clock_views.show_clock()
 	if _resumed_state != null:
 		_notifications.post(QuickLoadFlow.LOAD_NOTE, "New game" if is_new_game else "Loaded")
 	if is_new_game:
@@ -176,7 +172,7 @@ func _load_game() -> void:
 	_settings.day_length_changed.connect(
 		func() -> void:
 			_state.sun.variation = _settings.day_length_variation_factor()
-			_show_clock()
+			_clock_views.show_clock()
 	)
 	# Quitting saves first (see _notification).
 	get_tree().auto_accept_quit = false
@@ -247,6 +243,9 @@ func _apply_villager_memory_settings() -> void:
 
 ## Shows the state in the views and wires what they report back.
 func _connect_state_and_views() -> void:
+	_clock_views = ClockViews.new(
+		_state, _view, _tint, _hud, _player_view, _weather_view, _camera, _coordinates_hud
+	)
 	_residency = ChunkResidency.new(_state.world)
 	_blackout = BlackoutFlow.new()
 	_blackout.state = _state
@@ -258,7 +257,7 @@ func _connect_state_and_views() -> void:
 	_blackout.saves = _saves
 	_blackout.save_path = _options.save_path
 	_blackout.show_current_map = _show_current_map
-	_blackout.show_clock = _show_clock
+	_blackout.show_clock = _clock_views.show_clock
 	add_child(_blackout)
 	_session = SessionFlow.new()
 	_session.state = _state
@@ -279,7 +278,7 @@ func _connect_state_and_views() -> void:
 	_interact.chat_screen = _chat_flow.screen
 	_interact.trade_screen = _trade_flow.screen
 	_trade_flow.screen.talk_requested.connect(_interact.open_chat)
-	var clock_ticker := GameClockTicker.new(_state, _weather_view, _show_clock)
+	var clock_ticker := GameClockTicker.new(_state, _weather_view, _clock_views.show_clock)
 	clock_ticker.is_held = func() -> bool:
 		return _debug.is_clock_stopped() or _fade_screen.is_black()
 	_play_loop = PlayLoop.new(
@@ -399,7 +398,7 @@ func _connect_state_and_views() -> void:
 			# `reset` and `tp` can take the player to another map.
 			if _state.current_map != _shown_map:
 				_show_current_map()
-			_show_clock()
+			_clock_views.show_clock()
 			# The map takes the keys the console would.
 			if _map_screen.is_open():
 				_console_view.close()
@@ -549,25 +548,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_play_loop.begin_frame(delta)
-	var hour := _state.clock.total_minutes() / GameClock.MINUTES_PER_HOUR
-	if hour != _soil_shown_hour:
-		_soil_shown_hour = hour
-		_view.refresh_soil(_state.last_hour_rain())
-		_state.refresh_mud()
+	_clock_views.update(delta)
 	_autosave_on_time(delta)
 	_tiredness_view.is_awake = not _blackout.is_in_transition
-	_weather_view.visible_region = _camera.visible_region()
-	_weather_view.show_weather(_weather, _tint.color, _tint.daylight)
-	_view.ambient_motion.update(delta, _weather_view.wind, _weather_view.rain)
-	_view.ambient_motion.show_tide(Tide.level(_state.clock.total_minutes()))
-	if _coordinates_hud.visible:
-		_coordinates_hud.show_position(
-			_state.player.tile(),
-			_state.is_inside(),
-			CoordinatesHud.weather_and_sun_text(
-				_weather, _state.sun, _state.clock.day, _snow_cover, _frost
-			)
-		)
 	_aim_views.update(not _is_any_screen_open())
 	_walk_flow.update(delta, _is_any_screen_open())
 	_play_loop.move_world(delta)
@@ -677,7 +660,7 @@ func _show_current_map() -> void:
 	_interior_npc_views.show_room(_state.current_map as Interior if is_inside else null)
 	_player_view.reparent(_interior_view.entities if is_inside else _view.entities, false)
 	_use_highlight.reparent(_interior_view if is_inside else _view, false)
-	_show_clock()
+	_clock_views.show_clock()
 
 
 ## Starts the sounds of the game once everything that makes one exists: the footsteps, work and
@@ -719,28 +702,6 @@ func _show_build_message(text: String) -> void:
 	var in_menu := _build_menu.takes_messages()
 	_build_menu.show_message(text if in_menu else "")
 	_message.text = "" if in_menu else text
-
-
-func _show_clock() -> void:
-	# The weather only changes with the minute, the map or a console command, which all end here.
-	_weather = _state.current_weather()
-	if _state.is_inside():
-		_tint.show_interior()
-	else:
-		_tint.show_time(_state.clock, _weather.cloud_cover)
-	_view.set_light_strength(_tint.light_strength())
-	_player_view.light_strength = _tint.light_strength()
-	# The ground, the plants and the houses follow the weather by the minute, by shader; their
-	# pictures only change with the day.
-	_snow_cover = _state.current_snow_cover()
-	_frost = _state.current_frost()
-	var thaw := _state.current_thaw()
-	_view.show_ground_cover(_state.clock.day, _snow_cover, thaw, _frost)
-	_state.world.footprints.advance_to(
-		_state.clock.total_minutes(), _weather.rain, _weather.snow, thaw
-	)
-	_view.refresh_looks(_state.clock.day)
-	_hud.show_time(_state.clock)
 
 
 func _save_screenshot_and_quit() -> void:
