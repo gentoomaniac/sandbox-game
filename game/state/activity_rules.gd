@@ -40,11 +40,18 @@ static var _default: ActivityRules
 var _values: Dictionary
 ## {name: ActivityTarget}: where an activity can be done, relative to the villager.
 var _targets: Dictionary
+## What is wrong with the scripts of the targets.
+var _target_problems: Array[String]
 
 
-func _init(values: Dictionary, targets := ActivityTargets.default_kinds()) -> void:
+func _init(
+	values: Dictionary,
+	targets := ActivityTargets.default_kinds(),
+	target_problems := ActivityTargets.default_problems()
+) -> void:
 	_values = values
 	_targets = targets
+	_target_problems = target_problems
 
 
 ## The rules of the data file, loaded the first time they are asked for.
@@ -77,9 +84,9 @@ static func minute_of(time_text: Variant) -> int:
 	return hour * GameClock.MINUTES_PER_HOUR + minute
 
 
-## What is missing or wrong, as "[section] what".
+## What is missing or wrong, as "[section] what" (of the scripts of the targets: "path what").
 func problems() -> Array[String]:
-	var found: Array[String] = []
+	var found: Array[String] = _target_problems.duplicate()
 	for key in RULES_KEYS:
 		if not _values.get(RULES_SECTION, {}).has(key):
 			found.append("[%s] no %s" % [RULES_SECTION, key])

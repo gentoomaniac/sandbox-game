@@ -370,7 +370,9 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
 
 - A `*Rules` class reads its file with `DataFile.read_sections(path)`, checks it (`problems()`,
   `is_valid()`) and serves the values. `Main._ready` refuses to start, and reports what is
-  wrong, if `RulesCheck` finds any of them invalid.
+  wrong, if `RulesCheck` finds any of them invalid. The folders of kinds (`KindFolder`: quest
+  objectives and conditions, activity targets) report their bad scripts through the rules that use
+  them (`QuestRules`, `ActivityRules`), so a broken kind file stops the game too.
 - `BuildingTypes`, `WorldObjectTypes` and `ItemTypes` are the tables of kinds, built from the
   rules and from definitions in code. Look there for what a kind of object or item is. Their
   entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
@@ -408,7 +410,7 @@ Typical jobs:
 | New recipe | A section in `data/recipes.cfg` for an item that exists in `ItemTypes`; `station`, `skill`, `level` and `hours` are optional. |
 | New station | A placed object kind (a `world_objects/` entry with `drops` and `placeable_in`, an `items/` entry with `places`, its picture in `tools/art/crafts.py`), a section in `data/stations.cfg`, and a recipe that makes it. |
 | New skill (profession) | A section in `data/skills.cfg`, and recipes that name it. |
-| New activity target kind (a kind of place, such as an inn) | One script in `game/state/activity_targets/` that `extends ActivityTarget` (see `ActivityTargets`, loaded by `KindFolder`, as the quest kinds are): its `kind()`, `spot_of(npc, day, places)` (the spot, or `ActivityPlaces.NOWHERE`; `places` gives the world, the rules and `home_point`), and, where they hold, `is_searched()` (looked for within `search_tiles`, which the file then has to give), `has_door()` (an activity there may be `inside`) and `is_found_when_on()` (only looked for when the entry is on, as `wild`, so the villager has it with no spot yet). `ActivityRules` reads the capabilities from the kinds, `ActivityPlaces` and `ActivityUpkeep` ask them for spots and availability, and neither names a kind. A new activity of an existing target is only a section in `data/activities.cfg`. |
+| New activity target kind (a kind of place, such as an inn) | One script in `game/state/activity_targets/` that `extends ActivityTarget` (see `ActivityTargets`, loaded by `KindFolder`, as the quest kinds are; a script that is no target or repeats a kind makes `ActivityRules` invalid, so startup is refused): its `kind()`, `spot_of(npc, day, places)` (the spot, or `ActivityPlaces.NOWHERE`; `places` gives the world, the rules and `home_point`), and, where they hold, `is_searched()` (looked for within `search_tiles`, which the file then has to give), `has_door()` (an activity there may be `inside`) and `is_found_when_on()` (only looked for when the entry is on, as `wild`, so the villager has it with no spot yet). `ActivityRules` reads the capabilities from the kinds, `ActivityPlaces` and `ActivityUpkeep` ask them for spots and availability, and neither names a kind. A new activity of an existing target is only a section in `data/activities.cfg`. |
 | New sound | An event in `tools/audio/generate.py`, a section in `data/sounds.cfg` ([tools/README.md](../tools/README.md)). |
 | New object or item kind | An entry in the `TYPES` of a topic script in `game/state/items/` or `game/state/world_objects/` (a new file there is picked up as is; an object an item places also needs `placeable_in`, the item `places`), and its art ([tools/README.md](../tools/README.md)). Start the game or run `make test`: `CatalogCheck` names what is missing or wrong, item and field. |
 
