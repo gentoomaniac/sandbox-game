@@ -72,7 +72,7 @@ assets/wildlife/<kind>.png: one sheet per animal kind, one row per action and on
 (see animals.py, birds.py for the stork and the goose, sea_birds.py for the birds of the coast, and
 game/scenes/wildlife/wildlife_sprites.gd).
 The farm animals have one sheet per species and look, assets/wildlife/<species>_<look>.png (see
-livestock.py), drawn at the game's tile (not doubled); a horse also has horse_<look>_saddled.png,
+farm_animals.py), drawn at the game's tile (not doubled); a horse also has horse_<look>_saddled.png,
 and horse_<look>_ridden.png and horse_<look>_ridden_over.png, the ridden horse behind and in front
 of the rider in the rows of the player's sheets (see `ridden_sheets`).
 
@@ -116,6 +116,7 @@ import crafts
 import crop_icons
 import crops
 import declaration
+import farm_animals
 import fire
 import flowers
 import footprints
@@ -123,7 +124,6 @@ import friendship
 import interior
 import items
 import landing
-import livestock
 import meadow
 import notice_board
 import pen
@@ -377,7 +377,7 @@ def write_fire():
 
 
 def write_wildlife():
-    for name, size, rows in [*animals.sheets(), *birds.sheets(), *stork_nest.sheets(), *sea_birds.sheets(), *livestock.sheets()]:
+    for name, size, rows in [*animals.sheets(), *birds.sheets(), *stork_nest.sheets(), *sea_birds.sheets(), *farm_animals.sheets()]:
         save(rows, f"wildlife/{name}.png", *size)
 
 
