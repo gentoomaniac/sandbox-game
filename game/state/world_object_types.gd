@@ -200,11 +200,6 @@ const MAX_FOOTPRINT := Vector2i(7, 2)
 
 ## The atlas row of the reeds: after the last trunk.
 const REEDS_ROW := 24
-const _EWER_ROW := 45
-const _JETTY_ROW := 47
-const _ROWING_BOAT_ROW := 48
-const _NET_FRAME_ROW := 49
-const _EEL_TRAPS_ROW := 50
 ## The pictures of each variant of a type that `connects`: one per connection mask.
 const CONNECTION_LOOKS := 16
 ## The connection masks of a corner, a line joined on two sides that meet, in the order of their
@@ -218,69 +213,7 @@ const SLANTED_LOOKS := 12
 const TOPICS_DIR := "res://game/state/world_objects"
 const _OWN_SOURCE := "res://game/state/world_object_types.gd"
 
-const _OTHER_TYPES := {
-	EWER:
-	{
-		"footprint": Vector2i(7, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"atlas_row": _EWER_ROW,
-		"variants": 1,
-		"cells_wide": 3,
-	},
-	JETTY:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"jetty": 1},
-		"connects": &"jetty",
-		"deck": true,
-		"placed_on":
-		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": false,
-		"harvest_level": 1,
-		"atlas_row": _JETTY_ROW,
-		"variants": 1,
-		"placeable_in": OUTDOORS,
-	},
-	ROWING_BOAT:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"rowing_boat": 1},
-		"placed_on":
-		[Tile.Terrain.WATER, Tile.Terrain.SEA, Tile.Terrain.MUD, Tile.Terrain.SALT_MARSH],
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _ROWING_BOAT_ROW,
-		"variants": 1,
-		"placeable_in": OUTDOORS,
-	},
-	NET_FRAME:
-	{
-		"hp": 2,
-		"tool": &"axe",
-		"drops": {&"net_frame": 1},
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _NET_FRAME_ROW,
-		"variants": 1,
-		"placeable_in": OUTDOORS,
-	},
-	EEL_TRAPS:
-	{
-		"drops": {&"eel_traps": 1},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"atlas_row": _EEL_TRAPS_ROW,
-		"variants": 1,
-		"placeable_in": OUTDOORS,
-	},
-}
+const _OTHER_TYPES := {}
 
 ## What went wrong while the crops and trunks were added to the fixed types: an id used twice
 ## (see CatalogCheck).
