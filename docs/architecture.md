@@ -69,7 +69,8 @@ Warft and an Ewer here and there.
   the registry, which holds callables of the flows). A kind is registered once: a second
   registration is a `push_error` naming both owners and is refused. Main adds each flow where its screens are
   layered and take input, one `add_child` line each in `_make_views` (the flows whose windows stay
-  under the HUD and the console) and `_connect_state_and_views`; nothing is discovered. To add a
+  under the HUD and the console) and `_connect_state_and_views`; nothing is discovered; `tests/test_main_flows.gd` boots Main and checks that every flow of
+  `FeatureFlows.all()` is in its tree, so a forgotten `add_child` fails. To add a
   screen like the sales cart: the domain's kind and its place in `Interaction.choice_at` (state),
   the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
