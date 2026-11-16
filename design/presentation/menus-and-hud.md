@@ -33,7 +33,7 @@ Decided 2026-11-05.
   A shader keeps the icon's pixels square at 1.5 window pixels each (1080p).
 - **The bag** (task 190, 2026-11-11): a bag icon beside the hotbar, set a little apart from it
   (the same icon in both arts); clicking it or pressing B opens the bag (the backpack
-  with its weight and a trash can), which is docked at the bottom right of the window above the
+  with its weight, the purse as "32 Schilling" (#49, it weighs nothing and is not on the hotbar) and a trash can), which is docked at the bottom right of the window above the
   hotbar. A workbench icon beside it opens hand crafting, as Shift+C does (issue 3, task 233). Tab is
   unbound; the hammer has no key (it is selected on the hotbar).
 - **The notice board** (#12): E on a board opens a small window, "Notice board", with the rough line

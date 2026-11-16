@@ -1,7 +1,8 @@
 class_name BagScreen
 extends HotbarWindow
 ## The bag over the game, opened with B or the bag button on the hotbar: the backpack with the
-## carried weight and the trash can. The character with the equipment is the CharacterScreen's.
+## carried weight, the purse and the trash can. The character with the equipment is the
+## CharacterScreen's.
 ## The hotbar is the HUD's, which stays lit and clickable while the bag is open, and is used like
 ## the backpack's slots.
 ## Items are moved by dragging them (see SlotView): onto another slot, where a different item
@@ -25,6 +26,7 @@ const WIDEST_WEIGHT_TEXT := "Carrying 999.9 / 999.9 kg"
 ## The views of the backpack's slots below the hotbar, by slot; the hotbar draws its own.
 var _backpack_views := {}
 var _weight_label := Label.new()
+var _purse_label := Label.new()
 var _trash_can := TrashCan.new()
 
 
@@ -52,8 +54,10 @@ func _init(hotbar: HotbarHud) -> void:
 	column.add_theme_constant_override("separation", SLOT_GAP)
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_weight_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_purse_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(backpack_grid)
 	column.add_child(_weight_label)
+	column.add_child(_purse_label)
 	column.add_child(_trash_can)
 	_panel.add_child(column)
 
@@ -65,12 +69,14 @@ func show_player(player: PlayerState) -> void:
 		_player.inventory.changed.disconnect(_refresh)
 		_player.equipment.changed.disconnect(_refresh)
 		_player.attributes.changed.disconnect(_refresh)
+		_player.purse.changed.disconnect(_refresh)
 	_player = player
 	for slot: int in _backpack_views:
 		_backpack_views[slot].bind_to(player.inventory, slot)
 	player.inventory.changed.connect(_refresh)
 	player.equipment.changed.connect(_refresh)
 	player.attributes.changed.connect(_refresh)
+	player.purse.changed.connect(_refresh)
 	_refresh()
 
 
@@ -112,6 +118,7 @@ func _refresh() -> void:
 		"Carrying %.1f / %s kg"
 		% [_player.carried_weight(), Attributes.number_text(_player.attributes.carry_capacity())]
 	)
+	_purse_label.text = "%d Schilling" % _player.purse.schilling
 	# The label is wider than the slots, so it keeps the room of its longest text and the panel
 	# does not resize every time the load changes.
 	var font := _weight_label.get_theme_font("font")
