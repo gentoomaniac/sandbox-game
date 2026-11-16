@@ -240,6 +240,15 @@ seeds all year.
 
 ## The player's stall (the "shopping trailer")
 
+**Built (step 12), as planned except:** the cart (`sales_cart`, 10 slots, `WorldObjectStall`) is a
+workbench recipe of 8 planks and 2 logs (woodworking 50; there is no wheel item), placed anywhere
+like a chest. E opens the `CartScreen`: [Put] puts the stack in hand on it, each stack has a price
+with [-] and [+] (a whole number from 1, the worth by default) and [Take back], and [Take] empties
+the till into the purse. `SalesCart` keeps the prices and the till in the object's `state`, so they
+are saved with the cart in the world edits with **no save version of its own** (an old save has no
+cart). **Art:** the cart wears the carved chest's picture; its own art (labels `art` and
+`needs-verdict`) is a task for the art workers, not done here. Only goods with a worth are for sale.
+
 A **hand cart with a board** (a *Verkaufskarren*), or a stall at the farm gate: one placed object.
 
 - **Built** at the workbench (a new recipe: planks, wheels), placed like a chest and holding slots

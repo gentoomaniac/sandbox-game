@@ -291,6 +291,7 @@ def icons():
         "brick": bricks("rust", "red_light", "rust_dark"),
         "stool": icon_of(stool()),
         "carved_chest": icon_of(carved_chest(is_standing=False)),
+        "sales_cart": icon_of(carved_chest(is_standing=False)),
         "roast_turnip": roast_turnip(),
         # Cabbage, carrot and onion in a broth.
         "pottage": bowl("green", "ochre"),

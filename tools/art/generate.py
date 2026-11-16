@@ -228,6 +228,7 @@ def standing_outdoors(picture, shadow_half_width=None):
 # 63 market_stall (1, see stall.py)
 # 64-77 the dead trees of each kind (3 variants each), then the half-dead ones (2 each), see snags.py
 # 78 notice_board (1, see notice_board.py)
+# 79 sales_cart (1, the carved chest's look until it has art of its own, see crafts.py)
 def object_atlas():
     """The rows of assets/objects.png in order, each as (kind, its variants). The seasons
     treat every kind alike, so kind and row come from one list."""
@@ -291,6 +292,7 @@ def object_atlas():
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
+        ("sales_cart", [standing_outdoors(crafts.carved_chest())]),
     ]
 
 

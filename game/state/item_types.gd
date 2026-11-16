@@ -73,6 +73,7 @@ const SLEEPING_BAG := &"sleeping_bag"
 const PLANKS := &"planks"
 const STOOL := &"stool"
 const CARVED_CHEST := &"carved_chest"
+const SALES_CART := &"sales_cart"
 const CUPBOARD := &"cupboard"
 ## A cross or a stone for a grave in the churchyard (task 102).
 const GRAVE_MARKER := &"grave_marker"
@@ -406,6 +407,15 @@ const _OTHER_TYPES := {
 		"weight": 6.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.CARVED_CHEST,
+	},
+	SALES_CART:
+	{
+		"name": "Sales cart",
+		"description":
+		"A hand cart with a board. Stock it and set a price, and the neighbours buy.",
+		"weight": 12.0,
+		"stack_limit": 1,
+		"places": WorldObjectStall.SALES_CART,
 	},
 	RAW_BRICK:
 	{

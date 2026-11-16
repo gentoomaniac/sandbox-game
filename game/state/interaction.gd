@@ -17,6 +17,7 @@ enum Kind {
 	MOUNT,
 	OPEN_STATION_GRID,
 	OPEN_CHEST,
+	OPEN_CART,
 	OPEN_FIRE,
 	OPEN_CRAFTING,
 	RING_BELL,
@@ -61,6 +62,8 @@ static func choice_at(state: GameState, target: Vector2i) -> Choice:
 			return Choice.new(Kind.OPEN_STATION_GRID, object)
 		if object.type == WorldObjectTypes.NOTICE_BOARD:
 			return Choice.new(Kind.READ_BOARD, object)
+		if object.type == WorldObjectStall.SALES_CART:
+			return Choice.new(Kind.OPEN_CART, object)
 		if Campfire.is_campfire(object):
 			return Choice.new(Kind.OPEN_FIRE, object)
 		return Choice.new(Kind.OPEN_CHEST if object.storage != null else Kind.OPEN_CRAFTING, object)

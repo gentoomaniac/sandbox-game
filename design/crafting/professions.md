@@ -98,7 +98,8 @@ woodworker, the cook and the mason, and a UI for them.
 - **Recipes** (levels in brackets):
   - Woodworking at the workbench: planks, 2 from a log (0); stool from 3 planks (10); a grave
     marker from 2 planks and 2 stone, only outdoors (15); clogs from a log (25); a carved
-    chest, painted the Frisian way, 8 planks, 20 slots (45); the master's piece, a joined oak
+    chest, painted the Frisian way, 8 planks, 20 slots (45); the sales cart for the player's stall,
+    8 planks and 2 logs, 10 slots (50, #49, see [../economy/README.md](../economy/README.md)); the master's piece, a joined oak
     cupboard, 12 planks and 2 logs, 25 slots, only in a house (70).
   - Cooking at the hearth: roast turnip (0); pottage, 2 from cabbage, carrot and onion (10);
     buckwheat pancakes, 2 from 3 buckwheat (15, task 115); pea soup, 2 from 4 peas and an

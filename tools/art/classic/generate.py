@@ -244,6 +244,7 @@ def object_atlas():
         ("market_stall", [standing_outdoors(stall.market_stall())]),
         *snags.rows(),
         ("notice_board", [standing_outdoors(notice_board.notice_board())]),
+        ("sales_cart", [standing_outdoors(crafts.carved_chest())]),
     ]
 
 

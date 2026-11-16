@@ -29,6 +29,7 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 			&"clogs",
 			&"rowing_boat",
 			&"carved_chest",
+			&"sales_cart",
 			&"cupboard",
 		]
 	)
@@ -52,6 +53,7 @@ func test_the_workbench_makes_the_woodworkers_recipes_in_rising_levels() -> void
 			25.0,
 			35.0,
 			45.0,
+			50.0,
 			70.0
 		]
 	)

@@ -16,6 +16,7 @@ var storage_screen: StorageScreen
 var fire_screen: CampfireScreen
 var crafting_screen: CraftingScreen
 var board_screen: NoticeBoardScreen
+var cart_screen: CartScreen
 var quest_voice: QuestVoice
 
 
@@ -40,6 +41,8 @@ func interact() -> void:
 			)
 		Interaction.Kind.OPEN_CHEST:
 			storage_screen.open_chest(choice.subject, state.player)
+		Interaction.Kind.OPEN_CART:
+			cart_screen.open_cart(choice.subject, state.player)
 		Interaction.Kind.READ_BOARD:
 			board_screen.open_board(state)
 		Interaction.Kind.OPEN_FIRE:

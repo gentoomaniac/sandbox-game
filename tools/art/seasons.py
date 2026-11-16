@@ -499,6 +499,7 @@ _WINTER_LOOKS = {
     # The scarecrow: snow on the hat and the lit shoulders of the coat.
     "scarecrow": {"frost_only": _FROST_STONE, "snow": ({"soil_light", "soil_mid", "soil", "water_light"}, set(), 2)},
     # The notice board: snow lies along the barge boards of its little roof.
+    "sales_cart": {"frost_only": _FROST_STONE, "snow": ({"water_light", "foam", "paint_teal"}, set(), 5)},
     "notice_board": {"frost_only": _FROST_STONE, "snow": ({"bare_light", "bare", "mud_dark"}, set(), 3)},
     # The market stall: snow lies on the awning and the top of the counter.
     "market_stall": {"frost_only": _FROST_STONE, "snow": ({"ember", "red_light", "cream", "lime", "soil_light"}, set(), 4)},

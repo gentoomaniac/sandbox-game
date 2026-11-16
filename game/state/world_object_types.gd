@@ -960,11 +960,10 @@ static func _with_crops(other_types: Dictionary) -> Dictionary:
 
 
 static func _build_types() -> Dictionary:
-	var types := _with_crops(
-		_OTHER_TYPES.merged(WorldObjectPlants.TYPES).merged(WorldObjectWays.TYPES).merged(
-			WorldObjectVillage.TYPES
-		)
-	)
+	var added := WorldObjectPlants.TYPES.merged(WorldObjectWays.TYPES)
+	added.merge(WorldObjectVillage.TYPES)
+	added.merge(WorldObjectStall.TYPES)
+	var types := _with_crops(_OTHER_TYPES.merged(added))
 	types.merge(WorldObjectSnags.types_from(types))
 	types[REEDS] = types[REEDS].merged(CropRules.default_rules().reeds())
 	var all_types := _with_trunks(types)

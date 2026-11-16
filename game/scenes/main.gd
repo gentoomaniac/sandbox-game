@@ -294,6 +294,9 @@ func _connect_state_and_views() -> void:
 	_interact.quest_voice = quest_flow.voice
 	add_child(FriendshipFlow.new(_state, _notifications, _view.entities))
 	add_child(BarterFlow.new(_state, _chat_screen, _interact.open_chat))
+	var stall_flow := StallFlow.new()
+	add_child(stall_flow)
+	_interact.cart_screen = stall_flow.cart_screen
 	_npc_views.show_npcs(_state.npcs, _view.entities, _state.world)
 	_interior_npc_views.show_npcs(_state.npcs, _interior_view.entities)
 	# Chats longer than the setting (a saved game's, or one lowered in the menu, which is

@@ -79,3 +79,4 @@ half_dead_willow 2
 half_dead_pine 2
 half_dead_spruce 2
 notice_board 1
+sales_cart 1
