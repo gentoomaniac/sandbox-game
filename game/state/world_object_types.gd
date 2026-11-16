@@ -200,10 +200,7 @@ const MAX_FOOTPRINT := Vector2i(7, 2)
 
 ## The atlas row of the reeds: after the last trunk.
 const REEDS_ROW := 24
-## The atlas row of the chest, after the dead tree's stump.
-const _CHEST_ROW := 26
 const _WORKBENCH_ROW := 41
-const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
 const _OVEN_ROW := 44
 const _EWER_ROW := 45
@@ -250,74 +247,6 @@ const _OTHER_TYPES := {
 		"interior_sprite": "res://assets/interior/fireplace.png",
 		"placeable_in": OUTDOORS,
 	},
-	SLEEPING_BAG:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": false,
-		"harvest_level": 0,
-		"atlas_row": 3,
-		"variants": 1,
-		"object_cover": "res://assets/bedroll_cover.png",
-		"bed": Vector2i.UP,
-		"interior_sprite": "res://assets/interior/sleeping_bag.png",
-		"placeable_in": OUTDOORS,
-	},
-	SMALL_BED:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/bed.png",
-		"interior_cover": "res://assets/interior/bed_cover.png",
-		"bed": Vector2i.UP,
-	},
-	TABLE:
-	{
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/table.png",
-	},
-	# The woodworker makes stools too, so a stool can be taken down; it only stands inside.
-	STOOL:
-	{
-		"hp": 1,
-		"tool": &"axe",
-		"drops": {&"stool": 1},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/stool.png",
-		"placeable_in": INSIDE,
-	},
-	CHEST:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"chest": 1},
-		"storage_slots": 15,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _CHEST_ROW,
-		"variants": 1,
-		"interior_sprite": "res://assets/interior/chest.png",
-		"placeable_in": ANYWHERE,
-	},
-	CARVED_CHEST:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"carved_chest": 1},
-		"storage_slots": 20,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _CARVED_CHEST_ROW,
-		"variants": 1,
-		"interior_sprite": "res://assets/interior/carved_chest.png",
-		"placeable_in": ANYWHERE,
-	},
 	# Its interior picture is the ghost while it is placed: it stands only outdoors.
 	KILN:
 	{
@@ -331,18 +260,6 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/kiln.png",
 		"placeable_in": OUTDOORS,
-	},
-	CUPBOARD:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"cupboard": 1},
-		"storage_slots": 25,
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"interior_sprite": "res://assets/interior/cupboard.png",
-		"placeable_in": INSIDE,
 	},
 	OVEN:
 	{
@@ -574,97 +491,6 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/workbench.png",
 		"placeable_in": ANYWHERE,
-	},
-	HEARTH:
-	{
-		"footprint": Vector2i(2, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/hearth.png",
-		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.2, "radius_tiles": 5.0},
-	},
-	SLEEPING_MAT:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/sleeping_mat.png",
-		"interior_cover": "res://assets/interior/sleeping_mat_cover.png",
-		"bed": Vector2i.UP,
-	},
-	BOX_BED:
-	{
-		"footprint": Vector2i(2, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/box_bed.png",
-		"interior_cover": "res://assets/interior/box_bed_cover.png",
-		"bed": Vector2i.LEFT,
-	},
-	BENCH:
-	{
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/bench.png",
-	},
-	STALL_PARTITION:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/stall_partition.png",
-	},
-	HAY_PILE:
-	{
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/hay_pile.png",
-	},
-	BARREL:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/barrel.png",
-	},
-	SACKS:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/sacks.png",
-	},
-	CRATE:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/crate.png",
-	},
-	# A bench against the back wall: its backboard stands on the wall above its footprint.
-	WALL_BENCH:
-	{
-		"footprint": Vector2i(2, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/wall_bench.png",
-	},
-	# Wall pieces: they stand on the wall tiles of the back wall face.
-	WINDOW:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/window.png",
-	},
-	PLATE_RACK:
-	{
-		"footprint": Vector2i(1, 2),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"interior_sprite": "res://assets/interior/plate_rack.png",
 	},
 }
 
