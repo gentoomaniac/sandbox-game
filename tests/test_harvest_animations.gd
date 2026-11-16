@@ -39,7 +39,7 @@ func _fell_oak_from(side: Vector2i) -> void:
 
 
 func _trunk() -> WorldObject:
-	return _view._falling_trees[0].trunk
+	return _view._tree_falls.falls[0].trunk
 
 
 # --- The fall ---
@@ -48,15 +48,15 @@ func _trunk() -> WorldObject:
 func test_a_tree_falls_towards_its_trunk_away_from_the_player() -> void:
 	_show_views()
 	_fell_oak_from(Vector2i.LEFT)
-	assert_eq(_view._falling_trees.size(), 1)
-	assert_eq(_view._falling_trees[0].direction, 1)
+	assert_eq(_view._tree_falls.falls.size(), 1)
+	assert_eq(_view._tree_falls.falls[0].direction, 1)
 	assert_gt(_trunk().pos.x, _tile.x, "the trunk lies on the right")
 
 
 func test_a_tree_felled_from_the_right_falls_left() -> void:
 	_show_views()
 	_fell_oak_from(Vector2i.RIGHT)
-	assert_eq(_view._falling_trees[0].direction, -1)
+	assert_eq(_view._tree_falls.falls[0].direction, -1)
 	assert_lt(_trunk().pos.x, _tile.x, "the trunk lies on the left")
 
 
@@ -72,13 +72,13 @@ func test_the_trunk_is_not_drawn_until_the_fall_ends() -> void:
 	_fell_oak_from(Vector2i.LEFT)
 	var trunk_tile := _trunk().pos
 	assert_eq(_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "hidden")
-	_view._update_falling_trees(FallingTree.FALL_SECONDS)
+	_view._tree_falls.advance(FallingTree.FALL_SECONDS)
 	assert_eq(
 		_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "hidden while it settles"
 	)
-	_view._update_falling_trees(FallingTree.SETTLE_SECONDS)
+	_view._tree_falls.advance(FallingTree.SETTLE_SECONDS)
 	assert_ne(_view._object_view.cells.get_cell_source_id(trunk_tile), -1, "drawn")
-	assert_true(_view._falling_trees.is_empty())
+	assert_true(_view._tree_falls.falls.is_empty())
 
 
 func test_the_tree_accelerates_and_ends_lying_down() -> void:
@@ -100,9 +100,9 @@ func test_landing_bursts_leaves_shakes_the_stump_and_says_so() -> void:
 	_view.tree_landed.connect(landed.append)
 	_fell_oak_from(Vector2i.LEFT)
 	assert_eq(_view._hit_particles.particle_count(), 0, "nothing flies off before it lands")
-	_view._update_falling_trees(FallingTree.FALL_SECONDS - 0.01)
+	_view._tree_falls.advance(FallingTree.FALL_SECONDS - 0.01)
 	assert_true(landed.is_empty())
-	_view._update_falling_trees(0.02)
+	_view._tree_falls.advance(0.02)
 	assert_eq(landed.size(), 1)
 	assert_eq(landed[0].type, WorldObjectTypes.OAK)
 	assert_gt(_view._hit_particles.particle_count(), 0)
@@ -112,12 +112,12 @@ func test_landing_bursts_leaves_shakes_the_stump_and_says_so() -> void:
 func test_unloading_the_chunk_cancels_the_fall() -> void:
 	_show_views()
 	_fell_oak_from(Vector2i.LEFT)
-	var fall: FallingTree = _view._falling_trees[0]
+	var fall: FallingTree = _view._tree_falls.falls[0]
 	_residency.unload_chunk(Chunk.world_to_chunk(_tile))
-	assert_true(_view._falling_trees.is_empty())
+	assert_true(_view._tree_falls.falls.is_empty())
 	assert_true(_view._object_view._hidden_tiles.is_empty())
 	assert_true(fall.is_queued_for_deletion())
-	_view._update_falling_trees(1.0)
+	_view._tree_falls.advance(1.0)
 
 
 # --- The hops ---

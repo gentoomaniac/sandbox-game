@@ -2,27 +2,25 @@ class_name WorldView
 extends Node2D
 ## Renders a World, drawing the chunks that a ChunkResidency loads and erasing those it drops.
 ##
-## One TileMapLayer per terrain layer for the whole world (not per chunk), drawn as a dual
-## grid (see TerrainTileset): cell (x, y) of every layer is shifted half a tile up and left,
-## so its corners sit on world tiles (x - 1, y - 1) to (x, y). A chunk owns the cells whose
-## bottom-right tile is its own, so loading or unloading it fills or erases those cells,
-## with no nodes to create or free. On top, the DecorationView on the plain tile grid
-## scatters flowers, pebbles and the like. Above that, the damp or wet look of tilled soil (see
-## SoilWetness), and an objects layer on the same grid that draws the world's objects. It sits
-## in the y-sorted `entities` node, where the player (and later creatures) stand among them, and
-## keeps no decoration under an object.
-## Objects that shine get an ObjectLight. Plants, water, fires and lily pads move in the wind
-## by the materials of `ambient_motion`, and the rain splashes on the ground under the objects.
-##
-## A tree that is felled topples as a FallingTree sprite while the state already has its stump
-## and its trunk; the trunk's cell stays erased until the fall ends.
-## The buildings are BuildingViews, sprites in that node too, so they sort with the objects and
-## the player.
+## It is the composition and the invalidation boundary: it follows the signals of the world and
+## the residency, tells the presenters what changed, and spends the one budget of a frame (the
+## ground's chunk drawing first, the look refresh only in frames without drawing; `is_settled`
+## says when both are done). The presenters draw:
+## - TerrainChunkView: the terrain layers, a dual grid for the whole world (see TerrainTileset),
+##   the chunk draw and refresh queues, and the CoverMap.
+## - DecorationView, on the plain tile grid: flowers, pebbles and the like, none under an object.
+## - SoilWetness: the damp or wet look of tilled soil, over the soil terrain.
+## - WorldObjectView: the world's objects, in the y-sorted `entities` node, where the player (and
+##   the creatures) stand among them, with their lights and the see-through stand-in sprites.
+## - TreeFallEffects: a felled tree topples as a FallingTree sprite while the state already has
+##   its stump and its trunk.
+## - BuildingViews: the buildings, sprites in `entities` too, so they sort with the objects and
+##   the player.
+## Plants, water, fires and lily pads move in the wind by the materials of `ambient_motion`, and
+## the rain splashes on the ground under the objects.
 ##
 ## See-through: while a tree or building hides the player (see Occlusion) it fades inside a
-## circle around the player. A building is a SeeThroughSprite already; a tree is a cell of the
-## objects layer, which can't fade, so while it occludes (and while it fades back) its cell
-## is erased and a SeeThroughSprite at the same place in the y-sorted node draws it instead.
+## circle around the player (see WorldObjectView and BuildingViews).
 
 ## A tree was felled and starts to fall, for `seconds` until it lands.
 signal tree_felled(tile: Vector2i, seconds: float)
@@ -80,7 +78,7 @@ var _ground_look: GroundLook
 ## The day that the decorations, plants and houses are drawn for.
 var _look_day := -1
 var _conditions: SeasonBlend.Conditions
-var _falling_trees: Array[FallingTree] = []
+var _tree_falls: TreeFallEffects
 var _buildings := BuildingViews.new(entities)
 
 
@@ -88,6 +86,9 @@ func _init() -> void:
 	_ground_look = GroundLook.new(ambient_motion.decoration_sway, ambient_motion.ford)
 	_terrain = TerrainChunkView.new(ambient_motion, _ground_look)
 	_object_view = WorldObjectView.new(entities, ambient_motion, _ground_look)
+	_tree_falls = TreeFallEffects.new(entities, _object_view, _hit_particles)
+	_tree_falls.tree_felled.connect(tree_felled.emit)
+	_tree_falls.tree_landed.connect(tree_landed.emit)
 	decorations = DecorationView.new(_terrain.tileset)
 	decorations.show_ground_look(_ground_look)
 
@@ -108,6 +109,7 @@ func _ready() -> void:
 	entities.y_sort_enabled = true
 	add_child(entities)
 	add_child(_object_view)
+	add_child(_tree_falls)
 	add_child(_hit_particles)
 	add_child(_falling_leaves)
 	add_child(_buildings)
@@ -138,6 +140,7 @@ func show_world(residency: ChunkResidency) -> void:
 	# The view was made before Main chose the art set.
 	show_art_set()
 	_object_view.show_world(world)
+	_tree_falls.show_world(world)
 	_way_edges.show_world(world, _object_view.tile_look)
 	world.objects_changed.connect(_on_objects_changed)
 	world.tile_changed.connect(redraw_tile)
@@ -270,7 +273,7 @@ func _process(delta: float) -> void:
 	is_settled = is_drawn and not _terrain.has_refresh_pending()
 	_update_see_through(delta)
 	_object_view.sway_scarecrows()
-	_update_falling_trees(delta)
+	_tree_falls.advance(delta)
 	_shed_leaves(delta)
 
 
@@ -319,7 +322,7 @@ func _on_clay_spot_changed(world_pos: Vector2i) -> void:
 ## topple instead, and the stump shakes when it lands.
 func _on_object_hit(object: WorldObject) -> void:
 	if world.is_gone(object) and object.type_data().has("leaves"):
-		_start_fall(object)
+		_tree_falls.start(object, _hit_effect(object), player_feet.x)
 		return
 	_hit_particles.emit(_hit_effect(object), _hit_origin(object))
 	var standing := world.object_at(object.pos)
@@ -361,9 +364,7 @@ func _on_chunk_unloaded(chunk: Chunk) -> void:
 	_terrain.forget_chunk(chunk)
 	_footprint_view.forget_chunk(chunk.coords)
 	_way_edges.forget_chunk(chunk.coords)
-	for fall in _falling_trees.duplicate():
-		if Chunk.world_to_chunk(fall.tree.pos) == chunk.coords:
-			_end_fall(fall)
+	_tree_falls.end_falls_in(chunk.coords)
 
 
 ## Whether snow lies on most of a tile now (what hit effects ask).
@@ -381,41 +382,3 @@ func is_snow_drawn_at(position: Vector2) -> bool:
 func snow_checker_for(snow_cover: float) -> Callable:
 	return func(world_pos: Vector2i) -> bool:
 		return _terrain.cover_map.ground_cover.is_snowed_with(world_pos, snow_cover, 0.0)
-
-
-## Starts the fall of a tree that was just replaced by its stump. Its trunk is already in the
-## world; it stays hidden until the tree has landed.
-func _start_fall(tree: WorldObject) -> void:
-	var fall := FallingTree.beside_trunk_of(tree, world, player_feet.x)
-	fall.impact_effect = _hit_effect(tree)
-	_object_view.place_sprite(fall, tree)
-	fall.landed.connect(_on_tree_landed.bind(fall))
-	fall.finished.connect(_end_fall.bind(fall))
-	entities.add_child(fall)
-	_falling_trees.append(fall)
-	if fall.trunk != null:
-		_object_view.hide_object(fall.trunk.pos)
-	tree_felled.emit(tree.pos, FallingTree.FALL_SECONDS)
-
-
-func _update_falling_trees(delta: float) -> void:
-	if _falling_trees.is_empty():
-		return
-	for fall in _falling_trees.duplicate():
-		fall.advance(delta)
-
-
-func _on_tree_landed(fall: FallingTree) -> void:
-	_hit_particles.emit(fall.impact_effect, fall.impact_point())
-	var stump := world.object_at(fall.tree.pos)
-	if stump != null:
-		_object_view.shake(stump)
-	tree_landed.emit(fall.tree)
-
-
-## Takes the tree's sprite away and draws its trunk. Also how a fall ends when its chunk unloads.
-func _end_fall(fall: FallingTree) -> void:
-	_falling_trees.erase(fall)
-	fall.queue_free()
-	if fall.trunk != null:
-		_object_view.reveal(fall.trunk.pos)

@@ -200,8 +200,9 @@ Warft and an Ewer here and there.
   it. The objects are `WorldObjectView`: the object cells in the y-sorted `entities` node, the
   choice of tile or sprite and of the atlas state (the connection mask of a line, the scarecrow in
   the wind, a crop's own sheet, a dyke's profile and flood tear), the light of what shines and the
-  stand-in sprites that fade while an object hides the player. WorldView also owns the falling
-  trees, and two small views, `BuildingViews` (building sprites, window lights, snowy roofs) and
+  stand-in sprites that fade while an object hides the player. `TreeFallEffects` has the felled
+  trees topple (the trunk's tile stays hidden in `WorldObjectView` until the fall ends, and a fall
+  ends with its chunk). WorldView also owns two small views, `BuildingViews` (building sprites, window lights, snowy roofs) and
   `DecorationView` (flowers, pebbles, clay hints; the wildlife asks it where flowers bloom). The meadow flowers are sown per tile when a chunk is drawn, by `FlowerRules`
   (`data/flowers.cfg`) from two noises and the tile's habitat, and bloom by the curves of
   `Vegetation`; nothing about them is saved. The ground is drawn in the summer look only, from
