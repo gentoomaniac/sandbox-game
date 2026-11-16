@@ -16,7 +16,6 @@ var storage_screen: StorageScreen
 var fire_screen: CampfireScreen
 var crafting_screen: CraftingScreen
 var board_screen: NoticeBoardScreen
-var cart_screen: CartScreen
 var quest_voice: QuestVoice
 
 
@@ -44,11 +43,6 @@ func register_kinds(interactions: InteractionRegistry) -> void:
 		Interaction.Kind.OPEN_CHEST,
 		func(chest: WorldObject) -> String: return "Open %s" % _name_of(chest),
 		func(chest: WorldObject) -> void: storage_screen.open_chest(chest, state)
-	)
-	interactions.register(
-		Interaction.Kind.OPEN_CART,
-		"Tend the cart",
-		func(cart: WorldObject) -> void: cart_screen.open_cart(cart, state.player)
 	)
 	interactions.register(
 		Interaction.Kind.READ_BOARD,

@@ -50,6 +50,13 @@ Warft and an Ewer here and there.
   `UseNotes` (a use of the held item and its note), `ScreenKeys` and
   `HotbarKeys` (the window and hotbar keys) and `GameClockTicker` (real time to game minutes,
   F2).
+  A feature that brings a screen of its own is a `Node` flow (`StallFlow` is the model, with
+  `QuestFlow` and `BarterFlow`): it takes what it needs in `_init`, adds its screens as children
+  and registers the words and the opening of its `Interaction.Kind` in the `InteractionRegistry`.
+  Main lists the flows in `_connect_state_and_views`, one line each, in the order their screens
+  are layered and take input; nothing is discovered. To add a screen like the sales cart: the
+  domain's kind and its place in `Interaction.choice_at` (state), the screen, the flow, and one
+  line in that list.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
   weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
