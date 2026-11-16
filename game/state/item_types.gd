@@ -156,14 +156,6 @@ const TOPICS_DIR := "res://game/state/items"
 const _OWN_SOURCE := "res://game/state/item_types.gd"
 
 const _OTHER_TYPES := {
-	GRAVE_MARKER:
-	{
-		"name": "Grave marker",
-		"description": "An oak cross for a grave. It stands outdoors.",
-		"weight": 10.0,
-		"stack_limit": 5,
-		"places": WorldObjectTypes.GRAVE,
-	},
 	JETTY:
 	{
 		"name": "Jetty",
@@ -196,54 +188,6 @@ const _OTHER_TYPES := {
 		"weight": 2.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.EEL_TRAPS,
-	},
-	DRAW_WELL:
-	{
-		"name": "Draw well",
-		"description": "A fieldstone well with a sweep and a bucket. It stands outdoors.",
-		"weight": 40.0,
-		"stack_limit": 1,
-		"places": WorldObjectTypes.DRAW_WELL,
-	},
-	NOTICE_BOARD:
-	{
-		"name": "Notice board",
-		"description": "A board under a little roof for the village's notices. It stands outdoors.",
-		"weight": 12.0,
-		"stack_limit": 1,
-		"places": WorldObjectTypes.NOTICE_BOARD,
-	},
-	TROUGH:
-	{
-		"name": "Trough",
-		"description": "An oak plank trough for the animals' water. It stands outdoors.",
-		"weight": 25.0,
-		"stack_limit": 2,
-		"places": WorldObjectTypes.TROUGH,
-	},
-	HAY_RACK:
-	{
-		"name": "Hay rack",
-		"description": "Oak posts with slats to keep hay for the animals. It stands outdoors.",
-		"weight": 25.0,
-		"stack_limit": 2,
-		"places": WorldObjectTypes.HAY_RACK,
-	},
-	FEED_TROUGH:
-	{
-		"name": "Feeding trough",
-		"description": "An oak plank trough for the animals' feed. It stands outdoors.",
-		"weight": 25.0,
-		"stack_limit": 2,
-		"places": WorldObjectTypes.FEED_TROUGH,
-	},
-	PEN_FENCE:
-	{
-		"name": "Pen fence",
-		"description": "Split oak rails on a post, a piece of fence for a pig pen.",
-		"weight": 4.0,
-		"stack_limit": 20,
-		"places": WorldObjectTypes.PEN_FENCE,
 	},
 	WATTLE_FENCE:
 	{
@@ -301,31 +245,6 @@ const _OTHER_TYPES := {
 		"weight": 2.0,
 		"stack_limit": 10,
 		"places": WorldObjectTypes.FERN_BUSH,
-	},
-	PEN_GATE:
-	{
-		"name": "Pen gate",
-		"description": "A gate for a pig pen. Shut, it lets you through and keeps the animals in.",
-		"weight": 10.0,
-		"stack_limit": 4,
-		"places": WorldObjectTypes.PEN_GATE,
-	},
-	PIG_SHELTER:
-	{
-		"name": "Pig shelter",
-		"description": "A lean-to of boards under reed thatch for the pigs. It stands outdoors.",
-		"weight": 40.0,
-		"stack_limit": 1,
-		"places": WorldObjectTypes.PIG_SHELTER,
-	},
-	SCARECROW:
-	{
-		"name": "Scarecrow",
-		"description":
-		"Stakes dressed in straw to keep the crows off the crops. They get used to it.",
-		"weight": 6.0,
-		"stack_limit": 5,
-		"places": WorldObjectTypes.SCARECROW,
 	},
 	BONE:
 	{
