@@ -99,6 +99,7 @@ assets/ui/slot.png and slot_selected.png (20x20) are drawn in items.py for the U
 import alder
 import animals
 import atlas
+import beds
 import beech
 import birch
 import birds
@@ -120,6 +121,7 @@ import fire
 import flowers
 import footprints
 import friendship
+import furnishings
 import houses
 import interior
 import items
@@ -345,11 +347,11 @@ def write_character():
 
 
 def write_interior():
-    furniture = interior.furniture()
+    furniture = furnishings.furniture()
     save([interior.atlas_tiles(furniture)], "interior.png", GAME_TILE)
     for name, (picture, _footprint) in furniture.items():
         save_picture(picture, f"interior/{name}.png")
-    for name, picture in interior.covers(furniture).items():
+    for name, picture in beds.covers(furniture).items():
         save_picture(picture, f"interior/{name}.png")
     # The stations the player places are no furniture of the maps: they have no marker tile.
     for name, picture in crafts.stations().items():
