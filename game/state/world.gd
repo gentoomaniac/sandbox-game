@@ -56,6 +56,8 @@ var elevation: Elevation
 var dykes: DykeProfile
 ## The storm surge that is coming or running.
 var surge := SurgeEvent.new()
+## The water the surge left on the land.
+var flood := FloodState.new()
 ## The moisture of the tilled soil (see `moisture_at`).
 var soil: SoilMoisture
 ## The tilled soil that nobody tends, and grows over (see `settle_fallow_soil`).
@@ -538,7 +540,8 @@ func _emit_objects_changed(object: WorldObject) -> void:
 			objects_changed.emit(tile)
 
 
-## Whether a tile is tidal mud under the water of the tide right now.
+## Whether a tile is tidal mud under the water of the tide right now, or land under water too deep
+## to walk on (see FloodState).
 func is_flooded(world_pos: Vector2i) -> bool:
 	return is_flooded_at(world_pos, clock.total_minutes())
 
@@ -548,8 +551,10 @@ func is_flooded_at(world_pos: Vector2i, minutes: int) -> bool:
 	var tile := tile_at(world_pos)
 	return (
 		tile != null
-		and tile.terrain == Tile.Terrain.MUD
-		and Tide.floods(world_pos, Tide.level(minutes))
+		and (
+			flood.is_deep_at(world_pos)
+			or (tile.terrain == Tile.Terrain.MUD and Tide.floods(world_pos, Tide.level(minutes)))
+		)
 	)
 
 

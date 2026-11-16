@@ -59,3 +59,6 @@
   - **Old worlds:** saves from before the coast (version 17 and older) are no longer read (see
     [Saving](../tech/saving.md)); the upgrade that let the coast give way around an old home went
     with them.
+- **The storm surge** ([#103](https://github.com/gentoomaniac/sandbox-game/issues/103)): in autumn
+  storms the sea runs over the dykes that are too low and floods the land behind them; see
+  [storm-surge.md](storm-surge.md).

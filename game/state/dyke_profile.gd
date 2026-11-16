@@ -65,6 +65,13 @@ func change(world: World, dyke: WorldObject, height: float, strength: float) -> 
 	world.change_object(dyke)
 
 
+## Gives a dyke object of the world the height and strength the generator laid there again.
+func restore(world: World, dyke: WorldObject) -> void:
+	dyke.state.erase(HEIGHT_KEY)
+	dyke.state.erase(STRENGTH_KEY)
+	world.change_object(dyke)
+
+
 ## The height of the dyke the generator laid at a tile.
 func height_at(tile: Vector2i) -> float:
 	var kind := "sea" if is_sea_dyke(tile) else "river"

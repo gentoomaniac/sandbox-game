@@ -915,7 +915,7 @@ func _start_simulation() -> void:
 	simulation.add_system(GossipSpread.new(npcs, deeds))
 	simulation.add_system(LanternUpkeep.new(_the_player))
 	simulation.add_system(CampfireUpkeep.new(world))
-	simulation.add_system(SurgeUpkeep.new(world.surge, SurgeRoll.new(world.world_seed, weather)))
+	simulation.add_system(SurgeUpkeep.new(world, SurgeRoll.new(world.world_seed, weather)))
 
 
 ## The tiles where a sapling does not grow into a tree, for it would be under the player's feet.

@@ -184,6 +184,10 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
 4. The roll (season, storm, high water, level) and the `surge` command; the log says one is
    coming, nothing floods. **Built** (`SurgeRoll`, `SurgeUpkeep`, `SurgeEvent`, `SurgeFlow`).
 5. `FloodState`: breach rule, fill with budget and volume, drain; the flooded rules in `World`.
+   **Built.** The sea meets the sea dykes of the chunks that are loaded when it rises (and of
+   those loaded while it holds); a stretch far from the player is not flooded. The fill takes
+   about 6 microseconds a tile: a step of 300 tiles measured under 2 ms, a whole flood of 5400
+   tiles 30 ms.
 6. The overlay: `flood.gdshader`, the chunk masks; the pictures.
 7. Saving the surge and the wet tiles (a second version bump).
 8. The harm: crops, salt and its hover, wet ground after, items washing away.

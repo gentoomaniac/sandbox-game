@@ -36,6 +36,16 @@ const REQUIRED_KEYS := {
 		"dyke_stretch_size",
 		"low_below",
 		"high_above",
+		"breach_height",
+		"damage_margin",
+		"damage_height",
+		"repair_days",
+		"fill_tiles_per_second",
+		"fill_tiles_per_step",
+		"volume_per_breach",
+		"stay_hours",
+		"stay_spread_hours",
+		"wade_depth",
 	],
 }
 static var _default: LandscapeRules

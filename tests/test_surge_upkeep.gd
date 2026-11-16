@@ -17,7 +17,7 @@ func before_each() -> void:
 		func(level: float, _start: int) -> void: _comings.append(level)
 	)
 	_simulation = Simulation.new(_state.clock)
-	_simulation.add_system(SurgeUpkeep.new(_state.world.surge, SurgeRoll.new(SEED, _weather)))
+	_simulation.add_system(SurgeUpkeep.new(_state.world, SurgeRoll.new(SEED, _weather)))
 	_state.clock.day = AUTUMN_DAY
 	_comings.clear()
 
@@ -73,3 +73,34 @@ func test_the_surge_command_starts_shows_and_ends_one() -> void:
 	assert_eq(console.run("surge off"), ["No surge"] as Array[String])
 	assert_false(_state.world.surge.has_surge())
 	assert_eq(console.run("surge x"), ["Usage: surge [metres|off]"] as Array[String])
+
+
+func _coast_simulation(world: World) -> Simulation:
+	var simulation := Simulation.new(world.clock)
+	var roll := SurgeRoll.new(CoastWorld.SEED, StormyWeather.new(CoastWorld.SEED))
+	simulation.add_system(SurgeUpkeep.new(world, roll))
+	return simulation
+
+
+func test_the_sea_runs_over_the_dykes_when_the_surge_starts() -> void:
+	var world := CoastWorld.make()
+	var simulation := _coast_simulation(world)
+	world.surge.start_now(3.4, world.clock.total_minutes(), 180)
+	simulation.advance(1)
+	assert_true(world.flood.is_active())
+	assert_eq(world.flood.level, 3.4)
+	assert_eq(world.flood.wet_count(), 0, "the frames fill it a little at a time")
+	world.flood.step_tiles(world, 50)
+	assert_eq(world.flood.wet_count(), 50)
+
+
+func test_a_skip_of_time_fills_the_flood_at_once_and_drains_it_when_its_stay_is_over() -> void:
+	var world := CoastWorld.make()
+	var simulation := _coast_simulation(world)
+	world.surge.start_now(3.4, world.clock.total_minutes(), 180)
+	simulation.skip(10 * GameClock.MINUTES_PER_HOUR)
+	assert_gt(world.flood.wet_count(), 100)
+	assert_eq(world.flood.phase, FloodState.Phase.STANDING)
+	simulation.skip(2 * GameClock.MINUTES_PER_DAY)
+	assert_eq(world.flood.wet_count(), 0)
+	assert_eq(world.flood.phase, FloodState.Phase.IDLE)
