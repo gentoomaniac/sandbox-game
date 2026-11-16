@@ -32,7 +32,7 @@ func test_a_crop_with_one_item_left_to_give_has_no_yield_to_eat() -> void:
 	assert_false(CropLife.has_yield_to_eat(_crop(&"cabbage")), "a yield of 1")
 
 
-func test_what_was_eaten_survives_the_save() -> void:
+func test_what_was_eaten_survives_the_codec() -> void:
 	var crop := _crop(&"wheat")
 	CropLife.eat(crop, 1)
 	var loaded := WorldObject.from_dict(crop.to_dict())
@@ -52,7 +52,7 @@ func test_the_console_says_what_was_eaten() -> void:
 	assert_string_contains(CropLife.describe(crop)[0], "2 eaten by crows")
 
 
-func test_what_was_eaten_survives_a_whole_game_saved_checked_and_loaded() -> void:
+func test_what_was_eaten_survives_the_save_and_load_of_a_whole_game() -> void:
 	var state := GameState.new_game(SEED)
 	var pos := state.player.tile() + Vector2i(3, 0)
 	state.world.remove_object(pos)
@@ -60,10 +60,7 @@ func test_what_was_eaten_survives_a_whole_game_saved_checked_and_loaded() -> voi
 	var crop := WorldObject.new(&"wheat", pos)
 	CropLife.eat(crop, 1)
 	state.world.add_object(crop)
-	var game: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))
-	var validator := SaveValidator.check(game)
-	assert_eq(validator.problems, [] as Array[String])
-	var loaded := GameState.from_dict(game)
+	var loaded := RealLoad.of(self, state)
 	# A loaded world's chunks are not generated yet: the crop is among the edits.
 	var crops := loaded.world.crops()
 	assert_eq(crops.size(), 1)

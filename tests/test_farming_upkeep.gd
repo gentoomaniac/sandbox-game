@@ -123,7 +123,7 @@ func test_the_moisture_that_is_saved_is_the_moisture_of_the_save() -> void:
 	_simulation.advance(6 * 60)
 	var moisture := _state.world.moisture_at(_tile)
 	assert_lt(moisture, 1.0)
-	var restored := GameState.from_dict(_state.to_dict())
+	var restored := RealLoad.of(self, _state)
 	assert_almost_eq(restored.world.moisture_at(_tile), moisture, 0.0001)
 
 
