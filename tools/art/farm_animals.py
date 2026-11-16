@@ -9,8 +9,9 @@ adds its module and a line to FAMILIES, and generate.py stays as it is.
 import livestock
 import livestock_cattle
 import livestock_pigs
+import livestock_sheep
 
-FAMILIES = (livestock, livestock_cattle, livestock_pigs)
+FAMILIES = (livestock, livestock_cattle, livestock_pigs, livestock_sheep)
 
 
 def sheets():

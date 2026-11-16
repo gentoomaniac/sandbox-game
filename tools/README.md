@@ -246,6 +246,7 @@ by topic. Where is a thing drawn?
 | `livestock.py` | The drawing all farm animals share, and for now their species. One sheet per farm animal and look (cows, pigs, sheep, hens, tame rabbits, dogs, cats, horses), drawn at 32 px per tile with forms.py: the sheep, dogs, cats and horses share `quadruped_frame` (body and head as shaded polygons, legs through their joints set for each step, the face and marks by hand), the cow and the pig are drawn by hand as maps of letters laid over each other for a pose (`cow_frame`, `pig_frame`), the hen and the rabbit are drawn whole per pose. A horse also has a saddled sheet and the ridden horse's sheets (side, front and back, walking and trotting). |
 | `livestock_cattle.py` | The cow's sheets, drawn by hand as maps of letters (`cow_frame`). |
 | `livestock_pigs.py` | The pig's sheets, drawn by hand as maps of letters (`pig_frame`). |
+| `livestock_sheep.py` | The sheep's sheets (its coat, tail and head), put together by `quadruped_frame`. |
 | `ui.py` | The pixel font, the panel frame and the button frames. |
 
 `generate.py` imports all the others and none of them imports it; most import `canvas.py`, and
