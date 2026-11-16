@@ -56,10 +56,13 @@ func listen(
 	add_child(_toll_timer)
 	build_mode.placement_refused.connect(func() -> void: _audio.play(&"denied"))
 	state.player.inventory.changed.connect(_on_inventory_changed)
+	# A screen that a debug flag opened after its flow had it watched is not heard opening.
+	for index in _panel_checks.size():
+		_panel_was_open[index] = _panel_checks[index].call()
 
 
 ## Plays ui_open and ui_close (or the events given) as a panel (the menu, a screen) opens and
-## closes. `is_open` says whether it is open now.
+## closes, from `listen` on. `is_open` says whether it is open now.
 func watch_panel(is_open: Callable, open_event := &"ui_open", close_event := &"ui_close") -> void:
 	_panel_checks.append(is_open)
 	_panel_was_open.append(is_open.call())

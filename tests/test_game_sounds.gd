@@ -31,6 +31,7 @@ func before_each() -> void:
 	add_child_autofree(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
 	_events.clear()
+	_is_panel_open = false
 
 
 ## Holds the item without the sound of selecting its hotbar slot.
@@ -161,7 +162,7 @@ func test_a_new_hotbar_slot_clicks_but_other_changes_do_not() -> void:
 	assert_eq(_events, [&"hotbar_select"], "the same slot again is no change")
 
 
-func test_a_panel_opening_and_closing_is_heard() -> void:
+func test_a_panel_opening_and_closing_is_heard_but_not_one_open_before_listening() -> void:
 	_sounds.watch_panel(func() -> bool: return _is_panel_open)
 	simulate(_sounds, 1, 0.1)
 	assert_eq(_events, [])
@@ -170,6 +171,14 @@ func test_a_panel_opening_and_closing_is_heard() -> void:
 	_is_panel_open = false
 	simulate(_sounds, 2, 0.1)
 	assert_eq(_events, [&"ui_open", &"ui_close"])
+
+	_events.clear()
+	var late_sounds: GameSounds = add_child_autofree(GameSounds.new())
+	_is_panel_open = true
+	late_sounds.watch_panel(func() -> bool: return _is_panel_open)
+	late_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
+	simulate(late_sounds, 2, 0.1)
+	assert_eq(_events, [], "a screen a debug flag opened before the sounds listened is silent")
 
 
 func test_the_storage_screen_squeaks_open_and_thumps_shut() -> void:

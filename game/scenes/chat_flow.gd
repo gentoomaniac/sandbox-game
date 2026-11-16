@@ -1,9 +1,9 @@
 class_name ChatFlow
 extends Node
 ## What the game scene shows of the talk with villagers: the chat window with the dialogue that
-## speaks for them, and the notices of the language model's state. Opening a chat is InteractFlow's
-## (E, the console and the debug flags use it). Main creates it and gives `dialogue` to the features
-## that make the villagers speak.
+## speaks for them, the notices of the language model's state and the sounds of the window. Opening
+## a chat is InteractFlow's (E, the console and the debug flags use it). Main creates it and gives
+## `dialogue` to the features that make the villagers speak.
 
 var screen := ChatScreen.new()
 var dialogue: NpcDialogue
@@ -23,3 +23,4 @@ func _init(
 	add_child(screen)
 	screen.art_set_switch_pressed.connect(toggle_art_set)
 	sounds.click_on_press_in(screen)
+	sounds.watch_panel(screen.is_open)

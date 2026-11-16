@@ -1,8 +1,8 @@
 class_name StorageFlow
 extends Node
 ## What the game scene shows of storage: the window of a chest, which E opens on the chest, and the
-## click of its buttons. Main creates it with the game it shows; it registers the chest's words and
-## opening itself.
+## sounds of its buttons and opening. Main creates it with the game it shows; it registers the
+## chest's words and opening itself.
 
 var screen: StorageScreen
 
@@ -14,6 +14,7 @@ func _init(
 	add_child(screen)
 	screen.drop_requested.connect(state.drop_from_inventory)
 	sounds.click_on_press_in(screen)
+	sounds.watch_panel(screen.is_open, &"chest_open", &"chest_close")
 	interactions.register(
 		Interaction.Kind.OPEN_CHEST,
 		func(chest: WorldObject) -> String: return "Open %s" % Interaction.name_of(chest),

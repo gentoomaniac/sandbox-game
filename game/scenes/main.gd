@@ -718,8 +718,9 @@ func _show_current_map() -> void:
 
 
 ## Starts the sounds of the game once everything that makes one exists: the footsteps, work and
-## pickups, the buttons of the menus, the opening and closing of menus, screens and console, and
-## the weather's and the animals' ambience.
+## pickups, the buttons and the opening and closing of the menu, the console, the bag and the
+## character window, and the weather's and the animals' ambience. The flows' screens are heard
+## from `listen` on, as they registered themselves.
 func _start_sounds() -> void:
 	add_child(_sounds)
 	_sounds.listen(_audio, _state, _view, _player_view, _build_mode)
@@ -727,11 +728,6 @@ func _start_sounds() -> void:
 	for panel: Node in [_menu, _console_view, _bag_screen, _character_screen]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
-	_sounds.watch_panel(_chat_flow.screen.is_open)
-	_sounds.watch_panel(_trade_flow.screen.is_open)
-	_sounds.watch_panel(_crafting_flow.screen.is_open)
-	_sounds.watch_panel(_process_flow.screen.is_open)
-	_sounds.watch_panel(_storage_flow.screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
 	add_child(_sea_sounds)
