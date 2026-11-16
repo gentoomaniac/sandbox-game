@@ -2,20 +2,20 @@ class_name SaveFile
 extends RefCounted
 ## The saves on disk: a JSON file per save, `{"version": VERSION, "game": <GameState.to_dict>}`.
 ## Every save is a new file, and the newest few are kept (see SaveList).
-## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step
-## (see `_upgrade_from_version_46` and so on). Older ones are refused.
+## Saves from OLDEST_VERSION to VERSION (ten upgrade steps) still load, upgraded step by step (see
+## SaveMigrations). Older ones are refused.
 ##
 ## How to add a save field (or change one):
 ## 1. Write it in `to_dict` and read it in `from_dict` with `data["name"]`. Never `data.get(...)`
 ##    with a default: a save without the field is a bug to see, not to hide. A big map is copied in
 ##    `snapshot` instead and made data in `dict_of` (see World), which the worker thread does.
 ## 2. Raise VERSION by one.
-## 3. Add `_upgrade_from_version_<old VERSION>` here, which gives the field to a save of the old
-##    version (its default, or computed from what the save has), and call it from `read`.
+## 3. Add game/state/save_migrations/v<old VERSION>_to_v<new VERSION>.gd, which gives the field to a
+##    save of the old version (its default, written out, or computed from what the save has).
 ## 4. Add a test in tests/test_save_upgrade*.gd: an old save without the field loads right.
-## 5. Drop the oldest step, the constants and helpers only it uses, and its tests, so that ten
-##    steps remain (OLDEST_VERSION moves up with VERSION). That is a commit of its own, titled
-##    `Save: drop the upgrade from version <N> (oldest read: <N+1>)`: to rescue a save older
+## 5. Drop the oldest migration script, the constants and helpers only it uses, and its tests, so
+##    that ten steps remain (OLDEST_VERSION moves up with VERSION). That is a commit of its own,
+##    titled `Save: drop the upgrade from version <N> (oldest read: <N+1>)`: to rescue a save older
 ##    than that, find the commit with `git log --grep '^Save: drop'` and check out its parent,
 ##    which still upgrades it; load and save the game there, then move on to the latest.
 ## An upgrade step works on the parsed JSON, before any `from_dict` runs. After the upgrades the
@@ -134,7 +134,7 @@ static func load_game(path: String) -> LoadResult:
 	if not parsed.get("game") is Dictionary:
 		return LoadResult.refused(["no game in the save"] as Array[String])
 	var game: Dictionary = parsed["game"]
-	_upgrade(game, int(version))
+	SaveMigrations.upgrade(game, int(version))
 	var validator := SaveValidator.check(game)
 	if not validator.problems.is_empty():
 		return LoadResult.refused(validator.problems)
@@ -209,102 +209,3 @@ static func copy_aside(path: String, backup: String) -> String:
 	var problem := "Can't copy %s to %s: %s" % [path, backup, error_string(error)]
 	push_error(problem)
 	return problem
-
-
-## Brings the data of a save of `version` up to the current one.
-static func _upgrade(game: Dictionary, version: int) -> void:
-	if version <= 46:
-		_upgrade_from_version_46(game)
-	if version <= 47:
-		_upgrade_from_version_47(game)
-	if version <= 48:
-		_upgrade_from_version_48(game)
-	if version <= 49:
-		_upgrade_from_version_49(game)
-	if version <= 50:
-		_upgrade_from_version_50(game)
-	if version <= 51:
-		_upgrade_from_version_51(game)
-	if version <= 52:
-		_upgrade_from_version_52(game)
-	if version <= 53:
-		_upgrade_from_version_53(game)
-	if version <= 54:
-		_upgrade_from_version_54(game)
-	if version <= 55:
-		_upgrade_from_version_55(game)
-
-
-## Version 46 had no plans of the villagers' days from the language model (#7): every villager has
-## the default day until the planner asks.
-static func _upgrade_from_version_46(game: Dictionary) -> void:
-	for npc: Dictionary in game["npcs"]:
-		npc["day_plans"] = []
-
-
-## Version 47 had no villagers inside buildings (#8): they were all in the open, as they stand.
-static func _upgrade_from_version_47(game: Dictionary) -> void:
-	for npc: Dictionary in game["npcs"]:
-		npc["inside"] = null
-
-
-## Version 48 kept the village's lane tiles worn in its record (`kept_worn_tiles`). The lanes are
-## cobbled now (#9), so the list goes; the cobbles are not laid in a village that stands: its lanes
-## stay as they were.
-static func _upgrade_from_version_48(game: Dictionary) -> void:
-	var village: Variant = game["world"]["village"]
-	if village != null:
-		village.erase("kept_worn_tiles")
-
-
-## Version 49 had no record of the land the player has seen (#104): none is explored, but the land
-## about the player, which they see where they stand.
-static func _upgrade_from_version_49(game: Dictionary) -> void:
-	game["explored"] = []
-
-
-## Version 50 had no shops (#10): none has been looked at, so each starts full when it is.
-static func _upgrade_from_version_50(game: Dictionary) -> void:
-	game["shops"] = {}
-
-
-## Version 51 had no quests (#12): none is posted or taken, and none was done.
-static func _upgrade_from_version_51(game: Dictionary) -> void:
-	game["quests"] = {"open": [], "done": {}, "ended": {}}
-
-
-## Version 52 had no friendship besides the opinion (#48): no villager has taken a gift, counted a
-## chat, moved the opinion by an action or asked for a word rating, and none is bound to the player.
-static func _upgrade_from_version_52(game: Dictionary) -> void:
-	for npc: Dictionary in game["npcs"]:
-		npc["action_day"] = 0
-		npc["action_moved_today"] = 0
-		npc["last_gift_day"] = 0
-		npc["chat_counted_day"] = 0
-		npc["rating_day"] = 0
-		npc["ratings_today"] = 0
-		npc["rating_moved_today"] = 0
-		npc["bond"] = "none"
-
-
-## Version 53 had no money (#49): the player has the start purse, as in a new game. Written out, not
-## read from data/prices.cfg, so a later change leaves old saves alone.
-static func _upgrade_from_version_53(game: Dictionary) -> void:
-	game["player"]["money"] = 32
-
-
-## Version 54 had no dyke values (#103): every dyke is as the generator lays it, and the dykes
-## the game changes keep their height and strength in the state of their object, so nothing in the
-## data changes.
-static func _upgrade_from_version_54(_game: Dictionary) -> void:
-	pass
-
-
-## Version 55 had no storm surge or water on the land (#103): none is expected, and no tile is wet,
-## salty or muddy.
-static func _upgrade_from_version_55(game: Dictionary) -> void:
-	var world: Dictionary = game["world"]
-	world["surge"] = {"level_cm": 0, "peak_minute": 0, "hold_minutes": 0, "last_rolled_tide": -1}
-	world["flood"] = {"phase": "idle", "level_cm": 0, "drain_minute": 0}
-	for key in ["flood_wet", "flood_salt", "flood_mud", "flood_repairs", "flood_met_chunks"]:
-		world[key] = []
