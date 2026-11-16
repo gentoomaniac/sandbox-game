@@ -51,7 +51,7 @@ var _character_screen := CharacterScreen.new(_hotbar)
 var _crafting_screen := CraftingScreen.new()
 var _storage_flow: StorageFlow
 var _trade_screen := TradeScreen.new()
-var _process_screen := ProcessScreen.new(_hotbar)
+var _process_flow: ProcessFlow
 var _console_view := ConsoleView.new()
 var _map_screen := MapScreen.new()
 var _chat_screen := ChatScreen.new()
@@ -213,7 +213,8 @@ func _make_views() -> void:
 	_storage_flow = StorageFlow.new(_state, _hotbar, _interactions, _sounds)
 	add_child(_storage_flow)
 	add_child(_trade_screen)
-	add_child(_process_screen)
+	_process_flow = ProcessFlow.new(_state, _hotbar, _interactions, _sounds)
+	add_child(_process_flow)
 	# Where the fire's window was layered, before the HUD and the console over it.
 	add_child(CampfireFlow.new(_state, _hotbar, _crafting_screen, _interactions, _sounds))
 	add_child(_cheat_hud)
@@ -276,7 +277,6 @@ func _connect_state_and_views() -> void:
 	_interact.console_view = _console_view
 	_interact.chat_screen = _chat_screen
 	_interact.trade_screen = _trade_screen
-	_interact.process_screen = _process_screen
 	_interact.crafting_screen = _crafting_screen
 	_trade_screen.talk_requested.connect(_interact.open_chat)
 	var clock_ticker := GameClockTicker.new(_state, _weather_view, _show_clock)
@@ -448,7 +448,7 @@ func _apply_start_options() -> void:
 	_debug.interior_view = _interior_view
 	_debug.storage_screen = _storage_flow.screen
 	_debug.crafting_screen = _crafting_screen
-	_debug.process_screen = _process_screen
+	_debug.process_screen = _process_flow.screen
 	_debug.chat_screen = _chat_screen
 	_debug.open_chat = _interact.open_chat
 	_debug.open_shop = _interact.open_shop
@@ -738,8 +738,7 @@ func _start_sounds() -> void:
 	]:
 		_sounds.click_on_press_in(panel)
 		_sounds.watch_panel(panel.is_open)
-	_sounds.click_on_press_in(_process_screen)
-	_sounds.watch_panel(_process_screen.is_open)
+	_sounds.watch_panel(_process_flow.screen.is_open)
 	_sounds.watch_panel(_storage_flow.screen.is_open, &"chest_open", &"chest_close")
 	add_child(_ambience)
 	_ambience.listen(_audio, _state, _wildlife, _weather_view)
