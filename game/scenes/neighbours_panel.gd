@@ -9,12 +9,12 @@ extends VBoxContainer
 const PANEL_WIDTH := 260
 const ROW_GAP := 6
 const PORTRAIT_SIZE := 32
-const PORTRAIT_GROUND := Color("4f4436")
+const PORTRAIT_GROUND := UiColors.MUD_DARK
 const REFRESH_SECONDS := 0.25
 const EMPTY_TEXT := "No neighbours yet."
 const TITLE_TEXT := "Neighbours (%d)"
 ## Palette colour gold (see tools/art/palette.py), for the title.
-const TITLE_COLOR := Color("eec25a")
+const TITLE_COLOR := UiColors.GOLD
 
 ## The rows' list: the character window fits it and starts it at the top when the tab is shown.
 var list: ScrollingList

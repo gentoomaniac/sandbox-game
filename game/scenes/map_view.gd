@@ -21,9 +21,9 @@ const KEY_PAN_SPEED := 500.0
 const CLICK_SLOP := 5.0
 ## What the builder may spend on a frame (see MapBuilder `update`).
 const BUILD_BUDGET_USEC := 3000
-const BACKGROUND := Color("1d1b26")
+const BACKGROUND := UiColors.INK
 const PLAYER_FILL := Color("fff176")
-const PLAYER_OUTLINE := Color("1d1b26")
+const PLAYER_OUTLINE := UiColors.INK
 const VILLAGER_FILL := Color("ffffff")
 const LABEL_SIZE := 11
 const PLAYER_ARROW_SIZE := 9.0

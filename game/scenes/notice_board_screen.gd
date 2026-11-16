@@ -8,7 +8,7 @@ extends Modal
 const TITLE_TEXT := "Notice board"
 const WIDTH := 280
 ## Palette colour gold (see tools/art/palette.py), for the title.
-const TITLE_COLOR := Color("eec25a")
+const TITLE_COLOR := UiColors.GOLD
 const LINE_GAP := 8
 
 var _title_label := Label.new()

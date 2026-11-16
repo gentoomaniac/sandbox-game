@@ -61,11 +61,11 @@ const GAP := 10
 ## Palette colours (see tools/art/palette.py): behind the portraits mud_dark, behind the bubbles
 ## ink, the villager's bubbles stone_dark and the player's water_deep, a name gold and a time
 ## stone_light.
-const PORTRAIT_GROUND := Color("4f4436")
-const LOG_GROUND := Color("1d1b26")
+const PORTRAIT_GROUND := UiColors.MUD_DARK
+const LOG_GROUND := UiColors.INK
 const NPC_BUBBLE := Color("4a4852")
 const PLAYER_BUBBLE := Color("2b4561")
-const NAME_COLOR := Color("eec25a")
+const NAME_COLOR := UiColors.GOLD
 const TIME_COLOR := Color("a8a39c")
 
 ## Gives the villagers' answers. Set before the chat is opened.

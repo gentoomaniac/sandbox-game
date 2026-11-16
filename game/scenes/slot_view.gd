@@ -24,7 +24,7 @@ const SIZE := 20
 ## Where the item's icon is drawn, fitted into ItemIcon.SIZE whatever its own size.
 const ICON_RECT := Rect2(2, 2, ItemIcon.SIZE, ItemIcon.SIZE)
 ## Palette colour ink (see tools/art/palette.py); the pixel font is already cream.
-const COUNT_SHADOW_COLOR := Color("1d1b26")
+const COUNT_SHADOW_COLOR := UiColors.INK
 ## The Roman numeral of a tool's grade, drawn pixel by pixel (so it is crisp at every UI scale):
 ## the glyphs 4 px tall with 1 px strokes that task 206's icons had, in palette cream on a backing
 ## of ink, one pixel wider on every side. The backing's lower left corner is 2 px (the slot's

@@ -13,8 +13,8 @@ const FADE_WIDTH := 48
 const ROW_GAP := 6
 ## Palette colours ink (the empty bar), gold (the points) and flame (the total at its cap), see
 ## tools/art/palette.py.
-const BAR_BACK := Color("1d1b26")
-const BAR_FILL := Color("eec25a")
+const BAR_BACK := UiColors.INK
+const BAR_FILL := UiColors.GOLD
 const AT_CAP_COLOR := Color("dc7a37")
 const RULE_WIDTH := 240
 const RULE_TEXT := (
