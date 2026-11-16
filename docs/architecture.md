@@ -361,7 +361,7 @@ data/<topic>.cfg  ->  game/state/<topic>_rules.gd  ->  a Types class or the stat
 
 - A `*Rules` class reads its file with `DataFile.read_sections(path)`, checks it (`problems()`,
   `is_valid()`) and serves the values. `Main._ready` refuses to start, and reports what is
-  wrong, if any of them is invalid.
+  wrong, if `RulesCheck` finds any of them invalid.
 - `BuildingTypes`, `WorldObjectTypes` and `ItemTypes` are the tables of kinds, built from the
   rules and from definitions in code. Look there for what a kind of object or item is. Their
   entries are read-only all the way down (`ReadOnly`): a caller that changes what it gets back
@@ -414,7 +414,7 @@ There is no base class: each rules class is plain, so copy one that is shaped li
    of `problems()`; `DataFile` already reports a file that can't be read.
 3. `problems() -> Array[String]` lists what is missing or wrong as `"[section] what"`, and
    `is_valid()` is `problems().is_empty()`.
-4. Add `<Topic>Rules.default_rules().is_valid()` to the check in `Main._ready`.
+4. Add `<Topic>Rules.default_rules().is_valid()` to `RulesCheck` (`game/scenes/rules_check.gd`).
 5. Test it: the real file is valid, a file with keys missing reports them (the test counts
    the `push_error`s with `assert_push_error_count`), and so does a missing file.
 
