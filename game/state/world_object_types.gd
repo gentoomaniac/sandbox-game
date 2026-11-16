@@ -202,9 +202,6 @@ const MAX_FOOTPRINT := Vector2i(7, 2)
 const REEDS_ROW := 24
 ## The atlas row of the chest, after the dead tree's stump.
 const _CHEST_ROW := 26
-const _KNICK_ROW := 27
-const _WATTLE_FENCE_ROW := 28
-const _STONE_WALL_ROW := 29
 const _WORKBENCH_ROW := 41
 const _CARVED_CHEST_ROW := 42
 const _KILN_ROW := 43
@@ -263,50 +260,6 @@ const _OTHER_TYPES := {
 		"object_cover": "res://assets/bedroll_cover.png",
 		"bed": Vector2i.UP,
 		"interior_sprite": "res://assets/interior/sleeping_bag.png",
-		"placeable_in": OUTDOORS,
-	},
-	# A hedge of hazel and hawthorn on an earth bank, between fields. The axe cuts it down to
-	# the ground for its wood.
-	KNICK:
-	{
-		"hp": 4,
-		"tool": &"axe",
-		"drops": {&"logs": 1, &"fibre": 2},
-		"connects": &"field_boundary",
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _KNICK_ROW,
-		"variants": 3,
-	},
-	# Hazel rods woven between stakes: a light fence, cut down with the axe for its fibre. The
-	# player makes and places it too (task 203); what it gives back is what its recipe took.
-	WATTLE_FENCE:
-	{
-		"hp": 2,
-		"tool": &"axe",
-		"drops": {&"fibre": 2},
-		"connects": &"field_boundary",
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _WATTLE_FENCE_ROW,
-		"variants": 1,
-		"placeable_in": OUTDOORS,
-	},
-	# Fieldstones stacked dry: the pickaxe takes it apart for the stone a piece is made of
-	# (task 203).
-	STONE_WALL:
-	{
-		"hp": 5,
-		"tool": &"pickaxe",
-		"drops": {&"stone": 3},
-		"connects": &"field_boundary",
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _STONE_WALL_ROW,
-		"variants": 3,
 		"placeable_in": OUTDOORS,
 	},
 	SMALL_BED:
