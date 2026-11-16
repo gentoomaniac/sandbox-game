@@ -220,6 +220,7 @@ by topic. Where is a thing drawn?
 | `furnishings.py` | The registry of the interior furniture: `furniture()` joins the `pieces()` of the modules that draw it (name to picture and footprint) in the order of `declaration.FURNITURE`, and refuses a name two of them draw. A new piece adds its module there. |
 | `interior.py` | The room tiles and the furniture inside the buildings that has no family of its own, the hearth too, drawn at 32 px, and what the furniture shares (wood grain, the dithered shadow). |
 | `beds.py` | The bed, the sleeping mat and the box bed, and the bed covers that lie over the player who wakes in them. |
+| `tables_and_seats.py` | The table (laid with plates), the stool, the bench and the wall bench: planked tops on turned legs. |
 | `houses.py` | The registry of the buildings' pictures: `pictures()` joins the `PICTURES` of the modules that draw them (id to how to draw it) and refuses an id two of them draw. A new building adds its module there. |
 | `buildings.py` | What the houses share at 32 px per tile: the palettes, the thatch and turf roofs, the walls, doors and windows, plain and with lit windows. |
 | `farmhouses.py` | Kate (and its brick and Geest styles, `kate(walls=...)`, as kate_brick and kate_geest), the longhouse and the barn. |
