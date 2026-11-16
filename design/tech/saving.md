@@ -73,6 +73,11 @@
   write at once. Quitting never
   happens mid-write. `SaveService.last_succeeded` and `last_error` have the result of the last
   save.
+- **Ctrl-C and SIGTERM do not save** (#42). Godot 4.7 gives scripts no way to handle POSIX
+  signals: SIGINT, SIGTERM and SIGHUP end the process at once, with no notification and no script
+  code run (tested 2026-11-16). The saves are made by quick save, the autosaves, sleeping,
+  passing out, "Save and quit" and closing the window; a game stopped from the terminal loses the
+  play since the last of them.
 - **A failed save is never quietly given up** (the user, 2026-11-09, task 140). Every step of the
   write is checked (the folder, the open, the store and flush, the rename); a failure removes the
   temporary file, leaves the previous save as it was and says what went wrong (`SaveFile.write_text`

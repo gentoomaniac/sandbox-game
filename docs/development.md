@@ -29,6 +29,10 @@ project.godot: Godot 4.7.2's Wayland driver sometimes never finishes quitting, l
 window open. The game has saved by then. To try Wayland anyway:
 `godot --path . --display-driver wayland`.
 
+Quit the game from its menu or by closing the window: Ctrl-C in the terminal ends Godot at once,
+without saving (Godot 4.7 lets no script handle the signal), so the play since the last save is
+lost.
+
 `make setup` never installs system packages. If something is missing, it prints what to
 install, with Gentoo package names where there are some. If your Godot binary has a
 different name, pass its path: `make GODOT=/path/to/godot run`.
