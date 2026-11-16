@@ -149,12 +149,12 @@ func test_a_ridden_horse_is_not_removed_and_the_player_stays_on_it() -> void:
 	_console.run("spawn horse 2")
 	var horse := _state.livestock.all()[0]
 	horse.is_saddled = true
-	_state.mount(horse)
+	_state.travel.mount(_state, horse)
 	var refusal: Array[String] = ["You are riding a horse: get off first"]
 	assert_eq(_console.run("killall horse"), refusal)
 	assert_eq(_state.livestock.all().size(), 2)
 	assert_eq(_state.player.horse, horse)
-	assert_true(_state.dismount())
+	assert_true(_state.travel.dismount(_state))
 	assert_eq(_console.run("killall horse"), ["Removed 2 horse"] as Array[String])
 
 

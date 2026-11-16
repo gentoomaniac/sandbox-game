@@ -72,9 +72,12 @@ Warft and an Ewer here and there.
   screen like the sales cart: the domain's kind and its place in `Interaction.choice_at` (state),
   the screen, the flow, a line in `FeatureFlows` and its `add_child` line in Main.
 - **GameState** (`game/state/game_state.gd`) is one game: the world, the clock, the sun, the
-  weather, the snow cover and the player. It is the entry point for actions (`walk`, `use_at`,
+  weather, the snow cover and the player. It is the entry point for actions (`use_at`,
   `sleep_in`, `pass_door`, `pass_out`, `go_to_home_bed`, `teleport_to`), and what gets saved (`to_dict`, see `SaveFile`). It owns
   the clock and gives it to the World; `current_map` follows from the building the player is in.
+  Walking and riding are `PlayerTravel` (`GameState.travel`, `travel.walk(state, ...)`): it keeps
+  the riding state and is given the game on each call, as a helper the game holds must not hold
+  the game back (a cycle would leak the whole game).
 - **Simulation** (`game/state/simulation.gd`) is the one owner of game time, and the rule is:
   whatever moves the clock goes through it, and whatever changes with time is a
   `SimulationSystem` it runs, in a fixed order, after each span. `advance(minutes)` is played
@@ -148,7 +151,7 @@ Warft and an Ewer here and there.
   `World.connections` says which neighbours a tile joins, and the
   view draws the picture of that connection mask. The wear of desire paths is World's too (counted in `WorldWear`, `World.wear`)
   (`wear_tile`, `wear_stage`, `end_wear_day`; numbers in `data/paths.cfg`, `PathRules`;
-  design/world/desire-paths.md): `GameState.walk` and `Livestock` count a step on each tile
+  design/world/desire-paths.md): `PlayerTravel.walk` and `Livestock` count a step on each tile
   entered, the midnight upkeep turns busy days into days of wear, and a tile that turns trodden or
   a path emits `tile_changed`, so the view redraws the cells around it as for a tilling. The
   view draws worn tiles on the `TRODDEN` and `PATH` layers of `TerrainTileset`. Tilled soil that
@@ -196,7 +199,7 @@ Warft and an Ewer here and there.
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
   them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
   FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
-  `UNSADDLE`) and ridden through `GameState.mount` and `dismount`: `PlayerState.horse` is the
+  `UNSADDLE`) and ridden through `PlayerTravel.mount` and `dismount`: `PlayerState.horse` is the
   horse ridden (not saved), which `PlayerState.move` takes along and `Livestock.update` leaves
   alone (`FarmAnimal.is_ridden`); `PlayerView` draws the rider's riding sheets on the ridden
   horse's sheets while the horse's own view hides. A dog given a bone (`ToolUse`, `GIVE_BONE`)

@@ -76,16 +76,16 @@ func _rain_before_now() -> float:
 
 func test_the_player_walks_slower_on_mud() -> void:
 	_state.player.position = Vector2(_path) + Vector2(0.5, 0.5)
-	var dry := _state.walk_speed_factor()
+	var dry := _state.travel.walk_speed_factor(_state)
 	_world.set_muddy(true)
-	assert_almost_eq(_state.walk_speed_factor(), dry * _rules.walk_factor(), 0.0001)
-	assert_lt(_state.walk_speed_factor(), dry)
+	assert_almost_eq(_state.travel.walk_speed_factor(_state), dry * _rules.walk_factor(), 0.0001)
+	assert_lt(_state.travel.walk_speed_factor(_state), dry)
 
 
 func test_the_player_walks_at_full_speed_on_unworn_ground_in_the_rain() -> void:
 	_world.set_muddy(true)
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
-	assert_eq(_state.walk_speed_factor(), 1.0)
+	assert_eq(_state.travel.walk_speed_factor(_state), 1.0)
 
 
 func test_a_walk_over_mud_goes_less_far() -> void:
@@ -94,11 +94,15 @@ func test_a_walk_over_mud_goes_less_far() -> void:
 	_world.remove_object(_path + Vector2i.RIGHT)
 	var start := Vector2(_path) + Vector2(0.1, 0.5)
 	_state.player.position = start
-	_state.walk(Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.walk_speed_factor())
+	_state.travel.walk(
+		_state, Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.travel.walk_speed_factor(_state)
+	)
 	var dry_distance := _state.player.position.x - start.x
 	_world.set_muddy(true)
 	_state.player.position = start
-	_state.walk(Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.walk_speed_factor())
+	_state.travel.walk(
+		_state, Vector2.RIGHT, ONE_TILE_SECONDS / 2, _state.travel.walk_speed_factor(_state)
+	)
 	assert_almost_eq(
 		_state.player.position.x - start.x, dry_distance * _rules.walk_factor(), 0.0001
 	)

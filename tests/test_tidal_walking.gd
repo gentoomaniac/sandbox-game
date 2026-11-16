@@ -51,12 +51,12 @@ func _stand_on(tile: Vector2i) -> void:
 
 func _walk_east(seconds: float) -> void:
 	for _frame in int(seconds / FRAME):
-		_state.walk(Vector2.RIGHT, FRAME)
+		_state.travel.walk(_state, Vector2.RIGHT, FRAME)
 
 
 func _walk_west(seconds: float) -> void:
 	for _frame in int(seconds / FRAME):
-		_state.walk(Vector2.LEFT, FRAME)
+		_state.travel.walk(_state, Vector2.LEFT, FRAME)
 
 
 func test_the_mud_is_walkable_at_low_water_and_not_at_high_water() -> void:
@@ -77,7 +77,7 @@ func test_only_mud_floods() -> void:
 
 func _wade_east(seconds: float) -> void:
 	for _frame in int(seconds / FRAME):
-		_state.walk(Vector2.RIGHT, FRAME, _state.walk_speed_factor())
+		_state.travel.walk(_state, Vector2.RIGHT, FRAME, _state.travel.walk_speed_factor(_state))
 
 
 func test_the_player_wades_from_dry_ground_into_flooded_mud_very_slowly() -> void:
@@ -96,11 +96,13 @@ func test_the_player_wades_from_dry_ground_into_flooded_mud_very_slowly() -> voi
 func test_the_player_walks_at_full_speed_again_on_dry_ground() -> void:
 	_set_tide(HIGH_WATER_MINUTE)
 	_stand_on(_mud_tile + Vector2i(-1, 0))
-	assert_eq(_state.walk_speed_factor(), 1.0)
+	assert_eq(_state.travel.walk_speed_factor(_state), 1.0)
 	_stand_on(_mud_tile)
-	assert_eq(_state.walk_speed_factor(), PathRules.default_rules().wading_walk_factor())
+	assert_eq(
+		_state.travel.walk_speed_factor(_state), PathRules.default_rules().wading_walk_factor()
+	)
 	_set_tide(LOW_WATER_MINUTE)
-	assert_eq(_state.walk_speed_factor(), 1.0, "the tide went out")
+	assert_eq(_state.travel.walk_speed_factor(_state), 1.0, "the tide went out")
 
 
 func test_wading_stops_at_deep_water() -> void:
@@ -127,7 +129,7 @@ func test_a_horse_refuses_flooded_mud_and_the_rider_must_dismount() -> void:
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", _state.player.position)
 	horse.is_saddled = true
 	_state.livestock.add(horse)
-	_state.mount(horse)
+	_state.travel.mount(_state, horse)
 	_wade_east(1.5)
 	assert_lt(_state.player.position.x, float(_mud_tile.x), "stopped at the water's edge")
 
@@ -180,4 +182,4 @@ func test_a_plank_walk_over_flooded_mud_is_walked_dry_shod_and_a_bit_faster() ->
 	_world.add_object(WorldObject.new(WorldObjectTypes.PLANK_WALK, _mud_tile))
 	assert_true(_world.is_walkable(_mud_tile), "at high water")
 	_stand_on(_mud_tile)
-	assert_eq(_state.walk_speed_factor(), PathRules.default_rules().way_walk_factor())
+	assert_eq(_state.travel.walk_speed_factor(_state), PathRules.default_rules().way_walk_factor())

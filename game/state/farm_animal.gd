@@ -73,10 +73,10 @@ var missed_roost := false
 var search_seconds := 0.0
 ## A horse wears a saddle (see ToolUse `SADDLE`): it can be ridden.
 var is_saddled := false
-## How much a horse has left to sprint with, from 0 (none) to 1 (full); see GameState `walk`.
+## How much a horse has left to sprint with, from 0 (none) to 1 (full); see PlayerTravel `walk`.
 ## Saved with the horse, so one ridden hard is still tired after a load.
 var stamina := 1.0
-## The player rides it (see GameState `mount`): it goes where they ride, and does nothing of its
+## The player rides it (see PlayerTravel `mount`): it goes where they ride, and does nothing of its
 ## own accord. Not saved, as the riding isn't.
 var is_ridden := false
 ## The mouse a hunting cat is after, or null. Not saved, as the hunt isn't (the mice are not

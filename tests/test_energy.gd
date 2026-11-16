@@ -78,23 +78,27 @@ func test_a_use_with_too_little_energy_left_still_happens_and_empties_the_bar() 
 
 func test_walking_slows_down_with_low_energy() -> void:
 	_state.player.energy = 30.5
-	assert_eq(_state.walk_speed_factor(), 1.0)
+	assert_eq(_state.travel.walk_speed_factor(_state), 1.0)
 	_state.player.energy = 30.0
-	assert_eq(_state.walk_speed_factor(), 0.8)
+	assert_eq(_state.travel.walk_speed_factor(_state), 0.8)
 	_state.player.energy = 15.0
-	assert_eq(_state.walk_speed_factor(), 0.8)
+	assert_eq(_state.travel.walk_speed_factor(_state), 0.8)
 	_state.player.energy = 14.9
-	assert_eq(_state.walk_speed_factor(), 0.4)
+	assert_eq(_state.travel.walk_speed_factor(_state), 0.4)
 
 
 func test_the_slowest_speed_wins_and_speeds_do_not_stack() -> void:
 	_state.player.is_debuffed = true
 	_state.player.energy = 40.0
-	assert_eq(_state.walk_speed_factor(), 0.6, "the debuff alone")
+	assert_eq(_state.travel.walk_speed_factor(_state), 0.6, "the debuff alone")
 	_state.player.energy = 20.0
-	assert_eq(_state.walk_speed_factor(), 0.6, "low energy (0.8) is faster than the debuff")
+	assert_eq(
+		_state.travel.walk_speed_factor(_state), 0.6, "low energy (0.8) is faster than the debuff"
+	)
 	_state.player.energy = 10.0
-	assert_eq(_state.walk_speed_factor(), 0.4, "very low energy is slower than the debuff")
+	assert_eq(
+		_state.travel.walk_speed_factor(_state), 0.4, "very low energy is slower than the debuff"
+	)
 
 
 func test_the_speed_factor_scales_how_far_the_player_walks() -> void:

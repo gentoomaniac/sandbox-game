@@ -59,10 +59,10 @@ func update(delta: float, is_screen_open: bool) -> void:
 	if not is_screen_open:
 		var is_menu_up := _build_mode.is_active() and not _builder.is_taking_down()
 		direction = BuildMode.walk_direction(is_menu_up)
-	_state.is_sprint_held = Input.is_action_pressed("sprint")
-	_player_view.walk_speed = _state.walk_speed_factor()
-	_player_view.is_trotting = _state.is_trotting()
-	_state.walk(direction, delta, _player_view.walk_speed)
+	_state.travel.is_sprint_held = Input.is_action_pressed("sprint")
+	_player_view.walk_speed = _state.travel.walk_speed_factor(_state)
+	_player_view.is_trotting = _state.travel.is_trotting(_state)
+	_state.travel.walk(_state, direction, delta, _player_view.walk_speed)
 	if _state.player.horse != null and direction != Vector2.ZERO and _state.is_door_ahead():
 		_harvest_hud.show_note(UseNotes.GET_OFF_FIRST)
 	_state.collect_ground_items(delta)

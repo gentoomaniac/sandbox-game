@@ -159,5 +159,5 @@ func test_the_player_walks_a_way_a_bit_faster_also_in_the_rain() -> void:
 	for type in WAYS.values():
 		_lay(type)
 		_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
-		assert_eq(_state.walk_speed_factor(), rules.way_walk_factor(), str(type))
+		assert_eq(_state.travel.walk_speed_factor(_state), rules.way_walk_factor(), str(type))
 	assert_gt(rules.way_walk_factor(), 1.0)

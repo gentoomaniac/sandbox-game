@@ -48,7 +48,7 @@ func test_passing_out_gives_the_debuff_values() -> void:
 	assert_true(_state.player.is_debuffed)
 	assert_eq(_state.player.energy, 40.0)
 	assert_eq(_state.player.health, 20.0)
-	assert_eq(_state.walk_speed_factor(), 0.6)
+	assert_eq(_state.travel.walk_speed_factor(_state), 0.6)
 	assert_eq(_state.energy_cap(), 40.0)
 
 

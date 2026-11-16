@@ -58,7 +58,7 @@ it was too fast, wear needs days, not only steps). All numbers are in `data/path
   `tile_changed` for every worn tile of the loaded chunks, once per change of weather, and a
   chunk that loads is drawn with the flag as it is.
 - **Slower:** the player walks at `walk_factor` (0.7) of their speed on a muddy tile
-  (`GameState.walk_speed_factor`, so their walk animation slows too). Not on horseback: a horse's
+  (`PlayerTravel.walk_speed_factor`, so their walk animation slows too). Not on horseback: a horse's
   pace is its own and nothing slows it.
   Wading in flooded tidal mud is slower still, by its own factor (see `design/world/coast.md`).
 - **Villagers and animals walk at normal speed in mud, and path searches don't mind it** (decided
@@ -83,7 +83,7 @@ worn ground and mud. A tile with one on it never wears (`World.wear_tile`, `set_
 the walk of anyone else skip it: `GameMap.is_way_at`), so it is never muddy; laying one clears the
 wear beneath and draws the tile again, and the grass is unworn when it is taken up. The player
 walks a way at `[way] walk_factor` (1.1) of their speed, in the rain and over flooded mud too
-(`GameState.walk_speed_factor`: a way comes before mud and wading). Villagers prefer ways to
+(`PlayerTravel.walk_speed_factor`: a way comes before mud and wading). Villagers prefer ways to
 open ground (see `design/tech/pathfinding.md`).
 
 ## The village's lanes

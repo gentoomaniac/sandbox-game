@@ -27,7 +27,7 @@ func register_kinds(interactions: InteractionRegistry) -> void:
 		func(npc: Npc) -> String: return "Trade with %s" % npc.name,
 		open_shop
 	)
-	interactions.register(Interaction.Kind.MOUNT, "Get on the horse", state.mount)
+	interactions.register(Interaction.Kind.MOUNT, "Get on the horse", _mount)
 	interactions.register(
 		Interaction.Kind.RING_BELL,
 		"Ring the bell",
@@ -45,8 +45,12 @@ func interact(interactions: InteractionRegistry) -> void:
 	interactions.open(Interaction.choice_at(state, use_highlight.targeting().tile))
 
 
+func _mount(horse: FarmAnimal) -> void:
+	state.travel.mount(state, horse)
+
+
 func _dismount(_no_subject: Variant) -> void:
-	if not state.dismount():
+	if not state.travel.dismount(state):
 		harvest_hud.show_note("No room to get off here.")
 
 

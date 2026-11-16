@@ -33,8 +33,6 @@ const PULL_RADIUS := 1.25
 const PULL_SPEED := 8.0
 ## A pulled item that is this close is picked up.
 const PICKUP_RADIUS := 0.15
-## Getting off a horse puts the player on free ground at most this many tiles from it.
-const DISMOUNT_REACH := 2
 
 var world: World
 var clock: GameClock
@@ -91,9 +89,8 @@ var energy_drain := 1.0
 ## The player was awake when the clock reached LATE_NIGHT_MINUTE (see `pass_awake_time`) and has
 ## not slept since: they pass out. Not saved.
 var is_up_too_late := false
-## The sprint key is held (set every frame by whoever reads the keys); it only counts on a horse
-## that is trotting and not winded (see `is_sprinting`). Not saved.
-var is_sprint_held := false
+## How the player walks and rides (see PlayerTravel); it is given this game on each call.
+var travel := PlayerTravel.new()
 ## Where the player is: the world, or the interior of the building they are inside.
 var current_map: GameMap:
 	get:
@@ -104,12 +101,6 @@ var _building_inside: Building:
 	set(building):
 		_building_inside = building
 		homes.building_with_player = building
-## Seconds the player has kept moving: a horse trots after a while (see `is_trotting`). Not
-## saved.
-var _moving_seconds := 0.0
-## The ridden horse used up its stamina and may not sprint until some has come back (see
-## `sprint_again_stamina` in data/livestock.cfg). Not saved: the horse's stamina is.
-var _is_horse_winded := false
 
 
 ## `game_clock` is the clock to follow: a loaded game brings the one it saved. Whoever builds
@@ -335,115 +326,6 @@ func is_door_ahead() -> bool:
 	)
 
 
-## How fast the player walks, as a fraction of full speed: the slowest of what low energy and
-## a debuff allow, and mud, or wading in flooded tidal mud, slows on top of that, while a way
-## (a plank walk, a stone path) speeds it up. On horseback it is the horse's pace, which nothing
-## slows.
-func walk_speed_factor() -> float:
-	if player.horse != null:
-		var pace := "ride_walk_factor"
-		if is_sprinting():
-			pace = "ride_sprint_factor"
-		elif is_trotting():
-			pace = "ride_trot_factor"
-		return livestock.rules.general(pace)
-	var factor := energy_rules.walk_factor(player.energy)
-	if player.is_debuffed:
-		factor = minf(factor, energy_rules.debuff_walk_factor())
-	if not is_inside():
-		var tile := player.tile()
-		var path_rules := PathRules.default_rules()
-		# A way is walked dry-shod over mud and the flats. Worn ground is never tidal mud, so
-		# only one of the other two can apply.
-		if world.is_way_at(tile):
-			factor *= path_rules.way_walk_factor()
-		elif world.is_muddy_at(tile):
-			factor *= path_rules.walk_factor()
-		elif world.is_flooded(tile):
-			factor *= path_rules.wading_walk_factor()
-	return factor
-
-
-## Walks the player on the map they are on (see PlayerState.move), or rides the horse they are on.
-## Outdoors, each tile they step onto wears a little towards a desire path.
-func walk(direction: Vector2, delta: float, speed_factor := 1.0) -> void:
-	var tile_before := player.tile()
-	var position_before := player.position
-	if player.horse != null:
-		_tire_or_rest_horse(direction != Vector2.ZERO, delta)
-	player.move(current_map, direction, delta, speed_factor, cheats.is_noclip)
-	if not is_inside():
-		explored.see(player.tile())
-		harm.check_pushing(player.position)
-	_moving_seconds = _moving_seconds + delta if direction != Vector2.ZERO else 0.0
-	# A noclip walk (through trees, rocks and walls) leaves no path.
-	if not is_inside() and not cheats.is_noclip and player.tile() != tile_before:
-		world.wear_tile(player.tile())
-	# A horse's hooves, not the rider's boots, would leave the prints (see Footprints).
-	if not is_inside() and not cheats.is_noclip and player.horse == null:
-		world.footprints.walk(world, player.stride, position_before, player.position)
-
-
-## Puts a player who stands where they don't fit (noclip just turned off in a lake, a rock or a
-## house's walls) on the middle of the nearest tile, within `reach` tiles, where they fit and no
-## part of them is on a building (its door would take them inside), with the horse they ride. One
-## lying in a bed stays: they get out of it as they move. Returns whether they now fit.
-func put_player_on_free_ground(reach := 12) -> bool:
-	if (
-		player.bed_lying_in != null
-		or PlayerState.can_stand_at(current_map, player.position, player.horse == null)
-	):
-		return true
-	var here := player.tile()
-	var nearest := Vector2.INF
-	for y in range(-reach, reach + 1):
-		for x in range(-reach, reach + 1):
-			var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
-			var is_nearer := (
-				centre.distance_to(player.position) < nearest.distance_to(player.position)
-			)
-			if is_nearer and _is_free_ground_for_player(centre):
-				nearest = centre
-	if nearest == Vector2.INF:
-		return false
-	player.position = nearest
-	if player.horse != null:
-		player.horse.position = nearest
-	return true
-
-
-func _is_free_ground_for_player(feet: Vector2) -> bool:
-	return (
-		PlayerState.can_stand_at(current_map, feet)
-		and not PlayerState.touches_building(current_map, feet)
-	)
-
-
-## Whether the player rides fast enough for the horse to trot (see data/livestock.cfg).
-func is_trotting() -> bool:
-	return player.horse != null and _moving_seconds >= livestock.rules.general("trot_after_seconds")
-
-
-## Whether the player sprints: the key is held on a horse that is trotting and has stamina.
-func is_sprinting() -> bool:
-	return is_sprint_held and not _is_horse_winded and is_trotting()
-
-
-## A sprint uses up the ridden horse's stamina; any other pace gives some back, a walk slower than
-## standing still. A horse that used it up is winded until a part of it has come back.
-func _tire_or_rest_horse(is_moving: bool, delta: float) -> void:
-	var rules := livestock.rules
-	var horse := player.horse
-	if is_sprinting():
-		horse.stamina = maxf(0.0, horse.stamina - delta / rules.general("sprint_stamina_seconds"))
-		_is_horse_winded = horse.stamina == 0.0
-		return
-	var regain_key := "stamina_walk_regain_seconds" if is_moving else "stamina_stand_regain_seconds"
-	horse.stamina = minf(1.0, horse.stamina + delta / rules.general(regain_key))
-	if horse.stamina >= rules.general("sprint_again_stamina"):
-		_is_horse_winded = false
-
-
 ## Rings the bell frame in reach, the one with the clicked tile (see Interaction). Returns whether
 ## there was one. Only heard and seen so far: it changes nothing in the game.
 func ring_bell_in_reach(clicked: Variant = null) -> bool:
@@ -451,58 +333,6 @@ func ring_bell_in_reach(clicked: Variant = null) -> bool:
 	if frame != null:
 		world.bell_rung.emit(frame)
 	return frame != null
-
-
-## Gets on a saddled horse: the player sits on it where it stands, facing its way, and it goes where
-## they ride until they get off (see `dismount`).
-func mount(horse: FarmAnimal) -> void:
-	assert(horse.is_saddled and player.horse == null, "Not a horse to get on")
-	player.horse = horse
-	horse.is_ridden = true
-	player.bed_lying_in = null
-	player.position = horse.position
-	player.facing = Vector2i.RIGHT if horse.facing > 0.0 else Vector2i.LEFT
-	_moving_seconds = 0.0
-	_is_horse_winded = horse.stamina == 0.0
-
-
-## Gets off the horse onto free ground beside it (see `_dismount_spot`); the horse stays where it is
-## and goes about its day again. Returns false, and the player stays on, if there is no room.
-func dismount() -> bool:
-	var spot := _dismount_spot()
-	if spot == Vector2.INF:
-		return false
-	player.position = spot
-	_leave_horse()
-	return true
-
-
-## The horse stays where it is, and the player is no longer on it (wherever they are put next).
-func _leave_horse() -> void:
-	if player.horse == null:
-		return
-	player.horse.is_ridden = false
-	livestock.stand_still(player.horse)
-	player.horse = null
-
-
-## Where getting off the horse puts the player: the middle of a tile near it, within
-## DISMOUNT_REACH, where they stand free (never in the water, a wall or a building). Not on the
-## horse's own tile, and best at its side: a tile along its length (to the left or right, as it
-## is drawn standing) counts a tile further off. Vector2.INF if there is none.
-func _dismount_spot() -> Vector2:
-	var here := player.tile()
-	var nearest := Vector2.INF
-	var nearest_cost := INF
-	for y in range(DISMOUNT_REACH, -DISMOUNT_REACH - 1, -1):
-		for x in range(-DISMOUNT_REACH, DISMOUNT_REACH + 1):
-			var centre := Vector2(here + Vector2i(x, y)) + Vector2(0.5, 0.5)
-			var cost := centre.distance_to(player.position) + absi(x)
-			var is_cheaper := cost < nearest_cost and Vector2i(x, y) != Vector2i.ZERO
-			if is_cheaper and _is_free_ground_for_player(centre):
-				nearest = centre
-				nearest_cost = cost
-	return nearest
 
 
 ## What the lantern in hand does when used (see `switch_held_lantern`): lit, it is put out; with a
@@ -605,7 +435,7 @@ func _wake_up_after_pass_out() -> void:
 ## bed is set up or they sleep in one (decided by the user, 2026-11-09). If something now
 ## stands on that spot they are put on the nearest free ground.
 func go_to_home_bed() -> void:
-	_leave_horse()
+	travel.leave_horse(self)
 	_building_inside = _building_with_interior(player.home_map)
 	var bed := _home_bed()
 	if bed != null:
@@ -616,7 +446,7 @@ func go_to_home_bed() -> void:
 	player.home_bed = CampSite.spawn_of_seed(world.world_seed)
 	player.position = _tile_centre(player.home_bed)
 	player.bed_lying_in = null
-	put_player_on_free_ground()
+	travel.put_player_on_free_ground(self)
 
 
 ## What taking a building down gives, item id to count: half of what it cost, rounded down
@@ -684,7 +514,7 @@ func take_down_building(building: Building) -> bool:
 ## Puts the player on a tile of the world, out of the house they are in (and off the horse they
 ## ride, which stays).
 func teleport_to(tile: Vector2i) -> void:
-	_leave_horse()
+	travel.leave_horse(self)
 	_building_inside = null
 	player.position = _tile_centre(tile)
 	player.bed_lying_in = null
@@ -791,7 +621,7 @@ func snapshot() -> Dictionary:
 	var player_data := player.to_dict()
 	# A game saved on horseback loads with the player standing beside the horse (or, with no room
 	# there, on its spot).
-	var spot := Vector2.INF if player.horse == null else _dismount_spot()
+	var spot := Vector2.INF if player.horse == null else travel.dismount_spot(self)
 	if spot != Vector2.INF:
 		player_data["position"] = SaveCodec.float_vector_to_json(spot)
 	return {

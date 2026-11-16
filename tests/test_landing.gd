@@ -32,7 +32,7 @@ func _stand_astride() -> void:
 
 func _walk(direction: Vector2, seconds: float) -> void:
 	for _step in int(seconds / 0.05):
-		_state.walk(direction, 0.05, _state.walk_speed_factor())
+		_state.travel.walk(_state, direction, 0.05, _state.travel.walk_speed_factor(_state))
 
 
 func test_a_jetty_is_laid_over_the_sea_and_walked_on() -> void:
@@ -126,9 +126,9 @@ func test_a_horse_ridden_onto_the_jetty_is_got_off_onto_the_jetty() -> void:
 	var horse := FarmAnimal.new(LivestockRules.HORSE, &"bay", Vector2(_tile) + Vector2(0.5, 0.5))
 	horse.is_saddled = true
 	_state.livestock.add(horse)
-	_state.mount(horse)
+	_state.travel.mount(_state, horse)
 	_walk(Vector2.RIGHT, 0.5)
 	assert_true(PlayerState.can_stand_at(_world, _state.player.position))
-	assert_true(_state.dismount())
+	assert_true(_state.travel.dismount(_state))
 	assert_true(_world.is_walkable(_state.player.tile()), "on the jetty, not in the sea")
 	assert_eq(_state.player.tile().y, _tile.y)

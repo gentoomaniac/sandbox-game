@@ -15,7 +15,7 @@ func before_each() -> void:
 
 
 func _walk_right(seconds: float) -> void:
-	_state.walk(Vector2.RIGHT, seconds)
+	_state.travel.walk(_state, Vector2.RIGHT, seconds)
 
 
 func test_the_toggle_is_named_on_the_hud() -> void:
@@ -81,7 +81,7 @@ func test_with_no_free_ground_within_reach_the_player_stays() -> void:
 		for x in range(-2, 3):
 			_world.set_terrain(_tile + Vector2i(x, y), Tile.Terrain.WATER)
 	_state.player.position = Vector2(_tile) + Vector2(0.5, 0.5)
-	assert_false(_state.put_player_on_free_ground(1))
+	assert_false(_state.travel.put_player_on_free_ground(_state, 1))
 	assert_eq(_state.player.position, Vector2(_tile) + Vector2(0.5, 0.5))
 
 
@@ -123,7 +123,7 @@ func test_indoors_the_player_stays_within_the_room() -> void:
 	_state.cheats.is_noclip = true
 	for direction in [Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN]:
 		for _i in 10:
-			_state.walk(direction, 1.0)
+			_state.travel.walk(_state, direction, 1.0)
 		assert_true(PlayerState.is_on_map(room, _state.player.position), "in the room")
 		var beyond := _state.player.tile() + Vector2i(direction)
 		assert_null(room.tile_at(beyond), "at the room's edge, going %s" % direction)

@@ -75,4 +75,4 @@ static func _ride(state: GameState, look: StringName) -> void:
 	var horse := FarmAnimal.new(LivestockRules.HORSE, look, state.player.position)
 	horse.is_saddled = true
 	state.livestock.add(horse)
-	state.mount(horse)
+	state.travel.mount(state, horse)

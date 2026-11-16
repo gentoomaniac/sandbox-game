@@ -123,10 +123,10 @@ const FIGURE_SHADOW_HALF_WIDTH := 8
 ## Where the lantern's light is, from the feet: the lantern hanging from the hand.
 const LANTERN_POSITION := Vector2(0, -16)
 
-## How fast the player walks (see GameState `walk_speed_factor`); the walk animation, and so the
+## How fast the player walks (see PlayerTravel `walk_speed_factor`); the walk animation, and so the
 ## steps, keep that pace.
 var walk_speed := 1.0
-## The horse the player rides trots (see GameState `is_trotting`).
+## The horse the player rides trots (see PlayerTravel `is_trotting`).
 var is_trotting := false
 ## How brightly the lights shine now (see ObjectLight.strength), set by whoever knows the time of
 ## day: the lantern shines as strongly as the fires and the windows.

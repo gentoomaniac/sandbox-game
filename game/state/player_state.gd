@@ -26,8 +26,8 @@ var home_bed := Vector2i.ZERO
 ## The bed the player lies in after waking, until they move (see `move`). Not saved: a loaded
 ## game has them standing.
 var bed_lying_in: WorldObject
-## The horse the player rides, or null on foot (see GameState `mount`): it goes where they go. Not
-## saved: a game saved on horseback loads with the player standing beside the horse.
+## The horse the player rides, or null on foot (see PlayerTravel `mount`): it goes where they go.
+## Not saved: a game saved on horseback loads with the player standing beside the horse.
 var horse: FarmAnimal
 
 ## What they are made of: it sets the most energy and health they can have, and the weight they

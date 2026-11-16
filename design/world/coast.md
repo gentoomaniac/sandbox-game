@@ -35,7 +35,7 @@
     2026-11-14): the player on foot can also wade into flooded mud (with nothing on it that
     blocks walking) from dry ground: `PlayerState.can_stand_at` with `may_wade`, which only the
     player's own fit rule passes. They walk at `walk_factor` of `[wading]` in
-    `data/paths.cfg` (0.3) while their feet are in it (`GameState.walk_speed_factor`; worn
+    `data/paths.cfg` (0.3) while their feet are in it (`PlayerTravel.walk_speed_factor`; worn
     ground is never tidal mud, so it does not combine with the rain's mud factor). The tideways
     and the sea are water terrain, not flooded mud: still blocked. A horse refuses flooded
     mud (the rider rides on over dry ground only, and `dismount` never puts them in it), so

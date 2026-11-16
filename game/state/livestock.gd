@@ -99,7 +99,7 @@ func add(animal: FarmAnimal) -> void:
 
 ## Takes every animal of a species (of one `look` of it, if given) out of the world, and so out of
 ## the next save. Returns how many.
-## The player riding a horse is not Livestock's to undo: GameState `dismount` comes first.
+## The player riding a horse is not Livestock's to undo: PlayerTravel `dismount` comes first.
 func remove_species(species: StringName, look := &"") -> int:
 	var gone: Array[FarmAnimal] = []
 	var staying: Array[FarmAnimal] = []
