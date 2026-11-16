@@ -6,6 +6,11 @@ extends RefCounted
 
 ## A surge has been rolled for a high water and will come.
 signal coming(level: float, start_minute: int)
+## The church bell rings the alarm, told every hour from the warning on (SurgeUpkeep): three
+## strokes in the warning, and without a break (`is_continuous`) once the sea runs over the dykes.
+## The sound it needs, `church_bell_alarm` (a big bell, tolled), is for the sound designer to make:
+## nobody plays it yet.
+signal bell_rung(is_continuous: bool)
 
 ## How high the water rises over mean high water, in metres; 0 while no surge is expected or
 ## running.
@@ -53,6 +58,13 @@ func end_minute() -> int:
 ## Whether a surge is rolled and the sea has not risen yet at a game minute.
 func is_expected_at(minutes: int) -> bool:
 	return has_surge() and minutes < start_minute()
+
+
+## Whether the sky is stormy at a game minute: from the warning, `warning_hours` before the sea
+## rises, until the water falls.
+func is_stormy_at(minutes: int) -> bool:
+	var warning_minutes := WeatherRules.default_rules().value("surge", "warning_hours") * 60
+	return has_surge() and minutes >= start_minute() - warning_minutes and minutes <= end_minute()
 
 
 ## Whether the water stands at its height at a game minute.

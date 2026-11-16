@@ -206,6 +206,13 @@ The upgrade from the old version gives an idle surge, no wet tiles and no edits,
    dry tile. Wild animals keep to the wildlife's own rules (not done). Villagers whose chunk is
    not loaded are not sent.
 10. The warning: forced storm, surf, talk, and the bell (the sound first, a sound-designer task).
+    **Built** without the bell's sound: from 6 hours before the sea rises until it falls
+    `GameState.current_weather` is a storm (the sky, the wind, the rain and, through the weather,
+    the sea's rough loop: `SeaSounds` reads it); the villagers' prompt carries a line about the
+    coming or running surge and the lowest dyke (`surge_coming`, `surge_running` in
+    `data/npc_talk.cfg`); `SurgeEvent.bell_rung` is told every hour from the warning on, and
+    nobody plays it yet: it needs the sound event `church_bell_alarm` (see the sound designer's
+    task). The surf drawn higher at the dyke foot is not done.
 11. Player dykes: clay and sods, raising, repair. Needs #59 merged; if not, this waits and the
     rest stands without it.
 12. The handbook page, the screenshots, the doc lines; `coast.md` marks it done.

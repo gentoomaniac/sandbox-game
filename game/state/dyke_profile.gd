@@ -72,6 +72,16 @@ func restore(world: World, dyke: WorldObject) -> void:
 	world.change_object(dyke)
 
 
+## The height of the lowest sea dyke of the loaded chunks, in metres; INF with none.
+func lowest_sea_dyke_height(world: World) -> float:
+	var lowest := INF
+	for coords in world.loaded_chunk_coords():
+		for object in world.chunk_at(coords).objects():
+			if object.type == WorldObjectTypes.DYKE and is_sea_dyke(object.pos):
+				lowest = minf(lowest, height_of(object))
+	return lowest
+
+
 ## The height of the dyke the generator laid at a tile.
 func height_at(tile: Vector2i) -> float:
 	var kind := "sea" if is_sea_dyke(tile) else "river"

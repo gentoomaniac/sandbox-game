@@ -72,6 +72,9 @@ static func reply_messages(
 		last.append(_said(rules, "memory", words))
 	last.append_array(GossipRules.default_rules().story_lines(npc.stories, moment.clock.day))
 	last.append(_said(rules, "moment", words))
+	if not moment.surge.is_empty():
+		var surge_key := "surge_running" if moment.surge["running"] else "surge_coming"
+		last.append(_said(rules, surge_key, words.merged(moment.surge)))
 	if not moment.shop.is_empty():
 		last.append(shop_text(moment.shop, words, rules))
 	last.append(_said(rules, "neighbour", words))

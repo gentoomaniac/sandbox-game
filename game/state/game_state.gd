@@ -234,10 +234,16 @@ func make_home_if_bedless(bed: WorldObject) -> void:
 
 ## The weather the player sees: at their tile, or outside the door of the house they are in
 ## (they would see it through its windows). A forced condition (see Console) replaces the
-## simulated one.
+## simulated one, and a storm surge brings a storm of its own from its warning on.
 func current_weather() -> WeatherSample:
 	var sample := weather.at(outdoor_tile(), clock.day, clock.minute_of_day)
-	return sample if weather_override == &"" else weather.forced(sample, weather_override)
+	if weather_override != &"":
+		return weather.forced(sample, weather_override)
+	return (
+		weather.forced(sample, &"storm")
+		if world.surge.is_stormy_at(clock.total_minutes())
+		else sample
+	)
 
 
 ## Lights a campfire that is out with a log of its slot (see Campfire `ignite`).

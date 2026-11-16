@@ -15,6 +15,10 @@ var building := ""
 ## Whether a burning campfire is near (told only when no building is): one that is out is no
 ## "campfire" to be by.
 var is_by_fire := false
+## What the villagers know of the storm surge, as the facts for the prompt (see NpcPrompt
+## `surge_text`): `running` (the sea is over the dykes), the time of `rises`, the `level` and the
+## `low_dyke` height, in metres; empty when none is coming.
+var surge := {}
 ## What the villager's shop is like, if they keep one (see ShopHours `fact`); empty otherwise.
 var shop := {}
 
@@ -37,6 +41,7 @@ static func of(state: GameState, npc: Npc, reach: float) -> NpcMoment:
 			nearest = distance
 			moment.building = building.type_data()["name"]
 	moment.shop = ShopHours.fact(state, npc)
+	moment.surge = _surge_facts(state)
 	var centre := npc.tile()
 	var tiles := ceili(reach)
 	for y in range(-tiles, tiles + 1):
@@ -46,3 +51,17 @@ static func of(state: GameState, npc: Npc, reach: float) -> NpcMoment:
 			if is_burning and Vector2(x, y).length() <= reach:
 				moment.is_by_fire = true
 	return moment
+
+
+## What is known of the surge that is coming or running (see `surge`).
+static func _surge_facts(state: GameState) -> Dictionary:
+	var surge := state.world.surge
+	var now := state.clock.total_minutes()
+	if not surge.is_stormy_at(now):
+		return {}
+	return {
+		"running": not surge.is_expected_at(now),
+		"rises": Sun.time_text(surge.start_minute() % GameClock.MINUTES_PER_DAY),
+		"level": "%.1f" % surge.level,
+		"low_dyke": "%.1f" % state.world.dykes.lowest_sea_dyke_height(state.world),
+	}

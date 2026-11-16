@@ -42,6 +42,8 @@ const KEYS := {
 		"about": TYPE_STRING,
 		"memory": TYPE_STRING,
 		"moment": TYPE_STRING,
+		"surge_coming": TYPE_STRING,
+		"surge_running": TYPE_STRING,
 		"neighbour": TYPE_STRING,
 		"level_1": TYPE_STRING,
 		"level_2": TYPE_STRING,
