@@ -86,6 +86,28 @@ A test of what a feature saves gets the game back with `RealLoad.of(self, state)
 `to_dict` directly skips the validator, so a save the loader refuses would pass; only a test of the
 codec itself does that, and its name says "codec".
 
+## Adding a saved feature
+
+A new saved field is a format change in three places, in one commit with its test:
+
+1. **The check.** Put the check of the new keys in the domain validator of
+   `game/state/save_checks/` that owns the data, or a new `Save<Domain>Checks` class (it takes the
+   `SaveContext`, and `SaveValidator._check_game` calls it, in the order its references need). A
+   feature that keeps a dictionary in an object's state (like the sales cart's `prices`) adds a
+   method to the `_state_checks` table of `SaveObjectChecks`, keyed by its state key, and names the
+   key in `OWN_SHAPE_STATE_KEYS` if it is no number; every other state entry must be a number. A
+   new optional key needs its check even when it needs no new version. Content that the game may
+   drop later (an item, a recipe) goes through `add_missing` with what removes it, not `report`.
+2. **The migration**, when the format changes: raise `SaveFile.VERSION`, add
+   `game/state/save_migrations/v<old>_to_v<new>.gd` (`static func upgrade(game: Dictionary)`) that
+   writes the default into an old save, written out as a literal and not read from data files, so
+   that a later balance change leaves old saves alone. Drop the oldest script so that ten remain
+   (the rule is at the top of `save_file.gd`). The next version is claimed serially, when the
+   branch is integrated: parallel work cannot both take version 57.
+3. **The tests.** An old save without the field loads (`tests/test_save_upgrade*.gd`), what the
+   feature saves comes back through the loader (`RealLoad`, see above), and a damaged value is
+   refused (`tests/test_save_validation*.gd`).
+
 ## Pictures for the README and the handbook
 
 The pictures are in `screenshots/`. Take them with `make screenshot`; re-take the ones a change makes

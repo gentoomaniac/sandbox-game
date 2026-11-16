@@ -444,14 +444,32 @@ every script in `game/state/console/commands/`, so a new command is one new file
 `SaveList` finds them and keeps the newest ten, `SaveHeader` is the small file beside each) with a
 `version`. Every state
 class that is saved has an explicit `to_dict` and a strict `from_dict` (`data["x"]`, never
-`data.get(...)` with a default). When the format changes, raise `SaveFile.VERSION` and add an
-upgrade step that gives old saves the new field (the rule is at the top of `save_file.gd`, which
+`data.get(...)` with a default). When the format changes, raise `SaveFile.VERSION` and add a
+migration that gives old saves the new field (the rule is at the top of `save_file.gd`, which
 keeps ten upgrade steps: versions VERSION - 10 to VERSION load). Things marked "not saved" in a
 comment (cheats, a forced weather) live only for the session. A timed or quick save
 (`SaveService`) takes `SaveFile.snapshot` on the main thread (the game of that moment, copied: the
 big maps as they are, the rest as save data) and makes the save data of that, the text and the
 write on a worker thread (`GameState.dict_of`, `SaveFile.text_of`), so a `snapshot` must copy
 every array, dictionary or object of the running game that it hands out instead of sharing it.
+
+`SaveFile` owns the files and the version window only. What happens to the data of a loaded save
+is in two places:
+
+- **Migrations** (`SaveMigrations`): one script per version in `game/state/save_migrations/`,
+  `v<N>_to_v<N+1>.gd` with `static func upgrade(game: Dictionary)`, run in turn from the version
+  of the file up to `VERSION` on the parsed JSON, before any `from_dict`. A test
+  (`test_save_migrations.gd`) fails when one of the ten is missing or an older one is left over.
+- **Checks** (`SaveValidator`): `SaveValidator.check(game)` runs the domain checks of
+  `game/state/save_checks/` in a fixed order (a check that refers to what another collected, such
+  as the villagers' houses to the world's buildings, comes after it) before anything is built, and
+  reports `problems` (a damaged save: refused) and `missing` (content the game no longer has:
+  the player is asked, then `drop_missing`). The domains are `SaveWorldChecks` (clock, land,
+  buildings, village, explored, map; it passes the flood to `SaveFloodChecks`), `SavePlayerChecks`,
+  `SaveActorChecks` (livestock, villagers, deeds), `SaveEconomyChecks` (shops, quests) and
+  `SaveObjectChecks` (item stacks, piles on the ground, and objects with the state each feature
+  keeps in them). All share one `SaveContext`: where findings go, the shape and range checks
+  (`field`, `is_kind`, `check_between`) and the buildings of the world.
 
 ## Settings and key bindings
 
