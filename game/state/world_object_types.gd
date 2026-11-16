@@ -200,9 +200,6 @@ const MAX_FOOTPRINT := Vector2i(7, 2)
 
 ## The atlas row of the reeds: after the last trunk.
 const REEDS_ROW := 24
-const _WORKBENCH_ROW := 41
-const _KILN_ROW := 43
-const _OVEN_ROW := 44
 const _EWER_ROW := 45
 const _GRAVE_ROW := 46
 const _JETTY_ROW := 47
@@ -232,48 +229,6 @@ const TOPICS_DIR := "res://game/state/world_objects"
 const _OWN_SOURCE := "res://game/state/world_object_types.gd"
 
 const _OTHER_TYPES := {
-	FIREPLACE:
-	{
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 0,
-		"atlas_row": 2,
-		"variants": 1,
-		# Deep orange at a moderate energy: brighter or paler turns the grass lime and
-		# bleaches the player.
-		"light": {"color": Color(1.0, 0.5, 0.22), "energy": 1.4, "radius_tiles": 7.0},
-		"storage_slots": 1,
-		"out_look": true,
-		"interior_sprite": "res://assets/interior/fireplace.png",
-		"placeable_in": OUTDOORS,
-	},
-	# Its interior picture is the ghost while it is placed: it stands only outdoors.
-	KILN:
-	{
-		"hp": 4,
-		"tool": &"pickaxe",
-		"drops": {&"kiln": 1},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _KILN_ROW,
-		"variants": 1,
-		"interior_sprite": "res://assets/interior/kiln.png",
-		"placeable_in": OUTDOORS,
-	},
-	OVEN:
-	{
-		"hp": 4,
-		"tool": &"pickaxe",
-		"drops": {&"oven": 1},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _OVEN_ROW,
-		"variants": 1,
-		"interior_sprite": "res://assets/interior/oven.png",
-		"placeable_in": ANYWHERE,
-	},
 	EWER:
 	{
 		"footprint": Vector2i(7, 1),
@@ -478,19 +433,6 @@ const _OTHER_TYPES := {
 		"variants": 1,
 		"sway_frames": 3,
 		"placeable_in": OUTDOORS,
-	},
-	WORKBENCH:
-	{
-		"hp": 3,
-		"tool": &"axe",
-		"drops": {&"workbench": 1},
-		"footprint": Vector2i(1, 1),
-		"blocks_walking": true,
-		"harvest_level": 1,
-		"atlas_row": _WORKBENCH_ROW,
-		"variants": 1,
-		"interior_sprite": "res://assets/interior/workbench.png",
-		"placeable_in": ANYWHERE,
 	},
 }
 
