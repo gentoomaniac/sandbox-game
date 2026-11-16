@@ -143,13 +143,15 @@ func begin(world: World, new_level: float, now: int, tide_number: int) -> void:
 
 ## The clock moved on to `now`: the water meets the dykes of chunks that were loaded since it
 ## rose, if the sea still stands at its height (`is_holding`), and starts to drain when its stay
-## is over.
+## is over. A skip of time can reach the end of the stay before the fill has finished: the tiles
+## left to fill are filled first, as the drain starts from the tiles that are wet.
 func advance(world: World, now: int, is_holding: bool) -> void:
 	if phase == Phase.IDLE or phase == Phase.DRAINING:
 		return
 	if is_holding:
 		_meet_new_chunks(world, now)
 	if now >= drain_minute:
+		settle(world)
 		_start_draining()
 
 

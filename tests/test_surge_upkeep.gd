@@ -103,3 +103,13 @@ func test_a_skip_of_time_fills_the_flood_at_once_and_drains_it_when_its_stay_is_
 	simulation.skip(2 * GameClock.MINUTES_PER_DAY)
 	assert_eq(world.flood.wet_count(), 0)
 	assert_eq(world.flood.phase, FloodState.Phase.IDLE)
+
+
+func test_a_skip_longer_than_the_stay_still_wets_the_land_before_it_drains() -> void:
+	var world := CoastWorld.make()
+	var simulation := _coast_simulation(world)
+	world.surge.start_now(3.4, world.clock.total_minutes(), 180)
+	simulation.skip(3 * GameClock.MINUTES_PER_DAY)
+	assert_eq(world.flood.wet_count(), 0, "drained")
+	assert_eq(world.flood.phase, FloodState.Phase.IDLE)
+	assert_gt(world.flood._salt_days.size(), 100, "but it was under water, and the salt is there")
