@@ -720,7 +720,7 @@ func place_building(building_type: StringName, origin: Vector2i, style := &"") -
 
 
 ## Takes a building off the land, with its interior. What it held is the caller's to give back
-## (see GameState `take_down_building`).
+## (see Demolition `take_down`).
 func remove_building(building: Building) -> void:
 	assert(_buildings.has(building), "Not a building of this world")
 	_buildings.erase(building)

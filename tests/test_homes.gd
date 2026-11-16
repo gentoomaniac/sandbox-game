@@ -114,7 +114,7 @@ func test_taking_a_house_down_frees_those_who_lived_and_worked_in_it() -> void:
 	_state.homes.move_in(antje, hall)
 	hinrich.workplace = Workplace.of_building(hall)
 
-	assert_true(_state.take_down_building(hall))
+	assert_true(Demolition.take_down(_state, hall))
 
 	assert_null(antje.house)
 	assert_null(hinrich.workplace)

@@ -153,16 +153,16 @@ func take_down_target(tile: Vector2i) -> TakeDownTarget:
 ## thing whole with what it holds.
 func take_down_gives(target: TakeDownTarget) -> Dictionary:
 	if target.building != null:
-		return _state.refund_of_building(target.building)
+		return Demolition.refund_of(_state, target.building)
 	return ToolUse.new(_state).items_of_placed(target.object)
 
 
 ## Why the target can't be taken down now, or "".
 func why_not_take_down(target: TakeDownTarget) -> String:
 	if target.building != null:
-		return _state.why_not_take_down(target.building)
+		return Demolition.why_not(_state, target.building)
 	if _state.world.is_village_cobble(target.object):
-		return GameState.THE_VILLAGES
+		return Demolition.THE_VILLAGES
 	if ToolUse.new(_state).is_standing_on(target.object):
 		return "Step off it first."
 	if _state.player.bed_lying_in == target.object:
@@ -175,7 +175,7 @@ func why_not_take_down(target: TakeDownTarget) -> String:
 ## Returns false, and does nothing, for a target that has a reason to stay.
 func take_down(target: TakeDownTarget) -> bool:
 	if target.building != null:
-		return _state.take_down_building(target.building)
+		return Demolition.take_down(_state, target.building)
 	if why_not_take_down(target) != "":
 		return false
 	var items := take_down_gives(target)

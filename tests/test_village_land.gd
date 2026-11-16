@@ -15,8 +15,8 @@ func _village_house() -> Building:
 
 func test_a_house_of_the_village_is_not_taken_down() -> void:
 	var house := _village_house()
-	assert_eq(_state.why_not_take_down(house), "That is the village's.")
-	assert_false(_state.take_down_building(house))
+	assert_eq(Demolition.why_not(_state, house), "That is the village's.")
+	assert_false(Demolition.take_down(_state, house))
 	assert_true(_state.world.buildings().has(house))
 
 
@@ -24,8 +24,8 @@ func test_a_house_of_the_player_is_taken_down() -> void:
 	var tile := _state.player.tile() + Vector2i(0, -6)
 	var shack := _state.world.place_building(BuildingTypes.SHACK, tile)
 	assert_not_null(shack)
-	assert_eq(_state.why_not_take_down(shack), "")
-	assert_true(_state.take_down_building(shack))
+	assert_eq(Demolition.why_not(_state, shack), "")
+	assert_true(Demolition.take_down(_state, shack))
 
 
 func test_the_console_says_where_the_village_is_and_what_it_holds() -> void:

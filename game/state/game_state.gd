@@ -16,9 +16,6 @@ signal action_done(outcome: ActionOutcome)
 ## What using the held lantern does (see `held_lantern_use`).
 enum LanternUse { NONE, PUT_OUT, LIGHT, FIT_CANDLE }
 
-## What is said of a thing of the village that the player may not take down or up.
-const THE_VILLAGES := "That is the village's."
-
 var world: World
 var clock: GameClock
 ## Moves the clock and what follows it (see Simulation); time only passes through it.
@@ -295,68 +292,6 @@ func report(kind: StringName, tile: Vector2i, object := &"", items := {}) -> voi
 
 func is_out_of_energy() -> bool:
 	return player.energy <= 0.0
-
-
-## What taking a building down gives, item id to count: half of what it cost, rounded down
-## (nothing with the cost cheat on, which built it for nothing).
-func refund_of_building(building: Building) -> Dictionary:
-	var refund := {}
-	if cheats.is_cost_off:
-		return refund
-	var costs: Dictionary = building.type_data()["costs"]
-	for item: StringName in costs:
-		if costs[item] / 2 > 0:
-			refund[item] = costs[item] / 2
-	return refund
-
-
-## Why a building can't be taken down now, or "" if it can: it is the village's, the player is
-## inside, or something the player put in it is still there (a thing they placed, or what a chest or
-## station holds).
-## The furniture the house came with (the default's or a villager's own room's), empty, goes
-## with it.
-func why_not_take_down(building: Building) -> String:
-	if world.is_village_building(building):
-		return THE_VILLAGES
-	if is_inside():
-		return "You can't take a house down from inside."
-	if building.interior == null:
-		return ""
-	var own_rooms: Array[Interior] = []
-	var own_maps: Array[String] = [BuildingTypes.TYPES[building.type]["interior_map"]]
-	own_maps.append_array(npcs.villagers.home_interiors(building.type))
-	for map_path: String in own_maps:
-		own_rooms.append(InteriorLoader.load_interior(map_path))
-	var tool_use := ToolUse.new(self)
-	for object in building.interior.objects():
-		if not object.type_data().has("drops"):
-			continue
-		var is_own := own_rooms.any(
-			func(room: Interior) -> bool:
-				var own := room.object_at(object.pos)
-				return own != null and own.type == object.type
-		)
-		if not is_own or not tool_use.items_held_by(object).is_empty():
-			return "Take out what you put in it first."
-	return ""
-
-
-## Takes a building down: half its materials lie in front of its door. Not while
-## `why_not_take_down` has a reason. A player whose home bed was in it has the camp's
-## sleeping bag for home again (if the bag is gone they wake standing on its spot, as with
-## any missing bed). Returns whether it was taken down.
-func take_down_building(building: Building) -> bool:
-	if why_not_take_down(building) != "":
-		return false
-	if player.home_map == building.interior:
-		player.home_map = world
-		player.home_bed = CampSite.sleeping_bag_of_seed(world.world_seed)
-	var refund := refund_of_building(building)
-	world.remove_building(building)
-	homes.building_gone(building)
-	world.drop_items(building.door_tile() + Vector2i.DOWN, refund)
-	report(ActionOutcome.DEMOLISH, building.origin, building.type, refund)
-	return true
 
 
 ## What `use_tile` would do on a tile (see ToolUse). The use rules get a ToolUse made for the

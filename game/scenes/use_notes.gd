@@ -13,7 +13,7 @@ const _NOTES := {
 	ToolUse.Use.RIDING: GET_OFF_FIRST,
 	ToolUse.Use.NO_ROOM: "Not enough room in the inventory.",
 	ToolUse.Use.STANDING_ON: "Step off it first.",
-	ToolUse.Use.THE_VILLAGES: GameState.THE_VILLAGES,
+	ToolUse.Use.THE_VILLAGES: Demolition.THE_VILLAGES,
 }
 
 

@@ -175,7 +175,7 @@ func test_building_and_demolishing_tell_the_building_and_the_materials() -> void
 	assert_eq(_outcomes.size(), 1)
 	assert_eq(_outcomes[0].kind, ActionOutcome.DEMOLISH)
 	assert_eq(_outcomes[0].object, BuildingTypes.SHACK)
-	assert_eq(_outcomes[0].items, _state.refund_of_building(building))
+	assert_eq(_outcomes[0].items, Demolition.refund_of(_state, building))
 
 
 # --- Nothing for a refusal or a load ---

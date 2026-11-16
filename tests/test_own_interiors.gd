@@ -128,7 +128,7 @@ func test_a_house_with_an_own_inside_is_taken_down_when_nothing_was_put_in_it() 
 	var hall := _hall()
 	_state.homes.move_in(_villager("antje"), hall)
 
-	assert_eq(_state.why_not_take_down(hall), "")
+	assert_eq(Demolition.why_not(_state, hall), "")
 
 
 func test_the_boysens_inside_has_beds_and_every_floor_tile_is_reachable() -> void:

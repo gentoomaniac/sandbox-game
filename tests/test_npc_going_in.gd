@@ -139,7 +139,7 @@ func test_a_skip_leaves_a_villager_inside_where_they_are() -> void:
 func test_taking_the_building_down_puts_those_inside_out() -> void:
 	var npc := _villager_in_the_yard()
 	_step_until_inside(npc)
-	assert_true(_state.take_down_building(_house))
+	assert_true(Demolition.take_down(_state, _house))
 	assert_null(npc.inside)
 	assert_true(_saves_and_loads())
 
@@ -148,7 +148,7 @@ func test_taking_the_building_down_stops_those_going_in() -> void:
 	var npc := _villager_in_the_yard()
 	_step()
 	assert_eq(npc.entering, _house)
-	assert_true(_state.take_down_building(_house))
+	assert_true(Demolition.take_down(_state, _house))
 	assert_null(npc.entering)
 	for _i in 100:
 		_step()

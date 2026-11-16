@@ -135,7 +135,7 @@ Warft and an Ewer here and there.
   did: who, the kind (till, plant, harvest, break, place, build, craft, eat, pick up ...), the
   tile on its map, the object type and the items with counts. GameState tells it once through
   `action_done`, after the action worked (`ToolUse`, `Builder`, `Crafting`, `eat_held`,
-  `GroundPickup`'s `drop` and `collect`, `take_down_building`): never for a refusal and
+  `GroundPickup`'s `drop` and `collect`, `Demolition.take_down`): never for a refusal and
   never for loading a game. Whoever reacts (the sounds, later the deed log of the gossip)
   listens to it; there is no global event bus. Low-level setters (`World.set_terrain`, console
   and debug commands) tell nothing.
@@ -343,7 +343,7 @@ Warft and an Ewer here and there.
 - Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
   mode, the chosen building and style and what each target gives,
-  `GameState.take_down_building` the rules for buildings), `BuildMenu` (the row of buildings
+  `Demolition` the rules for taking buildings down), `BuildMenu` (the row of buildings
   above the hotbar, the chosen one's styles and the preview; its cells take the clicks on
   them, so they never reach the land, and it shows build mode's messages while it is up),
   `GroundItemView`, and the HUDs and screens (`HotbarHud`, `BagScreen`,
