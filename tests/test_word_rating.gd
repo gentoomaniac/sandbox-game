@@ -31,11 +31,13 @@ func before_each() -> void:
 	add_child_autofree(WordRating.new(_dialogue, _state))
 
 
-## The player says `line` and the villager answers with REPLY; then the rating is awaited.
+## The player says `line` and the villager answers with REPLY; then the rating is awaited. The
+## fake answers on the next frame, so a few frames wait for it however slow the machine is (a
+## wait in seconds lost the race on a busy run).
 func _say(line: String, rating_answer: String) -> void:
 	_chat.answers = [REPLY, rating_answer]
 	await _dialogue.say(_antje, line, _state)
-	await wait_seconds(0.1)
+	await wait_process_frames(5)
 
 
 func _rating_requests() -> Array[Dictionary]:
