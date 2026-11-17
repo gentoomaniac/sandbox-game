@@ -209,7 +209,7 @@ class SelectTestsTest(unittest.TestCase):
         self.assertEqual(self.select("tests/case_base.gd").words(), ["tests/test_bar_through_class_name.gd"])
 
     def test_an_unknown_path_runs_everything(self):
-        for path in ["project.godot", "Makefile", "addons/gut/plugin.cfg", "tools/run_tests.py", "new_folder/x.bin"]:
+        for path in ["project.godot", "Makefile", "addons/gut/plugin.cfg", "tools/run_tests.py", "tools/memguard.py", "new_folder/x.bin"]:
             with self.subTest(path=path):
                 self.assertEqual(self.select(path).words(), ["full"])
 

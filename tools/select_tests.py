@@ -236,7 +236,7 @@ def select(root, changed, deleted=(), base_class_names=None):
             plan.report.append(line + "no effect on any test")
         elif path.endswith(".md") or parts[0] in DOCS_FOLDERS:
             plan.report.append(line + "docs, no tests")
-        elif path == "tools/run_tests.py":
+        elif path in ("tools/run_tests.py", "tools/memguard.py"):
             plan.full = True
             plan.report.append(line + "the test runner itself: everything")
         elif parts[0] == "tools":
