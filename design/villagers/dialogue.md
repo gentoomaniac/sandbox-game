@@ -64,7 +64,7 @@
   know, speak in one's own manner (the sample lines show the manner, not the language), puzzled by
   what did not exist in 1750, sharp to the rude) followed by the village's sheet and the
   villager's: in full for a hosted model (a provider that needs a key, `needs_key` of
-  `GameSettings.LANGUAGE_MODEL_PROVIDERS`: Gemini, Claude), cut down for a local one (the
+  `LanguageModelProfiles.PROVIDERS`: Gemini, Claude), cut down for a local one (the
   villager's essentials, family and friends by name and kind, speech and one sample line; the
   village line and who is who), so that a 3B or 7B stays fast; the example
   exchange ("Villager: Hark Nissen, a blacksmith. / His neighbour says: "Fine weather for the hay

@@ -118,7 +118,7 @@ func test_no_second_line_of_recovery_for_one_failure() -> void:
 
 
 func test_the_default_endpoint_is_silent_in_trouble_and_in_recovery() -> void:
-	var endpoint: String = GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"]
+	var endpoint: String = LanguageModelProfiles.DEFAULT_MODEL["endpoint"]
 	_chat.failed.emit(endpoint, "is not reachable", "")
 	_chat.worked.emit(endpoint)
 	assert_eq(_hud.texts().size(), 0)

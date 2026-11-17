@@ -88,46 +88,6 @@ const VOLUME_STEP := 5
 const DEFAULT_VOLUME := 100
 const DEFAULT_SOUND_IN_BACKGROUND := true
 
-## The model of the test LLM (`make llm-up`); no endpoint means no model: villagers speak scripted
-## lines (see NpcDialogue).
-const DEFAULT_LANGUAGE_MODEL := {
-	"provider": "openai",
-	"endpoint": "http://127.0.0.1:11434/v1",
-	"model": "qwen2.5:7b-instruct",
-}
-## The providers of a language model, by their name in the settings: the protocol they speak
-## ("openai", an OpenAI-compatible API, see OpenAiChat; or "claude", Anthropic's, see ClaudeChat)
-## and the endpoint and model a profile of each starts with. The key is the provider's, not the
-## profile's. claude-haiku-5-5 is the much cheaper model of Claude's.
-const LANGUAGE_MODEL_PROVIDERS := {
-	"openai":
-	{
-		"name": "OpenAI-compatible",
-		"protocol": "openai",
-		"needs_key": false,
-		"endpoint": DEFAULT_LANGUAGE_MODEL["endpoint"],
-		"model": DEFAULT_LANGUAGE_MODEL["model"],
-	},
-	"claude":
-	{
-		"name": "Claude",
-		"protocol": "claude",
-		"needs_key": true,
-		"endpoint": "https://api.anthropic.com/v1",
-		"model": "claude-opus-5-5",
-	},
-	## Google's Gemini through its OpenAI-compatible endpoint, with an AI Studio key (free tier).
-	## Flash-Lite doesn't think unless asked, so its answers fit the few tokens a line gets.
-	"gemini":
-	{
-		"name": "Gemini",
-		"protocol": "openai",
-		"needs_key": true,
-		"endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-		"model": "gemini-2.5-flash-lite",
-	},
-}
-
 var is_fullscreen := false
 ## Whether the world shows the classic art, the 16 px art doubled, where it has it, instead of
 ## the new art drawn at 32 px per tile (see ArtSet).
@@ -159,11 +119,6 @@ func _init(path: String = DEFAULT_PATH) -> void:
 	for channel in VOLUME_CHANNELS:
 		_volumes[channel] = DEFAULT_VOLUME
 	is_fullscreen = SettingsEngine.is_fullscreen()
-
-
-## Whether `endpoint` is the test LLM's, which a player who set none is left with.
-static func is_default_language_model_endpoint(endpoint: String) -> bool:
-	return endpoint == DEFAULT_LANGUAGE_MODEL["endpoint"]
 
 
 func set_fullscreen(value: bool) -> void:

@@ -78,7 +78,7 @@ func test_a_model_the_player_set_that_gives_nothing_gives_no_line_at_all() -> vo
 
 
 func test_the_default_endpoint_that_gives_nothing_gets_a_scripted_line() -> void:
-	_settings.profiles.active["endpoint"] = GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"]
+	_settings.profiles.active["endpoint"] = LanguageModelProfiles.DEFAULT_MODEL["endpoint"]
 	var chat := FakeChat.new()
 	chat.answers = [""]
 	var answer: String = await _dialogue(chat).reply(_antje, [], "Moin", _state)

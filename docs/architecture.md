@@ -533,7 +533,7 @@ window setting (fullscreen) into effect, so `GameSettings` is only the values an
 file keeps the display, game and audio settings and the language model: the profiles
 (`LanguageModelProfiles`, held by `GameSettings.profiles`; a profile is a provider with its
 endpoint, model, tokens, temperature and chat length, and the
-provider is a row of `GameSettings.LANGUAGE_MODEL_PROVIDERS` with the protocol it speaks:
+provider is a row of `LanguageModelProfiles.PROVIDERS` with the protocol it speaks:
 OpenAI-compatible, Claude or Gemini, which speaks the OpenAI protocol) and each provider's key
 (`profiles.language_model()` is the profile in use with its provider's key; the key in plain
 text, never in the save, never sent to another provider). The page of it

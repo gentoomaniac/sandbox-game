@@ -64,7 +64,7 @@ func test_picking_a_model_stores_it_and_fills_the_field() -> void:
 
 func test_without_an_answer_the_saved_model_is_shown_with_a_note() -> void:
 	var names := await _listed_after(_response("500 Internal Server Error", "{}"))
-	assert_eq(names, [GameSettings.DEFAULT_LANGUAGE_MODEL["model"]])
+	assert_eq(names, [LanguageModelProfiles.DEFAULT_MODEL["model"]])
 	assert_ne(_page._models_note.text, "")
 
 

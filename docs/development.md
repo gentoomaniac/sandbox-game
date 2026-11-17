@@ -78,7 +78,7 @@ the next tag.
 ## Language model
 
 The rule for full or cut-down villager sheets is `needs_key` of the provider's row in
-`GameSettings.LANGUAGE_MODEL_PROVIDERS` (`NpcDialogue.has_full_sheets`). `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1
+`LanguageModelProfiles.PROVIDERS` (`NpcDialogue.has_full_sheets`). `SANDBOX_LLM_URL=http://127.0.0.1:11434/v1
 make test` also runs the tests that ask the real model, and `ANTHROPIC_API_KEY=... make test` asks the
 real Claude once.
 

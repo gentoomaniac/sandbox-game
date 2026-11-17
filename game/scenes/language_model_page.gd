@@ -280,7 +280,7 @@ func show_settings() -> void:
 	for index in _provider.item_count:
 		if _provider.get_item_metadata(index) == chosen:
 			_provider.select(index)
-	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[chosen]
+	var provider: Dictionary = LanguageModelProfiles.PROVIDERS[chosen]
 	for key: String in _fields:
 		_fields[key].text = language_model[key]
 		var tip: String = TIPS[key].get(chosen, TIPS[key][provider["protocol"]])
@@ -307,7 +307,7 @@ func show_models() -> void:
 	_models_asked += 1
 	var asked := _models_asked
 	var language_model := _settings.profiles.language_model()
-	var provider: Dictionary = GameSettings.LANGUAGE_MODEL_PROVIDERS[language_model["provider"]]
+	var provider: Dictionary = LanguageModelProfiles.PROVIDERS[language_model["provider"]]
 	if language_model["endpoint"] == "":
 		_list_models([], "No endpoint: villagers speak scripted lines.")
 		return
@@ -363,8 +363,8 @@ func _add_name_and_provider() -> void:
 	TooltipView.set_text(provider_label, PROVIDER_TIP)
 	provider_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	_rows.add_child(provider_label)
-	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
-		_provider.add_item(GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["name"])
+	for provider: String in LanguageModelProfiles.PROVIDERS:
+		_provider.add_item(LanguageModelProfiles.PROVIDERS[provider]["name"])
 		_provider.set_item_metadata(_provider.item_count - 1, provider)
 	_provider.item_selected.connect(_on_provider_selected)
 	TooltipView.set_text(_provider, PROVIDER_TIP, "setting_language_model_provider")

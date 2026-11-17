@@ -27,7 +27,7 @@ signal exchanged(npc: Npc, line: String)
 const USE_CHAT_TIMEOUT := -1.0
 
 ## Ask the model, one for each protocol of the providers (GameSettings
-## `LANGUAGE_MODEL_PROVIDERS`); tests put fakes in their place.
+## LanguageModelProfiles `PROVIDERS`); tests put fakes in their place.
 var chats: Dictionary
 var rules := NpcTalkRules.default_rules()
 var rng := RandomNumberGenerator.new()
@@ -58,9 +58,9 @@ func has_model_for(use: StringName) -> bool:
 	return has_model() and _settings.profiles.uses_model_for(use)
 
 
-## The row of GameSettings `LANGUAGE_MODEL_PROVIDERS` of the provider set.
+## The row of LanguageModelProfiles `PROVIDERS` of the provider set.
 func _provider() -> Dictionary:
-	return GameSettings.LANGUAGE_MODEL_PROVIDERS[_settings.profiles.active["provider"]]
+	return LanguageModelProfiles.PROVIDERS[_settings.profiles.active["provider"]]
 
 
 func _chat_of_provider() -> ModelChat:
@@ -138,9 +138,7 @@ func reply(npc: Npc, history: Array[Dictionary], message: String, state: GameSta
 		)
 		if answer != "":
 			return answer
-		if not GameSettings.is_default_language_model_endpoint(
-			_settings.profiles.active["endpoint"]
-		):
+		if not LanguageModelProfiles.is_default_endpoint(_settings.profiles.active["endpoint"]):
 			return ""
 	# A moment's thought before a scripted line too, also on the default endpoint, which may give
 	# nothing.

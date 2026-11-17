@@ -76,7 +76,7 @@ func test_claude_starts_with_its_endpoint_and_model_and_survives_a_restart() -> 
 	assert_eq(loaded.profiles.active["endpoint"], "https://api.anthropic.com/v1")
 	assert_eq(loaded.profiles.active["model"], "claude-opus-5-5")
 	loaded.profiles.select("OpenAI-compatible")
-	assert_eq(loaded.profiles.active["endpoint"], GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"])
+	assert_eq(loaded.profiles.active["endpoint"], LanguageModelProfiles.DEFAULT_MODEL["endpoint"])
 
 
 func test_each_profile_keeps_its_own_endpoint_model_and_the_key_is_the_providers() -> void:
@@ -176,7 +176,7 @@ func test_a_value_that_is_not_a_text_is_ignored() -> void:
 		)
 	)
 	var loaded := _reloaded()
-	assert_eq(loaded.profiles.active["endpoint"], GameSettings.DEFAULT_LANGUAGE_MODEL["endpoint"])
+	assert_eq(loaded.profiles.active["endpoint"], LanguageModelProfiles.DEFAULT_MODEL["endpoint"])
 	assert_eq(loaded.profiles.active["model"], "phi3")
 	assert_push_warning_count(1)
 

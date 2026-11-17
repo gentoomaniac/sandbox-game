@@ -34,7 +34,7 @@ func _init(
 
 
 func _on_failed(endpoint: String, trouble: String, detail: String) -> void:
-	if GameSettings.is_default_language_model_endpoint(endpoint):
+	if LanguageModelProfiles.is_default_endpoint(endpoint):
 		return
 	var now := Time.get_ticks_msec()
 	if _shown_at.has(trouble) and now - _shown_at[trouble] < repeat_seconds * 1000.0:
@@ -48,7 +48,7 @@ func _on_failed(endpoint: String, trouble: String, detail: String) -> void:
 
 
 func _on_worked(endpoint: String) -> void:
-	if _is_troubled and not GameSettings.is_default_language_model_endpoint(endpoint):
+	if _is_troubled and not LanguageModelProfiles.is_default_endpoint(endpoint):
 		_is_troubled = false
 		_notifications.post(NOTE, ANSWERS_AGAIN_TEXT)
 

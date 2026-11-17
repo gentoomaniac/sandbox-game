@@ -1,7 +1,7 @@
 class_name LanguageModelProfiles
 extends RefCounted
 ## The profiles of the language model villagers talk through (see NpcDialogue), and the one in
-## use. A profile has a name of its own, a provider (see GameSettings `LANGUAGE_MODEL_PROVIDERS`)
+## use. A profile has a name of its own, a provider (see `PROVIDERS`)
 ## and that provider's settings: the endpoint (such as "http://127.0.0.1:11434/v1", see
 ## OpenAiChat and ClaudeChat), the model, the most tokens and the temperature of an answer, and
 ## how many lines of a chat, stories and long-term memories a villager keeps. Several profiles may
@@ -18,6 +18,45 @@ const ACTIVE_KEY := "active"
 ## Before there were profiles: the provider in use, and the lines kept, one for all providers.
 const OLD_PROVIDER_KEY := "provider"
 const OLD_CHAT_HISTORY_LINES_KEY := "chat_history_lines"
+## The model of the test LLM (`make llm-up`); no endpoint means no model: villagers speak scripted
+## lines (see NpcDialogue).
+const DEFAULT_MODEL := {
+	"provider": "openai",
+	"endpoint": "http://127.0.0.1:11434/v1",
+	"model": "qwen2.5:7b-instruct",
+}
+## The providers of a language model, by their name in the settings: the protocol they speak
+## ("openai", an OpenAI-compatible API, see OpenAiChat; or "claude", Anthropic's, see ClaudeChat)
+## and the endpoint and model a profile of each starts with. The key is the provider's, not the
+## profile's. claude-haiku-5-5 is the much cheaper model of Claude's.
+const PROVIDERS := {
+	"openai":
+	{
+		"name": "OpenAI-compatible",
+		"protocol": "openai",
+		"needs_key": false,
+		"endpoint": DEFAULT_MODEL["endpoint"],
+		"model": DEFAULT_MODEL["model"],
+	},
+	"claude":
+	{
+		"name": "Claude",
+		"protocol": "claude",
+		"needs_key": true,
+		"endpoint": "https://api.anthropic.com/v1",
+		"model": "claude-opus-5-5",
+	},
+	## Google's Gemini through its OpenAI-compatible endpoint, with an AI Studio key (free tier).
+	## Flash-Lite doesn't think unless asked, so its answers fit the few tokens a line gets.
+	"gemini":
+	{
+		"name": "Gemini",
+		"protocol": "openai",
+		"needs_key": true,
+		"endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+		"model": "gemini-2.5-flash-lite",
+	},
+}
 ## What a profile sets as text. `max_tokens` and `temperature` empty are the game's own (see
 ## ModelChat.max_tokens_of and temperature_of).
 const TEXT_KEYS: Array[String] = ["endpoint", "model", "max_tokens", "temperature"]
@@ -56,6 +95,11 @@ var _path := ""
 
 func _init() -> void:
 	active = _profiles[0]
+
+
+## Whether `endpoint` is the test LLM's, which a player who set none is left with.
+static func is_default_endpoint(endpoint: String) -> bool:
+	return endpoint == DEFAULT_MODEL["endpoint"]
 
 
 ## What the chats are asked of: the profile in use with the key of its provider.
@@ -122,12 +166,10 @@ func select(profile_name: String) -> void:
 			changed.emit()
 
 
-## Adds a profile for `provider` (a key of GameSettings `LANGUAGE_MODEL_PROVIDERS`), with its
+## Adds a profile for `provider` (a key of `PROVIDERS`), with its
 ## endpoint and model, and uses it.
 func add(provider: String) -> void:
-	var added := _new_profile(
-		provider, _unused_name(GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["name"])
-	)
+	var added := _new_profile(provider, _unused_name(PROVIDERS[provider]["name"]))
 	_profiles.append(added)
 	active = added
 	changed.emit()
@@ -171,8 +213,8 @@ func delete() -> bool:
 ## with; the rest of the profile stays.
 func set_provider(provider: String) -> void:
 	active["provider"] = provider
-	active["endpoint"] = GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["endpoint"]
-	active["model"] = GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["model"]
+	active["endpoint"] = PROVIDERS[provider]["endpoint"]
+	active["model"] = PROVIDERS[provider]["model"]
 	changed.emit()
 
 
@@ -180,7 +222,7 @@ func set_provider(provider: String) -> void:
 ## is ignored, with a warning.
 func load_from(file: ConfigFile, path: String) -> void:
 	_path = path
-	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
+	for provider: String in PROVIDERS:
 		var section := _section_of(provider)
 		if file.has_section_key(section, "api_key"):
 			var key: Variant = file.get_value(section, "api_key")
@@ -201,7 +243,7 @@ func save_to(file: ConfigFile) -> void:
 		file.set_value(SECTION, PROFILES_KEY, _profiles)
 	if active != _profiles[0]:
 		file.set_value(SECTION, ACTIVE_KEY, active["name"])
-	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
+	for provider: String in PROVIDERS:
 		if _api_keys[provider] != "":
 			file.set_value(_section_of(provider), "api_key", _api_keys[provider])
 
@@ -209,10 +251,8 @@ func save_to(file: ConfigFile) -> void:
 ## A profile for each provider, named after it, the test LLM's first.
 static func _default_profiles() -> Array[Dictionary]:
 	var profiles: Array[Dictionary] = []
-	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
-		profiles.append(
-			_new_profile(provider, GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["name"])
-		)
+	for provider: String in PROVIDERS:
+		profiles.append(_new_profile(provider, PROVIDERS[provider]["name"]))
 	return profiles
 
 
@@ -220,8 +260,8 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 	return {
 		"name": profile_name,
 		"provider": provider,
-		"endpoint": GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["endpoint"],
-		"model": GameSettings.LANGUAGE_MODEL_PROVIDERS[provider]["model"],
+		"endpoint": PROVIDERS[provider]["endpoint"],
+		"model": PROVIDERS[provider]["model"],
 		"max_tokens": "",
 		"temperature": "",
 		"chat_history_lines": DEFAULT_CHAT_HISTORY_LINES,
@@ -236,7 +276,7 @@ static func _new_profile(provider: String, profile_name: String) -> Dictionary:
 
 static func _no_api_keys() -> Dictionary:
 	var keys := {}
-	for provider: String in GameSettings.LANGUAGE_MODEL_PROVIDERS:
+	for provider: String in PROVIDERS:
 		keys[provider] = ""
 	return keys
 
@@ -244,7 +284,7 @@ static func _no_api_keys() -> Dictionary:
 ## The section of the settings file a provider's key is in (and its settings, before there were
 ## profiles): that of the default provider is the one they were in before there were more.
 static func _section_of(provider: String) -> String:
-	if provider == GameSettings.DEFAULT_LANGUAGE_MODEL["provider"]:
+	if provider == DEFAULT_MODEL["provider"]:
 		return SECTION
 	return "%s.%s" % [SECTION, provider]
 
@@ -288,7 +328,7 @@ func _checked_profile(entry: Variant) -> Dictionary:
 	var provider: Variant = entry.get("provider")
 	if not profile_name is String or profile_name.strip_edges() == "":
 		return {}
-	if not provider is String or not provider in GameSettings.LANGUAGE_MODEL_PROVIDERS:
+	if not provider is String or not provider in PROVIDERS:
 		return {}
 	var checked := _new_profile(provider, profile_name.strip_edges())
 	for key in TEXT_KEYS:
