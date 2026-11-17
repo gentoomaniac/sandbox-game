@@ -14,6 +14,12 @@ const WINDOW_LIT_STRENGTH := 0.3
 const BELL_STRIP := "res://assets/buildings/bell_frame_swing.png"
 ## Where a bell hangs from, in the frame's picture (both arts draw it there).
 const BELL_HANGS_AT := Vector2(8, 64)
+## The windmill's sails: one picture while they stand still, and a strip of frames while they turn
+## (see SailTurn). Both are drawn behind the windmill, round the hub.
+const SAILS_STILL := "res://assets/buildings/windmill_sails_still.png"
+const SAILS_STRIP := "res://assets/buildings/windmill_sails.png"
+## Where the hub is, in the windmill's picture (both arts draw it there).
+const SAILS_HUB := Vector2(48, 10)
 
 var _entities: Node2D
 var _blend: SeasonBlend
@@ -26,6 +32,9 @@ var _window_lights: Dictionary[Building, Array] = {}
 ## swings now. It is laid over the frame's picture, which has no bell of its own.
 var _bells: Dictionary[Building, Sprite2D] = {}
 var _swings: Dictionary[Building, BellSwing] = {}
+## The sails of each windmill, all turning as the wind does.
+var _sails: Dictionary[Building, Sprite2D] = {}
+var _sail_turn := SailTurn.new()
 
 
 func _init(entities: Node2D) -> void:
@@ -85,6 +94,8 @@ func add(building: Building) -> void:
 	_add_window_lights(building, sprite)
 	if building.type == BuildingTypes.BELL_FRAME:
 		_add_bell(building, sprite)
+	if building.type == BuildingTypes.WINDMILL and ResourceLoader.exists(SAILS_STRIP):
+		_add_sails(building, sprite)
 
 
 ## Shows every building in the chosen art set (see ArtSet).
@@ -94,6 +105,8 @@ func show_art_set() -> void:
 		_show_roof_snow(building, _sprites[building])
 	for bell in _bells.values():
 		bell.texture = load(ArtSet.path(BELL_STRIP))
+	for building in _sails:
+		_show_sails(building)
 
 
 ## Takes down the sprite and the window lights of a building.
@@ -102,6 +115,7 @@ func remove(building: Building) -> void:
 	_sprites.erase(building)
 	_bells.erase(building)
 	_swings.erase(building)
+	_sails.erase(building)
 	for light: ObjectLight in _window_lights[building]:
 		light.queue_free()
 	_window_lights.erase(building)
@@ -114,7 +128,20 @@ func swing_bell(building: Building) -> void:
 	_swings[building].ring()
 
 
+## Sets how fast the sails of the windmills turn: 0 stands still (see SailTurn).
+func set_sail_speed(speed: float) -> void:
+	if speed == _sail_turn.speed:
+		return
+	_sail_turn.speed = speed
+	for building in _sails:
+		_show_sails(building)
+
+
 func _process(delta: float) -> void:
+	_sail_turn.step(delta)
+	for building in _sails:
+		# The still sails are a single picture (see `_show_sails`), which has no other frame.
+		_sails[building].frame = 0 if _sail_turn.is_still() else _sail_turn.frame()
 	for building in _swings.keys():
 		var swing := _swings[building]
 		swing.step(delta)
@@ -141,6 +168,25 @@ func _add_bell(building: Building, sprite: Sprite2D) -> void:
 	bell.use_parent_material = true
 	sprite.add_child(bell)
 	_bells[building] = bell
+
+
+func _add_sails(building: Building, sprite: Sprite2D) -> void:
+	var sails := Sprite2D.new()
+	sails.position = sprite.offset + SAILS_HUB
+	# Behind the windmill, and fading with it when it hides the player.
+	sails.show_behind_parent = true
+	sails.use_parent_material = true
+	sprite.add_child(sails)
+	_sails[building] = sails
+	_show_sails(building)
+
+
+## The still sails or the strip of turning ones, in the chosen art set.
+func _show_sails(building: Building) -> void:
+	var sails := _sails[building]
+	var is_still := _sail_turn.is_still()
+	sails.texture = load(ArtSet.path(SAILS_STILL if is_still else SAILS_STRIP))
+	sails.hframes = 1 if is_still else SailTurn.FRAMES
 
 
 ## Building windows: a lit sprite variant and a small warm light in each window, on at night.

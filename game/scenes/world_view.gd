@@ -229,6 +229,11 @@ func light_strength() -> float:
 	return _light_strength
 
 
+## Sets how fast the sails of the windmills turn (see SailTurn).
+func set_sail_speed(speed: float) -> void:
+	_buildings.set_sail_speed(speed)
+
+
 ## Sets how brightly every light shines (see ObjectLight.strength).
 func set_light_strength(strength: float) -> void:
 	_light_strength = strength

@@ -48,6 +48,7 @@ func show_clock() -> void:
 	else:
 		_tint.show_time(_state.clock, _weather.cloud_cover)
 	_view.set_light_strength(_tint.light_strength())
+	_view.set_sail_speed(_state.weather.mill_speed(_weather.wind_speed))
 	_player_view.light_strength = _tint.light_strength()
 	# The ground, the plants and the houses follow the weather by the minute, by shader; their
 	# pictures only change with the day.
