@@ -70,23 +70,25 @@ bush](../docs/screenshots/bush-replanted-classic.png).
 
 ### The buildings
 
-| Building | Logs | Stone | Clay | Reeds |
-|---|---|---|---|---|
-| Shack | 20 | 5 | | |
-| Fisherman's hut | 25 | 5 | | 15 |
-| Kate (brick Kate) | 30 | 15 | 15 (30) | 25 |
-| Geest Kate | 35 | 5 | | 25 |
-| Longhouse | 60 | 30 | 30 | 50 |
-| Hall house | 100 | 40 | 50 | 80 |
-| Barn | 30 | 15 | 5 | 25 |
-| Church | 70 | 35 | 45 | |
-| Bell frame | 25 | 5 | 10 | |
-| Chicken coop | 12 | 4 | | |
+| Building | Logs | Stone | Clay | Reeds | Planks | Fibre |
+|---|---|---|---|---|---|---|
+| Shack | 20 | 5 | | |  |  |
+| Fisherman's hut | 25 | 5 | | 15 |  |  |
+| Kate (brick Kate) | 30 | 15 | 15 (30) | 25 |  |  |
+| Geest Kate | 35 | 5 | | 25 |  |  |
+| Longhouse | 60 | 30 | 30 | 50 |  |  |
+| Hall house | 100 | 40 | 50 | 80 |  |  |
+| Barn | 30 | 15 | 5 | 25 |  |  |
+| Church | 70 | 35 | 45 | |  |  |
+| Bell frame | 25 | 5 | 10 | |  |  |
+| Chicken coop | 12 | 4 | | |  |  |
+| Windmill | | 10 | | | 40 | 6 |
 
 - The shack is a bare hut with a straw mat on a clay floor.
 - The Kate is a cottage room; the longhouse has a living end and an animal end.
 - The hall house is the biggest: a long Diele between the stalls and the hearth at the Flett.
 - The barn has stalls and hay; the church has pews and an altar.
+- The windmill is a small post mill, 3 by 3 tiles. Its rope and sails are made of fibre for now.
 - Rooms are furnished like 18th-century coast farmhouses: hearth, plate racks, box beds.
 
 ![Every building in a row, in summer and on a winter night](../docs/screenshots/buildings.png)

@@ -51,6 +51,11 @@
     bed. Costs 12 logs and 4 stone. Its inside is 6×6 (clay floor, one window, two hay piles for
     nests, sacks and a crate); it is made when the coop is first needed (`Building.inside`: the
     first time someone goes in, or a hen lays an egg in it), not only when entered.
+  - **Windmill** (#26, 2026-11-17): a post mill, the region's old type (docs/art-style.md, Mills): 3×3,
+    door on the bottom middle tile, the player builds it and grinds grain into flour at the
+    millstone inside (design/crafting/crafting.md). Costs 40 planks, 10 stone, 4 rope and 2 cloth
+    sails; the game has no rope or cloth, so fibre stands for both (6) until they exist. Its inside
+    is 5×5. Until its art is drawn it shows the shack's picture.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), fisherman's hut
     7×6 (the shack's room a tile wider: sleeping mat, stool, barrel, sacks), Kate 9×8 (hearth,

@@ -10,6 +10,7 @@ const FOOTPRINTS := {
 	BuildingTypes.LONGHOUSE: Vector2i(7, 3),
 	BuildingTypes.HALL_HOUSE: Vector2i(7, 5),
 	BuildingTypes.BARN: Vector2i(6, 3),
+	BuildingTypes.WINDMILL: Vector2i(3, 3),
 }
 
 
@@ -25,7 +26,7 @@ func _write(text: String) -> void:
 	file.close()
 
 
-func test_the_buildings_file_is_valid_and_has_the_nine_buildings_in_order() -> void:
+func test_the_buildings_file_is_valid_and_has_the_ten_buildings_in_order() -> void:
 	var rules := BuildingRules.from_file(BuildingRules.DEFAULT_PATH)
 	assert_true(rules.is_valid(), str(rules.problems()))
 	assert_eq(
@@ -40,6 +41,7 @@ func test_the_buildings_file_is_valid_and_has_the_nine_buildings_in_order() -> v
 			BuildingTypes.CHURCH,
 			BuildingTypes.BELL_FRAME,
 			BuildingTypes.CHICKEN_COOP,
+			BuildingTypes.WINDMILL,
 		]
 	)
 	assert_eq(BuildingTypes.ids(), rules.building_ids())
@@ -173,7 +175,7 @@ func test_costs_are_the_materials_that_are_not_zero() -> void:
 			assert_true(ResourceLoader.exists(ItemTypes.icon_path(item)))
 
 
-func test_the_hall_house_is_the_biggest_and_costs_the_most_of_every_material() -> void:
+func test_the_hall_house_is_the_biggest_and_costs_the_most_of_its_materials() -> void:
 	var hall_house: Dictionary = BuildingTypes.TYPES[BuildingTypes.HALL_HOUSE]
 	var area: int = hall_house["footprint"].x * hall_house["footprint"].y
 	for id in BuildingTypes.ids():
@@ -181,8 +183,9 @@ func test_the_hall_house_is_the_biggest_and_costs_the_most_of_every_material() -
 			continue
 		var building_type: Dictionary = BuildingTypes.TYPES[id]
 		assert_lt(building_type["footprint"].x * building_type["footprint"].y, area, str(id))
-		for key: String in BuildingTypes.COST_ITEMS:
-			assert_lt(building_type[key], hall_house[key], "%s %s" % [id, key])
+		for item: StringName in hall_house["costs"]:
+			var cost: int = building_type["costs"].get(item, 0)
+			assert_lt(cost, hall_house["costs"][item], "%s %s" % [id, item])
 
 
 func test_the_hammer_is_a_tool_item_with_icons() -> void:
@@ -228,3 +231,10 @@ func test_a_building_without_its_pictures_and_without_stand_in_is_reported() -> 
 		["[undrawn] sprite is not there: res://assets/buildings/undrawn.png"] as Array[String]
 	)
 	assert_push_error_count(1)
+
+
+func test_the_windmill_costs_planks_stone_and_the_fibre_of_its_rope_and_sails() -> void:
+	assert_eq(
+		BuildingTypes.TYPES[BuildingTypes.WINDMILL]["costs"],
+		{ItemTypes.PLANKS: 40, ItemTypes.STONE: 10, ItemTypes.FIBRE: 6}
+	)

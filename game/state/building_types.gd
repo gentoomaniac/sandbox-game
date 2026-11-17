@@ -16,6 +16,7 @@ const BARN := &"barn"
 const CHURCH := &"church"
 const BELL_FRAME := &"bell_frame"
 const CHICKEN_COOP := &"chicken_coop"
+const WINDMILL := &"windmill"
 
 ## The building whose pictures stand in for those of a building that has none yet.
 const STAND_IN := &"shack"
@@ -26,6 +27,8 @@ const COST_ITEMS := {
 	"cost_stone": ItemTypes.STONE,
 	"cost_clay": ItemTypes.CLAY,
 	"cost_reeds": ItemTypes.REEDS,
+	"cost_planks": ItemTypes.PLANKS,
+	"cost_fibre": ItemTypes.FIBRE,
 }
 
 # The names are those of constants, but the types are only known once the file is read.
