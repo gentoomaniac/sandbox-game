@@ -53,6 +53,13 @@ func _init(sections: Dictionary) -> void:
 		for key in REQUIRED_KEYS:
 			if not values.has(key):
 				_problems.append("[%s] no %s" % [building_id, key])
+		var sprite: Variant = values.get("sprite")
+		if (
+			sprite is String
+			and not values.get("stand_in", false)
+			and not ResourceLoader.exists(sprite)
+		):
+			_problems.append("[%s] sprite is not there: %s" % [building_id, sprite])
 		if values.get("footprint") is Vector2i and values.get("door_offset") is Vector2i:
 			var footprint: Vector2i = values["footprint"]
 			var door: Vector2i = values["door_offset"]

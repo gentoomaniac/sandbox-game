@@ -4,6 +4,8 @@ extends RefCounted
 ## BuildingRules). `TYPES` holds each building's own look by its type name, `of` any of its
 ## styles. Each entry has the keys of the file, and also:
 ## - costs: the materials placing it takes, item id to count (only those that are not 0).
+## A building that has `stand_in` and whose pictures are not drawn yet (or not imported) is shown
+## with those of STAND_IN, and has its window lights, which are measured on them.
 
 const SHACK := &"shack"
 const FISHER_HUT := &"fisher_hut"
@@ -15,6 +17,9 @@ const CHURCH := &"church"
 const BELL_FRAME := &"bell_frame"
 const CHICKEN_COOP := &"chicken_coop"
 
+## The building whose pictures stand in for those of a building that has none yet.
+const STAND_IN := &"shack"
+
 ## The material of each `cost_<material>` key of the file.
 const COST_ITEMS := {
 	"cost_logs": ItemTypes.LOGS,
@@ -25,7 +30,7 @@ const COST_ITEMS := {
 
 # The names are those of constants, but the types are only known once the file is read.
 ## {type: {style id: entry}}, with the building's own look as style &"".
-static var STYLES := _from_rules()  # gdlint: ignore=class-variable-name
+static var STYLES := from_rules(BuildingRules.default_rules())  # gdlint: ignore=class-variable-name
 ## {type: entry} of each building's own look. It goes once every caller asks `of` for the style.
 static var TYPES := _own_looks()  # gdlint: ignore=class-variable-name
 
@@ -48,8 +53,9 @@ static func of(building_type: StringName, style: StringName) -> Dictionary:
 	return STYLES[building_type].get(style, TYPES[building_type])
 
 
-static func _from_rules() -> Dictionary:
-	var rules := BuildingRules.default_rules()
+## {type: {style id: entry}} of the buildings in `rules`.
+static func from_rules(rules: BuildingRules) -> Dictionary:
+	var stand_in := rules.building(STAND_IN)
 	var types := {}
 	for building_id in rules.building_ids():
 		types[building_id] = {}
@@ -60,6 +66,10 @@ static func _from_rules() -> Dictionary:
 				if entry.get(key, 0) > 0:
 					costs[COST_ITEMS[key]] = entry[key]
 			entry["costs"] = costs
+			if entry.get("stand_in", false) and not ResourceLoader.exists(entry["sprite"]):
+				entry["sprite"] = stand_in["sprite"]
+				entry["sprite_lit"] = stand_in["sprite_lit"]
+				entry["window_lights"] = stand_in["window_lights"]
 			types[building_id][style_id] = entry
 	return types
 

@@ -192,3 +192,39 @@ func test_the_hammer_is_a_tool_item_with_icons() -> void:
 	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.RUSTY_IRON_HAMMER)))
 	assert_true(ResourceLoader.exists(ItemTypes.ground_icon_path(ItemTypes.REEDS)))
 	assert_eq(Console.new(GameFactory.new_game(1)).run("give rusty_iron_hammer").size(), 1)
+
+
+func test_a_building_with_no_pictures_yet_is_drawn_with_those_of_the_stand_in() -> void:
+	var text := FileAccess.get_file_as_string(BuildingRules.DEFAULT_PATH)
+	var shack := text.substr(text.find("[shack]"), text.find("[fisher_hut]") - text.find("[shack]"))
+	var undrawn := shack.replace("[shack]", "[undrawn]\nstand_in=true").replace(
+		"buildings/shack", "buildings/undrawn"
+	)
+	_write(shack + undrawn)
+
+	var types := BuildingTypes.from_rules(BuildingRules.from_file(DATA_FILE))
+
+	var stand_in: Dictionary = types[BuildingTypes.STAND_IN][&""]
+	assert_ne(stand_in["sprite"], "res://assets/buildings/undrawn.png")
+	assert_eq(types[&"undrawn"][&""]["sprite"], stand_in["sprite"])
+	assert_eq(types[&"undrawn"][&""]["sprite_lit"], stand_in["sprite_lit"])
+	assert_eq(types[&"undrawn"][&""]["window_lights"], stand_in["window_lights"])
+
+
+func test_a_building_without_its_pictures_and_without_stand_in_is_reported() -> void:
+	var text := FileAccess.get_file_as_string(BuildingRules.DEFAULT_PATH)
+	var shack := text.substr(text.find("[shack]"), text.find("[fisher_hut]") - text.find("[shack]"))
+	_write(
+		(
+			shack
+			+ shack.replace("[shack]", "[undrawn]").replace("buildings/shack", "buildings/undrawn")
+		)
+	)
+
+	var rules := BuildingRules.from_file(DATA_FILE)
+
+	assert_eq(
+		rules.problems(),
+		["[undrawn] sprite is not there: res://assets/buildings/undrawn.png"] as Array[String]
+	)
+	assert_push_error_count(1)
