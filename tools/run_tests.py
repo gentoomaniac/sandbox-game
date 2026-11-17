@@ -16,6 +16,7 @@ The exit status is non-zero when any shard or any check fails, or a shard runs l
 TEST_TIMEOUT seconds (default 600).
 """
 
+import contextlib
 import os
 import re
 import shutil
@@ -25,6 +26,8 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import memguard
+
 ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / "build"
 TIMES = BUILD / "test-times"
@@ -33,8 +36,13 @@ ANSI = re.compile(r"\x1b\[[0-9;]*m")
 SUMMARY_LABELS = [
     "Scripts", "Tests", "Passing Tests", "Failing Tests", "Asserts", "Warnings", "Orphans",
 ]  # fmt: skip
-# Seconds a whole run may take before its shards are killed (a hung Godot must not hang make).
+# Seconds a whole run of TEST_JOBS shards may take before its shards are killed (a hung Godot must not hang make).
 TIMEOUT = float(os.environ.get("TEST_TIMEOUT", 600))
+# A shard that grows past its limit or a machine that runs short of memory kills the run (see memguard.py).
+SHARD_MEM_MB = memguard.default_proc_mem_mb()
+MEM_FLOOR_MB = memguard.default_floor_mb()
+# What a shard takes in practice (2-3 GB, measured), to size the number of shards by the free memory.
+SHARD_TYPICAL_MB = 3000
 
 
 def read_times():
@@ -60,6 +68,16 @@ def make_shards(files, jobs, times):
     return [shard for shard in shards if shard]
 
 
+def affordable_jobs(jobs):
+    """How many shards the free memory carries above the floor, at most jobs and at least 1.
+
+    Exits when the machine is below the floor already: a shard would die on the first poll."""
+    available = memguard.mem_available_mb()
+    if available < MEM_FLOOR_MB:
+        sys.exit(f"make test: only {available:.0f} MB of memory available, below the floor of {MEM_FLOOR_MB} MB")
+    return max(1, min(jobs, int((available - MEM_FLOOR_MB) / SHARD_TYPICAL_MB)))
+
+
 def start_shard(i, shard):
     user_data = BUILD / f"user-data-{i}"
     # Nothing of an earlier run stays: a save left by the tests of another commit (a newer version)
@@ -76,7 +94,18 @@ def start_shard(i, shard):
     # line, so StartupOptions also reads the environment.
     env = {**os.environ, "XDG_DATA_HOME": str(user_data), "SANDBOX_GAME_MAX_FPS": "0"}
     with (BUILD / f"test-{i}.log").open("w") as log:
-        return subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT)
+        return memguard.Guarded(
+            command, SHARD_MEM_MB, MEM_FLOOR_MB, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=ROOT
+        )
+
+
+def where_it_was(log_text):
+    """The test file and test GUT was in at the end of a shard log, e.g. for a shard that was killed."""
+    files = re.findall(r"^res://(tests/\S+\.gd)$", log_text, re.MULTILINE)
+    if not files:
+        return "before its first test file"
+    tests = re.findall(r"^\* (\w+)", log_text[log_text.rindex(files[-1]) :], re.MULTILINE)
+    return f"{files[-1]}: {tests[-1]}" if tests else f"{files[-1]}, before its first test"
 
 
 def count(text, label):
@@ -97,25 +126,39 @@ def main():
     for stale in [*BUILD.glob("test-*.xml"), *BUILD.glob("test-*.log")]:
         stale.unlink()
     times = read_times()
-    shards = make_shards(files, jobs, times)
     problems = []
     processes = []
-    try:
-        processes = [start_shard(i, shard) for i, shard in enumerate(shards)]
-        statuses = []
-        for i, process in enumerate(processes):
-            try:
-                statuses.append(process.wait(max(0.0, started + TIMEOUT - time.monotonic())))
-            except subprocess.TimeoutExpired:
-                process.kill()
-                statuses.append(process.wait())
-                problems.append(f"shard {i}: timed out after {TIMEOUT:.0f} s")
-    finally:
-        # Ctrl-C, a signal or an error must not leave Godot processes behind.
-        for process in processes:
-            if process.poll() is None:
-                process.kill()
-                process.wait()
+    # A full run takes the machine-wide lock: several of them at once need more memory than the
+    # machine has. A run of a few files is small, so it only has the watchdog.
+    with memguard.test_run_lock() if not sys.argv[2:] else contextlib.nullcontext():
+        # Looked at after the wait for the lock: what is free now is what the shards get.
+        affordable = affordable_jobs(jobs)
+        if affordable < jobs:
+            print(f"make test: only {affordable} of {jobs} shards fit in the free memory")
+        shards = make_shards(files, affordable, times)
+        # Fewer shards each have more files to get through.
+        timeout = TIMEOUT * -(-jobs // affordable)
+        shards_started = time.monotonic()
+        try:
+            processes = [start_shard(i, shard) for i, shard in enumerate(shards)]
+            while any(g.process.poll() is None for g in processes):
+                memguard.check_all(processes)
+                if time.monotonic() > shards_started + timeout:
+                    for guarded in processes:
+                        if guarded.process.poll() is None and not guarded.killed_because:
+                            guarded.kill(reason=f"timed out after {timeout:.0f} s")
+                time.sleep(memguard.POLL_SECONDS)
+            statuses = [guarded.wait() for guarded in processes]
+        finally:
+            # Ctrl-C, a signal or an error must not leave Godot processes behind.
+            for guarded in processes:
+                if guarded.process.poll() is None:
+                    guarded.kill()
+                    guarded.wait()
+        for i, guarded in enumerate(processes):
+            if guarded.killed_because:
+                log = ANSI.sub("", (BUILD / f"test-{i}.log").read_text(errors="replace"))
+                problems.append(f"shard {i}: killed in {where_it_was(log)}: {guarded.killed_because}")
 
     totals = dict.fromkeys(SUMMARY_LABELS, 0)
     failed = []
