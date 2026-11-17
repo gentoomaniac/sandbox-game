@@ -46,10 +46,12 @@ func test_reeds_stand_on_banks_near_water_and_at_wetland_edges_only() -> void:
 			found += 1
 			if terrain == Tile.Terrain.FLOODPLAIN:
 				on_bank += 1
-				assert_true(generator._is_water_within(pos, WorldGenerator.REEDS_REACH), str(pos))
+				assert_true(
+					generator.is_water_within(pos, VegetationPlacement.REEDS_REACH), str(pos)
+				)
 			else:
 				assert_eq(terrain, Tile.Terrain.WETLAND, str(pos))
-				assert_true(generator._is_wetland_edge(pos), str(pos))
+				assert_true(generator.is_wetland_edge(pos), str(pos))
 	assert_gt(found, 20, "stands along the river and wetland")
 	assert_gt(on_bank, 10, "the river's bank has reeds")
 

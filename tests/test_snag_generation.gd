@@ -23,14 +23,7 @@ func test_the_land_puts_dead_and_half_dead_trees_of_the_kind_of_the_trees_around
 				if type == WorldObjectSnags.dead_type(kind):
 					dead += 1
 					kinds[kind] = true
-					assert_eq(
-						kind,
-						generator._tree_type_at(
-							pos,
-							generator._river_distance(pos),
-							PositionHash.unit(pos, generator._variety_roll_seed)
-						)
-					)
+					assert_eq(kind, generator.tree_type_at(pos))
 				elif type == WorldObjectSnags.half_dead_type(kind):
 					half_dead += 1
 					kinds[kind] = true
@@ -40,9 +33,11 @@ func test_the_land_puts_dead_and_half_dead_trees_of_the_kind_of_the_trees_around
 	assert_gte(kinds.size(), 5, "kinds with a snag: %s" % [kinds.keys()])
 	var rate := float(dead + half_dead) / grass
 	assert_between(
-		rate, OLD_DEAD_TREE_CHANCE * 0.8, WorldGenerator.DEAD_TREE_NEAR_WETLAND_CHANCE * 0.5
+		rate, OLD_DEAD_TREE_CHANCE * 0.8, VegetationPlacement.DEAD_TREE_NEAR_WETLAND_CHANCE * 0.5
 	)
 	var half_dead_share := float(half_dead) / (dead + half_dead)
 	assert_between(
-		half_dead_share, WorldGenerator.HALF_DEAD_SHARE - 0.1, WorldGenerator.HALF_DEAD_SHARE + 0.1
+		half_dead_share,
+		VegetationPlacement.HALF_DEAD_SHARE - 0.1,
+		VegetationPlacement.HALF_DEAD_SHARE + 0.1
 	)

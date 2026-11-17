@@ -20,12 +20,16 @@ the state never knows about scenes.** That is why almost everything in `game/sta
 Names are not always where you would guess: the `World` class (tiles, chunks, objects,
 buildings) is in `game/state/world.gd`. `game/world/` holds the code that builds a world
 and plans which chunks to load (`WorldGenerator`, `RiverLine`, `CreekLayout`, `CoastLayout`,
-`DykeLayout`, `WoodLayout`, `ChunkStreaming`, `CampSite`, `InteriorLoader`, `PositionHash`). `WorldGenerator` makes the
-natural land (the river of `RiverLine`, the creeks of `CreekLayout`, wetland, the woods of
-`WoodLayout`) and lays the dykes of `DykeLayout` (`data/landscape.cfg`) over it; the open land is bare (no fields,
-fences or ditches, see `design/world/generation.md`). In the west `CoastLayout` makes
-the coast (task 61): a coast line x = f(y) like the river's centre line, and west of it the
-foreshore (salt marsh, tidal mud with tideways, the sea), with a Warft and an Ewer here and there.
+`DykeLayout`, `WoodLayout`, `VegetationPlacement`, `ChunkStreaming`, `CampSite`, `InteriorLoader`,
+`PositionHash`). `WorldGenerator` makes the natural land (the river of `RiverLine`, the creeks of
+`CreekLayout`, wetland) and asks the layouts for the rest: the dykes of `DykeLayout`
+(`data/landscape.cfg`) along the floodplain and the coast, and the woods, bushes, stones, dead
+trees, tall grass and reeds of `VegetationPlacement` (the woods themselves are `WoodLayout`'s). The
+open land is bare (no fields, fences or ditches, see `design/world/generation.md`). In the west
+`CoastLayout` makes the coast (task 61): a coast line x = f(y) like the river's centre line, and
+west of it the foreshore (salt marsh, tidal mud with tideways, the sea), with a Warft and an Ewer
+here and there. The layouts are `RefCounted` and keep no reference to the generator: it passes
+itself to a call that needs the terrain.
 
 ## The main objects
 
