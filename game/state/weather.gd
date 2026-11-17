@@ -184,6 +184,18 @@ func _mean_rain_in_hour(position: Vector2i, day: int, hour: int) -> float:
 	return total / RAIN_SAMPLES_PER_HOUR
 
 
+## How fast a windmill grinds in a wind of `wind_speed` (m/s), as a multiple of the speed the
+## recipes' hours are for: 0 in a calm, rising with the wind (see [mill] of data/weather.cfg).
+func mill_speed(wind_speed: float) -> float:
+	if wind_speed < _rules.value("mill", "wind_from"):
+		return 0.0
+	return lerpf(
+		_rules.value("mill", "slowest"),
+		_rules.value("mill", "fastest"),
+		_ramp(wind_speed, "mill", "wind")
+	)
+
+
 ## The sample with the condition made true, for tests and screenshots: `condition` is one of
 ## FORCEABLE. Values it doesn't set stay as they were.
 func forced(sample: WeatherSample, condition: StringName) -> WeatherSample:

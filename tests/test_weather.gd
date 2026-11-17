@@ -239,3 +239,13 @@ func test_snow_forced_in_summer_is_cold_snow() -> void:
 	assert_lt(sample.temperature, 0.0)
 	assert_gt(sample.snow, 0.0)
 	assert_eq(sample.rain, 0.0)
+
+
+func test_a_windmill_stands_still_in_a_calm_and_grinds_faster_the_stronger_the_wind() -> void:
+	assert_eq(_weather.mill_speed(0.0), 0.0)
+	assert_eq(_weather.mill_speed(1.9), 0.0)
+	assert_eq(_weather.mill_speed(2.0), 0.5, "the slowest")
+	assert_lt(_weather.mill_speed(4.0), _weather.mill_speed(7.0), "light wind, then a fresh one")
+	assert_lt(_weather.mill_speed(7.0), _weather.mill_speed(12.0))
+	assert_eq(_weather.mill_speed(12.0), 2.0, "the fastest")
+	assert_eq(_weather.mill_speed(25.0), 2.0, "no faster in a gale")
