@@ -14,7 +14,7 @@ radius"). This page is task 226.
   `ToolUse` when it is placed. Taking it down and putting it up again is a new scarecrow with a new
   day; that is what moving one is.
 - **Where they stand is indexed**: `World` keeps the tiles of the scarecrows among its object
-  edits (`scarecrows()`, kept by `_edit_object` like the crops), so nothing scans all the objects
+  edits (`scarecrows()`, kept by `WorldEdits.edit_object` like the crops), so nothing scans all the objects
   of the world, and a scarecrow in an unloaded chunk still counts. Only player-placed ones are
   there.
 - **The guard** (`Scarecrows`, numbers in data/crows.cfg `[raids]`): a scarecrow has a *strength*

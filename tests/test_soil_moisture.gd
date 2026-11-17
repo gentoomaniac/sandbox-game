@@ -227,7 +227,7 @@ func test_the_wetness_layer_counts_the_moist_tiles_beyond_loaded_chunks() -> voi
 	assert_eq(layer.mark_count(), 0)
 	_world.set_moisture(_tile, 0.9)
 	assert_eq(layer.mark_count(), 1)
-	_world._edit_terrain(far, Tile.Terrain.SOIL)
+	_world._edits.edit_terrain(far, Tile.Terrain.SOIL)
 	_world.set_moisture(far, 0.5)
 	assert_eq(layer.mark_count(), 2, "a tilled tile of an unloaded chunk is drawn too")
 	_world.set_moisture(_tile, 0.0)

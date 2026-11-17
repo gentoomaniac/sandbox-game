@@ -32,7 +32,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 
 ## What the code has
 
-- `World` keeps the edits of unloaded chunks (`_terrain_edits`, `_object_edits`), the buildings
+- `World` keeps the edits of unloaded chunks (`WorldEdits`), the buildings
   (`_building_by_tile`) and the wear (`_wear`), all by tile. `add_chunk` replays the edits on a
   freshly generated chunk (`World.replay_edits`, which works on any chunk, loaded or not; `Chunk.copy`
   makes the copy to replay them on). Night upkeep edits unloaded chunks too (crops, fallow soil grown over).
@@ -88,14 +88,14 @@ as it is entered, not over the whole path in advance. No collisions, near or far
   of the raw chunks and a snapshot of the edits of those chunks (`World.edits_snapshot`: terrain by
   position, and the type of the object standing at each edited position, copied on the main thread
   when the job starts, 0.3 ms for four chunks of which one is tilled all over; the worker makes the
-  objects new from the types, `World.replay_snapshot`). It touches nothing the main thread writes:
+  objects new from the types, `WorldEdits.replay_snapshot`). It touches nothing the main thread writes:
   the raw chunks are never changed and the snapshot is its own. The main thread takes the result in
   `update`, which is 0.08 ms at the median and 0.5 ms at most. Up to `far_mask_jobs` (3) jobs at a
   time (one before #70), the stamps before the generations. The raw chunks a pending request needs are never evicted, whatever the limit.
   (Pausing `generate_chunk` across frames would mean rewriting the generator; on the main thread
   one call is 9 to 13 ms, too much at 60 fps.) The destructor waits for the workers.
-- **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `_edit_terrain` and
-  `_edit_object`, which every change of terrain and objects goes through, loaded or not. An edit of
+- **Invalidation:** `World` gets `signal edited(chunk_coords)`, raised by `WorldEdits` `edit_terrain` and
+  `edit_object`, which every change of terrain and objects goes through, loaded or not. An edit of
   C drops the masks of C, E, S and SE (and no others); the raw chunks stay (they hold no edits).
   Each chunk has a version, bumped by its edits. A job notes the versions of the four chunks it
   copies the edits of; its mask is published only if they are all still the same, and else dropped

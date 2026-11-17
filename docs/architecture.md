@@ -155,7 +155,13 @@ Warft and an Ewer here and there.
   `WorldView` and `InteriorView` redraw from the map's own signals and Main redraws nothing for
   particular tool results.
 - **World** holds the loaded chunks of tiles (`Tile`, `Chunk`), the objects on them
-  (`WorldObject`: trees, crops, furniture), buildings and the items lying on the ground. Line
+  (`WorldObject`: trees, crops, furniture), buildings and the items lying on the ground. What the
+  player changed to the terrain and the objects is kept by `WorldEdits` (`World._edits`, outside
+  the chunks, so it survives their unloading): the edit maps, the indexes of the crops, scarecrows
+  and campfires, the replay on a chunk and the saved form. It knows no chunks and no World: a
+  caller that has the chunk gives it (or null when it is not loaded), so it holds nothing that
+  could cycle, and World keeps the signals, the soil tending and the forwarding of the calls
+  everyone uses (`replace_object`, `take_off`, `crops`, `replay_edits`, ...). Line
   objects (Knicks, walls, fences, dykes) are one object per tile whose type `connects`;
   `World.connections` says which neighbours a tile joins, and the
   view draws the picture of that connection mask. The wear of desire paths is World's too (counted in `WorldWear`, `World.wear`)

@@ -235,7 +235,7 @@ func _stamp(job_ref: WeakRef, raw: Array[Chunk], snapshots: Array[Dictionary]) -
 	var neighbours: Array[Chunk] = []
 	for index in raw.size():
 		var chunk := raw[index].copy()
-		World.replay_snapshot(chunk, snapshots[index])
+		WorldEdits.replay_snapshot(chunk, snapshots[index])
 		if chunk.coords == job.coords:
 			own = chunk
 		else:

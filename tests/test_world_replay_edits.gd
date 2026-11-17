@@ -87,7 +87,7 @@ func test_a_replayed_snapshot_of_a_wide_object_clears_the_same_way() -> void:
 	var trunk := WorldObject.new(&"oak_trunk", tree.pos + Vector2i.LEFT)
 	_world.replace_object(trunk, trunk)
 	var fresh := _generator.generate_chunk(COORDS)
-	World.replay_snapshot(fresh, _world.edits_snapshot(COORDS))
+	WorldEdits.replay_snapshot(fresh, _world.edits_snapshot(COORDS))
 	assert_eq(fresh.object_at(Chunk.local_pos(trunk.pos)).type, trunk.type)
 	assert_null(fresh.object_at(Chunk.local_pos(tree.pos)))
 
