@@ -158,11 +158,7 @@ func _init(path: String = DEFAULT_PATH) -> void:
 	key_bindings.changed.connect(_save)
 	for channel in VOLUME_CHANNELS:
 		_volumes[channel] = DEFAULT_VOLUME
-	var mode := DisplayServer.window_get_mode()
-	is_fullscreen = (
-		mode == DisplayServer.WINDOW_MODE_FULLSCREEN
-		or mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
-	)
+	is_fullscreen = SettingsEngine.is_fullscreen()
 
 
 ## Whether `endpoint` is the test LLM's, which a player who set none is left with.
@@ -173,7 +169,7 @@ static func is_default_language_model_endpoint(endpoint: String) -> bool:
 func set_fullscreen(value: bool) -> void:
 	is_fullscreen = value
 	_has_chosen_fullscreen = true
-	_apply_display()
+	SettingsEngine.set_fullscreen(is_fullscreen)
 	_save()
 
 
@@ -273,7 +269,7 @@ func load_file() -> void:
 		if value is bool:
 			is_fullscreen = value
 			_has_chosen_fullscreen = true
-			_apply_display()
+			SettingsEngine.set_fullscreen(is_fullscreen)
 		else:
 			push_warning("Ignoring display setting in %s: not true or false" % _path)
 	if file.has_section_key(DISPLAY_SECTION, CLASSIC_ART_KEY):
@@ -375,16 +371,6 @@ func _save() -> void:
 		error = file.save(_path)
 	if error != OK:
 		push_error("Can't write %s: %s" % [_path, error_string(error)])
-
-
-func _apply_display() -> void:
-	DisplayServer.window_set_mode(
-		(
-			DisplayServer.WINDOW_MODE_FULLSCREEN
-			if is_fullscreen
-			else DisplayServer.WINDOW_MODE_WINDOWED
-		)
-	)
 
 
 static func _clamped_variation(percent: int) -> int:

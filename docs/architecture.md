@@ -528,9 +528,11 @@ The default key bindings are the input map in `project.godot` (in the Godot edit
 Settings → Input Map). The player changes them under Settings → Controls; `KeyBindings` (held by
 `GameSettings.key_bindings`) applies them to Godot's `InputMap`, holds the action names and the
 conflict rules, and writes the `controls` section of `user://settings.cfg`: only the differences
-from the defaults. It emits `changed` and `GameSettings` saves the file. The same file keeps the
-display, game and audio settings and the language model: the profiles (`LanguageModelProfiles`, held by `GameSettings.profiles`; a
-profile is a provider with its endpoint, model, tokens, temperature and chat length, and the
+from the defaults. It emits `changed` and `GameSettings` saves the file. `SettingsEngine` puts the
+window setting (fullscreen) into effect, so `GameSettings` is only the values and the file. The same
+file keeps the display, game and audio settings and the language model: the profiles
+(`LanguageModelProfiles`, held by `GameSettings.profiles`; a profile is a provider with its
+endpoint, model, tokens, temperature and chat length, and the
 provider is a row of `GameSettings.LANGUAGE_MODEL_PROVIDERS` with the protocol it speaks:
 OpenAI-compatible, Claude or Gemini, which speaks the OpenAI protocol) and each provider's key
 (`profiles.language_model()` is the profile in use with its provider's key; the key in plain
