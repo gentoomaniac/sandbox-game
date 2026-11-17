@@ -19,8 +19,8 @@ var activity := Activity.IDLE
 var seconds_left := 0.0
 ## The way it walks or runs, a unit vector.
 var heading := Vector2.RIGHT
-## The way of the last step it took: the ground under its nose that way is walkable (see Livestock
-## `_walk`); zero before its first.
+## The way of the last step it took: the ground under its nose that way is walkable (see
+## AnimalMotion `walk`); zero before its first.
 var last_step := Vector2.ZERO
 ## The way it looks: 1 to the right, -1 to the left (the pictures face right).
 var facing := 1.0
@@ -31,10 +31,10 @@ var bedtime_delay := 0.0
 ## does once given a bone; 0 for an animal that never did.
 var follow_until_minute := 0
 ## Seconds it has been going round something in its way or stopped by it, without getting anywhere
-## (see Livestock `_walk` and `_note_progress`).
+## (see AnimalMotion `walk` and `note_progress`).
 var stuck_seconds := 0.0
-## Where it last made progress getting round something in its way (see Livestock `_note_progress`);
-## infinite before it has walked.
+## Where it last made progress getting round something in its way (see AnimalMotion
+## `note_progress`); infinite before it has walked.
 var progress_anchor := Vector2.INF
 ## Seconds before a step round something may turn it to face the other way.
 var turn_hold_seconds := 0.0

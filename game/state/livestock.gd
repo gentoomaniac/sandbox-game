@@ -30,12 +30,6 @@ enum PetShows { NOTHING, HEART, ANNOYED }
 ## Spawned animals stand this many tiles from the given point, at the least and at the most.
 const SPAWN_DISTANCE := Vector2(1.5, 4.0)
 const SPAWN_TRIES := 40
-## An animal whose way is blocked turns by this many radians, by more each time and to either
-## side (TURN_STEPS), before it gives up and stands still.
-const TURN := 0.6
-const TURN_STEPS := [0, 1, -1, 2, -2, 3, -3]
-## An animal that walks to its goal has come to it within this many tiles beyond a step.
-const GOAL_REACHED_TILES := 0.05
 ## A long frame (a hitch) moves the animals no further than this many seconds would, so that
 ## a fast one never skips over a narrow ditch.
 const MAX_STEP_SECONDS := 0.05
@@ -133,7 +127,7 @@ func spawn(species: StringName, count: int, near: Vector2, map: GameMap, look :=
 	for _try in SPAWN_TRIES:
 		if placed == count:
 			break
-		var feet := _point_around(near, SPAWN_DISTANCE)
+		var feet := AnimalMotion.point_around(near, SPAWN_DISTANCE, rng)
 		if not map.is_walkable_for_animals(Vector2i(feet.floor())):
 			continue
 		var animal := FarmAnimal.create(species, rng.randi(), feet, rules)
@@ -345,7 +339,7 @@ func _catch_up_one(
 		and _settle_hen_in_skip(animal, map, clock, minutes)
 	):
 		return
-	_wander_off(animal, map)
+	AnimalMotion.wander_off(animal, map, rules, rng)
 	_meet_needs_in_skip(animal, map, minutes)
 	var is_asleep := _is_sleep_time(
 		animal, clock.minute_of_day, _sun.sunrise(clock.day), _sun.sunset(clock.day)
@@ -479,7 +473,7 @@ func _walk_to_coop(hen: FarmAnimal, delta: float, map: GameMap) -> bool:
 	var coop := Coop.of((map as World).building_at(hen.goal_source), yard)
 	var speed := rules.walk_speed(hen.species)
 	var to_door := hen.goal - hen.position
-	var is_arrived := to_door.length() <= speed * delta + GOAL_REACHED_TILES
+	var is_arrived := to_door.length() <= speed * delta + AnimalMotion.GOAL_REACHED_TILES
 	if (
 		coop == null
 		or hen.seconds_left <= 0.0
@@ -573,10 +567,10 @@ func _update_awake_animal(
 				else rules.run_speed(animal.species)
 			)
 			animal.seconds_left -= delta
-			_note_progress(animal)
+			AnimalMotion.note_progress(animal, rules)
 			if animal.goal.is_finite():
 				_walk_to_goal(animal, speed, delta, map, may_hunt)
-			elif animal.seconds_left <= 0.0 or _is_blocked_too_long(animal):
+			elif animal.seconds_left <= 0.0 or AnimalMotion.is_blocked_too_long(animal, rules):
 				_start_next(animal, map, may_hunt)
 			elif not _walk(animal, animal.heading, speed, delta, map):
 				_start_activity(animal, FarmAnimal.Activity.IDLE, may_hunt)
@@ -705,13 +699,13 @@ func _walk_to_goal(
 	animal: FarmAnimal, speed: float, delta: float, map: GameMap, may_hunt: bool
 ) -> void:
 	var to_goal := animal.goal - animal.position
-	if to_goal.length() <= speed * delta + GOAL_REACHED_TILES:
+	if to_goal.length() <= speed * delta + AnimalMotion.GOAL_REACHED_TILES:
 		animal.position = animal.goal
 		_meet_need_at_source(animal, map)
 		return
 	if (
 		animal.seconds_left <= 0.0
-		or _is_blocked_too_long(animal)
+		or AnimalMotion.is_blocked_too_long(animal, rules)
 		or not _walk(animal, to_goal.normalized(), speed, delta, map)
 	):
 		# It walks straight at its goal, round what is small, and has no way to find a long one:
@@ -795,48 +789,28 @@ func _follow(animal: FarmAnimal, delta: float, map: GameMap, player_feet: Vector
 		return
 	if animal.follow_wait_seconds > 0.0:
 		animal.follow_wait_seconds -= delta
-		_face_towards(animal, player_feet.x)
+		AnimalMotion.face_towards(animal, player_feet.x)
 		return
-	_note_progress(animal)
-	if _is_blocked_too_long(animal):
+	AnimalMotion.note_progress(animal, rules)
+	if AnimalMotion.is_blocked_too_long(animal, rules):
 		# It cannot get to them: it waits, facing them, before it tries again.
 		animal.stuck_seconds = 0.0
 		animal.progress_anchor = Vector2.INF
 		animal.activity = FarmAnimal.Activity.IDLE
 		animal.follow_wait_seconds = rules.general("follow_retry_seconds")
-		_face_towards(animal, player_feet.x)
+		AnimalMotion.face_towards(animal, player_feet.x)
 		return
 	var is_on_its_way := animal.activity in [FarmAnimal.Activity.WALK, FarmAnimal.Activity.RUN]
 	var stop_tiles := rules.general("follow_near_tiles" if is_on_its_way else "follow_far_tiles")
 	if distance <= stop_tiles:
 		animal.activity = FarmAnimal.Activity.IDLE
 		animal.stuck_seconds = 0.0
-		_face_towards(animal, player_feet.x)
+		AnimalMotion.face_towards(animal, player_feet.x)
 		return
 	var is_far := distance > rules.general("follow_run_tiles")
 	animal.activity = FarmAnimal.Activity.RUN if is_far else FarmAnimal.Activity.WALK
 	var speed := rules.run_speed(animal.species) if is_far else rules.walk_speed(animal.species)
 	_walk(animal, (player_feet - animal.position).normalized(), speed, delta, map)
-
-
-## An animal that has moved `progress_tiles` from where it last counted is getting somewhere, going
-## round whatever is in its way however long that takes: it is not stuck. One that only shuffles
-## to and fro at the obstacle is.
-func _note_progress(animal: FarmAnimal) -> void:
-	if animal.position.distance_to(animal.progress_anchor) > rules.general("progress_tiles"):
-		animal.progress_anchor = animal.position
-		animal.stuck_seconds = 0.0
-
-
-## Whether the animal has had no free way ahead, and made no progress, for so long that it gives up
-## where it was going.
-func _is_blocked_too_long(animal: FarmAnimal) -> bool:
-	return animal.stuck_seconds > rules.general("blocked_give_up_seconds")
-
-
-func _face_towards(animal: FarmAnimal, x: float) -> void:
-	if absf(x - animal.position.x) > 0.1:
-		animal.facing = signf(x - animal.position.x)
 
 
 ## Puts an animal beside the player, facing them, where the ground under its feet and its nose is
@@ -846,7 +820,7 @@ func _put_beside(animal: FarmAnimal, player_feet: Vector2, map: GameMap) -> void
 	animal.follow_wait_seconds = 0.0
 	var distances := Vector2(rules.general("follow_near_tiles"), rules.general("follow_far_tiles"))
 	for _try in SPAWN_TRIES:
-		var feet := _point_around(player_feet, distances)
+		var feet := AnimalMotion.point_around(player_feet, distances, rng)
 		var facing := 1.0 if player_feet.x >= feet.x else -1.0
 		var nose := feet + Vector2(facing * rules.body_tiles(animal.species), 0.0)
 		if (
@@ -860,54 +834,14 @@ func _put_beside(animal: FarmAnimal, player_feet: Vector2, map: GameMap) -> void
 			return
 
 
-## A point in a random direction from `near`, between `distances.x` and `distances.y` tiles away.
-func _point_around(near: Vector2, distances: Vector2) -> Vector2:
-	var distance := rng.randf_range(distances.x, distances.y)
-	return near + Vector2.from_angle(rng.randf() * TAU) * distance
-
-
-## Moves the animal to a random spot on a tile within `catch_up_wander_tiles` that it could have
-## walked to (see ReachableTiles), standing as a step would leave it: feet and nose (a way it
-## faces) on walkable ground, and never on a building. It stays where it is if five spots have no
-## such way.
-func _wander_off(animal: FarmAnimal, map: GameMap) -> void:
-	var reach := rules.body_tiles(animal.species)
-	var tiles := ReachableTiles.within(
-		animal.tile(), rules.general("catch_up_wander_tiles"), map.is_walkable_for_animals
-	)
-	for _spot in 5:
-		var tile := tiles[rng.randi() % tiles.size()]
-		if not map.is_walkable_for_animals(tile):
-			continue
-		var feet := Vector2(tile) + Vector2(rng.randf(), rng.randf())
-		for _try in 5:
-			var way := Vector2.from_angle(rng.randf() * TAU)
-			if map.is_walkable_for_animals(Vector2i((feet + way * reach).floor())):
-				animal.position = feet
-				animal.heading = way
-				animal.facing = signf(way.x) if absf(way.x) > 0.1 else animal.facing
-				animal.last_step = Vector2.ZERO
-				return
-
-
 func _start_next_activity(animal: FarmAnimal, may_hunt := false) -> void:
 	_start_activity(animal, rules.pick_activity(animal.species, rng), may_hunt)
 
 
-## Starts an activity; with `may_hunt`, a cat that can hunt looks about for a mouse in sight
-## instead, and starts the hunt of the nearest.
+## Starts an activity (see AnimalMotion); with `may_hunt`, a cat that can hunt looks about for a
+## mouse in sight instead, and starts the hunt of the nearest.
 func _start_activity(animal: FarmAnimal, activity: FarmAnimal.Activity, may_hunt := false) -> void:
-	animal.activity = activity
-	animal.stuck_seconds = 0.0
-	animal.progress_anchor = Vector2.INF
-	animal.seconds_left = rules.pick_seconds(animal.species, activity, rng)
-	match activity:
-		FarmAnimal.Activity.WALK, FarmAnimal.Activity.RUN:
-			animal.heading = Vector2.from_angle(rng.randf() * TAU)
-		FarmAnimal.Activity.IDLE:
-			# Now and then it turns round where it stands.
-			if rng.randf() < 0.3:
-				animal.facing = -animal.facing
+	AnimalMotion.start_activity(animal, activity, rules, rng)
 	if not may_hunt or not can_hunt(animal):
 		return
 	var nearest := CatHunt.nearest_prey(animal, _mice, rules)
@@ -915,65 +849,8 @@ func _start_activity(animal: FarmAnimal, activity: FarmAnimal.Activity, may_hunt
 		start_hunt(animal, nearest)
 
 
-## Takes a step in `direction`, or as near to it as it can turn; returns whether it moved. Every
-## step that is not straight, and every one it cannot take, adds to its `stuck_seconds` (see
-## `_note_progress`, which restarts it). It turns to face a way it only found by turning round
-## something no more often than `turn_hold_seconds`, or it would spin left and right at a fence.
-## The ground under its feet and under its nose (`body_tiles` ahead) must be walkable for animals,
-## or be the tile it stands on if anyone could walk there.
-##
-## Asking the map is what costs (several microseconds a tile), so a step the same way as the last
-## that stays on the same tiles is taken without asking again.
+## A step for CatHunt, the needs and the roosting (see AnimalMotion `walk`).
 func _walk(
 	animal: FarmAnimal, direction: Vector2, speed: float, delta: float, map: GameMap
 ) -> bool:
-	var reach := rules.body_tiles(animal.species)
-	var here := animal.tile()
-	animal.turn_hold_seconds = maxf(0.0, animal.turn_hold_seconds - delta)
-	for steps: int in TURN_STEPS:
-		var way := direction.rotated(steps * TURN)
-		var feet := animal.position + way * speed * delta
-		var feet_tile := Vector2i(feet.floor())
-		var nose_tile := Vector2i((feet + way * reach).floor())
-		var is_same_ground := (
-			way == animal.last_step
-			and feet_tile == animal.tile()
-			and nose_tile == Vector2i((animal.position + way * reach).floor())
-		)
-		# What stops animals and was put under its feet does not trap it: it may step off. Nor does
-		# the rising tide: standing in the flooded mud, it may wade on over it.
-		var is_wading := map.is_wadeable(here)
-		var can_step := (
-			(
-				map.is_walkable_for_animals(feet_tile)
-				or feet_tile == here and map.is_walkable(here)
-				or is_wading and map.is_wadeable(feet_tile)
-			)
-			and (
-				map.is_walkable_for_animals(nose_tile)
-				or nose_tile == here and map.is_walkable(here)
-				or is_wading and map.is_wadeable(nose_tile)
-			)
-		)
-		if is_same_ground or can_step:
-			if feet_tile != animal.tile() and map is World and _animal_step > 0.0:
-				(map as World).wear_tile(feet_tile, _animal_step)
-			animal.position = feet
-			animal.last_step = way
-			if steps == 0:
-				animal.heading = way
-			else:
-				animal.stuck_seconds += delta
-			if absf(way.x) > 0.1 and (steps == 0 or animal.turn_hold_seconds <= 0.0):
-				_turn_to(animal, signf(way.x))
-			return true
-	animal.stuck_seconds += delta
-	return false
-
-
-## Turns the animal to face `facing`, and holds that facing for `turn_hold_seconds`: a step round
-## something does not turn it back before then (see `_walk`).
-func _turn_to(animal: FarmAnimal, facing: float) -> void:
-	if facing != animal.facing:
-		animal.facing = facing
-		animal.turn_hold_seconds = rules.general("turn_hold_seconds")
+	return AnimalMotion.walk(animal, direction, speed, delta, map, rules, _animal_step)
