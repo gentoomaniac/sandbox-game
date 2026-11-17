@@ -228,7 +228,7 @@ itself to a call that needs the terrain.
 - **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
-  them: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
+  them through `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
   FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
   `UNSADDLE`) and ridden through `PlayerTravel.mount` and `dismount`: `PlayerState.horse` is the
   horse ridden (not saved), which `PlayerState.move` takes along and `Livestock.update` leaves

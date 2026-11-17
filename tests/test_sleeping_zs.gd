@@ -12,9 +12,9 @@ func before_each() -> void:
 	super()
 	_cow = FarmAnimal.new(LivestockRules.COW, &"angler", SPOT)
 	_state.livestock.add(_cow)
-	_wildlife._show_farm_animal_if_near(_cow)
-	_cow_view = _wildlife._farm_animals[_cow]
-	_state.livestock.petted.connect(_wildlife._show_pet_reaction)
+	_wildlife.farm_views.show_if_near(_cow)
+	_cow_view = _wildlife.farm_views.views[_cow]
+	_state.livestock.petted.connect(_wildlife.farm_views.show_pet_reaction)
 
 
 func _longest_gap() -> float:
@@ -137,8 +137,8 @@ func test_a_sleeping_rooster_shows_his_zs_over_his_own_taller_head() -> void:
 	var rooster := FarmAnimal.new(LivestockRules.CHICKEN, LivestockRules.ROOSTER_LOOK, SPOT)
 	rooster.activity = FarmAnimal.Activity.SLEEP
 	_state.livestock.add(rooster)
-	_wildlife._show_farm_animal_if_near(rooster)
-	var view: FarmAnimalView = _wildlife._farm_animals[rooster]
+	_wildlife.farm_views.show_if_near(rooster)
+	var view: FarmAnimalView = _wildlife.farm_views.views[rooster]
 
 	for _i in roundi(_longest_gap() / STEP) + 3:
 		view._process(STEP)

@@ -33,8 +33,8 @@ func before_each() -> void:
 	_wildlife.rng.seed = 3
 	_cat = FarmAnimal.new(LivestockRules.CAT, &"ginger", Vector2(MEADOW) + Vector2(0.5, 0.5))
 	_livestock.add(_cat)
-	_wildlife._show_farm_animal_if_near(_cat)
-	_cat_view = _wildlife._farm_animals[_cat]
+	_wildlife.farm_views.show_if_near(_cat)
+	_cat_view = _wildlife.farm_views.views[_cat]
 
 
 ## Puts the mouse `tiles` right of the cat.
@@ -164,7 +164,7 @@ func test_a_hunt_goes_on_when_the_cats_view_is_freed() -> void:
 	_mouse_ahead(3.0)
 	_run_cat(1.0)
 	assert_eq(_cat.activity, FarmAnimal.Activity.CROUCH)
-	_wildlife._farm_animals.erase(_cat)
+	_wildlife.farm_views.views.erase(_cat)
 	_cat_view.free()
 	_run_cat(10.0)
 	assert_eq(_cat.activity, FarmAnimal.Activity.IDLE)

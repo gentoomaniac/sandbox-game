@@ -41,8 +41,8 @@ func test_the_removed_are_not_in_the_next_save() -> void:
 func test_the_views_of_the_removed_are_freed() -> void:
 	var cow := _add_animal(LivestockRules.COW)
 	var sheep := _add_animal(LivestockRules.SHEEP)
-	var cow_view: FarmAnimalView = _shown._farm_animals[cow]
+	var cow_view: FarmAnimalView = _shown.farm_views.views[cow]
 	_livestock.remove_species(LivestockRules.COW)
 	assert_true(cow_view.is_queued_for_deletion())
-	assert_false(_shown._farm_animals.has(cow))
-	assert_true(_shown._farm_animals.has(sheep))
+	assert_false(_shown.farm_views.views.has(cow))
+	assert_true(_shown.farm_views.views.has(sheep))

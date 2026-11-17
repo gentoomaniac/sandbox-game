@@ -162,7 +162,7 @@ func test_a_cat_beside_a_mouse_starts_no_hunt_over_the_frames_of_a_sleep() -> vo
 	# No hunt may start before the world is held (the fade to black takes half a second); the
 	# rest is set back to none on each held frame below.
 	cat.hunt_rest_seconds = 3600.0
-	var cat_view: FarmAnimalView = _main._wildlife._farm_animals.get(cat)
+	var cat_view: FarmAnimalView = _main._wildlife.farm_views.views.get(cat)
 	assert_not_null(cat_view, "the cat has a view")
 	# The cat wanders about the player, and a mouse put beside it within the mouse's flee
 	# distance of the player dashes off and is freed before the probe runs.

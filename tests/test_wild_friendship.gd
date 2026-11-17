@@ -36,9 +36,9 @@ func test_birds_and_insects_have_none() -> void:
 func test_the_tame_rabbit_is_not_mistaken_for_the_wild_one() -> void:
 	var tame := FarmAnimal.new(LivestockRules.RABBIT, &"agouti", Vector2(3.5, 5.5))
 	_state.livestock.add(tame)
-	_wildlife._show_farm_animal_if_near(tame)
+	_wildlife.farm_views.show_if_near(tame)
 
-	assert_false(_wildlife._farm_animals[tame].has_friendship(), "its value is the FarmAnimal's")
+	assert_false(_wildlife.farm_views.views[tame].has_friendship(), "its value is the FarmAnimal's")
 	assert_true(_spawn_at(WildlifeRules.RABBIT, Vector2(3, 5)).has_friendship())
 
 

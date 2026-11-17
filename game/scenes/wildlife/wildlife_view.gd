@@ -9,9 +9,8 @@ extends Node
 ## The mice report themselves to the game's Livestock, whose cats hunt them (see Prey): they live
 ## and die with this view, and with no view there are none to hunt.
 ##
-## It also shows the farm animals of the game's Livestock, which are state and saved: one
-## FarmAnimalView each while it is near the view (in the ring or within it), looked at every
-## second like the wild ones.
+## It also shows the farm animals of the game's Livestock, which are state and saved (see
+## FarmAnimalViews), looked at every second like the wild ones.
 ##
 ## Storks that stand on roofs fly in to a house near the view (see `_send_stork_to_roof`); where
 ## on a roof they can stand is read from the top edge of the house's picture.
@@ -23,7 +22,7 @@ extends Node
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
 ## makes every animal take no notice of the player or the villagers (`--wildlife-calm`).
 
-## An animal came into view: a wild one (see `_add`) or a farm animal (`_show_farm_animal_if_near`).
+## An animal came into view: a wild one (see `_add`) or a farm animal (see FarmAnimalViews).
 signal animal_added(animal: Animal)
 
 ## Tries to find a place for one animal before giving up until the next second.
@@ -60,13 +59,14 @@ var scarecrows: Scarecrows
 var villager_feet := PackedVector2Array()
 ## Off while the debug flag decides which animals there are.
 var is_spawning_naturally := true
+## The views of the farm animals near the view.
+var farm_views := FarmAnimalViews.new(self)
 var _state: GameState
 var _camera: CameraController
 var _animals: Array[Animal] = []
 ## For the kinds with a `return_gap_minutes`: the game minute (see GameClock `total_minutes`) until
 ## which no other of the kind comes, since one left.
 var _quiet_until: Dictionary[StringName, int] = {}
-var _farm_animals: Dictionary[FarmAnimal, FarmAnimalView] = {}
 var _nest_views: Dictionary[Building, StorkNestView] = {}
 ## For each picture of a house (a building type in a look), how far its top is above the bottom
 ## edge, for every column of pixels: the roofs storks stand on. Read the first time it is needed.
@@ -76,6 +76,7 @@ var _seconds_to_tick := 0.0
 
 func _init() -> void:
 	rng.randomize()
+	add_child(farm_views)
 
 
 ## Shows wildlife in a world view, by the time, weather and view of the game.
@@ -87,9 +88,9 @@ func show_wildlife(state: GameState, view: WorldView, camera: CameraController) 
 	_camera = camera
 	rules = WildlifeRules.for_session(state.sun)
 	nests = StorkNests.new(StorkNestRules.default_rules(), state.sun, state.world.world_seed)
-	state.livestock.added.connect(_show_farm_animal_if_near)
-	state.livestock.removed.connect(_free_farm_animal_view)
-	state.livestock.petted.connect(_show_pet_reaction)
+	state.livestock.added.connect(farm_views.show_if_near)
+	state.livestock.removed.connect(farm_views.free_view)
+	state.livestock.petted.connect(farm_views.show_pet_reaction)
 	ground.name = "Ground"
 	view.add_child(ground)
 	# Below the entities (objects, player, animals), above the terrain.
@@ -103,7 +104,7 @@ func _process(delta: float) -> void:
 	_seconds_to_tick -= delta
 	if _seconds_to_tick <= 0.0:
 		_seconds_to_tick += rules.general("tick_seconds")
-		_follow_farm_animals()
+		farm_views.follow(_state.livestock)
 		if is_spawning_naturally:
 			_follow_villagers()
 			_follow_nests()
@@ -115,9 +116,7 @@ func clear() -> void:
 	for animal in _animals:
 		animal.queue_free()
 	_animals.clear()
-	for animal_view in _farm_animals.values():
-		animal_view.queue_free()
-	_farm_animals.clear()
+	farm_views.clear()
 	for nest_view in _nest_views.values():
 		nest_view.queue_free()
 	_nest_views.clear()
@@ -600,44 +599,6 @@ func _add(animal: Animal, is_pinned: bool) -> void:
 		_state.livestock.add_prey(mouse.prey)
 	world_view.entities.add_child(animal)
 	animal_added.emit(animal)
-
-
-## Gives a farm animal its view if it has none and is in the ring around the view or within it.
-func _show_farm_animal_if_near(animal: FarmAnimal) -> void:
-	if _farm_animals.has(animal):
-		return
-	var near := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
-	if not near.has_point(animal.position * WildlifeRules.TILE_SIZE):
-		return
-	var animal_view := FarmAnimalView.new(animal)
-	animal_view.wildlife = self
-	_farm_animals[animal] = animal_view
-	world_view.entities.add_child(animal_view)
-	animal_added.emit(animal_view)
-
-
-## Frees the view of an animal that left the world, if it has one.
-func _free_farm_animal_view(animal: FarmAnimal) -> void:
-	if _farm_animals.has(animal):
-		_farm_animals[animal].queue_free()
-		_farm_animals.erase(animal)
-
-
-## Lets the heart or the anger mark rise over a petted animal, if it is in view.
-func _show_pet_reaction(animal: FarmAnimal, shows: Livestock.PetShows) -> void:
-	if _farm_animals.has(animal):
-		_farm_animals[animal].show_pet_reaction(shows)
-
-
-## Shows the farm animals that came near the view, and takes away those far from it.
-func _follow_farm_animals() -> void:
-	var view := view_rect()
-	for animal: FarmAnimal in _farm_animals.keys():
-		if rules.is_beyond_view(_farm_animals[animal].position, view):
-			_farm_animals[animal].queue_free()
-			_farm_animals.erase(animal)
-	for animal in _state.livestock.all():
-		_show_farm_animal_if_near(animal)
 
 
 ## Notes where the villagers are now.
