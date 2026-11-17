@@ -97,3 +97,33 @@ static func _take_next_log(campfire: WorldObject) -> bool:
 static func _hours_text(minutes: int) -> String:
 	var hours := ceili(float(minutes) / GameClock.MINUTES_PER_HOUR)
 	return "%d %s" % [hours, "hour" if hours == 1 else "hours"]
+
+
+## The checks of the state this feature keeps in a WorldObject, by key, for the save
+## validator (SaveObjectChecks).
+static func state_checks(ctx: SaveContext) -> Dictionary[String, Callable]:
+	return {
+		LOG_LEFT: _check_log_left.bind(ctx),
+		LIT: _check_lit.bind(ctx),
+	}
+
+
+## The minutes a campfire's log has left to burn.
+static func _check_log_left(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	if ctx.is_kind(state[Campfire.LOG_LEFT], SaveContext.Kind.WHOLE):
+		var log_minutes := LightingRules.default_rules().longest_burn_minutes()
+		ctx.check_between(state[Campfire.LOG_LEFT], 0, log_minutes, path + " state", "log_left")
+	else:
+		ctx.report(path + " state", "log_left should be a whole number")
+
+
+## Whether a campfire is lit, which it is only with a log burning.
+static func _check_lit(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	if not state[Campfire.LIT] is bool:
+		ctx.report(path + " state", "lit should be true or false")
+	elif state[Campfire.LIT] and not state.has(Campfire.LOG_LEFT):
+		ctx.report(path + " state", "a lit fire needs log_left")

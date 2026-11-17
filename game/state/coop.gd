@@ -146,3 +146,22 @@ static func take_eggs(nest: WorldObject) -> int:
 	var taken := eggs_in(nest)
 	nest.state["eggs"] = 0
 	return taken
+
+
+## The checks of the state this feature keeps in a WorldObject, by key, for the save
+## validator (SaveObjectChecks).
+static func state_checks(ctx: SaveContext) -> Dictionary[String, Callable]:
+	return {
+		"eggs": _check_eggs.bind(ctx),
+	}
+
+
+## The eggs in a nest: a whole number up to what it holds.
+static func _check_eggs(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	if ctx.is_kind(state["eggs"], SaveContext.Kind.WHOLE):
+		var nest_eggs: int = YardRules.default_rules().coop("nest_eggs")
+		ctx.check_between(state["eggs"], 0, nest_eggs, path + " state", "eggs")
+	else:
+		ctx.report(path + " state", "eggs should be a whole number")

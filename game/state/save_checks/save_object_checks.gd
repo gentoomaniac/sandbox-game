@@ -2,8 +2,8 @@ class_name SaveObjectChecks
 extends RefCounted
 ## The checks of what holds items and state: the slots of a stack list, the piles on the ground,
 ## and the objects of the world with the state of each. A feature with a state of its own (a
-## campfire, a nest, a sales cart, a process station's run) has its check below, found by the key
-## of the state.
+## campfire, a nest, a sales cart, a process station's run) has its check in its own class, found by
+## the key of the state.
 
 ## The state keys whose value is a number, which need no more check than that.
 const NUMBER_STATE_KEYS: Array[String] = [
@@ -25,23 +25,23 @@ var _ctx: SaveContext
 ## The one registration of each key an object's state may hold besides the numbers: its check,
 ## which holds the key's shape too (a dictionary, a flag...). Called as
 ## `check(state, type_data, path, drop_object)` for every object that has the key. A key with no
-## registration at all is refused.
+## registration at all is refused. The features with a state of their own bring their keys.
 var _state_checks: Dictionary[String, Callable] = {
-	DykeProfile.HEIGHT_KEY: _check_dyke_measure.bind(DykeProfile.HEIGHT_KEY),
-	DykeProfile.STRENGTH_KEY: _check_dyke_measure.bind(DykeProfile.STRENGTH_KEY),
 	"stock": _check_stock,
-	Campfire.LOG_LEFT: _check_log_left,
-	Campfire.LIT: _check_lit,
-	"eggs": _check_eggs,
 	"tree": _check_tree,
-	ProcessStation.RUN: _check_run,
-	"till": _check_till,
-	"prices": _check_prices,
 }
 
 
 func _init(context: SaveContext) -> void:
 	_ctx = context
+	for feature_checks: Dictionary[String, Callable] in [
+		Campfire.state_checks(context),
+		Coop.state_checks(context),
+		DykeProfile.state_checks(context),
+		ProcessStation.state_checks(context),
+		SalesCart.state_checks(context),
+	]:
+		_state_checks.merge(feature_checks)
 	for key in NUMBER_STATE_KEYS:
 		_state_checks[key] = _check_number.bind(key)
 
@@ -159,104 +159,9 @@ func _check_stock(state: Dictionary, type_data: Dictionary, path: String, _drop:
 		_ctx.report(path + " state", "stock should be a whole number")
 
 
-## The minutes a campfire's log has left to burn.
-func _check_log_left(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	if _ctx.is_kind(state[Campfire.LOG_LEFT], SaveContext.Kind.WHOLE):
-		var log_minutes := LightingRules.default_rules().longest_burn_minutes()
-		_ctx.check_between(state[Campfire.LOG_LEFT], 0, log_minutes, path + " state", "log_left")
-	else:
-		_ctx.report(path + " state", "log_left should be a whole number")
-
-
-## Whether a campfire is lit, which it is only with a log burning.
-func _check_lit(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	if not state[Campfire.LIT] is bool:
-		_ctx.report(path + " state", "lit should be true or false")
-	elif state[Campfire.LIT] and not state.has(Campfire.LOG_LEFT):
-		_ctx.report(path + " state", "a lit fire needs log_left")
-
-
-## The eggs in a nest: a whole number up to what it holds.
-func _check_eggs(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	if _ctx.is_kind(state["eggs"], SaveContext.Kind.WHOLE):
-		var nest_eggs: int = YardRules.default_rules().coop("nest_eggs")
-		_ctx.check_between(state["eggs"], 0, nest_eggs, path + " state", "eggs")
-	else:
-		_ctx.report(path + " state", "eggs should be a whole number")
-
-
 ## The tree a stump or sapling comes from.
 func _check_tree(state: Dictionary, _type: Dictionary, path: String, drop_object: Callable) -> void:
 	if not state["tree"] is String:
 		_ctx.report(path + " state", "tree should be text")
 	elif not WorldObjectTypes.TYPES.has(StringName(state["tree"])):
 		_ctx.add_missing("tree %s" % state["tree"], path, drop_object)
-
-
-## The money in the till of a sales cart.
-func _check_till(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	if not (_ctx.is_kind(state["till"], SaveContext.Kind.WHOLE) and state["till"] >= 0):
-		_ctx.report(path + " state", "till should be a whole number, at least 0")
-
-
-## The height (in centimetres) or strength (in percent) of a dyke the game changed.
-func _check_dyke_measure(
-	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, key: String
-) -> void:
-	if not _ctx.is_kind(state[key], SaveContext.Kind.WHOLE):
-		_ctx.report(path + " state", "%s should be a whole number" % key)
-		return
-	var most := DykeProfile.MAX_HEIGHT_CM if key == DykeProfile.HEIGHT_KEY else 100
-	_ctx.check_between(state[key], 0, most, path + " state", key)
-
-
-## The prices of a sales cart (see SalesCart), by slot: the item each price is for and the price in
-## whole Schilling, from 1. A price for an item the game no longer has is dropped.
-func _check_prices(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	var prices: Variant = state["prices"]
-	path += " state prices"
-	if not prices is Dictionary:
-		_ctx.report(path, "should be a dictionary")
-		return
-	for slot: Variant in prices:
-		var entry: Variant = prices[slot]
-		var entry_path := "%s %s" % [path, slot]
-		if not (slot is String and slot.is_valid_int() and int(slot) >= 0):
-			_ctx.report(entry_path, "should be under a slot number")
-		elif not entry is Dictionary:
-			_ctx.report(entry_path, "should be a dictionary")
-		else:
-			var item: Variant = _ctx.field(entry, "item", SaveContext.Kind.TEXT, entry_path)
-			var price: Variant = _ctx.field(entry, "price", SaveContext.Kind.WHOLE, entry_path)
-			if price != null and price < 1:
-				_ctx.report(entry_path, "price should be at least 1")
-			if item != null and not ItemTypes.TYPES.has(StringName(item)):
-				_ctx.add_missing("item %s" % item, entry_path, func() -> void: prices.erase(slot))
-
-
-## The run of a process station (see ProcessStation): its recipe, start and done minutes, and
-## what it makes until that is in the grid.
-func _check_run(state: Dictionary, _type: Dictionary, path: String, _drop: Callable) -> void:
-	path += " state " + ProcessStation.RUN
-	var run: Variant = state[ProcessStation.RUN]
-	if not run is Dictionary:
-		_ctx.report(path, "should be a dictionary")
-		return
-	var recipe: Variant = _ctx.field(run, "recipe", SaveContext.Kind.TEXT, path)
-	_ctx.field(run, "start_minute", SaveContext.Kind.WHOLE, path)
-	_ctx.field(run, "done_minute", SaveContext.Kind.WHOLE, path)
-	if recipe != null and not RecipeRules.default_rules().recipe_ids().has(StringName(recipe)):
-		_ctx.add_missing(
-			"recipe %s" % recipe, path, func() -> void: state.erase(ProcessStation.RUN)
-		)
-	if not run.has("products"):
-		return
-	var products: Variant = run["products"]
-	if not products is Dictionary:
-		_ctx.report(path, "products should be a dictionary")
-		return
-	for item: Variant in products:
-		if not ItemTypes.TYPES.has(StringName(str(item))):
-			_ctx.add_missing("item %s" % item, path, func() -> void: products.erase(item))
-		elif not (_ctx.is_kind(products[item], SaveContext.Kind.WHOLE) and products[item] >= 1):
-			_ctx.report(path, "products %s should be a whole number, at least 1" % item)

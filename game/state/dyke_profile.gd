@@ -142,3 +142,28 @@ func _size(height: float) -> StringName:
 	if height > _landscape.value("surge", "high_above"):
 		return HIGH
 	return NORMAL
+
+
+## The checks of the state this feature keeps in a WorldObject, by key, for the save
+## validator (SaveObjectChecks).
+static func state_checks(ctx: SaveContext) -> Dictionary[String, Callable]:
+	return {
+		HEIGHT_KEY: _check_measure.bind(ctx, HEIGHT_KEY),
+		STRENGTH_KEY: _check_measure.bind(ctx, STRENGTH_KEY),
+	}
+
+
+## The height (in centimetres) or strength (in percent) of a dyke the game changed.
+static func _check_measure(
+	state: Dictionary,
+	_type: Dictionary,
+	path: String,
+	_drop: Callable,
+	ctx: SaveContext,
+	key: String
+) -> void:
+	if not ctx.is_kind(state[key], SaveContext.Kind.WHOLE):
+		ctx.report(path + " state", "%s should be a whole number" % key)
+		return
+	var most := MAX_HEIGHT_CM if key == HEIGHT_KEY else 100
+	ctx.check_between(state[key], 0, most, path + " state", key)

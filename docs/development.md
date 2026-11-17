@@ -98,12 +98,14 @@ A new saved field is a format change in three places, in one commit with its tes
    `game/state/save_checks/` that owns the data, or a new `Save<Domain>Checks` class (it takes the
    `SaveContext`, and `SaveValidator._check_game` calls it, in the order its references need). A
    feature that keeps something in an object's state (like the sales cart's `prices`) registers each
-   key once, in the `_state_checks` table of `SaveObjectChecks`: the key and the check that says what
-   shape its value has. A plain number goes in `NUMBER_STATE_KEYS` instead. A key with no
-   registration is refused, and `tests/test_save_object_state_keys.gd` fails for a key that the game
-   code uses on an object's state (written out or through a constant) without one. A new optional
-   key needs its check even when it needs no new version. Content that the game may drop later (an
-   item, a recipe) goes through `add_missing` with what removes it, not `report`.
+   key once: the key and the check that says what shape its value has, in the feature's own
+   `state_checks(ctx)` table (see `SalesCart`), with the feature named in `SaveObjectChecks._init`.
+   Without a feature of its own a key goes in `SaveObjectChecks._state_checks`, or in
+   `NUMBER_STATE_KEYS` if it is a plain number. A key with no registration is refused, and
+   `tests/test_save_object_state_keys.gd` fails for a key that the game code uses on an object's
+   state (written out or through a constant) without one. A new optional key needs its check even
+   when it needs no new version. Content that the game may drop later (an item, a recipe) goes
+   through `add_missing` with what removes it, not `report`.
 2. **The migration**, when the format changes: raise `SaveFile.VERSION`, add
    `game/state/save_migrations/v<old>_to_v<new>.gd` (`static func upgrade(game: Dictionary)`) that
    writes the default into an old save, written out as a literal and not read from data files, so

@@ -98,3 +98,46 @@ func take_takings(purse: Purse) -> int:
 	purse.add(takings)
 	object.state["till"] = 0
 	return takings
+
+
+## The checks of the state this feature keeps in a WorldObject, by key, for the save
+## validator (SaveObjectChecks).
+static func state_checks(ctx: SaveContext) -> Dictionary[String, Callable]:
+	return {
+		"prices": _check_prices.bind(ctx),
+		"till": _check_till.bind(ctx),
+	}
+
+
+## The prices of a sales cart (see SalesCart), by slot: the item each price is for and the price in
+## whole Schilling, from 1. A price for an item the game no longer has is dropped.
+static func _check_prices(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	var prices: Variant = state["prices"]
+	path += " state prices"
+	if not prices is Dictionary:
+		ctx.report(path, "should be a dictionary")
+		return
+	for slot: Variant in prices:
+		var entry: Variant = prices[slot]
+		var entry_path := "%s %s" % [path, slot]
+		if not (slot is String and slot.is_valid_int() and int(slot) >= 0):
+			ctx.report(entry_path, "should be under a slot number")
+		elif not entry is Dictionary:
+			ctx.report(entry_path, "should be a dictionary")
+		else:
+			var item: Variant = ctx.field(entry, "item", SaveContext.Kind.TEXT, entry_path)
+			var price: Variant = ctx.field(entry, "price", SaveContext.Kind.WHOLE, entry_path)
+			if price != null and price < 1:
+				ctx.report(entry_path, "price should be at least 1")
+			if item != null and not ItemTypes.TYPES.has(StringName(item)):
+				ctx.add_missing("item %s" % item, entry_path, func() -> void: prices.erase(slot))
+
+
+## The money in the till of a sales cart.
+static func _check_till(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	if not (ctx.is_kind(state["till"], SaveContext.Kind.WHOLE) and state["till"] >= 0):
+		ctx.report(path + " state", "till should be a whole number, at least 0")

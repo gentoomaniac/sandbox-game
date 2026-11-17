@@ -336,3 +336,39 @@ func _rule() -> ProcessLoad:
 		_cached_rule_recipes = unlocked
 		_cached_rule = ProcessLoad.new(crafting.rules, unlocked, _slot_count)
 	return _cached_rule
+
+
+## The checks of the state this feature keeps in a WorldObject, by key, for the save
+## validator (SaveObjectChecks).
+static func state_checks(ctx: SaveContext) -> Dictionary[String, Callable]:
+	return {
+		RUN: _check_run.bind(ctx),
+	}
+
+
+## The run of a process station (see ProcessStation): its recipe, start and done minutes, and
+## what it makes until that is in the grid.
+static func _check_run(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, ctx: SaveContext
+) -> void:
+	path += " state " + ProcessStation.RUN
+	var run: Variant = state[ProcessStation.RUN]
+	if not run is Dictionary:
+		ctx.report(path, "should be a dictionary")
+		return
+	var recipe: Variant = ctx.field(run, "recipe", SaveContext.Kind.TEXT, path)
+	ctx.field(run, "start_minute", SaveContext.Kind.WHOLE, path)
+	ctx.field(run, "done_minute", SaveContext.Kind.WHOLE, path)
+	if recipe != null and not RecipeRules.default_rules().recipe_ids().has(StringName(recipe)):
+		ctx.add_missing("recipe %s" % recipe, path, func() -> void: state.erase(ProcessStation.RUN))
+	if not run.has("products"):
+		return
+	var products: Variant = run["products"]
+	if not products is Dictionary:
+		ctx.report(path, "products should be a dictionary")
+		return
+	for item: Variant in products:
+		if not ItemTypes.TYPES.has(StringName(str(item))):
+			ctx.add_missing("item %s" % item, path, func() -> void: products.erase(item))
+		elif not (ctx.is_kind(products[item], SaveContext.Kind.WHOLE) and products[item] >= 1):
+			ctx.report(path, "products %s should be a whole number, at least 1" % item)
