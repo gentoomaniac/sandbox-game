@@ -73,6 +73,33 @@ func test_unloading_leaves_no_decoration_cells() -> void:
 	assert_true(_view.decorations._spots.is_empty())
 
 
+func test_an_object_reaching_into_a_drawn_neighbour_clears_the_decoration_under_it() -> void:
+	_residency.load_chunk(RIGHT)
+	_view.finish_drawing()
+	var row := _row_with_decoration_on_left_edge(RIGHT)
+	assert_gte(row, 0, "a decorated tile to cover")
+	var covered := Chunk.to_world(RIGHT, Vector2i(0, row))
+	# Added to the chunk before it loads, as the generator does: no signal of the world tells
+	# the view that the boulder covers the tile.
+	var chunk := _generator.generate_chunk(LEFT)
+	var boulder := WorldObject.new(WorldObjectTypes.BOULDER, covered - Vector2i(1, 0))
+	chunk.remove_objects_under(boulder)
+	chunk.add_object(boulder)
+	_residency.world.add_chunk(chunk)
+	_residency.chunk_loaded.emit(chunk)
+	_view.finish_drawing()
+	assert_eq(_view.decorations._decorations.get_cell_source_id(covered), -1)
+
+
+## The first row of `coords` whose leftmost tile shows a decoration, or -1.
+func _row_with_decoration_on_left_edge(coords: Vector2i) -> int:
+	for y in Chunk.CHUNK_SIZE:
+		var tile := Chunk.to_world(coords, Vector2i(0, y))
+		if _view.decorations._decorations.get_cell_source_id(tile) != -1:
+			return y
+	return -1
+
+
 ## The cells owned by `coords` that also touch its left neighbour.
 func _left_column(coords: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []

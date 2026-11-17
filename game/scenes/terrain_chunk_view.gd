@@ -296,7 +296,21 @@ func _draw_chunk_step(drawing: ChunkDrawing) -> void:
 			_redraw_cell(origin + Vector2i(Chunk.CHUNK_SIZE, i))
 		for i in Chunk.CHUNK_SIZE:
 			_redraw_cell(origin + Vector2i(i, Chunk.CHUNK_SIZE))
+		_clear_decorations_under_overhangs(chunk)
 	drawing.step += 1
+
+
+## Erases the decorations under the tiles that this chunk's objects cover in the chunks to its
+## right and below, which drew them while this chunk was missing. A neighbour that is not drawn
+## yet does it when it draws its tiles (`place` asks the world for objects).
+func _clear_decorations_under_overhangs(chunk: Chunk) -> void:
+	for object in chunk.objects():
+		for tile in object.tiles():
+			if (
+				Chunk.world_to_chunk(tile) != chunk.coords
+				and layer_at(tile) != TerrainTileset.MISSING
+			):
+				_decorations.redraw(tile, layer_at(tile))
 
 
 ## Draws the cells of row `y` of a chunk (and their decorations).
