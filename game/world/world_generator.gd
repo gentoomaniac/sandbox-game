@@ -7,7 +7,7 @@ extends RefCounted
 ##
 ## The open land is bare: no fields, fences, hedges, walls or ditches are generated in it (those
 ## come with the villages, and the player digs ditches). The only work of men in it is the dykes
-## (data/landscape.cfg), along the floodplain's edge and the coast.
+## of DykeLayout (data/landscape.cfg), along the floodplain's edge and the coast.
 ##
 ## In the west lies the North Sea, which CoastLayout makes: the sea dyke stands on the first land
 ## and its marsh reaches inland from it as from the river; west of the coast line lies the
@@ -72,17 +72,6 @@ const CLAY_REACH := 5
 const CLAY_CLUSTER_ABOVE := 0.25
 const CLAY_SPOT_CHANCE := 0.5
 
-## How far a dyke's tile can lie past the edge of the land it runs along (the coast line, the
-## floodplain's edge): the edge steps at most 2 tiles from one row to the next (from one column
-## to the next for the river), and the dyke takes the tiles along a step and cuts off a narrow
-## bulge (see `_is_on_edge_line`), which together is less than this.
-const DYKE_LINE_REACH := 8.0
-## A tile further than this from the river's centre line can't carry a river dyke.
-const DYKE_PROBE_DISTANCE := RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH + DYKE_LINE_REACH
-## The places along an edge that decide whether a tile is on its dyke (see `_is_on_edge_line`):
-## this many either side of its own.
-const EDGE_LINE_SPAN := 3
-
 ## The 8 directions probed for wetland and, for clay, for water.
 const WETLAND_PROBE_DIRECTIONS: Array[Vector2i] = [
 	Vector2i(1, 0),
@@ -127,16 +116,11 @@ const WETLAND_FREQUENCY := 0.03
 const COMPOSITION_FREQUENCY := 0.012
 const GRASS_FREQUENCY := 0.05
 const CLAY_FREQUENCY := 0.15
-## The dyke noise picks the stretches of the floodplain's edge that have a dyke. Two octaves only:
-## more add small wobbles, which near the threshold cut a stretch into pieces a few tiles long.
-const DYKE_FREQUENCY := 0.01
-const DYKE_OCTAVES := 2
 ## Offsets the wetland seed so it is independent of the river noise.
 const WETLAND_SEED_OFFSET := 1
 const COMPOSITION_SEED_OFFSET := 4
 const GRASS_SEED_OFFSET := 6
 const CLAY_SEED_OFFSET := 7
-const DYKE_SEED_OFFSET := 11
 ## Offsets the per-tile object rolls from the noise seeds: one decides the kind of object,
 ## the other which variety of tree or bush.
 const OBJECT_ROLL_SEED_OFFSET := 3
@@ -152,8 +136,8 @@ var _wetland_noise := FastNoiseLite.new()
 var _composition_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()
 var _clay_noise := FastNoiseLite.new()
-var _dyke_noise := FastNoiseLite.new()
 var _coast: CoastLayout
+var _dykes: DykeLayout
 var _woods: WoodLayout
 var _object_roll_seed: int
 var _variety_roll_seed: int
@@ -163,13 +147,13 @@ var _clay_roll_seed: int
 var _reed_roll_seed: int
 ## The numbers of data/landscape.cfg (see there).
 var _marsh_reach: float
-var _dyke_above: float
 
 
 func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void:
 	_river = RiverLine.new(world_seed)
 	_creeks = CreekLayout.new(world_seed, _river, landscape)
 	_coast = CoastLayout.new(world_seed, _river, landscape)
+	_dykes = DykeLayout.new(world_seed, _river, _coast, landscape)
 	_wetland_noise.seed = world_seed + WETLAND_SEED_OFFSET
 	_wetland_noise.frequency = WETLAND_FREQUENCY
 	_composition_noise.seed = world_seed + COMPOSITION_SEED_OFFSET
@@ -178,9 +162,6 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_grass_noise.frequency = GRASS_FREQUENCY
 	_clay_noise.seed = world_seed + CLAY_SEED_OFFSET
 	_clay_noise.frequency = CLAY_FREQUENCY
-	_dyke_noise.seed = world_seed + DYKE_SEED_OFFSET
-	_dyke_noise.frequency = DYKE_FREQUENCY
-	_dyke_noise.fractal_octaves = DYKE_OCTAVES
 	_woods = WoodLayout.new(world_seed, landscape)
 	_object_roll_seed = world_seed + OBJECT_ROLL_SEED_OFFSET
 	_variety_roll_seed = world_seed + VARIETY_ROLL_SEED_OFFSET
@@ -189,7 +170,6 @@ func _init(world_seed: int, landscape := LandscapeRules.default_rules()) -> void
 	_clay_roll_seed = world_seed + CLAY_ROLL_SEED_OFFSET
 	_reed_roll_seed = world_seed + REED_ROLL_SEED_OFFSET
 	_marsh_reach = landscape.value("marsh", "reach")
-	_dyke_above = landscape.value("dykes", "stretch_above")
 
 
 ## The chunk at `chunk_coords`, or null if it is outside the world bounds.
@@ -235,7 +215,7 @@ func _terrain_from(world_pos: Vector2i, river_distance: float) -> Tile.Terrain:
 
 ## The first tile of land in a row, east of the salt marsh (east of the coast line): where the sea
 ## dyke stands, or a few tiles west of it where the dyke cuts off a narrow bulge of the land or
-## runs along a step of the coast (see `_is_on_edge_line`).
+## runs along a step of the coast (see DykeLayout).
 func first_land_x(y: int) -> int:
 	return _coast.first_land_x(y)
 
@@ -254,106 +234,6 @@ func _is_marsh(world_pos: Vector2i, river_distance: float) -> bool:
 	)
 
 
-## Whether a tile of this natural terrain has a dyke: by the sea or along the river.
-func _is_dyke(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
-	return _is_sea_dyke(world_pos, natural) or _is_river_dyke(world_pos, natural, river_distance)
-
-
-## Whether a tile has the sea dyke: land (the floodplain too, where the river runs out) on the
-## line along the coast (see `_is_on_edge_line`), but for the river.
-func _is_sea_dyke(world_pos: Vector2i, natural: Tile.Terrain) -> bool:
-	if (
-		natural != Tile.Terrain.GRASS
-		and natural != Tile.Terrain.WETLAND
-		and natural != Tile.Terrain.FLOODPLAIN
-	):
-		return false
-	# The cheap part first: most tiles lie further east.
-	if not _coast.is_within(world_pos, DYKE_LINE_REACH):
-		return false
-	return _is_on_edge_line(world_pos.y, world_pos.x, first_land_x)
-
-
-## Whether a tile of this natural terrain has a river dyke: land on the line along the edge of the
-## floodplain (see `_is_on_edge_line`), north or south of the river, in a column of a stretch the
-## dyke noise picks there. A whole column is in or out, so a stretch begins and ends cleanly, on
-## a tile joined on one side. Where a creek cuts the line, a tile left on its own between its
-## water has none.
-func _is_river_dyke(world_pos: Vector2i, natural: Tile.Terrain, river_distance: float) -> bool:
-	if not _is_on_river_dyke_line(world_pos, natural, river_distance):
-		return false
-	for side in World.CONNECTION_SIDES:
-		var neighbour := world_pos + side
-		var neighbour_distance := _river_distance(neighbour)
-		var neighbour_terrain := _terrain_from(neighbour, neighbour_distance)
-		if _is_on_river_dyke_line(neighbour, neighbour_terrain, neighbour_distance):
-			return true
-	return false
-
-
-## `_is_river_dyke`, but for the tiles left on their own.
-func _is_on_river_dyke_line(
-	world_pos: Vector2i, natural: Tile.Terrain, river_distance: float
-) -> bool:
-	if natural != Tile.Terrain.GRASS and natural != Tile.Terrain.WETLAND:
-		return false
-	if river_distance >= DYKE_PROBE_DISTANCE:
-		return false
-	var is_north := world_pos.y < _river.line_y(world_pos.x)
-	# Across the edge into the land: north of the river up, south of it down.
-	var edge := _north_land_edge if is_north else _south_land_edge
-	var across := -world_pos.y if is_north else world_pos.y
-	if not _is_on_edge_line(world_pos.x, across, edge):
-		return false
-	var edge_place: int = edge.call(world_pos.x)
-	var edge_row := -edge_place if is_north else edge_place
-	return _dyke_noise.get_noise_2d(world_pos.x, edge_row) > _dyke_above
-
-
-## The first row of the land north of the floodplain in a column, counted upwards (negated), so
-## it grows into the land as `_is_on_edge_line` needs.
-func _north_land_edge(x: int) -> int:
-	var flood_edge := _river.line_y(x) - _river.widening_at(x) - RIVER_HALF_WIDTH - FLOODPLAIN_WIDTH
-	return -floori(flood_edge)
-
-
-## The first row of the land south of the floodplain in a column.
-func _south_land_edge(x: int) -> int:
-	var flood_edge := _river.line_y(x) + _river.widening_at(x) + RIVER_HALF_WIDTH + FLOODPLAIN_WIDTH
-	return ceili(flood_edge)
-
-
-## Whether a tile is on the dyke's line along the edge of some land: a thin line of tiles joined
-## on their sides, which runs on the diagonal where the edge slants (see LineSlants).
-## `edge.call(place)` gives at each place along the edge (a row of the coast, a column of the
-## river) the first tile across it that is land, the land lying at greater `across`. The line
-## takes that tile at every place and, where the edge steps to the next place, the tiles along the
-## step, so it is joined on its sides; a stair of single steps is the line on the diagonal. Before
-## that a bulge of the land narrower than 3 places is cut off (an opening, in image terms), as the
-## line could only follow it in a block or a spur. Depends on the places EDGE_LINE_SPAN either
-## side only, so a tile's dyke is a pure function of the seed and its position.
-static func _is_on_edge_line(place: int, across: int, edge: Callable) -> bool:
-	var edges: Array[int] = []
-	for offset in range(-EDGE_LINE_SPAN, EDGE_LINE_SPAN + 1):
-		edges.append(edge.call(place + offset))
-	var first := _opened_edge(edges, EDGE_LINE_SPAN)
-	if across < first:
-		return false
-	var step_end := maxi(
-		_opened_edge(edges, EDGE_LINE_SPAN - 1), _opened_edge(edges, EDGE_LINE_SPAN + 1)
-	)
-	return across <= maxi(first, step_end)
-
-
-## The edge at `edges[index]` with the bulges of the land narrower than 3 places cut off: the least
-## of the greatest edge of each run of 3 places around it.
-static func _opened_edge(edges: Array[int], index: int) -> int:
-	var opened := maxi(edges[index - 2], maxi(edges[index - 1], edges[index]))
-	for start in range(index - 1, index + 1):
-		opened = mini(opened, maxi(edges[start], maxi(edges[start + 1], edges[start + 2])))
-	return opened
-
-
 ## The type of object generated on a tile, or &"" for none. A pure function of the seed, the
 ## position and the terrain.
 func object_type_at(world_pos: Vector2i, terrain: Tile.Terrain) -> StringName:
@@ -369,7 +249,7 @@ func _object_type_from(
 ) -> StringName:
 	if terrain == Tile.Terrain.MUD:
 		return WorldObjectTypes.EWER if _coast.is_ewer_at(world_pos, self) else &""
-	if _is_dyke(world_pos, terrain, river_distance):
+	if _dykes.is_dyke(world_pos, terrain, river_distance, self):
 		return WorldObjectTypes.DYKE
 	if terrain == Tile.Terrain.FLOODPLAIN or terrain == Tile.Terrain.WETLAND:
 		# The way across a ford is kept clear.

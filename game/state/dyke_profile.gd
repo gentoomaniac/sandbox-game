@@ -51,7 +51,7 @@ func _init(
 ## Whether a dyke tile belongs to the sea dyke (the generator lays it within DYKE_LINE_REACH of the
 ## first land of its row); the others run along the river.
 func is_sea_dyke(tile: Vector2i) -> bool:
-	return tile.x - _generator.first_land_x(tile.y) <= WorldGenerator.DYKE_LINE_REACH
+	return tile.x - _generator.first_land_x(tile.y) <= DykeLayout.LINE_REACH
 
 
 ## The height of a dyke object, as the generator laid it or as the game changed it.

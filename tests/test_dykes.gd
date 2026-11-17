@@ -34,13 +34,11 @@ func _sides_joined(tile: Vector2i, dykes: Dictionary[Vector2i, bool]) -> int:
 func _coast_columns() -> Vector2i:
 	var line_x: float = _rules.value("coast", "line_x")
 	var wander: float = _rules.value("coast", "wander")
-	return Vector2i(
-		floori(line_x - wander), ceili(line_x + wander + WorldGenerator.DYKE_LINE_REACH)
-	)
+	return Vector2i(floori(line_x - wander), ceili(line_x + wander + DykeLayout.LINE_REACH))
 
 
 func _is_near_the_river(generator: WorldGenerator, tile: Vector2i) -> bool:
-	return generator._river_distance(tile) < WorldGenerator.DYKE_PROBE_DISTANCE + MOUTH_CLEARANCE
+	return generator._river_distance(tile) < DykeLayout.PROBE_DISTANCE + MOUTH_CLEARANCE
 
 
 func test_the_sea_dyke_is_one_unbroken_line_of_tiles_joined_on_two_sides() -> void:
