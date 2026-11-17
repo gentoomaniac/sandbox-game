@@ -63,6 +63,16 @@ func test_unloading_erases_the_chunks_cells() -> void:
 		assert_eq(_drawn(cell), _empty())
 
 
+func test_unloading_leaves_no_decoration_cells() -> void:
+	_residency.load_chunk(RIGHT)
+	_view.finish_drawing()
+	assert_gt(_view.decorations._decorations.get_used_cells().size(), 0, "something to unload")
+	_residency.unload_chunk(RIGHT)
+	assert_eq(_view.decorations._decorations.get_used_cells().size(), 0)
+	assert_eq(_view.decorations._clay_hints.get_used_cells().size(), 0)
+	assert_true(_view.decorations._spots.is_empty())
+
+
 ## The cells owned by `coords` that also touch its left neighbour.
 func _left_column(coords: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
