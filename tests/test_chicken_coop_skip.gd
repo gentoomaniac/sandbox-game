@@ -87,7 +87,7 @@ func test_the_roosts_a_skip_took_are_free_again_for_the_next_night() -> void:
 	_state.clock.set_time(16, 0)
 	_state.simulation.skip(16 * GameClock.MINUTES_PER_HOUR)
 	assert_eq(_eggs(), 6)
-	assert_true(_livestock._roost_taken.is_empty(), "nothing is kept after the skip")
+	assert_true(_livestock.searches.roost_taken.is_empty(), "nothing is kept after the skip")
 	_run(60.0, NIGHT)
 	assert_eq(_housed(hens).size(), 6, "all six get in the next night")
 
@@ -97,7 +97,7 @@ func test_a_skip_by_day_with_no_bedtime_in_it_reserves_no_roost() -> void:
 	_state.clock.day = DAY
 	_state.clock.set_time(9, 0)
 	_state.simulation.skip(3 * GameClock.MINUTES_PER_HOUR)
-	assert_true(_livestock._roost_taken.is_empty())
+	assert_true(_livestock.searches.roost_taken.is_empty())
 
 
 func test_a_skip_shorter_than_the_walked_minutes_still_sends_the_hen_to_the_coop() -> void:

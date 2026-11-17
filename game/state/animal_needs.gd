@@ -31,7 +31,7 @@ static func pressing_needs(animal: FarmAnimal, yard: YardRules) -> Array[StringN
 ## Sets the animal walking to the nearest thing that meets its strongest need that it can find; a
 ## search that finds nothing is not repeated for a while. Returns whether it set off.
 static func start_trip(
-	animal: FarmAnimal, map: GameMap, yard: YardRules, searches: SearchBudget
+	animal: FarmAnimal, map: GameMap, yard: YardRules, searches: AnimalSearches
 ) -> bool:
 	if animal.search_seconds > 0.0 or searches.left <= 0:
 		return false
@@ -60,7 +60,7 @@ static func start_trip(
 ## has a source of it beside it, as `{"spot": its feet there, "source": the tile of the source}`,
 ## or an empty dictionary.
 static func find_source(
-	animal: FarmAnimal, need: StringName, map: GameMap, yard: YardRules, searches: SearchBudget
+	animal: FarmAnimal, need: StringName, map: GameMap, yard: YardRules, searches: AnimalSearches
 ) -> Dictionary:
 	searches.made += 1
 	var tiles := ReachableTiles.within(
@@ -141,7 +141,7 @@ static func meet_in_skip(
 	minutes: int,
 	yard: YardRules,
 	rng: RandomNumberGenerator,
-	searches: SearchBudget
+	searches: AnimalSearches
 ) -> void:
 	var seek_at := yard.needs("seek_at")
 	for need: StringName in [&"thirst", &"hunger"]:

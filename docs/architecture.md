@@ -231,9 +231,11 @@ itself to a call that needs the terrain.
   `catch_up` (who goes first: follower, sleeper, coop, awake); what an animal does is functions
   that are given the animal and what they need (like `PlayerTravel`), each with its live path and
   its skip's: `AnimalMotion` (starting an activity, a step that turns away from what blocks it,
-  whether it is getting anywhere, and `wander_off`, where a skip leaves it) and `AnimalNeeds`
+  whether it is getting anywhere, and `wander_off`, where a skip leaves it), `AnimalNeeds`
   (how hunger and thirst rise, the search for what meets one and the walk there, and what a skip
-  makes of them; the searches an update may make are a `SearchBudget`). The numbers are
+  makes of them), `ChickenRoosting` (a hen's walk to a coop at bedtime and out in the morning,
+  and where a skip puts her, with the eggs it counts); the searches they make and the roosts a
+  skip has used up are kept in `AnimalSearches`. The numbers are
   `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws them through
   `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes
   from the FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
