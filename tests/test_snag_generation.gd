@@ -28,7 +28,7 @@ func test_the_land_puts_dead_and_half_dead_trees_of_the_kind_of_the_trees_around
 						generator._tree_type_at(
 							pos,
 							generator._river_distance(pos),
-							generator._roll(pos, generator._variety_roll_seed)
+							PositionHash.unit(pos, generator._variety_roll_seed)
 						)
 					)
 				elif type == WorldObjectSnags.half_dead_type(kind):

@@ -23,3 +23,8 @@ static func of(pos: Vector2i, salt := 0) -> int:
 ## same salt always the same answer. Resolution is 1 in 100.
 static func rolls(pos: Vector2i, salt: int, chance: float) -> bool:
 	return of(pos, salt) % 100 < chance * 100
+
+
+## A float in [0, 1) from a position and a salt, in steps of 1 in 10000.
+static func unit(pos: Vector2i, salt: int) -> float:
+	return of(pos, salt) % 10000 / 10000.0

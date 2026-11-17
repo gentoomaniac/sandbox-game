@@ -379,7 +379,7 @@ func _foreshore_terrain(world_pos: Vector2i, seaward: float, river_distance: flo
 ## where the river runs out.
 func _warft_middle(y: int) -> Vector2:
 	var band := floori(y / _warft_spacing)
-	if _roll(Vector2i(band, 0), _warft_roll_seed) >= _warft_chance:
+	if PositionHash.unit(Vector2i(band, 0), _warft_roll_seed) >= _warft_chance:
 		return Vector2.INF
 	var middle_y := (band + 0.5) * _warft_spacing
 	var middle := Vector2(_coast_line_x(middle_y) - _warft_out, middle_y)
@@ -393,10 +393,14 @@ func _warft_middle(y: int) -> Vector2:
 ## its other tiles are mud too. Most rows have none, which is asked first.
 func _is_ewer_at(world_pos: Vector2i) -> bool:
 	var band := floori(world_pos.y / _ewer_spacing)
-	var row := floori((band + _roll(Vector2i(band, 1), _ewer_roll_seed)) * _ewer_spacing)
-	if world_pos.y != row or _roll(Vector2i(band, 0), _ewer_roll_seed) >= _ewer_chance:
+	var row := floori(
+		(band + PositionHash.unit(Vector2i(band, 1), _ewer_roll_seed)) * _ewer_spacing
+	)
+	if world_pos.y != row or PositionHash.unit(Vector2i(band, 0), _ewer_roll_seed) >= _ewer_chance:
 		return false
-	var out := lerpf(_ewer_out_from, _ewer_out_to, _roll(Vector2i(band, 2), _ewer_roll_seed))
+	var out := lerpf(
+		_ewer_out_from, _ewer_out_to, PositionHash.unit(Vector2i(band, 2), _ewer_roll_seed)
+	)
 	if world_pos.x != floori(_coast_line_x(row) - out):
 		return false
 	var footprint: Vector2i = WorldObjectTypes.TYPES[WorldObjectTypes.EWER]["footprint"]
@@ -412,7 +416,7 @@ func _is_ewer_at(world_pos: Vector2i) -> bool:
 ## little way out on the mud rather than at the salt marsh.
 func _is_tideway(world_pos: Vector2i, out: float) -> bool:
 	var band := floori(world_pos.y / _tideway_spacing)
-	var start := _roll(Vector2i(band, 0), _tideway_start_roll_seed) * TIDEWAY_LATE_START
+	var start := PositionHash.unit(Vector2i(band, 0), _tideway_start_roll_seed) * TIDEWAY_LATE_START
 	if out < start:
 		return false
 	var bend := _tideway_noise.get_noise_2d(world_pos.x, band * TIDEWAY_SAMPLE_SPACING)
@@ -575,7 +579,9 @@ func _rolled_type_at(
 	var wood_depth := _wood_depth_at(world_pos)
 	var is_wood := wood_depth > 0.0
 	if is_wood and _woods.has_tree_at(world_pos, wood_depth):
-		return _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
+		return _tree_type_at(
+			world_pos, river_distance, PositionHash.unit(world_pos, _variety_roll_seed)
+		)
 	var bush_chance := OPEN_BUSH_CHANCE
 	if is_wood and not _woods.is_clearing_at(world_pos):
 		bush_chance = lerpf(
@@ -583,9 +589,9 @@ func _rolled_type_at(
 		)
 	# Hashes of the position instead of a shared RNG, so the rolls do not depend on the
 	# order chunks are generated in.
-	var roll := _roll(world_pos, _object_roll_seed)
+	var roll := PositionHash.unit(world_pos, _object_roll_seed)
 	if roll < bush_chance:
-		return _bush_type(_roll(world_pos, _variety_roll_seed))
+		return _bush_type(PositionHash.unit(world_pos, _variety_roll_seed))
 	roll -= bush_chance
 	if roll < STONE_CHANCE + BOULDER_CHANCE:
 		return WorldObjectTypes.STONE if roll < STONE_CHANCE else WorldObjectTypes.BOULDER
@@ -601,8 +607,10 @@ func _rolled_type_at(
 
 ## A dead or a half-dead tree of the kind of the trees around (see `_tree_type_at`).
 func _snag_type_at(world_pos: Vector2i, river_distance: float) -> StringName:
-	var kind := _tree_type_at(world_pos, river_distance, _roll(world_pos, _variety_roll_seed))
-	if _roll(world_pos, _snag_roll_seed) < HALF_DEAD_SHARE:
+	var kind := _tree_type_at(
+		world_pos, river_distance, PositionHash.unit(world_pos, _variety_roll_seed)
+	)
+	if PositionHash.unit(world_pos, _snag_roll_seed) < HALF_DEAD_SHARE:
 		return WorldObjectSnags.half_dead_type(kind)
 	return WorldObjectSnags.dead_type(kind)
 
@@ -634,12 +642,12 @@ func _wood_depth_at(world_pos: Vector2i) -> float:
 func _is_tall_grass_at(world_pos: Vector2i) -> bool:
 	var in_patch := _grass_noise.get_noise_2dv(Vector2(world_pos)) > GRASS_PATCH_ABOVE
 	var chance := GRASS_PATCH_CHANCE if in_patch else GRASS_SCATTER_CHANCE
-	return _roll(world_pos, _grass_roll_seed) < chance
+	return PositionHash.unit(world_pos, _grass_roll_seed) < chance
 
 
 func _is_reeds_at(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 	# The roll is the cheap part: only a tile that can still pass it is probed for water.
-	var roll := _roll(world_pos, _reed_roll_seed)
+	var roll := PositionHash.unit(world_pos, _reed_roll_seed)
 	if roll >= maxf(REED_STAND_CHANCE, REED_SCATTER_CHANCE):
 		return false
 	var is_bank := (
@@ -675,7 +683,7 @@ func _is_wetland_edge(world_pos: Vector2i) -> bool:
 func is_clay_spot(world_pos: Vector2i) -> bool:
 	if (
 		_clay_noise.get_noise_2dv(Vector2(world_pos)) <= CLAY_CLUSTER_ABOVE
-		or _roll(world_pos, _clay_roll_seed) >= CLAY_SPOT_CHANCE
+		or PositionHash.unit(world_pos, _clay_roll_seed) >= CLAY_SPOT_CHANCE
 		or terrain_at(world_pos) != Tile.Terrain.GRASS
 		or object_type_at(world_pos, Tile.Terrain.GRASS) != &""
 		or (
@@ -691,11 +699,6 @@ func is_clay_spot(world_pos: Vector2i) -> bool:
 			if terrain == Tile.Terrain.WATER or terrain == Tile.Terrain.WETLAND:
 				return true
 	return false
-
-
-## A float in [0, 1) from a position hash.
-func _roll(world_pos: Vector2i, salt: int) -> float:
-	return PositionHash.of(world_pos, salt) % 10000 / 10000.0
 
 
 ## The kind of tree on a tile `river_distance` from the river (see the shares above);
