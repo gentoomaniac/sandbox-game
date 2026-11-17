@@ -11,6 +11,9 @@ const PULL_RADIUS := 1.25
 const PULL_SPEED := 8.0
 ## A pulled item that is this close is picked up.
 const PICKUP_RADIUS := 0.15
+## How far apart the points are that are looked at on the line between a pile and the player, in
+## tiles: closer than a tile, so no tile the line crosses squarely is missed.
+const PATH_SAMPLE_SPACING := 0.25
 
 
 ## Pulls the items on the ground near the player towards them and picks up those that
@@ -36,6 +39,8 @@ static func collect(state: GameState, delta: float) -> void:
 		if not player.inventory.can_add({ground_item.item: 1}, ground_item.state):
 			continue
 		var to_player := player.position - ground_item.position
+		if not _is_path_open(state.current_map, ground_item.position, player.position):
+			continue
 		if to_player.length() > maxf(PICKUP_RADIUS, PULL_SPEED * delta):
 			ground_items.move(
 				ground_item, ground_item.position + to_player.normalized() * PULL_SPEED * delta
@@ -58,6 +63,20 @@ static func collect(state: GameState, delta: float) -> void:
 				&"",
 				{ground_item.item: picked_up}
 			)
+
+
+## Whether nothing stops walking on the line between two positions: every tile it crosses but
+## the two ends' own is walkable. A wall, a boulder or a stream between a pile and the player keeps
+## the pile where it is. The line is about a tile long, so a few samples find the tiles on it.
+static func _is_path_open(map: GameMap, from: Vector2, to: Vector2) -> bool:
+	var from_tile := Vector2i(from.floor())
+	var to_tile := Vector2i(to.floor())
+	var samples := ceili(from.distance_to(to) / PATH_SAMPLE_SPACING)
+	for sample in range(1, samples):
+		var tile := Vector2i(from.lerp(to, float(sample) / samples).floor())
+		if tile != from_tile and tile != to_tile and not map.is_walkable(tile):
+			return false
+	return true
 
 
 ## Puts the stack in inventory slot `slot` on the ground of the player's map in front of them, as

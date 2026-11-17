@@ -29,6 +29,8 @@
     A drop scatters over the free walkable tiles within 1, else 2 tiles of its source; with
     none, it lies on the nearest walkable tile within 8 tiles, so a pile never lands out of
     reach (on a broken boulder, a felled tree or in water) unless nothing walkable is near.
+    A pile is not pulled through a wall, a boulder or water: the pull needs every tile on the
+    line from the pile to the player's feet to be walkable.
   - **Intermediate leftovers are objects** that are hit again with the right tool.
   - **Trees:** felling leaves a stump on the tree's tile and a fallen trunk (2×1, lying
     away from the player; 1×1 if there is no room). The axe cuts the trunk into most of the
