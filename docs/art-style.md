@@ -457,11 +457,15 @@ along its foot.
   down to the door tile in the middle of the front row and the sails turn behind the body. The
   body is weatherboards tarred `soil_mid`/`soil`/`soil_dark` (boards 5 px high, lit along their
   top) with oak corner boards and a heavy sill beam, under a gabled roof of weathered grey
-  boards (`bare_light`, `bare`, `mud`, which snow takes) running back up the picture; a small
-  window in the gable (lit at night) and a green plank door at the top of the ladder. It stands
-  on the open trestle: the oak post, two quarter bars and the crosstree on two fieldstone
-  piers; down the middle the ladder of grey weathered oak (`bare_light`, `bare`, `mud`) with
-  its handrails over the tarred tail pole. The **sails** are a picture of their own that the
+  boards (`bare_light`, `bare`, `mud`, which snow takes) running back up the picture. Under
+  the gable's peak the hood of the sack hoist: a little gable of the same grey boards over the
+  hatch's shut plank door, the hoist beam's end and an iron hook under it. A small window high
+  in the wall (lit at night) and a green plank door at the top of the ladder. It stands on the
+  open trestle: the oak post, two quarter bars and the crosstree on two fieldstone piers; down
+  the middle the ladder of grey weathered oak (`bare_light`, `bare`, `mud`) with its handrails
+  over the tarred tail pole, which ends at the front in the wheel the body is pushed round on,
+  seen face on: an iron tyre (`stone`, `stone_dark`), an oak felloe and spokes (six, four in the
+  classic art). The **sails** are a picture of their own that the
   game lays behind the body, their hub at x 48, y 10 of its picture (in both arts once scaled):
   four common sails, each a stock (lit on the side towards the light) with a lattice of sail
   bars, an uplong and a hemlath on its trailing side and a narrow board on its leading side, all

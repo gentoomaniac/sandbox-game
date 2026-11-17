@@ -18,6 +18,7 @@ sails turn behind the body:
   stocks and the sails stand in a cross like X, as millers leave them at rest.
 """
 
+import math
 import random
 
 import sails as sail_drawing
@@ -42,6 +43,8 @@ ROOF_SHADE = ("bare", "mud")
 OAK = ("soil_light", "soil_mid", "soil", "soil_dark")
 GREY_OAK = ("bare_light", "bare", "mud")
 OUTLINE = "soil_dark"
+# The window high in the back wall: its left, top and size; its middle is the window light.
+WINDOW = (43, 78, 10)
 
 # The sails at 32 px (see sails.py), and where their hub goes in the body's picture: the middle of
 # each frame of the strip goes there.
@@ -115,8 +118,8 @@ def _walls(picture, rng):
 
 
 def _window(picture, is_lit):
-    """The small window in the gable, four panes in a white frame."""
-    left, top, size = 43, 50, 10
+    """The small window high in the back wall, four panes in a white frame."""
+    left, top, size = WINDOW
     rect(picture, left - 1, top - 1, left + size, top + size, "lime")
     rect(picture, left + size, top - 1, left + size, top + size, "sand_light")
     rect(picture, left - 1, top + size, left + size, top + size, "sand_light")
@@ -189,23 +192,89 @@ def _trestle(picture, rng):
         rect(picture, x, GROUND - 15, x, GROUND - 10, OAK[0] if x == 5 else OAK[2])
 
 
+def _hood(picture, snowy):
+    """The sack hoist under the peak of the gable: a little gabled hood of grey boards over the
+    hatch the sacks are hauled up through, its plank door shut, the end of the hoist beam
+    under the hood's peak with an iron hook hanging from it."""
+    apex, eaves, left, right = 49, 57, 38, 57
+    middle = (left + right) / 2
+    for y in range(apex, eaves + 1):
+        half = (y - apex) * (right - left) / 2 / (eaves - apex) + 1
+        for x in range(round(middle - half), round(middle + half) + 1):
+            lit = x < middle
+            board = (x - left) % 3 == 2
+            picture[y][x] = (ROOF_LIT if lit else ROOF_SHADE)[1 if board else 0]
+            snowy.add((x, y))
+        # Its edges, the barge boards, dark against the tarred gable.
+        picture[y][round(middle - half)] = OAK[3]
+        picture[y][round(middle + half)] = OAK[3]
+    rect(picture, left, eaves + 1, right, eaves + 1, OAK[1])
+    rect(picture, left + 1, eaves + 2, right - 1, eaves + 2, OAK[3])
+    # The hatch's door of upright planks under it, and the shadow the hood casts on it.
+    for x in range(41, 55):
+        rect(picture, x, eaves + 3, x, eaves + 13, GREY_OAK[0] if (x - 41) % 4 == 0 else GREY_OAK[2] if (x - 41) % 4 == 3 else GREY_OAK[1])
+    rect(picture, 41, eaves + 3, 54, eaves + 4, GREY_OAK[2])
+    rect(picture, 41, eaves + 14, 54, eaves + 14, OAK[2])
+    rect(picture, 41, eaves + 9, 54, eaves + 9, OAK[2])
+    # The hoist beam's end grain and the hook on its chain.
+    rect(picture, 46, eaves + 2, 49, eaves + 5, OAK[1])
+    rect(picture, 46, eaves + 2, 49, eaves + 2, OAK[0])
+    rect(picture, 49, eaves + 3, 49, eaves + 5, OAK[2])
+    rect(picture, 46, eaves + 6, 49, eaves + 6, OAK[3])
+    for y in range(eaves + 7, eaves + 12):
+        picture[y][48] = "stone_dark" if y % 2 else "stone"
+    picture[eaves + 12][47] = picture[eaves + 12][49] = "stone_dark"
+    picture[eaves + 11][49] = "stone_dark"
+
+
+def _tail_wheel(picture):
+    """The wheel on the end of the tail pole, which the body is pushed round on: seen face on,
+    an iron tyre on an oak felloe, six spokes and the hub, lit on its upper left, its shadow on
+    the ground."""
+    cx, cy, radius = WIDTH / 2, HEIGHT - 13.5, 11.5
+    for y in range(HEIGHT - 26, HEIGHT - 1):
+        for x in range(30, 66):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            distance = (dx * dx + dy * dy) ** 0.5
+            lit = dx + dy < 0
+            if distance > radius:
+                continue
+            if distance > radius - 1.5:
+                picture[y][x] = "stone" if lit else "stone_dark"
+            elif distance > radius - 3.5:
+                picture[y][x] = OAK[0] if lit else OAK[2]
+            elif distance < 2.5:
+                picture[y][x] = OAK[1] if lit else OAK[2]
+            else:
+                for spoke in range(6):
+                    angle = spoke * math.pi / 3 + 0.3
+                    across = abs(dx * math.sin(angle) - dy * math.cos(angle))
+                    along = dx * math.cos(angle) + dy * math.sin(angle)
+                    if across < 0.8 and along > 0:
+                        picture[y][x] = OAK[1] if lit else OAK[2]
+    rect(picture, 46, HEIGHT - 15, 49, HEIGHT - 12, OAK[3])
+    rect(picture, 47, HEIGHT - 14, 47, HEIGHT - 14, "stone_light")
+
+
 def _ladder(picture):
-    """The tail pole down to the ground at the front, tarred, and the ladder over it: two grey oak
-    stringers, rungs lit along their top, and its handrails up beside the door."""
-    rect(picture, 44, FLOOR + 5, 51, HEIGHT - 4, TARRED[1])
-    rect(picture, 44, FLOOR + 5, 45, HEIGHT - 4, TARRED[0])
-    rect(picture, 50, FLOOR + 5, 51, HEIGHT - 4, TARRED[2])
-    rect(picture, 44, HEIGHT - 5, 51, HEIGHT - 4, "stone_dark")
-    for y in range(FLOOR + 9, HEIGHT - 6, 7):
+    """The tail pole down towards the front, tarred, ending in its wheel, and the ladder over it:
+    two grey oak stringers, rungs lit along their top, its foot just behind the wheel, and its
+    handrails up beside the door."""
+    foot = HEIGHT - 27
+    rect(picture, 44, FLOOR + 5, 51, HEIGHT - 14, TARRED[1])
+    rect(picture, 44, FLOOR + 5, 45, HEIGHT - 14, TARRED[0])
+    rect(picture, 50, FLOOR + 5, 51, HEIGHT - 14, TARRED[2])
+    for y in range(FLOOR + 9, foot - 2, 7):
         rect(picture, 40, y, 55, y, GREY_OAK[0])
         rect(picture, 40, y + 1, 55, y + 1, GREY_OAK[2])
     for x in (37, 56):
-        rect(picture, x, FLOOR - 22, x + 2, HEIGHT - 6, GREY_OAK[1])
-        rect(picture, x, FLOOR - 22, x, HEIGHT - 6, GREY_OAK[0])
-        rect(picture, x + 2, FLOOR - 22, x + 2, HEIGHT - 6, GREY_OAK[2])
+        rect(picture, x, FLOOR - 22, x + 2, foot, GREY_OAK[1])
+        rect(picture, x, FLOOR - 22, x, foot, GREY_OAK[0])
+        rect(picture, x + 2, FLOOR - 22, x + 2, foot, GREY_OAK[2])
         rect(picture, x, FLOOR - 23, x + 2, FLOOR - 23, GREY_OAK[0])
-    for x in range(34, 62):
-        for y in (HEIGHT - 3, HEIGHT - 2, HEIGHT - 1):
+    _tail_wheel(picture)
+    for x in range(36, 64):
+        for y in (HEIGHT - 2, HEIGHT - 1):
             if picture[y][x] is None:
                 picture[y][x] = "shadow"
 
@@ -220,6 +289,7 @@ def windmill(is_lit):
     _walls(picture, rng)
     _roof(picture, snowy)
     _window(picture, is_lit)
+    _hood(picture, snowy)
     _door(picture)
     _ladder(picture)
     outline_edge(picture, OUTLINE, keep_bottom=True, ignoring=("shadow",))
