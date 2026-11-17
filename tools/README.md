@@ -81,7 +81,7 @@ tests (`tools/select_tests.py` writes that report; read it when a selection surp
   picture also needs `make art`, whatever else runs, `full` included.
 
 Anything it cannot place runs everything (`make test`): `project.godot`, `addons/`, the Makefile,
-`tools/run_tests.py`, a deleted script, a data or art file nothing names, any new kind of path.
+`tools/run_tests.py`, `tools/memguard.py`, a deleted script, a data or art file nothing names, any new kind of path.
 It leans towards more tests but promises nothing: it sees only what the code spells out (class
 names, `res://` paths, paths relative to the file, data files naming maps and pictures). Not seen:
 a path built at run time without a literal prefix, a file found by directory listing, a picture
@@ -103,12 +103,28 @@ for art, data and leaf scripts. One real run (a leaf script, 83 files) took 110 
 `make test-changed` does); their times are merged into `build/test-times`. It spreads tests/test_*.gd over `TEST_JOBS` headless Godot processes
 (default 8; `TEST_JOBS=1` is one process), each with its own `user://` (`build/user-data-<i>`)
 and log (`build/test-<i>.log`), and kills them after `TEST_TIMEOUT` seconds (default 600, the
-whole run), counting that as a failure. The files are balanced by their duration in the last
+whole run; times the factor by which memory cut the shards, see below), counting that as a failure. The files are balanced by their duration in the last
 run (`build/test-times`, from GUT's junit output), by file size until a file has a time.
 `build/test.log` is the shard logs joined plus a summary (Passing Tests, Failing Tests,
 `[Failed] file: test`, time); the exit status is non-zero if any shard or check fails. A test
 file that GUT skips, because a script failed to load (a parse error) or because it doesn't extend
 GutTest, fails the run and is named, so a broken file can't quietly drop its tests.
+
+A shard runs under `memguard.py` (below): it is killed above `TEST_PROC_MEM_MB` of RSS (default
+5000) and the failure names the test file and test it was in, from the end of its log. The number
+of shards is cut to what the free memory above `TEST_MEM_FLOOR_MB` carries (about 3 GB each; the
+number is printed), and the timeout grows by the same factor; a machine below the floor already
+fails at once. A run without file arguments (a full run) takes the machine-wide lock first.
+
+## Memory guard: tools/memguard.py
+
+`python3 tools/memguard.py [--proc-mem-mb N] [--floor-mb N] [--lock] -- COMMAND...` runs a command
+and kills it and its child processes when MemAvailable drops below the floor or one process's RSS
+goes over the limit, with one line saying why. The command runs in its own systemd user scope where
+that works, with `oom_score_adj` 1000. The make targets use it for the import, `test` and
+`screenshot`; `run_tests.py` uses its `Guarded` class. `--lock` waits for the machine-wide lock
+(`test_run_lock`). Knobs and reasons: [docs/development.md](../docs/development.md#memory-guard);
+the tests are `tools/test_memguard.py`.
 
 ## Performance: tools/bench/
 

@@ -161,6 +161,34 @@ make screenshot SCREENSHOT_TIMEOUT=120 ARGS="--villager=antje '--chat=Moin, Antj
 make screenshot ARGS="--villager=antje '--chat-script=Moin, Antje!;Moin!;...'"
 ```
 
+## Memory guard
+
+A full test suite needs about 16 GB and a cold `godot --import` over 12 GB, so a few of them at
+once exhaust the machine, and the kernel's OOM kill then takes the editor along (systemd stops the
+whole unit of a killed process, and a Godot started from the editor's terminal sits in the editor's
+unit). So the make targets that start Godot (the import, `test`, `test-changed`, `screenshot`) run
+it through [tools/memguard.py](../tools/memguard.py), and nobody has to wrap them by hand:
+
+- It watches the command and its child processes every 0.5 s. It kills them all and fails with one
+  line when the machine's `MemAvailable` drops below `TEST_MEM_FLOOR_MB` (default 3000) or one process
+  goes above its RSS limit (`TEST_PROC_MEM_MB`, default 5000; the import allows `IMPORT_MEM_MB`,
+  default 20000, since a cold import in a fresh worktree has been seen at 12.5 GB and a warm one
+  stays near 3 GB). A killed test shard is reported with the test file and test it was in.
+- Where `systemd-run --user --scope` works, the command runs in its own scope (slice
+  `sandbox-tests.slice`, `MemoryMax` a quarter above the RSS limit, `MemorySwapMax` 2 GB), so a
+  kernel OOM kill stops that scope and not the editor (it shows only as status -9). Otherwise it
+  runs plain.
+- Its processes get `oom_score_adj` 1000: the kernel picks them first.
+- A full `make test` takes a machine-wide lock, `$XDG_RUNTIME_DIR/sandbox-game-test.lock` (`/tmp`
+  without it), so one full suite runs at a time across worktrees; the others wait and say so. The
+  imports of `test`, `test-changed` and `screenshot` queue on it too (a cold import is the biggest
+  process). A shell `flock` on the same file takes part. `make test-changed` with a few test files
+  and single-file runs do not hold it while they test (they are small), but they have the watchdog.
+- `TEST_JOBS` is a most: a run starts only as many shards as the free memory above the floor carries
+  (about 3 GB each), prints the number when it is lower and gives `TEST_TIMEOUT` per group of
+  `TEST_JOBS` shards. A machine already below the floor fails the run at once. When memory runs
+  below the floor, every shard of the run is stopped.
+
 ## Make targets and tools
 
 `make contrast-sheet` shows plants over the ground of every look.

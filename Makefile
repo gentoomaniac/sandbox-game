@@ -17,7 +17,15 @@ GDSCRIPT_DIRS := game tests
 # Godot only finds addon classes (GUT) and new class_name scripts after an import
 # pass. It takes about 2 s, so setup, run and test simply run it every time instead of
 # tracking when the cache is stale.
-IMPORT := $(GODOT) --headless --quiet --import
+# tools/memguard.py kills it when the machine runs short of memory (a cold import in a fresh
+# worktree has used 12.5 GB), so its per-process limit is high.
+IMPORT_MEM_MB ?= 20000
+GUARD := python3 tools/memguard.py
+IMPORT := $(GUARD) --proc-mem-mb $(IMPORT_MEM_MB) -- $(GODOT) --headless --quiet --import
+# The same, after the machine-wide lock of full test runs: a cold import is the biggest process of
+# all, so the runs that import for a test or a screenshot queue up for it. (The lock is not
+# re-entrant: tools/run_tests.py takes it by itself, after the import has let go.)
+IMPORT_LOCKED := $(GUARD) --lock --proc-mem-mb $(IMPORT_MEM_MB) -- $(GODOT) --headless --quiet --import
 
 # Downloaded addons are NOT committed: the pinned versions above make `make setup`
 # reproducible, and it keeps third-party code out of our history and diffs.
@@ -62,9 +70,12 @@ help:
 	@echo "Variables (make <target> NAME=value):"
 	@echo "  GODOT       Path of the Godot binary (default: godot)."
 	@echo "  VENV        Directory of the Python venv (default: .venv)."
-	@echo "  TEST_JOBS   test: parallel test processes (default: 8; 1 runs the tests in one process)."
+	@echo "  TEST_JOBS   test: parallel test processes (default: 8, at most: fewer start when the free memory carries fewer; 1 runs the tests in one process)."
 	@echo "  BASE        test-changed: the branch point to compare with (default: main); BASE..HEAD and uncommitted changes count."
 	@echo "  TEST_TIMEOUT test: seconds before a hung run is stopped (default: 600)."
+	@echo "  TEST_MEM_FLOOR_MB  test, test-changed, screenshot, import: kill the run when the machine's available memory drops below this (default: 3000)."
+	@echo "  TEST_PROC_MEM_MB   test, screenshot: kill a Godot process that uses more RSS than this (default: 5000)."
+	@echo "  IMPORT_MEM_MB      the import step: the same limit for it (default: 20000)."
 	@echo "  AT          screenshot: world tile to put the player on, e.g. AT=40,-20 (default: the camp)."
 	@echo "  TIME        screenshot: time of day, e.g. TIME=21:00 (default: the game start)."
 	@echo "  SEED        world-map: the world seed (default: 1)."
@@ -211,10 +222,10 @@ SCREENSHOT_TIMEOUT ?= 30
 # ARGS=--with-working-window-title if a run is a check.
 
 screenshot: assets
-	$(IMPORT)
+	$(IMPORT_LOCKED)
 	mkdir -p $(dir $(OUT))
 	rm -f $(OUT)
-	timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . $(if $(SIZE),res://game/scenes/screenshot_frame.tscn) -- $(if $(SOUND),,--mute) --background --with-working-window-title $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(if $(SIZE),--screenshot-size=$(SIZE)) $(ARGS); status=$$?; \
+	$(GUARD) -- timeout -s KILL $(SCREENSHOT_TIMEOUT) $(GODOT) $(QUIET_WINDOW) --path . $(if $(SIZE),res://game/scenes/screenshot_frame.tscn) -- $(if $(SOUND),,--mute) --background --with-working-window-title $(if $(KEEP_SAVE),,--new-game --save-path=$(CURDIR)/build/screenshot.save) $(if $(AT),--at=$(AT)) --settings-path=$(CURDIR)/build/settings.cfg --screenshot=$(OUT) $(if $(TIME),--time=$(TIME)) $(if $(ZOOM),--zoom=$(ZOOM)) $(if $(SIZE),--screenshot-size=$(SIZE)) $(ARGS); status=$$?; \
 	if [ $$status -eq 137 ] && [ -s $(OUT) ]; then echo "make screenshot: Godot hung on quit, after the screenshot"; exit 0; fi; \
 	exit $$status
 
@@ -239,7 +250,7 @@ test-tools: $(VENV_READY)
 
 test: assets test-tools
 	@mkdir -p build/user-data
-	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT)
+	XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT_LOCKED)
 	@GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS)
 
 # Only what the files changed since BASE need: the whole range BASE..HEAD and the uncommitted
@@ -266,7 +277,7 @@ test-changed: $(VENV_READY)
 	if [ -n "$$gut_files" ]; then \
 		$(MAKE) assets; \
 		mkdir -p build/user-data; \
-		XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT); \
+		XDG_DATA_HOME=$(CURDIR)/build/user-data $(IMPORT_LOCKED); \
 		GODOT=$(GODOT) python3 tools/run_tests.py $(TEST_JOBS) $$gut_files; \
 	fi
 
