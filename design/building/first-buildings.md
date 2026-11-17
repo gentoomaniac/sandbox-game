@@ -55,7 +55,7 @@
     door on the bottom middle tile, the player builds it and grinds grain into flour at the
     millstone inside (design/crafting/crafting.md). Costs 40 planks, 10 stone, 4 rope and 2 cloth
     sails; the game has no rope or cloth, so fibre stands for both (6) until they exist. Its inside
-    is 5×5. Until its art is drawn it shows the shack's picture.
+    is 5×5. Its sails turn with the wind, faster in a strong one, and rest furled in a calm.
   - **Insides** (decided 2026-11-05): each is a Tiled map, `maps/interiors/<id>.tmx`, a little
     larger than the footprint: shack 6×6 (straw sleeping mat, crate, stool), fisherman's hut
     7×6 (the shack's room a tile wider: sleeping mat, stool, barrel, sacks), Kate 9×8 (hearth,
