@@ -3,7 +3,7 @@
 Since 2026-11-14 the tasks are GitHub issues (the user): the
 [project board](https://github.com/users/gentoomaniac/projects/2) holds the order and the state, the
 [issues](https://github.com/gentoomaniac/sandbox-game/issues) hold the specs. The user gave the go for the queue
-on 2026-11-14. Since 2026-11-16 (the user): one task at a time. A question to the user doesn't stop
+on 2026-11-14. Since 2026-11-17 (the user): at most two tasks at a time. A question to the user doesn't stop
 the queue: the work goes ahead with the default, or the task goes on hold and the next one starts.
 
 - **Board columns (Status):** Needs answer (questions for the user), Backlog (ideas for later),

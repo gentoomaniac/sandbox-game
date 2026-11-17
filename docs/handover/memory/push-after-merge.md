@@ -12,4 +12,6 @@ After every merge into `main` in sandbox-game, push `main` to `origin` (git@gith
 
 **Why:** the user answered "Yes" on 2026-11-05 to "push now, and after every merge from now on?".
 
+The user restated it on 2026-11-17: "Push the repo after a feature is merged". The auto-mode permission check has refused the push twice anyway; when it does, tell the user and ask, never work around it.
+
 **How to apply:** after merging and ticking tasks, run `git push origin main`. Only `main`; feature branches stay local. Related: [[spec-file]].
