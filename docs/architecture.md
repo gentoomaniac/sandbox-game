@@ -525,10 +525,11 @@ is in two places:
 ## Settings and key bindings
 
 The default key bindings are the input map in `project.godot` (in the Godot editor: Project
-Settings → Input Map). The player changes them under Settings → Controls; `GameSettings`
-applies them to Godot's `InputMap` and stores only the differences from the defaults in
-`user://settings.cfg`. The same file keeps the display, game and audio settings and the
-language model: the profiles (`LanguageModelProfiles`, held by `GameSettings.profiles`; a
+Settings → Input Map). The player changes them under Settings → Controls; `KeyBindings` (held by
+`GameSettings.key_bindings`) applies them to Godot's `InputMap`, holds the action names and the
+conflict rules, and writes the `controls` section of `user://settings.cfg`: only the differences
+from the defaults. It emits `changed` and `GameSettings` saves the file. The same file keeps the
+display, game and audio settings and the language model: the profiles (`LanguageModelProfiles`, held by `GameSettings.profiles`; a
 profile is a provider with its endpoint, model, tokens, temperature and chat length, and the
 provider is a row of `GameSettings.LANGUAGE_MODEL_PROVIDERS` with the protocol it speaks:
 OpenAI-compatible, Claude or Gemini, which speaks the OpenAI protocol) and each provider's key

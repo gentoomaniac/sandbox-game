@@ -29,7 +29,7 @@ func _place_a_chest() -> WorldObject:
 
 
 func test_x_is_a_rebindable_action_that_switches_between_building_and_taking_down() -> void:
-	assert_true(GameSettings.actions().has(&"take_down_mode"))
+	assert_true(KeyBindings.actions().has(&"take_down_mode"))
 	assert_eq(
 		(InputMap.action_get_events(&"take_down_mode")[0] as InputEventKey).physical_keycode, KEY_X
 	)

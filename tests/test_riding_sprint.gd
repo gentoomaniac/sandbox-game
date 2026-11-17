@@ -122,12 +122,12 @@ func test_a_horse_that_was_saved_with_none_is_winded_when_got_on_again() -> void
 
 func test_the_sprint_key_is_shift_by_default_and_can_be_rebound() -> void:
 	var settings := GameSettings.new("user://test_riding_sprint_settings.cfg")
-	assert_eq(settings.bindings(&"sprint").map(GameSettings.binding_text), ["Shift"])
+	assert_eq(settings.key_bindings.bindings(&"sprint").map(KeyBindings.binding_text), ["Shift"])
 
 	var key := InputEventKey.new()
 	key.physical_keycode = KEY_F
-	settings.bind(&"sprint", 0, key)
-	assert_eq(settings.bindings(&"sprint").map(GameSettings.binding_text), ["F"])
+	settings.key_bindings.bind(&"sprint", 0, key)
+	assert_eq(settings.key_bindings.bindings(&"sprint").map(KeyBindings.binding_text), ["F"])
 
-	settings.reset_bindings()
+	settings.key_bindings.reset()
 	DirAccess.remove_absolute("user://test_riding_sprint_settings.cfg")

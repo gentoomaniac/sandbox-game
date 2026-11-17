@@ -60,7 +60,7 @@ plank walk and stone path they lay as roads: [ways.md](ways.md).
   the row (wrapping round); up and down move through the styles (stopping at the ends), and
   picking another building starts it in its own look. While building the arrows belong to
   the menu and the player walks with WASD only (the keys the menu's actions share with
-  walking, `GameSettings.SHARING_PAIRS`); dismissing build mode gives them back to walking.
+  walking, `KeyBindings.SHARING_PAIRS`); dismissing build mode gives them back to walking.
   With the hammer in hand E picks buildings and does not put the player to bed.
 - **The hammer takes down:** X (rebindable, `take_down_mode`) switches the hammer between
   building and taking down; the build menu gives way to a panel at the top left that says

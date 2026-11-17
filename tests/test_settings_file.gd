@@ -13,7 +13,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Puts the project's bindings back into the input map, which the tests share.
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	_settings.set_fullscreen(false)
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
@@ -34,7 +34,7 @@ func _button(index: MouseButton) -> InputEventMouseButton:
 
 
 func _texts(action: StringName) -> Array:
-	return _settings.bindings(action).map(GameSettings.binding_text)
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func _write_file(text: String) -> void:
@@ -44,20 +44,20 @@ func _write_file(text: String) -> void:
 	file.close()
 
 
-## Puts the settings file back after reset_bindings rewrote it, then starts over with a
+## Puts the settings file back after key_bindings.reset rewrote it, then starts over with a
 ## new GameSettings as a fresh game start would, on the project's own input map.
 func _restart_with_saved_file() -> void:
 	var text := FileAccess.get_file_as_string(PATH)
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	_write_file(text)
 	_settings = GameSettings.new(PATH)
 	_settings.load_file()
 
 
 func test_bindings_survive_a_restart() -> void:
-	_settings.bind(&"interact", 0, _key(KEY_W))
-	_settings.bind(&"use", 1, _button(MOUSE_BUTTON_MIDDLE))
-	_settings.clear(&"drop_item", 0)
+	_settings.key_bindings.bind(&"interact", 0, _key(KEY_W))
+	_settings.key_bindings.bind(&"use", 1, _button(MOUSE_BUTTON_MIDDLE))
+	_settings.key_bindings.clear(&"drop_item", 0)
 	_settings.set_fullscreen(true)
 	_restart_with_saved_file()
 	assert_true(_settings.is_fullscreen)
@@ -68,7 +68,7 @@ func test_bindings_survive_a_restart() -> void:
 
 
 func test_the_file_holds_only_what_differs_from_the_defaults() -> void:
-	_settings.bind(&"interact", 0, _key(KEY_F))
+	_settings.key_bindings.bind(&"interact", 0, _key(KEY_F))
 	var file := ConfigFile.new()
 	file.load(PATH)
 	assert_eq(file.get_section_keys("controls"), PackedStringArray(["interact"]))
@@ -132,7 +132,7 @@ func test_more_than_two_bindings_in_the_file_are_cut() -> void:
 
 
 func test_fullscreen_is_stored_only_once_chosen() -> void:
-	_settings.bind(&"interact", 0, _key(KEY_F))
+	_settings.key_bindings.bind(&"interact", 0, _key(KEY_F))
 	var file := ConfigFile.new()
 	file.load(PATH)
 	assert_false(file.has_section("display"))

@@ -259,7 +259,7 @@ func _draw() -> void:
 
 
 ## Where the walking keys point. While the build menu is up, the keys its actions share with
-## walking (the arrows, see GameSettings.SHARING_PAIRS) pick in the menu instead, and the player
+## walking (the arrows, see KeyBindings.SHARING_PAIRS) pick in the menu instead, and the player
 ## walks with the others (WASD); Escape dismisses build mode and gives them back. Only key
 ## bindings walk while the menu is up: a mouse or pad binding of a move action does not.
 static func walk_direction(is_menu_up: bool) -> Vector2:

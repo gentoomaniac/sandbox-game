@@ -26,7 +26,7 @@ func test_the_arrows_pick_buildings_and_styles_next_to_q_and_e() -> void:
 	assert_eq(_first_key(&"build_style_up", 0), KEY_UP)
 	assert_eq(_first_key(&"build_style_down", 0), KEY_DOWN)
 	for action in [&"build_style_up", &"build_style_down"]:
-		assert_ne(GameSettings.action_label(action), str(action).capitalize())
+		assert_ne(KeyBindings.action_label(action), str(action).capitalize())
 
 
 func test_while_the_menu_is_up_the_arrows_do_not_walk_but_wasd_does() -> void:

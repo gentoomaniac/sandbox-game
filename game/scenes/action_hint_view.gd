@@ -35,9 +35,9 @@ func show_for(state: GameState, settings: GameSettings, target: Vector2i, is_wan
 	var lines: Array[String] = []
 	if is_wanted and settings.is_action_hint_shown:
 		var e_text := interactions.e_text(state, target)
-		var e_keys := settings.bindings(&"interact")
+		var e_keys := settings.key_bindings.bindings(&"interact")
 		if e_text != "" and not e_keys.is_empty():
-			lines.append("%s: %s" % [GameSettings.binding_text(e_keys[0]), e_text])
+			lines.append("%s: %s" % [KeyBindings.binding_text(e_keys[0]), e_text])
 		var use_text := ActionHint.use_text(state, target)
 		if use_text != "":
 			lines.append("Use: " + use_text)

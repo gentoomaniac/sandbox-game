@@ -35,7 +35,7 @@ func _init(settings: GameSettings) -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", 2)
 	add_child(ScrollingList.new(rows))
-	for action in GameSettings.actions():
+	for action in KeyBindings.actions():
 		rows.add_child(_make_row(action))
 
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -53,31 +53,31 @@ func _init(settings: GameSettings) -> void:
 	back.text = "Back"
 	back.pressed.connect(back_requested.emit)
 	buttons.add_child(back)
-	first_focus = _binding_buttons[GameSettings.actions()[0]][0]
+	first_focus = _binding_buttons[KeyBindings.actions()[0]][0]
 
 
 func show_bindings() -> void:
 	_note.text = HINT
 	for action in _binding_buttons:
-		var events := _settings.bindings(action)
-		for slot in GameSettings.MAX_BINDINGS:
+		var events := _settings.key_bindings.bindings(action)
+		for slot in KeyBindings.MAX_BINDINGS:
 			var button: Button = _binding_buttons[action][slot]
 			button.text = (
-				GameSettings.binding_text(events[slot]) if slot < events.size() else EMPTY_BINDING
+				KeyBindings.binding_text(events[slot]) if slot < events.size() else EMPTY_BINDING
 			)
 
 
 func _make_row(action: StringName) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	var label := Label.new()
-	label.text = GameSettings.action_label(action)
+	label.text = KeyBindings.action_label(action)
 	label.custom_minimum_size.x = NAME_WIDTH
 	label.mouse_filter = Control.MOUSE_FILTER_PASS
-	var description := GameSettings.action_description(action)
+	var description := KeyBindings.action_description(action)
 	TooltipView.set_text(label, description, "action_%s" % action)
 	row.add_child(label)
 	_binding_buttons[action] = []
-	for slot in GameSettings.MAX_BINDINGS:
+	for slot in KeyBindings.MAX_BINDINGS:
 		var button := Button.new()
 		button.custom_minimum_size.x = BINDING_WIDTH
 		button.clip_text = true
@@ -108,7 +108,7 @@ func _stop_capture() -> void:
 ## Comes before the GUI sees the event, so the key being bound never also moves the focus
 ## or leaves the menu.
 func _input(event: InputEvent) -> void:
-	if _capture_button == null or not GameSettings.is_bindable(event):
+	if _capture_button == null or not KeyBindings.is_bindable(event):
 		return
 	# A click elsewhere ends the capture and works as usual; a click on the capturing button
 	# is how a mouse button gets bound.
@@ -132,7 +132,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_DELETE:
 		_clear(action, slot)
 		return
-	var note := _settings.bind(action, slot, event)
+	var note := _settings.key_bindings.bind(action, slot, event)
 	show_bindings()
 	_note.text = note if note != "" else "Bound to " + button.text
 
@@ -149,14 +149,14 @@ func _on_binding_gui_input(event: InputEvent, action: StringName, slot: int) -> 
 
 
 func _clear(action: StringName, slot: int) -> void:
-	if slot >= _settings.bindings(action).size():
+	if slot >= _settings.key_bindings.bindings(action).size():
 		return
-	var refusal := _settings.clear(action, slot)
+	var refusal := _settings.key_bindings.clear(action, slot)
 	show_bindings()
 	_note.text = refusal if refusal != "" else "Cleared"
 
 
 func _reset() -> void:
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	show_bindings()
 	_note.text = "Bindings reset to the defaults"

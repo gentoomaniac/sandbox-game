@@ -12,7 +12,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -25,7 +25,7 @@ func _write_file(text: String) -> void:
 
 
 func _texts(action: StringName) -> Array:
-	return _settings.bindings(action).map(GameSettings.binding_text)
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func test_the_action_that_an_old_file_gave_b_loses_it_to_the_bag() -> void:

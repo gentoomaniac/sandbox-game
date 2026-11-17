@@ -192,8 +192,8 @@ func test_shift_c_opens_the_crafting_menu_and_c_is_the_character_windows() -> vo
 	var key := events[0] as InputEventKey
 	assert_eq(key.physical_keycode, KEY_C)
 	assert_true(key.shift_pressed)
-	assert_eq(GameSettings.binding_text(key), "Shift+C")
-	for action in GameSettings.actions():
+	assert_eq(KeyBindings.binding_text(key), "Shift+C")
+	for action in KeyBindings.actions():
 		if action == &"character":
 			continue
 		for event in InputMap.action_get_events(action):
@@ -202,5 +202,5 @@ func test_shift_c_opens_the_crafting_menu_and_c_is_the_character_windows() -> vo
 
 
 func test_the_crafting_action_has_a_description_for_the_controls() -> void:
-	assert_true(GameSettings.ACTION_DESCRIPTIONS.has(&"crafting"))
-	assert_eq(GameSettings.action_label(&"crafting"), "Crafting")
+	assert_true(KeyBindings.ACTION_DESCRIPTIONS.has(&"crafting"))
+	assert_eq(KeyBindings.action_label(&"crafting"), "Crafting")

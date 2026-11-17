@@ -20,10 +20,14 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Puts the project's bindings and window back, which the tests share.
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	_settings.set_fullscreen(false)
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
+
+
+func _texts(action: StringName) -> Array:
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func test_a_file_with_every_section_saves_back_to_the_same_bytes() -> void:
@@ -32,8 +36,8 @@ func test_a_file_with_every_section_saves_back_to_the_same_bytes() -> void:
 
 
 func test_the_file_loads_to_its_values() -> void:
-	assert_eq(_settings.bindings(&"interact").map(GameSettings.binding_text), ["Y", "Middle mouse"])
-	assert_eq(_settings.bindings(&"drop_item").map(GameSettings.binding_text), ["Shift+G"])
+	assert_eq(_texts(&"interact"), ["Y", "Middle mouse"])
+	assert_eq(_texts(&"drop_item"), ["Shift+G"])
 	assert_true(_settings.is_fullscreen)
 	assert_true(_settings.is_classic_art)
 	assert_eq(_settings.ui_scale, 0.75)

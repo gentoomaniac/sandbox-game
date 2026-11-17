@@ -1,5 +1,5 @@
 extends GutTest
-## Actions that may share a key (see GameSettings.SHARING_PAIRS) keep it through loading and
+## Actions that may share a key (see KeyBindings.SHARING_PAIRS) keep it through loading and
 ## rebinding.
 
 const DIR := "user://test_shared_keys"
@@ -14,7 +14,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Puts the project's bindings back into the input map, which the tests share.
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -27,7 +27,7 @@ func _key(code: Key) -> InputEventKey:
 
 
 func _texts(action: StringName) -> Array:
-	return _settings.bindings(action).map(GameSettings.binding_text)
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func _write_file(text: String) -> void:
@@ -48,8 +48,8 @@ func test_actions_of_a_sharing_pair_keep_their_shared_key_when_a_file_is_loaded(
 
 
 func test_binding_a_key_to_one_of_a_sharing_pair_leaves_the_other() -> void:
-	_settings.bind(&"build_next", 0, _key(KEY_X))
-	var note := _settings.bind(&"interact", 0, _key(KEY_X))
+	_settings.key_bindings.bind(&"build_next", 0, _key(KEY_X))
+	var note := _settings.key_bindings.bind(&"interact", 0, _key(KEY_X))
 	assert_eq(note, "")
 	assert_eq(_texts(&"interact"), ["X"])
 	assert_eq(_texts(&"build_next"), ["X", "Right arrow"])

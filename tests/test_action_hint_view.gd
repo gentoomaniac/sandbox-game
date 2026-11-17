@@ -21,7 +21,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -40,7 +40,7 @@ func test_it_shows_e_and_use_lines_for_what_will_happen() -> void:
 func test_it_shows_the_key_the_player_bound_to_e() -> void:
 	var key := InputEventKey.new()
 	key.physical_keycode = KEY_F
-	_settings.bind(&"interact", 0, key)
+	_settings.key_bindings.bind(&"interact", 0, key)
 	_view.show_for(_state, _settings, _tile, true)
 	assert_eq(_view.text(), "F: Open chest")
 

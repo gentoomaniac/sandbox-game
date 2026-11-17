@@ -88,8 +88,8 @@ func test_every_item_has_a_tooltip() -> void:
 
 
 func test_every_action_has_a_description() -> void:
-	for action in GameSettings.actions():
-		assert_ne(GameSettings.action_description(action), "", str(action))
+	for action in KeyBindings.actions():
+		assert_ne(KeyBindings.action_description(action), "", str(action))
 
 
 func test_a_weightless_item_shows_no_weight() -> void:

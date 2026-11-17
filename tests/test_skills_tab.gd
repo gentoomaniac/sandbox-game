@@ -86,14 +86,14 @@ func test_k_opens_the_skills_and_no_other_action_uses_it() -> void:
 	for event in InputMap.action_get_events(&"skills"):
 		keys.append((event as InputEventKey).physical_keycode)
 	assert_eq(keys, [KEY_K] as Array[Key])
-	for action in GameSettings.actions():
+	for action in KeyBindings.actions():
 		if action == &"skills":
 			continue
 		for event in InputMap.action_get_events(action):
 			if event is InputEventKey:
 				assert_ne(event.physical_keycode, KEY_K, str(action))
-	assert_eq(GameSettings.action_label(&"skills"), "Skills")
-	assert_true(GameSettings.ACTION_DESCRIPTIONS.has(&"skills"))
+	assert_eq(KeyBindings.action_label(&"skills"), "Skills")
+	assert_true(KeyBindings.ACTION_DESCRIPTIONS.has(&"skills"))
 
 
 func test_in_a_short_window_the_rows_scroll_and_the_total_stays_in_view() -> void:

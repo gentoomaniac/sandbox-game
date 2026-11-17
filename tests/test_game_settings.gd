@@ -13,7 +13,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	# Puts the project's bindings back into the input map, which the tests share.
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	_settings.set_fullscreen(false)
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
@@ -34,7 +34,7 @@ func _button(index: MouseButton) -> InputEventMouseButton:
 
 
 func _texts(action: StringName) -> Array:
-	return _settings.bindings(action).map(GameSettings.binding_text)
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func _write_file(text: String) -> void:
@@ -44,18 +44,18 @@ func _write_file(text: String) -> void:
 	file.close()
 
 
-## Puts the settings file back after reset_bindings rewrote it, then starts over with a
+## Puts the settings file back after key_bindings.reset rewrote it, then starts over with a
 ## new GameSettings as a fresh game start would, on the project's own input map.
 func _restart_with_saved_file() -> void:
 	var text := FileAccess.get_file_as_string(PATH)
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	_write_file(text)
 	_settings = GameSettings.new(PATH)
 	_settings.load_file()
 
 
 func test_actions_are_the_game_actions_without_ui_ones() -> void:
-	var actions := GameSettings.actions()
+	var actions := KeyBindings.actions()
 	assert_has(actions, &"move_left")
 	assert_has(actions, &"pause")
 	for action in actions:
@@ -66,78 +66,78 @@ func test_binding_text_and_action_label_are_readable() -> void:
 	assert_eq(_texts(&"move_up"), ["Up arrow", "W"])
 	assert_eq(_texts(&"use"), ["Space"])
 	assert_eq(_texts(&"use_click"), ["Left mouse"])
-	assert_eq(GameSettings.action_label(&"move_up"), "Move up")
-	assert_eq(GameSettings.action_label(&"hotbar_3"), "Hotbar slot 3")
+	assert_eq(KeyBindings.action_label(&"move_up"), "Move up")
+	assert_eq(KeyBindings.action_label(&"hotbar_3"), "Hotbar slot 3")
 
 
 func test_bind_replaces_the_slot() -> void:
-	var note := _settings.bind(&"interact", 0, _key(KEY_F))
+	var note := _settings.key_bindings.bind(&"interact", 0, _key(KEY_F))
 	assert_eq(_texts(&"interact"), ["F"])
 	assert_eq(note, "")
-	_settings.bind(&"interact", 1, _button(MOUSE_BUTTON_RIGHT))
+	_settings.key_bindings.bind(&"interact", 1, _button(MOUSE_BUTTON_RIGHT))
 	assert_eq(_texts(&"interact"), ["F", "Right mouse"])
 
 
 func test_bind_ignores_modifiers_and_press_state() -> void:
 	var event := _key(KEY_F)
 	event.shift_pressed = true
-	_settings.bind(&"interact", 0, event)
-	var stored := _settings.bindings(&"interact")[0] as InputEventKey
+	_settings.key_bindings.bind(&"interact", 0, event)
+	var stored := _settings.key_bindings.bindings(&"interact")[0] as InputEventKey
 	assert_false(stored.shift_pressed)
 	assert_false(stored.pressed)
 
 
 func test_conflict_moves_the_key_and_says_so() -> void:
-	var note := _settings.bind(&"interact", 0, _key(KEY_W))
+	var note := _settings.key_bindings.bind(&"interact", 0, _key(KEY_W))
 	assert_eq(note, "W removed from Move up")
 	assert_eq(_texts(&"interact"), ["W"])
 	assert_eq(_texts(&"move_up"), ["Up arrow"])
 
 
 func test_the_same_key_in_another_slot_of_the_action_moves_silently() -> void:
-	var note := _settings.bind(&"move_up", 0, _key(KEY_W))
+	var note := _settings.key_bindings.bind(&"move_up", 0, _key(KEY_W))
 	assert_eq(note, "")
 	assert_eq(_texts(&"move_up"), ["W"])
 
 
 func test_binding_what_the_slot_already_has_changes_nothing() -> void:
-	assert_eq(_settings.bind(&"interact", 0, _key(KEY_E)), "")
+	assert_eq(_settings.key_bindings.bind(&"interact", 0, _key(KEY_E)), "")
 	assert_eq(_texts(&"interact"), ["E"])
 
 
 func test_conflict_works_for_mouse_buttons() -> void:
-	var note := _settings.bind(&"interact", 0, _button(MOUSE_BUTTON_LEFT))
+	var note := _settings.key_bindings.bind(&"interact", 0, _button(MOUSE_BUTTON_LEFT))
 	assert_eq(note, "Left mouse removed from Use (mouse)")
-	assert_eq(_settings.bindings(&"use_click"), [])
+	assert_eq(_settings.key_bindings.bindings(&"use_click"), [])
 
 
 func test_clear_removes_one_binding() -> void:
-	_settings.clear(&"move_up", 0)
+	_settings.key_bindings.clear(&"move_up", 0)
 	assert_eq(_texts(&"move_up"), ["W"])
-	_settings.clear(&"move_up", 0)
+	_settings.key_bindings.clear(&"move_up", 0)
 	assert_eq(_texts(&"move_up"), [])
 
 
 func test_the_pause_menu_keeps_a_key() -> void:
-	assert_ne(_settings.clear(&"pause", 0), "")
+	assert_ne(_settings.key_bindings.clear(&"pause", 0), "")
 	assert_eq(_texts(&"pause"), ["Escape"])
-	assert_ne(_settings.bind(&"interact", 0, _key(KEY_ESCAPE)), "")
+	assert_ne(_settings.key_bindings.bind(&"interact", 0, _key(KEY_ESCAPE)), "")
 	assert_eq(_texts(&"pause"), ["Escape"])
 	assert_eq(_texts(&"interact"), ["E"])
-	_settings.bind(&"pause", 0, _key(KEY_P))
+	_settings.key_bindings.bind(&"pause", 0, _key(KEY_P))
 	assert_eq(_texts(&"pause"), ["P"])
 
 
 func test_reset_restores_the_project_bindings() -> void:
-	_settings.bind(&"interact", 0, _key(KEY_W))
-	_settings.clear(&"use", 0)
-	_settings.reset_bindings()
+	_settings.key_bindings.bind(&"interact", 0, _key(KEY_W))
+	_settings.key_bindings.clear(&"use", 0)
+	_settings.key_bindings.reset()
 	assert_eq(_texts(&"move_up"), ["Up arrow", "W"])
 	assert_eq(_texts(&"interact"), ["E"])
 	assert_eq(_texts(&"use"), ["Space"])
 
 
 func test_a_refused_bind_changes_nothing() -> void:
-	_settings.bind(&"interact", 0, _key(KEY_ESCAPE))
+	_settings.key_bindings.bind(&"interact", 0, _key(KEY_ESCAPE))
 	assert_eq(_texts(&"interact"), ["E"])
 	assert_eq(_texts(&"pause"), ["Escape"])

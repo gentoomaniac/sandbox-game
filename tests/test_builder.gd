@@ -184,10 +184,10 @@ func test_the_other_cheats_do_not_waive_the_costs() -> void:
 
 
 func test_q_and_e_are_rebindable_actions() -> void:
-	var actions := GameSettings.actions()
+	var actions := KeyBindings.actions()
 	for action in [&"build_previous", &"build_next"]:
 		assert_true(actions.has(action), str(action))
-		assert_ne(GameSettings.action_label(action), "", str(action))
+		assert_ne(KeyBindings.action_label(action), "", str(action))
 	assert_eq(
 		(InputMap.action_get_events(&"build_previous")[0] as InputEventKey).physical_keycode, KEY_Q
 	)
@@ -197,4 +197,4 @@ func test_q_and_e_are_rebindable_actions() -> void:
 
 
 func test_the_hammer_has_no_key_of_its_own() -> void:
-	assert_false(GameSettings.actions().has(&"select_hammer"))
+	assert_false(KeyBindings.actions().has(&"select_hammer"))

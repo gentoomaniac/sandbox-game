@@ -37,7 +37,7 @@ func _press_key(code: Key, is_shift_held := false) -> void:
 
 
 func test_tab_is_bound_to_no_action() -> void:
-	for action in GameSettings.actions():
+	for action in KeyBindings.actions():
 		for event in InputMap.action_get_events(action):
 			if event is InputEventKey:
 				assert_ne(event.physical_keycode, KEY_TAB, str(action))

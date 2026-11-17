@@ -14,7 +14,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_settings.reset_bindings()
+	_settings.key_bindings.reset()
 	for file_name in DirAccess.get_files_at(DIR):
 		DirAccess.remove_absolute(DIR.path_join(file_name))
 
@@ -27,7 +27,7 @@ func _write_file(text: String) -> void:
 
 
 func _texts(action: StringName) -> Array:
-	return _settings.bindings(action).map(GameSettings.binding_text)
+	return _settings.key_bindings.bindings(action).map(KeyBindings.binding_text)
 
 
 func test_an_old_file_that_binds_crafting_to_c_gets_shift_c() -> void:
@@ -46,7 +46,7 @@ func test_a_shifted_key_is_read_and_written_back() -> void:
 	assert_eq(_texts(&"drop_item"), ["Shift+G"])
 	var key := InputEventKey.new()
 	key.physical_keycode = KEY_F
-	_settings.bind(&"interact", 0, key)
+	_settings.key_bindings.bind(&"interact", 0, key)
 	var file := ConfigFile.new()
 	file.load(PATH)
 	assert_eq(file.get_value("controls", "drop_item"), ["key:%d:shift" % KEY_G])
