@@ -29,7 +29,9 @@ func test_rejected_on_unbuildable_terrain() -> void:
 		var bad_tile := ORIGIN + Vector2i(3, 2)
 		_set_terrain(bad_tile, terrain)
 		assert_null(_world.place_building(HOUSE, ORIGIN), "terrain %s" % terrain)
-		assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {bad_tile: World.Blocked.TERRAIN})
+		assert_eq(
+			_world.placement_blockers(HOUSE, ORIGIN), {bad_tile: WorldBuildings.Blocked.TERRAIN}
+		)
 		_set_terrain(bad_tile, Tile.Terrain.GRASS)
 	assert_true(_world.buildings().is_empty())
 
@@ -38,7 +40,7 @@ func test_rejected_on_object() -> void:
 	var tree_pos := ORIGIN + Vector2i(1, 1)
 	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, tree_pos))
 	assert_null(_world.place_building(HOUSE, ORIGIN))
-	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {tree_pos: World.Blocked.OCCUPIED})
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {tree_pos: WorldBuildings.Blocked.OCCUPIED})
 
 
 func test_rejected_on_overlap_with_another_building() -> void:
@@ -47,7 +49,7 @@ func test_rejected_on_overlap_with_another_building() -> void:
 	assert_null(_world.place_building(HOUSE, overlapping))
 	assert_eq(
 		_world.placement_blockers(HOUSE, overlapping),
-		{overlapping: World.Blocked.OCCUPIED},
+		{overlapping: WorldBuildings.Blocked.OCCUPIED},
 		"only the corner overlaps"
 	)
 	assert_eq(_world.buildings().size(), 1)
@@ -109,11 +111,11 @@ func test_rejected_when_the_tile_in_front_of_the_door_is_blocked() -> void:
 	var door_offset: Vector2i = BuildingTypes.TYPES[HOUSE]["door_offset"]
 	var front := ORIGIN + door_offset + Vector2i.DOWN
 	_world.add_object(WorldObject.new(WorldObjectTypes.OAK, front))
-	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: World.Blocked.OCCUPIED})
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: WorldBuildings.Blocked.OCCUPIED})
 	assert_null(_world.place_building(HOUSE, ORIGIN))
 	_world.remove_object(front)
 	_set_terrain(front, Tile.Terrain.WATER)
-	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: World.Blocked.TERRAIN})
+	assert_eq(_world.placement_blockers(HOUSE, ORIGIN), {front: WorldBuildings.Blocked.TERRAIN})
 
 
 func test_window_lights_are_on_the_lit_windows_of_the_picture() -> void:

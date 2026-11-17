@@ -117,7 +117,7 @@ func place(origin: Vector2i) -> Building:
 ## The tiles that stop the chosen building at `origin`, and why: the world's (see
 ## `World.placement_blockers`), and also every footprint tile the body of the player or a villager
 ## touches, or a farm animal stands on: they would be shut in its walls.
-func placement_blockers(origin: Vector2i) -> Dictionary[Vector2i, World.Blocked]:
+func placement_blockers(origin: Vector2i) -> Dictionary[Vector2i, WorldBuildings.Blocked]:
 	var blockers := _state.world.placement_blockers(choice, origin)
 	var bodies: Array[Rect2i] = [PlayerState.body_tiles(_state.player.position)]
 	for npc in _state.npcs.all():
@@ -129,7 +129,7 @@ func placement_blockers(origin: Vector2i) -> Dictionary[Vector2i, World.Blocked]
 			not blockers.has(tile)
 			and bodies.any(func(body: Rect2i) -> bool: return body.has_point(tile))
 		):
-			blockers[tile] = World.Blocked.OCCUPIED
+			blockers[tile] = WorldBuildings.Blocked.OCCUPIED
 	return blockers
 
 

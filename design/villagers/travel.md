@@ -33,7 +33,7 @@ as it is entered, not over the whole path in advance. No collisions, near or far
 ## What the code has
 
 - `World` keeps the edits of unloaded chunks (`WorldEdits`), the buildings
-  (`_building_by_tile`) and the wear (`_wear`), all by tile. `add_chunk` replays the edits on a
+  (`WorldBuildings`) and the wear (`_wear`), all by tile. `add_chunk` replays the edits on a
   freshly generated chunk (`World.replay_edits`, which works on any chunk, loaded or not; `Chunk.copy`
   makes the copy to replay them on). Night upkeep edits unloaded chunks too (crops, fallow soil grown over).
 - Per tile, the generator is dear: `terrain_at` and `object_type_at` take 9.6 us a tile. A faithful

@@ -26,7 +26,7 @@ func _open_origin() -> Vector2i:
 func test_a_spot_the_player_stands_on_is_refused() -> void:
 	var origin := _open_origin()
 	_state.player.position = Vector2(origin) + Vector2(0.5, 0.5)
-	assert_eq(_builder.placement_blockers(origin), {origin: World.Blocked.OCCUPIED})
+	assert_eq(_builder.placement_blockers(origin), {origin: WorldBuildings.Blocked.OCCUPIED})
 	assert_null(_builder.place(origin), "the player is not walled in")
 
 
@@ -35,7 +35,7 @@ func test_a_spot_a_villager_stands_on_is_refused() -> void:
 	var npc := _state.npcs.spawn_villager("antje", Vector2(origin), _world)
 	assert_not_null(npc)
 	npc.position = Vector2(origin) + Vector2(0.5, 0.5)
-	assert_eq(_builder.placement_blockers(origin), {npc.tile(): World.Blocked.OCCUPIED})
+	assert_eq(_builder.placement_blockers(origin), {npc.tile(): WorldBuildings.Blocked.OCCUPIED})
 	assert_null(_builder.place(origin))
 
 
@@ -45,7 +45,7 @@ func test_a_spot_the_players_body_reaches_into_is_refused() -> void:
 	var origin := _open_origin()
 	_state.player.position = Vector2(origin) + Vector2(-0.1, 0.5)
 	assert_ne(_state.player.tile(), origin)
-	assert_eq(_builder.placement_blockers(origin), {origin: World.Blocked.OCCUPIED})
+	assert_eq(_builder.placement_blockers(origin), {origin: WorldBuildings.Blocked.OCCUPIED})
 	assert_null(_builder.place(origin))
 
 
@@ -54,5 +54,5 @@ func test_a_spot_a_farm_animal_stands_on_is_refused() -> void:
 	assert_eq(_state.livestock.spawn(LivestockRules.COW, 1, Vector2(origin), _world), 1)
 	var cow: FarmAnimal = _state.livestock.all()[-1]
 	cow.position = Vector2(origin) + Vector2(0.5, 0.5)
-	assert_eq(_builder.placement_blockers(origin), {origin: World.Blocked.OCCUPIED})
+	assert_eq(_builder.placement_blockers(origin), {origin: WorldBuildings.Blocked.OCCUPIED})
 	assert_null(_builder.place(origin))

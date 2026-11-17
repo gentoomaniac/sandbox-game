@@ -161,7 +161,12 @@ Warft and an Ewer here and there.
   and campfires, the replay on a chunk and the saved form. It knows no chunks and no World: a
   caller that has the chunk gives it (or null when it is not loaded), so it holds nothing that
   could cycle, and World keeps the signals, the soil tending and the forwarding of the calls
-  everyone uses (`replace_object`, `take_off`, `crops`, `replay_edits`, ...). Line
+  everyone uses (`replace_object`, `take_off`, `crops`, `replay_edits`, ...).
+  The buildings and the tiles they cover are `WorldBuildings` (`World._buildings`): the list, the
+  tile index, the placement rules (`placement_blockers`, `Blocked`, the tile in front of a door)
+  and the saved form. A rule that must ask the ground or the objects is given the world per call
+  and keeps none, so it cannot cycle; `place_building` stays in World, which clears the land and
+  emits `building_placed`. Line
   objects (Knicks, walls, fences, dykes) are one object per tile whose type `connects`;
   `World.connections` says which neighbours a tile joins, and the
   view draws the picture of that connection mask. The wear of desire paths is World's too (counted in `WorldWear`, `World.wear`)

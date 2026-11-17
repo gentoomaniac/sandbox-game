@@ -1,7 +1,8 @@
 # gdlint: disable=max-public-methods
-# (World is the one entry point for map changes: chunks, objects, soil, buildings and clay all
-# read and write the same edits, so they stay together; ground items, the nightly upkeep and the
-# making of save data (WorldSave) were split off.)
+# (World is the one entry point for map changes: chunks, objects, soil, clay and wear all go through
+# it, and it forwards the calls of the edits (WorldEdits) and the buildings (WorldBuildings) that
+# everyone uses; ground items, the nightly upkeep and the making of save data (WorldSave) were
+# split off.)
 class_name World
 extends GameMap
 ## The world: a seed, fixed bounds and the chunks that are currently loaded.
@@ -25,13 +26,6 @@ signal bell_rung(building: Building)
 ## The terrain or an object of this chunk was edited, loaded or not (WorldEdits `edited`: every
 ## change of the map's terrain and objects goes through it).
 signal edited(chunk_coords: Vector2i)
-## Why a footprint tile can't be built on.
-enum Blocked {
-	## Water, wetland or floodplain, or the tile is not loaded.
-	TERRAIN,
-	## A world object or a building is on it.
-	OCCUPIED,
-}
 
 ## A dug clay spot has no clay for this many nights.
 const CLAY_SPENT_NIGHTS := 5
@@ -77,10 +71,8 @@ var _generator: WorldGenerator
 var _chunks: Dictionary[Vector2i, Chunk] = {}
 ## What the player changed to the terrain and the objects (see WorldEdits).
 var _edits := WorldEdits.new()
-## Buildings are the player's work and must outlive the chunks they stand on, and one can
-## cross a chunk border, so they live here and not in chunks.
-var _buildings: Array[Building] = []
-var _building_by_tile: Dictionary[Vector2i, Building] = {}
+## The buildings (see WorldBuildings).
+var _buildings := WorldBuildings.new()
 
 
 ## `game_clock` defaults to a clock of its own because many tests make a World without a
@@ -460,7 +452,7 @@ func _clear_removable(world_pos: Vector2i) -> void:
 
 ## Whether an object is there, but gives way to what is tilled, planted or built on its tile.
 ## The one rule that `is_free_on`, `is_buildable` and `placement_blockers` share.
-func _is_in_the_way(world_pos: Vector2i) -> bool:
+func is_in_the_way(world_pos: Vector2i) -> bool:
 	var object := object_at(world_pos)
 	return object != null and not _is_clearable(object)
 
@@ -542,7 +534,7 @@ func is_buildable(world_pos: Vector2i) -> bool:
 	return (
 		tile != null
 		and tile.is_buildable()
-		and not _is_in_the_way(world_pos)
+		and not is_in_the_way(world_pos)
 		and building_at(world_pos) == null
 	)
 
@@ -555,8 +547,7 @@ func is_placeable(world_pos: Vector2i) -> bool:
 
 ## Whether a tile is the one just below a building's door, which has to stay free to walk through.
 func is_in_front_of_door(world_pos: Vector2i) -> bool:
-	var building_above := building_at(world_pos + Vector2i.UP)
-	return building_above != null and building_above.door_tile() == world_pos + Vector2i.UP
+	return _buildings.is_in_front_of_door(world_pos)
 
 
 ## Whether a tile has this terrain and neither an object (a clearable one doesn't count) nor a
@@ -566,7 +557,7 @@ func is_free_on(world_pos: Vector2i, terrain: Tile.Terrain) -> bool:
 	return (
 		tile != null
 		and tile.terrain == terrain
-		and not _is_in_the_way(world_pos)
+		and not is_in_the_way(world_pos)
 		and building_at(world_pos) == null
 	)
 
@@ -591,13 +582,13 @@ func is_village_building(building: Building) -> bool:
 
 
 func buildings() -> Array[Building]:
-	return _buildings.duplicate()
+	return _buildings.all()
 
 
 ## The tiles buildings cover, doors included, as keys of a copy that shares nothing with the world
 ## but the buildings themselves (see TravelSnapshot).
 func building_tiles() -> Dictionary:
-	return _building_by_tile.duplicate()
+	return _buildings.tiles()
 
 
 ## The steps the tiles took today (see `wear_tile`), as a copy.
@@ -613,28 +604,15 @@ func wear_days() -> Dictionary:
 
 ## The building whose footprint covers a tile, or null.
 func building_at(world_pos: Vector2i) -> Building:
-	return _building_by_tile.get(world_pos)
+	return _buildings.at(world_pos)
 
 
 ## The footprint tiles that stop a building from being placed, with the reason for each.
 ## Empty if it can be placed. Must agree with is_buildable.
 func placement_blockers(
 	building_type: StringName, origin: Vector2i
-) -> Dictionary[Vector2i, Blocked]:
-	var blockers: Dictionary[Vector2i, Blocked] = {}
-	for pos in Building.footprint_tiles(building_type, origin):
-		var tile := tile_at(pos)
-		if tile == null or not tile.is_buildable():
-			blockers[pos] = Blocked.TERRAIN
-		elif _is_in_the_way(pos) or building_at(pos) != null:
-			blockers[pos] = Blocked.OCCUPIED
-	# The player has to be able to stand in front of the door, to go in and to come out.
-	var door_offset: Vector2i = BuildingTypes.TYPES[building_type]["door_offset"]
-	var front := origin + door_offset + Vector2i.DOWN
-	if not is_walkable(front):
-		var is_blocked_by_object := tile_at(front) != null and tile_at(front).is_walkable()
-		blockers[front] = Blocked.OCCUPIED if is_blocked_by_object else Blocked.TERRAIN
-	return blockers
+) -> Dictionary[Vector2i, WorldBuildings.Blocked]:
+	return _buildings.placement_blockers(self, building_type, origin)
 
 
 ## Places a building in one of its styles and returns it, or returns null if any footprint
@@ -645,7 +623,7 @@ func place_building(building_type: StringName, origin: Vector2i, style := &"") -
 	var building := Building.new(building_type, origin, style)
 	for tile in building.tiles():
 		_clear_removable(tile)
-	_add_building(building)
+	_buildings.add(building)
 	building_placed.emit(building)
 	return building
 
@@ -653,10 +631,7 @@ func place_building(building_type: StringName, origin: Vector2i, style := &"") -
 ## Takes a building off the land, with its interior. What it held is the caller's to give back
 ## (see Demolition `take_down`).
 func remove_building(building: Building) -> void:
-	assert(_buildings.has(building), "Not a building of this world")
-	_buildings.erase(building)
-	for tile in building.tiles():
-		_building_by_tile.erase(tile)
+	_buildings.remove(building)
 	building_removed.emit(building)
 
 
@@ -789,9 +764,6 @@ func to_dict() -> Dictionary:
 func snapshot() -> Dictionary:
 	soil.catch_up_all()
 	settle_fallow_soil()
-	var buildings_data: Array[Dictionary] = []
-	for building in _buildings:
-		buildings_data.append(building.to_dict())
 	var data := {
 		"seed": world_seed,
 		"ground_items": ground_items.snapshot(),
@@ -801,7 +773,7 @@ func snapshot() -> Dictionary:
 		"soil_moisture": soil.snapshot(),
 		"fallow_nights": fallow.nights,
 		"fallow_soil": fallow.snapshot(),
-		"buildings": buildings_data,
+		"buildings": _buildings.snapshot(),
 		"village": null if village == null else village.to_dict(),
 		"surge": surge.to_dict(),
 		"flood": flood.snapshot(),
@@ -830,8 +802,7 @@ static func from_dict(data: Dictionary, game_clock: GameClock) -> World:
 			world.soil.forget(pos)
 	for pos in world.tilled_tiles():
 		world.soil.start(pos)
-	for building_data: Dictionary in data["buildings"]:
-		world._add_building(Building.from_dict(building_data))
+	world._buildings.load_array(data["buildings"])
 	world.ground_items.load_array(data["ground_items"])
 	if data["village"] != null:
 		world.village = Village.from_dict(data["village"])
@@ -851,9 +822,3 @@ func _count_object_change(_world_pos: Vector2i) -> void:
 
 func _count_building(_building: Building) -> void:
 	change_count += 1
-
-
-func _add_building(building: Building) -> void:
-	_buildings.append(building)
-	for pos in building.tiles():
-		_building_by_tile[pos] = building

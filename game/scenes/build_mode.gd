@@ -72,7 +72,7 @@ var start_options := StartupOptions.new()
 var is_pointer_on_gui := false
 
 var _origin := Vector2i.ZERO
-var _blockers: Dictionary[Vector2i, World.Blocked] = {}
+var _blockers: Dictionary[Vector2i, WorldBuildings.Blocked] = {}
 var _texture: Texture2D
 var _was_active := false
 var _is_debug_house_placed := false
@@ -389,7 +389,7 @@ func _origin_under(world_position: Vector2) -> Vector2i:
 
 func _show_message() -> void:
 	if not _blockers.is_empty():
-		var is_unsafe_land := _blockers.values().has(World.Blocked.TERRAIN)
+		var is_unsafe_land := _blockers.values().has(WorldBuildings.Blocked.TERRAIN)
 		message_changed.emit(UNSAFE_LAND_MESSAGE if is_unsafe_land else OCCUPIED_MESSAGE)
 	elif not builder.shortfalls().is_empty():
 		message_changed.emit(MISSING_MESSAGE)
