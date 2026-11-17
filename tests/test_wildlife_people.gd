@@ -144,7 +144,7 @@ func test_the_building_and_villager_keys_must_be_well_formed() -> void:
 func test_a_rabbit_hops_away_from_a_villager() -> void:
 	var rabbit := Rabbit.new()
 	rabbit.position = _open_point()
-	_wildlife._add(rabbit, true)
+	_wildlife.add_animal(rabbit, true)
 	_villager_beside(rabbit.position, 1.5)
 	var start := rabbit.position
 	var villager_distance := start.distance_to(rabbit._nearest_threat())
@@ -158,7 +158,7 @@ func test_a_rabbit_hops_away_from_a_villager() -> void:
 func test_a_deer_bounds_away_from_a_villager() -> void:
 	var deer := Deer.new()
 	deer.position = _open_point()
-	_wildlife._add(deer, true)
+	_wildlife.add_animal(deer, true)
 	_villager_beside(deer.position, 2.0)
 	_run(deer, STEP)
 	assert_eq(deer._state, Deer.BOUND)
@@ -168,7 +168,7 @@ func test_mice_stay_near_a_house_and_a_villager() -> void:
 	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
 	var mouse := Mouse.new()
 	mouse.position = TerrainTileset.tile_centre(house.door_tile() + Vector2i(0, 1))
-	_wildlife._add(mouse, true)
+	_wildlife.add_animal(mouse, true)
 	_villager_beside(mouse.position, 1.0)
 	_run(mouse, 20.0)
 	assert_false(mouse.is_done, "no villager drives it off")

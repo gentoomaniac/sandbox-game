@@ -16,7 +16,7 @@ const CASES := {
 func test_a_sparrow_flies_off_in_the_view_of_its_direction() -> void:
 	for degrees: float in CASES:
 		var bird := Bird.new()
-		_wildlife._add(bird, true)
+		_wildlife.add_animal(bird, true)
 		bird._take_off(Vector2.RIGHT.rotated(deg_to_rad(degrees)))
 		_run(bird, 0.5)
 		assert_eq(bird._action, CASES[degrees][0], "%s degrees" % degrees)

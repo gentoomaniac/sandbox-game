@@ -84,7 +84,7 @@ func _ready() -> void:
 	_shadow.hide()
 	wildlife.ground.add_child(_shadow)
 	if roof != null:
-		_landing_lift = wildlife.roof_lift(roof, _roof_column) + nest_lift
+		_landing_lift = wildlife.roofs.roof_lift(roof, _roof_column) + nest_lift
 		_arrival_lift = _landing_lift + ROOF_CLEARANCE
 		_lift = _arrival_lift if _state == ARRIVE else _landing_lift
 	if _state == ARRIVE:
@@ -100,7 +100,7 @@ func _exit_tree() -> void:
 
 
 ## Puts it on a column of a house's picture at once: `ground` is the point in front of the
-## house below it (see WildlifeView._send_stork_to_roof), and it stands as high above it as the
+## house below it (see StorkRoofs.send_stork), and it stands as high above it as the
 ## roof is there. Called before it is added to the view, like `fly_to`.
 func stand_on(house: Building, column: int, ground: Vector2) -> void:
 	roof = house
@@ -229,10 +229,10 @@ func _clatter() -> void:
 ## On a roof: it stands, and now and then clatters; it stays on top of the roof as snow comes
 ## and goes, and leaves if the house is gone.
 func _choose_on_roof() -> void:
-	if not wildlife.is_standing(roof):
+	if not wildlife.roofs.is_standing(roof):
 		_take_off(_away_from_view_centre())
 		return
-	_landing_lift = wildlife.roof_lift(roof, _roof_column) + nest_lift
+	_landing_lift = wildlife.roofs.roof_lift(roof, _roof_column) + nest_lift
 	_lift = _landing_lift
 	if _state != CLATTER and wildlife.rng.randf() < ROOF_CLATTER_CHANCE:
 		_clatter()

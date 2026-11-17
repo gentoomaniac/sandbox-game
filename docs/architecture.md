@@ -228,8 +228,8 @@ itself to a call that needs the terrain.
 - **Livestock** (`game/state/livestock.gd`) holds the farm animals (`FarmAnimal`) and moves
   them: GameState owns it and Main calls its `update` every frame while the player is
   outside. The numbers are `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws
-  them through `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes from the
-  FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
+  them through `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its
+  state comes from the FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
   `UNSADDLE`) and ridden through `PlayerTravel.mount` and `dismount`: `PlayerState.horse` is the
   horse ridden (not saved), which `PlayerState.move` takes along and `Livestock.update` leaves
   alone (`FarmAnimal.is_ridden`); `PlayerView` draws the rider's riding sheets on the ridden
@@ -370,7 +370,9 @@ itself to a call that needs the terrain.
   reads the setting. The numbers measured on the art are
   the new art's in both sets, but for the rider's seat on the classic horses
   (`PlayerView.CLASSIC_SEAT`, `CLASSIC_PONY_SEAT`).
-- Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView`,
+- Other views each draw one piece of state: `PlayerView`, `WeatherView`, `WildlifeView` (which
+  keeps the farm animals' views in `FarmAnimalViews`, the roof storks and nests in `StorkRoofs`
+  and which class makes each wild kind in `WildAnimals`),
   `BuildMode` (the ghost, and the red marking and hold of taking down; `Builder` holds the
   mode, the chosen building and style and what each target gives,
   `Demolition` the rules for taking buildings down), `BuildMenu` (the row of buildings

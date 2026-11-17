@@ -28,7 +28,7 @@ func before_each() -> void:
 	values["general"]["max_total"] = ROOM
 	_wildlife.rules = WildlifeRules.new(values)
 	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
-	_camera.rig.position = _wildlife._front_middle(house)
+	_camera.rig.position = _wildlife.roofs.front_middle(house)
 	_state.clock.day = MIDSUMMER
 	_state.weather_override = &"clear"
 

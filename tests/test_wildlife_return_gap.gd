@@ -17,7 +17,7 @@ func before_each() -> void:
 	values["general"]["max_total"] = ROOM
 	_wildlife.rules = WildlifeRules.new(values)
 	var house := _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
-	_camera.rig.position = _wildlife._front_middle(house)
+	_camera.rig.position = _wildlife.roofs.front_middle(house)
 	_state.clock.day = MIDSUMMER
 	_state.clock.set_time(12, 0)
 	_state.weather_override = &"clear"
@@ -27,7 +27,7 @@ func before_each() -> void:
 
 ## Lets the only roof stork leave: it flies off and is freed.
 func _let_the_stork_leave() -> void:
-	assert_true(_wildlife._send_stork_to_roof(false, true))
+	assert_true(_wildlife.roofs.send_stork(false, true))
 	_animals_of(Stork)[0].is_done = true
 	_wildlife._remove_gone_animals()
 
@@ -62,7 +62,7 @@ func test_a_skip_of_time_into_the_gap_settles_no_stork_and_a_skip_past_it_does()
 
 
 func test_settling_is_no_stork_leaving() -> void:
-	assert_true(_wildlife._send_stork_to_roof(false, true))
+	assert_true(_wildlife.roofs.send_stork(false, true))
 	_wildlife.settle()
 	assert_false(_wildlife._is_quiet(KIND))
 

@@ -63,7 +63,7 @@ func test_the_birds_show_the_frames_of_their_view() -> void:
 		for heading: Vector2 in cases:
 			var flock := Flock.new(kind)
 			flock.set_course(VIEW_CENTRE, VIEW_CENTRE + heading * 1000.0, 5)
-			_wildlife._add(flock, true)
+			_wildlife.add_animal(flock, true)
 			_run(flock, 1.0)
 			var sheet: StringName = Flock.BIRDS[kind]["sheet"]
 			var view: StringName = cases[heading][0]

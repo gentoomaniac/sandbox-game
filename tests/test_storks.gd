@@ -9,7 +9,7 @@ var _house: Building
 func before_each() -> void:
 	super()
 	_house = _state.world.place_building(BuildingTypes.KATE, HOUSE_AT)
-	_camera.rig.position = _wildlife._front_middle(_house)
+	_camera.rig.position = _wildlife.roofs.front_middle(_house)
 
 
 func _storks() -> Array[Animal]:
@@ -17,7 +17,7 @@ func _storks() -> Array[Animal]:
 
 
 func test_a_stork_flies_in_from_outside_the_view_and_lands_on_the_ridge() -> void:
-	assert_true(_wildlife._send_stork_to_roof(false))
+	assert_true(_wildlife.roofs.send_stork(false))
 	var stork: Stork = _storks()[0]
 	assert_eq(stork.roof, _house)
 	assert_true(stork._is_out_of_view(), "it comes from beside the view")
@@ -69,12 +69,12 @@ func test_a_stork_made_by_hand_stands_on_the_roof_at_once() -> void:
 
 func test_a_roof_takes_one_stork() -> void:
 	assert_eq(_wildlife.spawn_in_view(WildlifeRules.ROOF_STORK, 3), 1)
-	assert_false(_wildlife._send_stork_to_roof(false))
+	assert_false(_wildlife.roofs.send_stork(false))
 
 
 func test_no_roof_no_stork() -> void:
 	_wildlife.world_view.world = GameFactory.new_game(1).world
-	assert_false(_wildlife._send_stork_to_roof(false))
+	assert_false(_wildlife.roofs.send_stork(false))
 	assert_eq(_wildlife.spawn_in_view(WildlifeRules.ROOF_STORK, 1), 0)
 
 

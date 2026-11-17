@@ -49,7 +49,7 @@ class Chick:
 
 func _ready() -> void:
 	_column = wildlife.nests.column(building)
-	position = wildlife.in_front_of(building, _column)
+	position = wildlife.roofs.in_front_of(building, _column)
 	for slot in CHICK_MOST:
 		var chick := Chick.new()
 		chick.sprite = WildlifeSprites.make_sprite(&"stork_chick")
@@ -108,7 +108,7 @@ func settle() -> void:
 ## The nest, and the young on it, are lifted to the roof as it is shown now (it is higher under
 ## snow).
 func _show_nest_lift() -> void:
-	_roof_lift = wildlife.roof_lift(building, _column)
+	_roof_lift = wildlife.roofs.roof_lift(building, _column)
 	_nest.position.y = -_roof_lift
 	if not _is_young_grown:
 		for chick in _chicks:
@@ -140,7 +140,7 @@ func _show_young(occupants: StorkNests.Occupants, is_instant: bool) -> void:
 func _send_young_off() -> void:
 	var young := _new_stork()
 	var column := _column + roundi(wildlife.rng.randf_range(-1.0, 1.0) * CHICK_SPACING)
-	young.stand_on(building, column, wildlife.in_front_of(building, column))
+	young.stand_on(building, column, wildlife.roofs.in_front_of(building, column))
 	wildlife.add_stork(young)
 	young.dismiss()
 
@@ -168,12 +168,12 @@ func _move_grown_chick(chick: Chick, delta: float) -> void:
 
 func _add_parent(number: int, is_instant: bool) -> void:
 	var column := _column + (number * 2 - 1) * PARENT_SPACING
-	var ground := wildlife.in_front_of(building, column)
+	var ground := wildlife.roofs.in_front_of(building, column)
 	var stork := _new_stork()
 	if is_instant:
 		stork.stand_on(building, column, ground)
 	else:
-		stork.position = wildlife.arrival_point(building)
+		stork.position = wildlife.roofs.arrival_point(building)
 		stork.fly_to(building, column, ground)
 	wildlife.add_stork(stork)
 	_parents.append(stork)

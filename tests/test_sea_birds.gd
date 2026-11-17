@@ -150,7 +150,7 @@ func test_the_waders_can_be_spawned_from_the_console() -> void:
 func _gull_at(point: Vector2) -> Gull:
 	var gull := Gull.new()
 	gull.position = point
-	_wildlife._add(gull, true)
+	_wildlife.add_animal(gull, true)
 	return gull
 
 
@@ -214,7 +214,7 @@ func test_gulls_all_year_and_hardly_at_night() -> void:
 func _tern_at(point: Vector2) -> Tern:
 	var tern := Tern.new()
 	tern.position = point
-	_wildlife._add(tern, true)
+	_wildlife.add_animal(tern, true)
 	return tern
 
 

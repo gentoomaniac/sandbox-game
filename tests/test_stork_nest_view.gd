@@ -13,7 +13,7 @@ var _house: Building
 func before_each() -> void:
 	super()
 	_house = _house_with_a_nest()
-	_camera.rig.position = _wildlife._front_middle(_house)
+	_camera.rig.position = _wildlife.roofs.front_middle(_house)
 	_state.weather_override = &"clear"
 
 
@@ -35,7 +35,7 @@ func _at(day: int, hour := 12) -> void:
 
 
 func _nest_view() -> StorkNestView:
-	return _wildlife._nest_views[_house]
+	return _wildlife.roofs.nest_views[_house]
 
 
 func _parents() -> Array[Animal]:
@@ -48,9 +48,9 @@ func _visible_young() -> int:
 
 func test_a_nest_near_the_view_is_shown_all_year_and_once() -> void:
 	_at(WINTER)
-	_wildlife._follow_nests()
-	_wildlife._follow_nests()
-	assert_eq(_wildlife._nest_views.size(), 1)
+	_wildlife.roofs.follow_nests()
+	_wildlife.roofs.follow_nests()
+	assert_eq(_wildlife.roofs.nest_views.size(), 1)
 	assert_eq(_nest_view().get_parent(), _wildlife.world_view.entities)
 	assert_eq(_parents().size(), 0, "empty in winter")
 	assert_eq(_visible_young(), 0)
@@ -58,7 +58,7 @@ func test_a_nest_near_the_view_is_shown_all_year_and_once() -> void:
 
 func test_the_pair_and_the_young_are_there_in_late_spring() -> void:
 	_at(LATE_SPRING)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var occupants := _wildlife.occupants_of(_house)
 	assert_eq(occupants.stage, StorkNests.Stage.YOUNG)
 	assert_eq(_parents().size(), occupants.parents_home)
@@ -71,31 +71,31 @@ func test_the_pair_and_the_young_are_there_in_late_spring() -> void:
 
 func test_the_parents_stand_on_the_rim_higher_than_a_stork_on_the_bare_roof() -> void:
 	_at(LATE_SPRING, 0)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var parent: Stork = _parents()[0]
-	var bare_lift := _wildlife.roof_lift(_house, parent._roof_column)
+	var bare_lift := _wildlife.roofs.roof_lift(_house, parent._roof_column)
 	assert_almost_eq(parent._lift, bare_lift + StorkNestView.RIM_HEIGHT, 0.01)
 
 
 func test_the_young_look_larger_through_the_summer() -> void:
 	_at(LATE_SPRING)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var early: int = _nest_view()._chicks[0].sprite.frame
 	_at(SUMMER_DAY_WITH_YOUNG_ON_THE_RIM - 14)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	assert_ne(_nest_view()._chicks[0].sprite.frame, early, "another picture")
 
 
 func test_a_parent_leaves_the_nest_when_it_is_away_and_one_flies_back_in() -> void:
 	_at(LATE_SPRING, 0)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var minute := _minute_with_a_parent_away()
 	_state.clock.set_time(minute / 60, minute % 60)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var flying := _parents().filter(func(stork: Stork) -> bool: return stork._state == Stork.FLY)
 	assert_eq(flying.size(), 1, "one flies off to the meadows")
 	_at(LATE_SPRING, 0)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var arriving := _parents().filter(
 		func(stork: Stork) -> bool: return stork._state == Stork.ARRIVE
 	)
@@ -115,10 +115,10 @@ func test_the_young_leave_one_by_one() -> void:
 	_at(SUMMER_DAY_WITH_YOUNG_ON_THE_RIM - 12)
 	var before := _day_with_young_leaving()
 	_at(before.x, 12)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var young: int = _nest_view()._young
 	_at(before.y, 12)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	assert_eq(_nest_view()._young, young - 1)
 	assert_eq(_visible_young(), young - 1)
 	var leaving := _animals_of(Stork).filter(
@@ -144,9 +144,9 @@ func _day_with_young_leaving() -> Vector2i:
 
 func test_the_nest_is_empty_in_autumn_and_its_pair_has_gone() -> void:
 	_at(LATE_SPRING)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	_at(75)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	for parent: Stork in _parents():
 		assert_eq(parent._state, Stork.FLY)
 	assert_eq(_visible_young(), 0)
@@ -154,7 +154,7 @@ func test_the_nest_is_empty_in_autumn_and_its_pair_has_gone() -> void:
 
 func test_a_skip_of_time_puts_the_pair_on_the_nest_at_once() -> void:
 	_at(WINTER)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	_at(LATE_SPRING, 0)
 	_wildlife.settle()
 	var occupants := _wildlife.occupants_of(_house)
@@ -169,13 +169,13 @@ func test_random_roof_storks_keep_off_a_roof_with_a_nest() -> void:
 	for building in _state.world.buildings():
 		if building != _house:
 			_state.world.remove_building(building)
-	assert_false(_wildlife._send_stork_to_roof(false))
+	assert_false(_wildlife.roofs.send_stork(false))
 	assert_eq(_wildlife.spawn_in_view(WildlifeRules.ROOF_STORK, 1), 1, "made by hand: any roof")
 
 
 func test_the_pair_of_a_nest_are_not_counted_or_sent_away_as_roof_storks() -> void:
 	_at(LATE_SPRING, 0)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var pair := _parents().size()
 	assert_eq(_wildlife._count_of(WildlifeRules.ROOF_STORK), 0)
 	_wildlife._send_away(WildlifeRules.ROOF_STORK, 2)
@@ -187,10 +187,10 @@ func test_the_pair_of_a_nest_are_not_counted_or_sent_away_as_roof_storks() -> vo
 
 func test_the_nest_goes_with_its_house() -> void:
 	_at(LATE_SPRING)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	_state.world.remove_building(_house)
-	_wildlife._follow_nests()
-	assert_eq(_wildlife._nest_views.size(), 0)
+	_wildlife.roofs.follow_nests()
+	assert_eq(_wildlife.roofs.nest_views.size(), 0)
 	for parent: Stork in _parents():
 		_run(parent, 10.0)
 		assert_eq(parent._state, Stork.FLY, "the pair leaves the roof that is gone")
@@ -198,7 +198,7 @@ func test_the_nest_goes_with_its_house() -> void:
 
 func test_a_parent_freed_elsewhere_is_replaced_without_an_error() -> void:
 	_at(LATE_SPRING)
-	_wildlife._follow_nests()
+	_wildlife.roofs.follow_nests()
 	var parent: Stork = _nest_view()._parents[0]
 	parent.free()
 	_nest_view().update(true)

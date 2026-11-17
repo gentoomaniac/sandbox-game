@@ -12,17 +12,14 @@ extends Node
 ## It also shows the farm animals of the game's Livestock, which are state and saved (see
 ## FarmAnimalViews), looked at every second like the wild ones.
 ##
-## Storks that stand on roofs fly in to a house near the view (see `_send_stork_to_roof`); where
-## on a roof they can stand is read from the top edge of the house's picture.
-##
-## Some roofs have a stork's nest (see StorkNests and StorkNestView): the view shows one for each
-## near the view, with the storks that are home, and the random roof storks keep off those roofs.
+## Storks that stand on roofs fly in to a house near the view, and some roofs have a stork's nest
+## (see StorkRoofs, StorkNests and StorkNestView): the random roof storks keep off those roofs.
 ##
 ## Debug: `spawn_in_view` puts animals in view (the `--wildlife` flag and the `spawn` console
 ## command); those are never sent away for the weather or the hour, and `is_player_ignored`
 ## makes every animal take no notice of the player or the villagers (`--wildlife-calm`).
 
-## An animal came into view: a wild one (see `_add`) or a farm animal (see FarmAnimalViews).
+## An animal came into view: a wild one (see `add_animal`) or a farm animal (see FarmAnimalViews).
 signal animal_added(animal: Animal)
 
 ## Tries to find a place for one animal before giving up until the next second.
@@ -37,10 +34,6 @@ const SEA_BIRDS: Array[StringName] = [
 ]
 ## A flock crossing the view starts this far behind the ring, in pixels.
 const FLOCK_ENTRY_DISTANCE := 240.0
-## A stork flying to a roof comes from this far beside the view, in pixels.
-const ARRIVAL_MARGIN := 96.0
-## A stork on a roof stands this many pixels into the top of the roof, among the ridge sticks.
-const ROOF_FOOTING := 4.0
 
 var rules: WildlifeRules
 ## Which buildings have a nest, and who is in it.
@@ -61,22 +54,21 @@ var villager_feet := PackedVector2Array()
 var is_spawning_naturally := true
 ## The views of the farm animals near the view.
 var farm_views := FarmAnimalViews.new(self)
+## The roof storks and the nests on the houses near the view.
+var roofs := StorkRoofs.new(self)
 var _state: GameState
 var _camera: CameraController
 var _animals: Array[Animal] = []
 ## For the kinds with a `return_gap_minutes`: the game minute (see GameClock `total_minutes`) until
 ## which no other of the kind comes, since one left.
 var _quiet_until: Dictionary[StringName, int] = {}
-var _nest_views: Dictionary[Building, StorkNestView] = {}
-## For each picture of a house (a building type in a look), how far its top is above the bottom
-## edge, for every column of pixels: the roofs storks stand on. Read the first time it is needed.
-var _roof_heights: Dictionary[String, PackedInt32Array] = {}
 var _seconds_to_tick := 0.0
 
 
 func _init() -> void:
 	rng.randomize()
 	add_child(farm_views)
+	add_child(roofs)
 
 
 ## Shows wildlife in a world view, by the time, weather and view of the game.
@@ -107,7 +99,7 @@ func _process(delta: float) -> void:
 		farm_views.follow(_state.livestock)
 		if is_spawning_naturally:
 			_follow_villagers()
-			_follow_nests()
+			roofs.follow_nests()
 			_match_counts()
 
 
@@ -117,9 +109,7 @@ func clear() -> void:
 		animal.queue_free()
 	_animals.clear()
 	farm_views.clear()
-	for nest_view in _nest_views.values():
-		nest_view.queue_free()
-	_nest_views.clear()
+	roofs.clear()
 
 
 ## Takes every wild animal of a kind away at once, in view or not (the `killall` console command).
@@ -147,7 +137,7 @@ func spawn_in_view(kind: StringName, count: int) -> int:
 			_spawn_flock(kind, true)
 			spawned += 1
 		elif kind == WildlifeRules.ROOF_STORK:
-			if not _send_stork_to_roof(true):
+			if not roofs.send_stork(true):
 				break
 			spawned += 1
 		elif _spawn_near_player(kind):
@@ -241,9 +231,8 @@ func settle() -> void:
 	if not is_spawning_naturally or _state.is_inside():
 		return
 	_follow_villagers()
-	_follow_nests()
-	for nest_view in _nest_views.values():
-		nest_view.settle()
+	roofs.follow_nests()
+	roofs.settle_nests()
 	for animal in _animals:
 		if not animal.is_pinned:
 			animal.is_done = true
@@ -308,31 +297,6 @@ func _is_nest_parent(animal: Animal) -> bool:
 	return animal is Stork and animal.is_nest_parent
 
 
-## Shows the nests that came near the view, drops those that are far from it or whose house is
-## gone, and has each one look at who is in it. A nest that comes near has its pair on it at once.
-func _follow_nests() -> void:
-	var view := view_rect()
-	for building: Building in _nest_views.keys():
-		var nest_view := _nest_views[building]
-		if not is_standing(building) or rules.is_beyond_view(nest_view.position, view):
-			nest_view.queue_free()
-			_nest_views.erase(building)
-	var near := view.grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
-	for building in world_view.world.buildings():
-		if _nest_views.has(building) or not nests.has_nest(building):
-			continue
-		if not near.has_point(_front_middle(building)):
-			continue
-		var nest_view := StorkNestView.new()
-		nest_view.building = building
-		nest_view.wildlife = self
-		_nest_views[building] = nest_view
-		world_view.entities.add_child(nest_view)
-		nest_view.update(true)
-	for nest_view in _nest_views.values():
-		nest_view.update()
-
-
 ## Who is in the nest of a building now.
 func occupants_of(building: Building) -> StorkNests.Occupants:
 	return nests.occupants(building, _state.clock.day, _state.clock.minute_of_day)
@@ -340,7 +304,15 @@ func occupants_of(building: Building) -> StorkNests.Occupants:
 
 ## Adds a stork of a nest: it stays until its nest is far from the view.
 func add_stork(stork: Stork) -> void:
-	_add(stork, true)
+	add_animal(stork, true)
+
+
+## Whether a wild stork stands on the roof of a house, or flies to it.
+func has_stork_on(building: Building) -> bool:
+	for animal in _animals:
+		if animal is Stork and animal.roof == building and not animal.is_done:
+			return true
+	return false
 
 
 ## Takes `excess` animals of a kind away: out of sight at once, in sight by running off.
@@ -366,7 +338,7 @@ func _spawn_somewhere(kind: StringName, flowers: Array[Vector2i], is_instant := 
 		_spawn_flock(kind, false, is_instant)
 		return
 	if kind == WildlifeRules.ROOF_STORK:
-		_send_stork_to_roof(false, is_instant)
+		roofs.send_stork(false, is_instant)
 		return
 	var view := view_rect()
 	var player := world_view.player_feet
@@ -487,109 +459,16 @@ func _spawn_flock(kind: StringName, is_debug: bool, is_instant := false) -> void
 		start -= (goal - start).normalized() * FLOCK_ENTRY_DISTANCE
 	var flock := Flock.new(kind)
 	flock.set_course(start, end, Flock.bird_count(kind, rng))
-	_add(flock, is_debug)
-
-
-## Sends a stork to the roof of a house near the view that has none: it flies in from beside
-## the view. One made by hand stands on the roof nearest to the player at once, and one that is
-## `is_instant` (see `settle`) on a roof as it would have settled, not made by hand. Returns
-## whether there was a roof for it.
-func _send_stork_to_roof(is_debug: bool, is_instant := false) -> bool:
-	var near := view_rect().grow(rules.general("spawn_margin_tiles") * WildlifeRules.TILE_SIZE)
-	var houses: Array[Building] = []
-	for building in world_view.world.buildings():
-		var is_taken := _has_stork_on(building) or (not is_debug and nests.has_nest(building))
-		if near.has_point(_front_middle(building)) and not is_taken:
-			houses.append(building)
-	if houses.is_empty():
-		return false
-	var house := houses[rng.randi() % houses.size()]
-	if is_debug:
-		var nearest := INF
-		for building in houses:
-			var distance := _front_middle(building).distance_to(world_view.player_feet)
-			if distance < nearest:
-				nearest = distance
-				house = building
-	var stork := Stork.new(WildlifeRules.ROOF_STORK)
-	# On the ridge: the middle third of the picture, away from the hips.
-	var footprint: Vector2i = BuildingTypes.TYPES[house.type]["footprint"]
-	var width := footprint.x * WildlifeRules.TILE_SIZE
-	var column := rng.randi_range(width / 3, width * 2 / 3)
-	if is_debug or is_instant:
-		stork.stand_on(house, column, in_front_of(house, column))
-	else:
-		stork.position = arrival_point(house)
-		stork.fly_to(house, column, in_front_of(house, column))
-	_add(stork, is_debug)
-	return true
-
-
-## Where a stork flying to a roof of a house starts: beyond the left or right edge of the view,
-## where it can't be seen high up as it is.
-func arrival_point(house: Building) -> Vector2:
-	var view := view_rect()
-	var side := (
-		view.position.x - ARRIVAL_MARGIN if rng.randf() < 0.5 else view.end.x + ARRIVAL_MARGIN
-	)
-	return Vector2(side, in_front_of(house, 0).y + rng.randf_range(-0.3, 0.3) * view.size.y)
-
-
-## How high above the point in front of a house (see `in_front_of`) a stork stands on a column
-## of the house's picture as it is shown now: its feet among the ridge sticks, ROOF_FOOTING pixels
-## into the top of the roof. Under snow the roof is a little higher.
-func roof_lift(building: Building, column: int) -> float:
-	var heights := _roof_heights_of(world_view.building_picture(building))
-	var feet := BuildingViews.footprint_bottom(building) - heights[column] + ROOF_FOOTING
-	return in_front_of(building, column).y - feet
-
-
-## Whether a house still stands in the world.
-func is_standing(building: Building) -> bool:
-	return world_view.world.building_at(building.origin) == building
-
-
-func _has_stork_on(building: Building) -> bool:
-	for animal in _animals:
-		if animal is Stork and animal.roof == building and not animal.is_done:
-			return true
-	return false
-
-
-## The point of the ground just in front of a house, below a column of its picture: an animal
-## there sorts right after the house.
-func in_front_of(building: Building, column: int) -> Vector2:
-	return BuildingViews.sort_position(building) + Vector2(column, 1.0)
-
-
-func _front_middle(building: Building) -> Vector2:
-	var footprint: Vector2i = BuildingTypes.TYPES[building.type]["footprint"]
-	return in_front_of(building, footprint.x * WildlifeRules.TILE_SIZE / 2)
-
-
-## For every column of pixels of a house's picture, how far its top is above the bottom edge.
-func _roof_heights_of(picture: String) -> PackedInt32Array:
-	if _roof_heights.has(picture):
-		return _roof_heights[picture]
-	var image: Image = load(picture).get_image()
-	var heights := PackedInt32Array()
-	heights.resize(image.get_width())
-	for x in image.get_width():
-		for y in image.get_height():
-			if image.get_pixel(x, y).a > 0.5:
-				heights[x] = image.get_height() - y
-				break
-	_roof_heights[picture] = heights
-	return heights
+	add_animal(flock, is_debug)
 
 
 func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
 	var animal := WildAnimals.create(kind)
 	animal.position = point
-	_add(animal, is_pinned)
+	add_animal(animal, is_pinned)
 
 
-func _add(animal: Animal, is_pinned: bool) -> void:
+func add_animal(animal: Animal, is_pinned: bool) -> void:
 	animal.wildlife = self
 	animal.is_pinned = is_pinned
 	_animals.append(animal)
