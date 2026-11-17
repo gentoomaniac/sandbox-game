@@ -12,6 +12,7 @@ import declaration
 import farmhouses
 import hall_house
 import huts
+import windmill
 import yard
 
 
@@ -23,6 +24,7 @@ def pictures():
             "farmhouses.py": farmhouses.PICTURES,
             "hall_house.py": hall_house.PICTURES,
             "huts.py": huts.PICTURES,
+            "windmill.py": windmill.PICTURES,
             "yard.py": yard.PICTURES,
         }
     )

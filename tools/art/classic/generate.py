@@ -69,6 +69,7 @@ import trunks  # noqa: E402
 import villagers  # noqa: E402
 import ways  # noqa: E402
 import willow  # noqa: E402
+import windmill  # noqa: E402
 import yard  # noqa: E402
 from canvas import OBJECT_BOTTOM, OBJECT_CELL_HEIGHT, OBJECT_CELL_WIDTH, OBJECT_CENTRE, TILE, blank  # noqa: E402
 from palette import CLASSIC_ART, GENERATED, PALETTE, save, save_picture, set_file, use_art_set, write_cell_sizes  # noqa: E402
@@ -161,7 +162,7 @@ def write_ground():
 
 
 def write_buildings():
-    for name, draw in declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "yard.py": yard.PICTURES}).items():
+    for name, draw in declaration.merge({"buildings.py": buildings.PICTURES, "church.py": church.PICTURES, "windmill.py": windmill.PICTURES, "yard.py": yard.PICTURES}).items():
         for lit_suffix, is_lit in (("", False), ("_lit", True)):
             picture, snowy = draw(is_lit=is_lit)
             for look in seasons.HOUSE_LOOKS:
@@ -170,6 +171,8 @@ def write_buildings():
             if not is_lit:
                 save_picture(cover.house_cover(picture, snowy), f"buildings/{name}_snow_cover.png")
     save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")
+    save_picture(windmill.sails(), "buildings/windmill_sails.png")
+    save_picture(windmill.still_sails(), "buildings/windmill_sails_still.png")
 
 
 def standing_outdoors(picture):

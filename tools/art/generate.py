@@ -146,6 +146,7 @@ import ui
 import villagers
 import ways
 import willow
+import windmill
 import yard
 from canvas import GAME_OBJECT_BOTTOM, GAME_OBJECT_CELL_HEIGHT, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CENTRE, GAME_TILE
 from palette import GENERATED, PALETTE, check_palette, save, save_picture, write_cell_sizes, write_palette
@@ -315,6 +316,8 @@ def write_seasonal_art():
         if not name.endswith("_lit"):
             save_picture(cover.house_cover(picture, snowy), f"buildings/{name}_snow_cover.png")
     save_picture(church.bell_swing(), "buildings/bell_frame_swing.png")
+    save_picture(windmill.sails(), "buildings/windmill_sails.png")
+    save_picture(windmill.still_sails(), "buildings/windmill_sails_still.png")
     atlas.save_sheets("decorations", [*layers, "flowers"], seasons.GROUND_LOOKS, decorations_by_look, GAME_TILE, GAME_TILE)
     objects_by_look |= cover.object_cover_looks(objects_by_look)
     atlas.save_sheets("objects", [kind for kind, _ in objects], seasons.LOOKS + cover.COVER_LOOKS, objects_by_look, GAME_OBJECT_CELL_WIDTH, GAME_OBJECT_CELL_HEIGHT)

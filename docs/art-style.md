@@ -452,6 +452,25 @@ along its foot.
   a lit frame with a plank ramp and its cleats, and the nest box with its lid propped open (a
   `bare_light` plank with `stone` hinges); the egg's icon is a brown and a white egg shaded from the top
   left. The classic art has the same things at 16 px.
+- **Windmill** (issue #26, `windmill.py`, `sails.py`, at 16 px `classic/windmill.py`): the
+  player's **post mill** on 3x3 tiles (96x264 px), **seen from behind**, so the ladder comes
+  down to the door tile in the middle of the front row and the sails turn behind the body. The
+  body is weatherboards tarred `soil_mid`/`soil`/`soil_dark` (boards 5 px high, lit along their
+  top) with oak corner boards and a heavy sill beam, under a gabled roof of weathered grey
+  boards (`bare_light`, `bare`, `mud`, which snow takes) running back up the picture; a small
+  window in the gable (lit at night) and a green plank door at the top of the ladder. It stands
+  on the open trestle: the oak post, two quarter bars and the crosstree on two fieldstone
+  piers; down the middle the ladder of grey weathered oak (`bare_light`, `bare`, `mud`) with
+  its handrails over the tarred tail pole. The **sails** are a picture of their own that the
+  game lays behind the body, their hub at x 48, y 10 of its picture (in both arts once scaled):
+  four common sails, each a stock (lit on the side towards the light) with a lattice of sail
+  bars, an uplong and a hemlath on its trailing side and a narrow board on its leading side, all
+  in the `soil` ramp. Turning, the cloth is spread (`cream`, `sand_light` in the shadow of the
+  bars, seen through the lattice from behind): `windmill_sails.png`, a strip of 8 frames of
+  225x225 px (115x115 classic), a quarter turn clockwise that loops. At rest the cloth is furled
+  into a roll along each stock (`cream`, `sand_light`, `sand`), the lattice bare, the sails
+  standing like X: `windmill_sails_still.png`. Each frame is drawn anew from the geometry at its
+  angle, so the bars stay one pixel lines. No new colours.
 - **Fisherman's hut** (*Fischerkate*, task 103): the shack's boards and fieldstones on 4x2
   tiles under a hipped reed thatch with a turf ridge (`turf_ridge`), one small white window,
   a low door in faded teal (`water_light`, `paint_teal`, `water_deep`) and an oar against
@@ -680,7 +699,7 @@ not "generic RPG forest".
   in the century, rain barrels, the Fething pond.
 - **Mills:** wooden **post mills** (the whole body turns on a post, a tail pole to the
   ground) were the common mill until about 1800; Dutch smock/cap mills arrive during the
-  century. Small drainage mills in the marsh.
+  century. Small drainage mills in the marsh. The player's windmill is a post mill (issue #26, see Buildings).
 - **Interior:** open hearth with a smoke hood, or the iron **jamb stove** (*Bilegger*) fed
   from the kitchen; box beds in the wall; blue-and-white Dutch **tiles** on the walls of
   richer houses; benches along the walls; a long table; chests; pewter and earthenware on
@@ -1054,3 +1073,5 @@ copper watering can. Kept here as the record of why.
    plunging, the splash (a crown of spray falling back to a ring, without an outline) and
    flying with a silver fish. No new colours.
 10. **Post mill and draw well** (medium). Landmark props that date the world at a glance.
+    Both are drawn: the post mill as the player's windmill (issue #26), the draw well in the
+    farm yard (task 122).
