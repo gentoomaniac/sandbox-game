@@ -86,7 +86,7 @@ func _digest() -> String:
 		]
 		lines.append(" ".join(fields))
 	lines.append(
-		"eggs=%d searches=%d dice=%d" % [_eggs(), _livestock.search_count, _livestock.rng.state]
+		"eggs=%d searches=%d dice=%d" % [_eggs(), _livestock.searches.made, _livestock.rng.state]
 	)
 	return "\n".join(lines)
 

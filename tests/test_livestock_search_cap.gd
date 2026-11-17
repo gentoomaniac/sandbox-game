@@ -37,7 +37,7 @@ func test_an_animal_with_two_pressing_needs_stays_within_one_search() -> void:
 	_livestock.add(cow)
 	_decide_now(cow)
 	_step()
-	assert_eq(_livestock.search_count, 1, "one search of two needs")
+	assert_eq(_livestock.searches.made, 1, "one search of two needs")
 	assert_gt(cow.search_seconds, 0.0, "and not again at once")
 
 
@@ -49,9 +49,9 @@ func test_a_big_herd_that_finds_nothing_stays_within_the_cap_and_a_time_bound() 
 	var started := Time.get_ticks_usec()
 	_step()
 	var seconds := (Time.get_ticks_usec() - started) / 1000000.0
-	assert_lte(_livestock.search_count, 2, "searches in one update")
+	assert_lte(_livestock.searches.made, 2, "searches in one update")
 	assert_lt(seconds, 0.5, "an update of a big herd")
-	var searches := _livestock.search_count
+	var searches := _livestock.searches.made
 	for _frame in 20:
 		_step()
-	assert_lte(_livestock.search_count - searches, 2 * 20)
+	assert_lte(_livestock.searches.made - searches, 2 * 20)

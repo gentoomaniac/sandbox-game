@@ -231,7 +231,9 @@ itself to a call that needs the terrain.
   `catch_up` (who goes first: follower, sleeper, coop, awake); what an animal does is functions
   that are given the animal and what they need (like `PlayerTravel`), each with its live path and
   its skip's: `AnimalMotion` (starting an activity, a step that turns away from what blocks it,
-  whether it is getting anywhere, and `wander_off`, where a skip leaves it). The numbers are
+  whether it is getting anywhere, and `wander_off`, where a skip leaves it) and `AnimalNeeds`
+  (how hunger and thirst rise, the search for what meets one and the walk there, and what a skip
+  makes of them; the searches an update may make are a `SearchBudget`). The numbers are
   `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws them through
   `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes
   from the FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
@@ -266,7 +268,7 @@ itself to a call that needs the terrain.
   The farm yard (task 122): each animal has a `hunger` and a `thirst` (saved) that `Livestock` raises
   with game time (`YardRules`, the `[needs]` section of the same data file; the console's `noneeds`
   cheat stops it) and no other code reads yet. When a need reaches `seek_at` and the animal next
-  picks what to do, `Livestock._start_trip_to_need` looks for the nearest tile it can walk to
+  picks what to do, `AnimalNeeds.start_trip` looks for the nearest tile it can walk to
   with fresh water (`Tile.is_fresh_water`) or an `ObjectStock` of the right `stock_kind` beside it
   (the trough: water, the hay rack: feed; the stock is `stock` in the object's state), walks there
   and takes its `drink_units` or `eat_units`; `catch_up` counts the meals of a skip. The player

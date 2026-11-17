@@ -42,9 +42,9 @@ const HUNT_ACTIVITIES: Array[FarmAnimal.Activity] = [
 var rules := LivestockRules.default_rules()
 ## What the animals need and how much of it a meal or a drink takes (see YardRules).
 var yard := YardRules.default_rules()
-## How many searches (flood fills of the ground round an animal) have been made, for the tests.
-var search_count := 0
 var rng := RandomNumberGenerator.new()
+## The searches for water, feed or a coop an `update` may make (see [needs] `searches_per_update`).
+var searches := SearchBudget.new()
 ## The cheats of the session: with `are_needs_off` the needs do not rise.
 var cheats: CheatFlags
 ## The wear an animal's hooves or feet leave on each tile they walk onto, so a herd makes
@@ -57,10 +57,7 @@ var _needs_minute := -1
 ## The game day the friendship of the animals was last brought up to (see `account_friendship`), or
 ## 0 before the first time.
 var _friendship_day := 0
-## How many more searches for water, feed or a coop an `update` may make (see [needs]
-## `searches_per_update`): each is a flood fill of the ground around an animal.
-var _searches_left := 0
-## The roosts of each coop (by its origin) that hens settled in this skip have used up and are not
+## The searches for water, feed or a coop an `update` may make (see [needs] `searches_per_update`).
 ## in now, because the skip ended in the morning. Only for the length of one catch-up.
 var _roost_taken := {}
 var _mice: Array[Prey] = []
@@ -245,7 +242,7 @@ func update(
 	var sunrise := _sun.sunrise(clock.day)
 	var sunset := _sun.sunset(clock.day)
 	account_clock(clock)
-	_searches_left = int(yard.needs("searches_per_update"))
+	searches.left = int(yard.needs("searches_per_update"))
 	var stamina_per_second := 1.0 / rules.general("stamina_stand_regain_seconds")
 	for animal in _animals:
 		# A ridden horse's stamina is GameState's (`walk`). The others get theirs back wherever
@@ -285,7 +282,7 @@ func update(
 ## player who is indoors (`player_feet` infinite) is not followed, and the follower is caught up
 ## like the others. The dice are thrown from `seed_value`. The needs have risen with the clock, and
 ## an animal that could reach what it needs has met it somewhere in the `minutes` (see
-## `_meet_needs_in_skip`).
+## `AnimalNeeds.meet_in_skip`).
 func catch_up(
 	map: GameMap, clock: GameClock, player_feet: Vector2, seed_value: int, minutes := 0
 ) -> void:
@@ -340,7 +337,7 @@ func _catch_up_one(
 	):
 		return
 	AnimalMotion.wander_off(animal, map, rules, rng)
-	_meet_needs_in_skip(animal, map, minutes)
+	AnimalNeeds.meet_in_skip(animal, map, minutes, yard, rng, searches)
 	var is_asleep := _is_sleep_time(
 		animal, clock.minute_of_day, _sun.sunrise(clock.day), _sun.sunset(clock.day)
 	)
@@ -377,7 +374,7 @@ func _settle_hen_in_skip(hen: FarmAnimal, map: GameMap, clock: GameClock, minute
 			Coop.lay_egg(coop, yard, rng)
 	hen.position = Coop.door_front(coop)
 	hen.is_housed = false
-	_meet_needs_in_skip(hen, map, minutes)
+	AnimalNeeds.meet_in_skip(hen, map, minutes, yard, rng, searches)
 	hen.goal = Vector2.INF
 	var is_asleep := _is_sleep_time(
 		hen, clock.minute_of_day, _sun.sunrise(clock.day), _sun.sunset(clock.day)
@@ -396,8 +393,8 @@ func _settle_hen_in_skip(hen: FarmAnimal, map: GameMap, clock: GameClock, minute
 ## The coop with a free roost nearest to the hen that she can walk to (see `Coop.nearest_free`), or
 ## null. It costs a flood fill of the ground round her.
 func _reachable_free_coop(hen: FarmAnimal, world: World) -> Building:
-	_searches_left -= 1
-	search_count += 1
+	searches.left -= 1
+	searches.made += 1
 	var reach := {}
 	for tile in ReachableTiles.within(
 		hen.tile(), float(yard.coop("call_tiles")) + 1.0, world.is_walkable_for_animals
@@ -450,7 +447,7 @@ func _roost(hen: FarmAnimal, delta: float, map: GameMap) -> bool:
 	var is_waiting := hen.search_seconds > 0.0 and not hen.missed_roost
 	if (hen.activity == FarmAnimal.Activity.SLEEP and not hen.missed_roost) or is_waiting:
 		return false
-	if _searches_left <= 0:
+	if searches.left <= 0:
 		# Not this time: she goes on as she is and looks in a later update.
 		return true
 	hen.missed_roost = false
@@ -569,7 +566,11 @@ func _update_awake_animal(
 			animal.seconds_left -= delta
 			AnimalMotion.note_progress(animal, rules)
 			if animal.goal.is_finite():
-				_walk_to_goal(animal, speed, delta, map, may_hunt)
+				var has_given_up := AnimalNeeds.walk_to_goal(
+					animal, speed, delta, map, rules, yard, rng, _walk
+				)
+				if has_given_up:
+					_start_activity(animal, FarmAnimal.Activity.IDLE, may_hunt)
 			elif animal.seconds_left <= 0.0 or AnimalMotion.is_blocked_too_long(animal, rules):
 				_start_next(animal, map, may_hunt)
 			elif not _walk(animal, animal.heading, speed, delta, map):
@@ -589,7 +590,7 @@ func _update_awake_animal(
 ## What an animal does next: it goes to what it needs, if it needs something it can find, else
 ## something of its own.
 func _start_next(animal: FarmAnimal, map: GameMap, may_walk: bool) -> void:
-	if not (may_walk and _start_trip_to_need(animal, map)):
+	if not (may_walk and AnimalNeeds.start_trip(animal, map, yard, searches)):
 		_start_next_activity(animal, may_walk)
 
 
@@ -624,145 +625,8 @@ func account_needs(clock: GameClock) -> void:
 	var now := clock.total_minutes()
 	if _needs_minute >= 0 and now > _needs_minute:
 		for animal in _animals:
-			_rise_needs(animal, float(now - _needs_minute))
+			AnimalNeeds.rise(animal, float(now - _needs_minute), yard, cheats.are_needs_off)
 	_needs_minute = now
-
-
-## Lets `minutes` of game time make the animal hungrier and thirstier; none with the cheat on.
-func _rise_needs(animal: FarmAnimal, minutes: float) -> void:
-	if cheats.are_needs_off or minutes <= 0.0:
-		return
-	var species := animal.species
-	animal.hunger = minf(1.0, animal.hunger + minutes / yard.need_minutes(species, &"hunger"))
-	animal.thirst = minf(1.0, animal.thirst + minutes / yard.need_minutes(species, &"thirst"))
-
-
-## The needs an animal can meet and has not, the stronger first: the need has reached `seek_at`, and
-## the species has a way to meet it (every one drinks; hay is for those that eat feed).
-func _pressing_needs(animal: FarmAnimal) -> Array[StringName]:
-	var needs: Array[StringName] = []
-	var seek_at := yard.needs("seek_at")
-	if animal.thirst >= seek_at:
-		needs.append(&"thirst")
-	if animal.hunger >= seek_at and yard.eats_feed(animal.species):
-		needs.append(&"hunger")
-	if needs.size() == 2 and animal.hunger > animal.thirst:
-		needs.reverse()
-	return needs
-
-
-## Sets the animal walking to the nearest thing that meets its strongest need that it can find; a
-## search that finds nothing is not repeated for a while. Returns whether it set off.
-func _start_trip_to_need(animal: FarmAnimal, map: GameMap) -> bool:
-	if animal.search_seconds > 0.0 or _searches_left <= 0:
-		return false
-	var needs := _pressing_needs(animal)
-	var has_searched := false
-	for need in needs:
-		if _searches_left <= 0:
-			break
-		_searches_left -= 1
-		has_searched = true
-		var found := _find_source(animal, need, map)
-		if found.is_empty():
-			continue
-		animal.goal = found["spot"]
-		animal.goal_source = found["source"]
-		animal.goal_need = need
-		animal.activity = FarmAnimal.Activity.WALK
-		animal.progress_anchor = Vector2.INF
-		animal.seconds_left = yard.needs("trip_seconds")
-		return true
-	if has_searched:
-		animal.search_seconds = yard.needs("retry_seconds")
-	return false
-
-
-## Where an animal can meet a need: the nearest tile it can walk to (within `search_tiles`) that
-## has a source of it beside it, as `{"spot": its feet there, "source": the tile of the source}`,
-## or an empty dictionary.
-func _find_source(animal: FarmAnimal, need: StringName, map: GameMap) -> Dictionary:
-	search_count += 1
-	var tiles := ReachableTiles.within(
-		animal.tile(), yard.needs("search_tiles"), map.is_walkable_for_animals
-	)
-	for tile in tiles:
-		for step: Vector2i in [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]:
-			if NeedSources.gives(map, tile + step, need):
-				return {"spot": Vector2(tile) + Vector2(0.5, 0.5), "source": tile + step}
-	return {}
-
-
-## Walks the animal to its goal, and meets the need on arrival; a goal it cannot walk to is given
-## up.
-func _walk_to_goal(
-	animal: FarmAnimal, speed: float, delta: float, map: GameMap, may_hunt: bool
-) -> void:
-	var to_goal := animal.goal - animal.position
-	if to_goal.length() <= speed * delta + AnimalMotion.GOAL_REACHED_TILES:
-		animal.position = animal.goal
-		_meet_need_at_source(animal, map)
-		return
-	if (
-		animal.seconds_left <= 0.0
-		or AnimalMotion.is_blocked_too_long(animal, rules)
-		or not _walk(animal, to_goal.normalized(), speed, delta, map)
-	):
-		# It walks straight at its goal, round what is small, and has no way to find a long one:
-		# it gives up after a short try and does not look again for a while.
-		animal.goal = Vector2.INF
-		animal.search_seconds = yard.needs("retry_seconds")
-		_start_activity(animal, FarmAnimal.Activity.IDLE, may_hunt)
-
-
-## The animal has come to its source: it drinks or eats there with its head down, if the source
-## still has something (water that is a tile has always), and the need is 0 again.
-func _meet_need_at_source(animal: FarmAnimal, map: GameMap) -> void:
-	var need := animal.goal_need
-	var source := animal.goal_source
-	animal.goal = Vector2.INF
-	if not NeedSources.gives(map, source, need):
-		_start_activity(animal, FarmAnimal.Activity.IDLE)
-		return
-	NeedSources.take(map, source, yard.units_per_need(animal.species, need))
-	if need == &"thirst":
-		animal.thirst = 0.0
-	else:
-		animal.hunger = 0.0
-	var dx := float(source.x) + 0.5 - animal.position.x
-	if absf(dx) > 0.1:
-		animal.facing = signf(dx)
-	animal.activity = FarmAnimal.Activity.GRAZE
-	animal.seconds_left = yard.needs("drink_seconds" if need == &"thirst" else "eat_seconds")
-
-
-## An animal in a skip of `minutes` meets each need that rose to `seek_at` if it can reach what
-## meets it (fresh water or a trough; a hay rack, or grass for a grazer): it did so at some time in
-## them, so the need is now somewhere between 0 and `seek_at` by the dice, and a source that is a
-## stock has lost what the meals took (the need rose by whole `seek_at`s, so that many meals, at
-## least one). One that cannot reach any stays as risen.
-func _meet_needs_in_skip(animal: FarmAnimal, map: GameMap, minutes: int) -> void:
-	var seek_at := yard.needs("seek_at")
-	for need: StringName in [&"thirst", &"hunger"]:
-		var level: float = animal.thirst if need == &"thirst" else animal.hunger
-		if level < seek_at:
-			continue
-		var found := {}
-		if need == &"thirst" or yard.eats_feed(animal.species):
-			found = _find_source(animal, need, map)
-		var grazes := need == &"hunger" and yard.grazes_for_food(animal.species)
-		if found.is_empty() and not grazes:
-			continue
-		if not found.is_empty():
-			var meals := maxi(1, int(minutes / yard.need_minutes(animal.species, need) / seek_at))
-			NeedSources.take(
-				map, found["source"], meals * yard.units_per_need(animal.species, need)
-			)
-		var met := rng.randf() * seek_at
-		if need == &"thirst":
-			animal.thirst = met
-		else:
-			animal.hunger = met
 
 
 ## The hunt is over (see CatHunt `finish`): the cat does something else.

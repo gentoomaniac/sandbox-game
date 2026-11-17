@@ -263,7 +263,7 @@ chicken coop. All are made at the workbench or built with the hammer and stand o
   `thirst` of the animal where the product is worked out (task 165 and the milk, wool and egg
   tasks). Nothing reads them yet but the animal itself.
   - **They follow the game clock**, not the frames: the animals are brought up to the clock once
-    each `update` (`Livestock._account_needs`), so a slow frame, a fast-forward and a skip all give
+    each `update` (`Livestock.account_needs`), so a slow frame, a fast-forward and a skip all give
     the same rise, a frozen clock (`freeze`) gives none and a ridden horse gets hungry too. The player
     in a house stops the animals' updates while the clock runs, so a save brings them up to the
     clock first (`Livestock.account_needs` in `GameCodec.snapshot`): the hours indoors are in the
