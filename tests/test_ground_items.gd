@@ -109,17 +109,32 @@ func test_a_drop_avoids_tiles_that_block_walking() -> void:
 	assert_eq(_dropped(ItemTypes.LOGS), 8)
 
 
-func test_a_source_with_no_walkable_tile_around_drops_on_itself() -> void:
-	for y in range(-2, 3):
-		for x in range(-2, 3):
+## Stones on every tile within `radius` of the source, the source included.
+func _wall_in_source(radius: int) -> void:
+	for y in range(-radius, radius + 1):
+		for x in range(-radius, radius + 1):
 			var pos := _tile + Vector2i(x, y)
 			_world.remove_object(pos)
 			_world.add_object(WorldObject.new(WorldObjectTypes.STONE, pos))
+
+
+func test_a_source_with_no_walkable_tile_around_drops_on_itself() -> void:
+	_wall_in_source(GroundItems.NEAREST_PILE_RANGE)
 	_world.remove_object(_tile)
 	_world.drop_items(_tile, {ItemTypes.LOGS: 3})
 	assert_eq(_dropped(ItemTypes.LOGS), 3)
 	for ground_item in _world.ground_items.all():
 		assert_eq(Vector2i(ground_item.position.floor()), _tile)
+
+
+func test_a_drop_with_no_free_tile_near_goes_to_the_nearest_walkable_one() -> void:
+	_wall_in_source(2)
+	_world.drop_items(_tile, {ItemTypes.LOGS: 3})
+	assert_eq(_dropped(ItemTypes.LOGS), 3)
+	for ground_item in _world.ground_items.all():
+		var tile := Vector2i(ground_item.position.floor())
+		assert_true(_world.is_walkable(tile), "lies where the player can reach it")
+		assert_eq(maxi(absi(tile.x - _tile.x), absi(tile.y - _tile.y)), 3)
 
 
 func test_drops_beside_a_felled_tree_avoid_its_stump_and_trunk() -> void:

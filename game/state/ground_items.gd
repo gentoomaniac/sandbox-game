@@ -20,6 +20,8 @@ signal dropped(source: Vector2i, piles: Array[GroundItem])
 ## Dropped items lie on the free tiles within this many tiles of their source; the second
 ## range is for a source that has no free tile around it.
 const SCATTER_RANGES := [1, 2]
+## How far from a drop's source, in tiles, to look for a tile for a pile when none near is free.
+const NEAREST_PILE_RANGE := 8
 ## How long dropped piles wait before they can be pulled: the longest hop with its stagger,
 ## after a falling tree lands (about 1.3 s), with a little to spare.
 const DROP_SETTLE_SECONDS := 1.4
@@ -192,8 +194,8 @@ func _unfile(ground_item: GroundItem) -> void:
 
 
 ## The free walkable tiles near `source`, in the order the piles of the `kind_index`th kind of
-## a drop go to them. With none free near, those the map names (`far_pile_tiles`), or the source
-## itself.
+## a drop go to them. With none free near, those the map names (`far_pile_tiles`), else the nearest
+## tile that can hold a pile, else the source itself.
 func _scatter_tiles(source: Vector2i, kind_index: int, map: GameMap) -> Array[Vector2i]:
 	var tiles: Array[Vector2i] = []
 	for scatter_range: int in SCATTER_RANGES:
@@ -205,13 +207,28 @@ func _scatter_tiles(source: Vector2i, kind_index: int, map: GameMap) -> Array[Ve
 			break
 	if tiles.is_empty():
 		var far_tiles := map.far_pile_tiles(source)
-		return [source] if far_tiles.is_empty() else far_tiles
+		if not far_tiles.is_empty():
+			return far_tiles
+		return [_nearest_pile_tile(source, map)]
 	var salt := PositionHash.of(source, kind_index)
 	tiles.sort_custom(
 		func(a: Vector2i, b: Vector2i) -> bool:
 			return PositionHash.of(a, salt) < PositionHash.of(b, salt)
 	)
 	return tiles
+
+
+## The tile that can hold a pile nearest to `source` (the first found searching ring by ring, so
+## a boulder or the water the pile would fall into does not put it out of reach), within
+## NEAREST_PILE_RANGE; the source itself when there is none.
+func _nearest_pile_tile(source: Vector2i, map: GameMap) -> Vector2i:
+	for ring in range(SCATTER_RANGES.back() + 1, NEAREST_PILE_RANGE + 1):
+		for y in range(-ring, ring + 1):
+			for x in range(-ring, ring + 1):
+				var tile := source + Vector2i(x, y)
+				if maxi(absi(x), absi(y)) == ring and map.can_hold_pile(tile):
+					return tile
+	return source
 
 
 ## A value from PILE_MARGIN to 1 - PILE_MARGIN, always the same for the same tile and salt.

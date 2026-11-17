@@ -26,6 +26,9 @@
     resources are logs (the item `wood` becomes `logs`), stone, clay, hay, all crop
     produce, and also what is picked by hand (berries, fibre) and seeds. They stay on the
     ground (saved) until collected; with a full inventory they stay where they are.
+    A drop scatters over the free walkable tiles within 1, else 2 tiles of its source; with
+    none, it lies on the nearest walkable tile within 8 tiles, so a pile never lands out of
+    reach (on a broken boulder, a felled tree or in water) unless nothing walkable is near.
   - **Intermediate leftovers are objects** that are hit again with the right tool.
   - **Trees:** felling leaves a stump on the tree's tile and a fallen trunk (2×1, lying
     away from the player; 1×1 if there is no room). The axe cuts the trunk into most of the
