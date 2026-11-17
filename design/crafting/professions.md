@@ -105,8 +105,11 @@ woodworker, the cook and the mason, and a UI for them.
     buckwheat pancakes, 2 from 3 buckwheat (15, task 115); pea soup, 2 from 4 peas and an
     onion (20). At the bake oven, each load with a log: 2 loaves from 4
     flour in an hour (30), 2 berry tarts from 2 flour and 12 berries in an hour and a half (50),
-    a feast cake from 2 flour, 4 strawberries and 4 berries in 3 hours (70). Flour is ground by hand from 3 wheat, rye or buckwheat (a hand
-    quern, not drawn): the simplest chain, as there was no flour. It is one item; the menu
+    a feast cake from 2 flour, 4 strawberries and 4 berries in 3 hours (70). Flour is ground at the **windmill** (#26) from 3 wheat, rye or buckwheat: the millstone inside it is a
+    process station that starts a run only when the wind blows (below 2 m/s the sails stand still:
+    "No wind"). A load takes the recipe's hour divided by the wind's speed (`[mill]` in
+    data/weather.cfg): 2 hours at 2 m/s, about 1 hour at 7 m/s and 30 minutes from 12 m/s up; the
+    wind when it starts counts. It is one item; the menu
     tells the three recipes apart by a name of their own (`name` in data/recipes.cfg: "Rye
     flour"). Cooked food restores more
     energy than its ingredients raw (roast turnip 12, buckwheat pancakes 14, pottage 15, pea soup 16, bread 30,

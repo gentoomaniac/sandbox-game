@@ -24,7 +24,7 @@ func _init(building_type: StringName, origin_tile: Vector2i, building_style := &
 ## hen lays an egg in it).
 func inside() -> Interior:
 	if interior == null:
-		interior = InteriorLoader.load_interior(BuildingTypes.TYPES[type]["interior_map"])
+		interior = _default_inside()
 	return interior
 
 
@@ -42,11 +42,17 @@ func furnish_from(map_path: String) -> void:
 ## Whether `furnish_from` would give it another inside: it has none yet, or still the type's
 ## default, untouched.
 func can_be_furnished() -> bool:
-	var default_map: String = BuildingTypes.TYPES[type]["interior_map"]
-	return (
-		interior == null
-		or interior.to_dict() == InteriorLoader.load_interior(default_map).to_dict()
-	)
+	return interior == null or interior.to_dict() == _default_inside().to_dict()
+
+
+## The inside of its type as it is made: its map and what stands in it from the start (the
+## `fixtures` of data/buildings.cfg).
+func _default_inside() -> Interior:
+	var room := InteriorLoader.load_interior(BuildingTypes.TYPES[type]["interior_map"])
+	var fixtures: Dictionary = BuildingTypes.TYPES[type].get("fixtures", {})
+	for object_type: String in fixtures:
+		room.add_object(WorldObject.new(StringName(object_type), fixtures[object_type]))
+	return room
 
 
 ## The entry of its style in BuildingTypes: its name, pictures and costs.

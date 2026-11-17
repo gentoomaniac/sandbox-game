@@ -174,8 +174,7 @@ costs goodwill where it earns some elsewhere, and a fence or a felled tree costs
 
 Press Shift+C for the crafting menu (C is the character window).
 
-- By hand: a chest, campfire (6 stone, 3 logs), bedroll (6 hay, 4 fibre), flour (from wheat, rye
-  or buckwheat), dry stone wall piece (3 stone, masonry 5), the stations below, a net frame and eel
+- By hand: a chest, campfire (6 stone, 3 logs), bedroll (6 hay, 4 fibre), dry stone wall piece (3 stone, masonry 5), the stations below, a net frame and eel
   traps.
 - A campfire is tended with E: its window has a slot for wood (logs burn 3 hours each; drag them
   in or Shift+click, and the same to take them out), a button to light the fire, and one to cook
@@ -214,7 +213,7 @@ only made at a station of its kind within reach.
 
 - **Cooking** at the hearth of a house, the camp fire or the bake oven. Anyone can roast a
   turnip; buckwheat pancakes, pottage and pea soup take practice. The oven bakes bread (from
-  flour, in an hour), a berry tart and a feast cake. Cooked food gives more energy than raw.
+  flour, which is ground at the windmill, in an hour), a berry tart and a feast cake. Cooked food gives more energy than raw.
 - **Woodworking** at the workbench: planks, the lantern, a stool, a grave marker, clogs, a painted Frisian
   chest with 20 slots, and as the master's piece a joined cupboard with 25.
 - **Masonry**: clay becomes raw bricks at the workbench, fired in the kiln (6 raw bricks and 2
@@ -227,7 +226,7 @@ only made at a station of its kind within reach.
 
 ![The menus of the hearth and the workbench](../docs/screenshots/station-menus.png)
 
-### The kiln and the bake oven
+### The kiln, the bake oven and the windmill
 
 1. Press E at it. Recipes are on the left, a 3x3 grid in the middle, your bag on the right.
 2. Put in what a recipe takes (drag, or Shift+click), or click a recipe to move its materials
@@ -236,6 +235,11 @@ only made at a station of its kind within reach.
 4. Press the fire button once the grid holds whole loads.
 5. The run takes the recipe's hours (12 for bricks, 1 for bread) and goes on while you are away.
 6. Take the result out like from a chest. Nothing new goes in until it is all out.
+
+The windmill's millstone, inside the windmill, grinds wheat, rye or buckwheat into flour the same way, but only
+in a wind: with none the window says "No wind" and the fire button stays grey. Below 2 m/s of wind
+nothing is ground. A load takes 2 hours at 2 m/s, about 1 hour at 7 m/s and 30 minutes from
+12 m/s up. The wind of the moment you press the button counts.
 
 ![The kiln firing bricks and the bake oven with berry tarts](../docs/screenshots/process-stations.png)
 

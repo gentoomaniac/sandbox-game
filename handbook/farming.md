@@ -49,7 +49,7 @@ perfect weather; expect longer.
 - A short note warns you once per field, before it is too late: the soil of a field is about to
   get too dry for its crop (water it), or a ripe crop will wither within two nights (harvest it).
 - Peas, beans and strawberries fruit again after the second number of days.
-- Rye and buckwheat are ground to flour like wheat; flax is fibre, not food.
+- Rye and buckwheat are ground to flour like wheat, at the windmill; flax is fibre, not food.
 - Pick a ripe crop within as many days as it took to ripen, or it withers and gives nothing.
 - A harvest gives the usual yield; about 1 time in 7 it is one less (never below 1) and about 1
   in 7 one more.

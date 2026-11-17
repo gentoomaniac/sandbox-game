@@ -251,7 +251,8 @@ meat, fish, hides, honey, bark, herbs. Each profession below lists what it would
 
 - **Inputs:** grain (wheat exists, plus rye, barley, oats), water or wind, salt, fat,
   yeast (sourdough, beer barm).
-- **Workstation:** hand quern (home), then a windmill (Frisia: wind and polder mills),
+- **Workstation:** hand quern (home; the game has none, flour is ground at the windmill since
+  #26), then a windmill (Frisia: wind and polder mills),
   then a baking oven (clay or brick, shared village oven).
 - **Progression:**
   1. Quern: coarse flour (slow, costs energy).

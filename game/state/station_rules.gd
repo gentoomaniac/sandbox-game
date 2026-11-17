@@ -86,6 +86,11 @@ func slot_count(station: StringName) -> int:
 	return grid_size(station).x * grid_size(station).y
 
 
+## Whether the wind drives the process station: it runs only in a wind, and the faster the stronger.
+func is_wind_driven(station: StringName) -> bool:
+	return _stations[str(station)].get("wind", false)
+
+
 ## The picture on a process station's activation button.
 func button_icon(station: StringName) -> String:
 	return BUTTON_ICON_PATH % _stations[str(station)]["button_icon"]
@@ -106,6 +111,8 @@ func _check_process(station: String, values: Dictionary) -> void:
 		if values.has(key) != process:
 			var problem := "needs" if process else "is not a process station and has no"
 			_problems.append("[%s] %s %s" % [station, problem, key])
+	if values.has("wind") and not (values["wind"] is bool and process):
+		_problems.append("[%s] wind must be true, for a process station" % station)
 	if not process:
 		return
 	var grid: Variant = values.get("grid")

@@ -1,7 +1,8 @@
 class_name WorldObjectStations
 extends RefCounted
 ## The places the player cooks, burns and works at as data, loaded into WorldObjectTypes `TYPES`
-## (see there for the entries): the fireplace, the workbench, the kiln and the oven. What the
+## (see there for the entries): the fireplace, the workbench, the kiln, the oven and the
+## millstone, which only stands in the windmill. What the
 ## stations make is in data/stations.cfg.
 
 const _WORKBENCH_ROW := 41
@@ -63,5 +64,14 @@ const TYPES := {
 		"variants": 1,
 		"interior_sprite": "res://assets/interior/oven.png",
 		"placeable_in": WorldObjectTypes.ANYWHERE,
+	},
+	# Put in the windmill by its building (see data/buildings.cfg, `fixtures`), never placed or
+	# taken. It has the oven's picture until a millstone is drawn.
+	&"millstone":
+	{
+		"footprint": Vector2i(1, 1),
+		"blocks_walking": true,
+		"harvest_level": 0,
+		"interior_sprite": "res://assets/interior/oven.png",
 	},
 }

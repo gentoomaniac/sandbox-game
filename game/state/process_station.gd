@@ -22,6 +22,8 @@ var title: String
 var grid_size: Vector2i
 ## The picture on its activation button.
 var button_icon: String
+## Whether the wind drives it (a windmill's millstone): a run starts only in a wind, see `speed`.
+var is_wind_driven: bool
 ## The grid: the station's storage.
 var grid: ItemSlots
 ## The station's recipes, in the order of the file.
@@ -55,6 +57,7 @@ func _init(
 	title = stations.station_name(station_id)
 	grid_size = stations.grid_size(station_id)
 	button_icon = stations.button_icon(station_id)
+	is_wind_driven = stations.is_wind_driven(station_id)
 	_slot_count = stations.slot_count(station_id)
 	assert(grid != null and grid.slots.size() == _slot_count, "No grid of its size")
 	recipe_ids = recipe_crafting.rules.recipes_at(station_id)
@@ -246,12 +249,21 @@ func missing() -> Dictionary:
 	return {} if open.is_empty() else _rule().missing(open[0], _contents())
 
 
+## How fast a run would go now, as a multiple of the recipe's hours: 1 for a station that runs by
+## itself, for one the wind drives what the wind grinds with (0 in a calm: nothing starts).
+func speed() -> float:
+	if not is_wind_driven:
+		return 1.0
+	return _state.weather.mill_speed(_state.current_weather().wind_speed)
+
+
 ## Starts the run of `runnable_recipe`: what the loads make, with the bonus of the player's skill,
-## is done after the recipe's hours. Practises the skill. Returns false and starts nothing when the
-## grid holds no whole loads, or the station is out of the player's reach.
+## is done after the recipe's hours (at the speed of the moment: the wind of its start is the one
+## that counts). Practises the skill. Returns false and starts nothing when the grid holds no
+## whole loads, the station is out of the player's reach or the wind does not blow.
 func start() -> bool:
 	var recipe_id := runnable_recipe()
-	if recipe_id == &"" or not crafting.is_in_reach(station):
+	if recipe_id == &"" or speed() == 0.0 or not crafting.is_in_reach(station):
 		return false
 	var rules := crafting.rules
 	var loads := _rule().whole_loads(recipe_id, _contents())
@@ -259,7 +271,7 @@ func start() -> bool:
 	var products := {
 		str(rules.result(recipe_id)): ProcessLoad.result_count(rules, recipe_id, loads, points)
 	}
-	var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR)
+	var minutes := roundi(rules.hours(recipe_id) * GameClock.MINUTES_PER_HOUR / speed())
 	station.state[RUN] = {
 		"recipe": str(recipe_id),
 		"start_minute": _now(),

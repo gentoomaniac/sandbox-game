@@ -144,6 +144,7 @@ const WORKBENCH := &"workbench"
 const CARVED_CHEST := &"carved_chest"
 const KILN := &"kiln"
 const OVEN := &"oven"
+const MILLSTONE := &"millstone"
 ## A flat-bottomed sailing barge of the Wadden coast, lying on the mud (task 61): only to look at.
 const EWER := &"ewer"
 ## The landing of the fisherman's hut (task 103): a jetty laid a piece per tile, a flat rowing

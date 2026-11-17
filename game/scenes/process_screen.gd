@@ -20,6 +20,7 @@ const START_TIP := "Start: %s"
 const EMPTY_NOTE := "Put in what a recipe takes."
 const MISSING_NOTE := "Still needed for a whole load: %s"
 const READY_NOTE := "Ready to start"
+const NO_WIND_NOTE := "No wind"
 const RUNNING_NOTE := "%s: ready in %s"
 const RESULTS_NOTE := "Take out what was made first."
 const NO_RECIPE_NOTE := "No recipe fits what is in the station."
@@ -232,7 +233,7 @@ func _refresh() -> void:
 	_bar.visible = is_running
 	_bar.show_value(_station.progress() if is_running else 0.0)
 	var runnable := _station.runnable_recipe()
-	_button.disabled = runnable == &""
+	_button.disabled = runnable == &"" or _station.speed() == 0.0
 	var tip := (
 		"" if runnable == &"" else START_TIP % RecipeRow.title_of(runnable, _station.crafting.rules)
 	)
@@ -248,6 +249,8 @@ func _refresh() -> void:
 func _idle_note(holds_results: bool, runnable: StringName) -> String:
 	if holds_results:
 		return RESULTS_NOTE
+	if _station.speed() == 0.0:
+		return NO_WIND_NOTE
 	if runnable != &"":
 		return READY_NOTE
 	if _station.grid.is_empty():

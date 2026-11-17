@@ -326,11 +326,13 @@ itself to a call that needs the terrain.
   `RecipeRules` (materials, the skill level it needs), crafts it and practises its skill on the
   player's **Skills** (`skills.gd`: points per skill, the total cap and the skills that fade,
   rules from `SkillRules`). A recipe is made by hand or at a station (`StationRules`: which
-  object types are which station). The recipes of a **process station** (the kiln, the oven:
-  `process` in stations.cfg) are run there instead: **ProcessStation** (`process_station.gd`)
-  over the object's `storage`, its grid, and a run in its `state`, done on the game clock and
-  settled by whoever looks; what may go in is **ProcessLoad**'s pure rule; **ProcessScreen**
-  shows it. `craft` checks
+  object types are which station). The recipes of a **process station** (the kiln, the oven, the
+  windmill's millstone: `process` in stations.cfg) are run there instead: **ProcessStation**
+  (`process_station.gd`) over the object's `storage`, its grid, and a run in its `state`, done on
+  the game clock and settled by whoever looks. The windmill's millstone is driven by the wind (`wind` in stations.cfg:
+  no run starts in a calm, `Weather.mill_speed` scales its hours); the building puts it in its
+  room (`fixtures` in buildings.cfg). What may go in is **ProcessLoad**'s pure rule;
+  **ProcessScreen** shows it. `craft` checks
   its own conditions: a recipe made at a station needs one of that kind on the player's map in
   their reach (`NO_STATION`, or `WRONG_STATION` for another kind), whatever the menu showed.
   `Interaction` says which chest or station E opens; `CraftingScreen` shows the recipes of one place.

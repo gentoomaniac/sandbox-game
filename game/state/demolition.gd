@@ -23,7 +23,7 @@ static func refund_of(state: GameState, building: Building) -> Dictionary:
 
 ## Why a building can't be taken down now, or "" if it can: it is the village's, the player is
 ## inside, or something the player put in it is still there (a thing they placed, or what a chest or
-## station holds).
+## station holds, also a millstone the house came with).
 ## The furniture the house came with (the default's or a villager's own room's), empty, goes
 ## with it.
 static func why_not(state: GameState, building: Building) -> String:
@@ -40,14 +40,19 @@ static func why_not(state: GameState, building: Building) -> String:
 		own_rooms.append(InteriorLoader.load_interior(map_path))
 	var tool_use := ToolUse.new(state)
 	for object in building.interior.objects():
+		var holds_items := not tool_use.items_held_by(object).is_empty()
+		# What has no drops came with the house; only a process station (the windmill's millstone)
+		# can hold what the player put in.
 		if not object.type_data().has("drops"):
+			if holds_items and StationRules.default_rules().grid_slots_of(object.type) > 0:
+				return "Take out what you put in it first."
 			continue
 		var is_own := own_rooms.any(
 			func(room: Interior) -> bool:
 				var own := room.object_at(object.pos)
 				return own != null and own.type == object.type
 		)
-		if not is_own or not tool_use.items_held_by(object).is_empty():
+		if not is_own or holds_items:
 			return "Take out what you put in it first."
 	return ""
 
