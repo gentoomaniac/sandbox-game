@@ -42,3 +42,26 @@ Everything the player did stays saved for good, but drawing and scanning are bou
   loads replays its own terrain and object edits, and the world view redraws only its tilled
   tiles, instead of every chunk load going through all the edits of the world. The wet-soil marks
   stay wherever the soil is, loaded or not, and are counted (`SoilWetness.mark_count`).
+
+## Edits back to the generated state are dropped (#32)
+
+- An edit that says no more than the seed does not stay in the save. Every night, `NightUpkeep`
+  asks of each edited object that is neither grown up nor rotted away whether it is what the
+  generator puts on its tile (`World.drop_edit_if_generated`), and if so forgets the edit: a
+  healed tree, a tuft or reed stand that regrew, a bush that bears again. The chunk, loaded or
+  not, simply has the generated object again the next time it is made.
+- **Why at night:** the night is the only thing that takes state away (healing, regrowth), and it
+  already visits every edit. Checking at every write would put the generator in each hit and
+  every hourly crop change, and drop edits in the middle of a use.
+- **Equal** means the same type and the same data as a freshly generated object of that type
+  (`to_dict`: state and storage). The generator gives only a type, never state. A key that holds
+  a default value (`damage` 0) is a difference: the code that heals erases keys, so that is
+  how an object gets back to an empty state. The generated type is taken for the tile's
+  generated terrain, as the chunk is made, not for the player's terrain edits.
+- **Cost:** one tile asked of the generator is about 6 microseconds (measured), and nothing is
+  generated for the chunk: the check does not need it loaded, and an edit in an unloaded chunk
+  is dropped as well. Objects with state are skipped before the generator is asked.
+- Not dropped: an edit that removes an object (`null`), also where the generator puts nothing
+  (a removed placed object). It stays a harmless leftover.
+- The save format is the same, with fewer entries; a save that still holds such an edit loads
+  and keeps it until the object changes and is healed again.

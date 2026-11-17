@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 class_name WorldEdits
 extends RefCounted
 ## What the player changed in a world, kept outside the chunks so it survives their unloading:
@@ -124,6 +125,16 @@ func replace(chunk: Chunk, old: WorldObject, replacement: WorldObject) -> void:
 func hit(object: WorldObject, power: int) -> void:
 	object.take_hit(power)
 	edit_object(object.pos, object)
+
+
+## Forgets the edit at a position: the chunk's own generated object stands there again. The
+## chunk need not be loaded, nor is it told: whatever stands in it is what the edit said.
+func drop_object_edit(world_pos: Vector2i) -> void:
+	_object_edits.erase(world_pos)
+	_crop_positions.erase(world_pos)
+	_scarecrow_positions.erase(world_pos)
+	_campfire_positions.erase(world_pos)
+	_object_edit_positions_by_chunk[Chunk.world_to_chunk(world_pos)].erase(world_pos)
 
 
 ## Records that an object's state changed.

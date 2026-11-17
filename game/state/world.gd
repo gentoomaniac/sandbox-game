@@ -413,6 +413,24 @@ func change_object(object: WorldObject) -> void:
 	_emit_objects_changed(object)
 
 
+## Drops the edit of an object that is back to what the generator puts on its tile (a healed
+## tree, a tuft that regrew), as it says nothing more than the seed. Equal means the same type and
+## the same data as a freshly generated one, so a state that still holds a default value (e.g.
+## `damage` 0) counts as changed: the code that heals erases the keys instead. Only asks the
+## generator about this one tile, so it works for an unloaded chunk too. The object must be the
+## edit.
+func drop_edit_if_generated(object: WorldObject) -> void:
+	assert(_edits.object_edit_at(object.pos) == object, "Not an edit: %s" % object.pos)
+	if not object.state.is_empty():
+		return
+	var generated_type := _generator.object_type_at(object.pos, _generator.terrain_at(object.pos))
+	if (
+		object.type == generated_type
+		and object.to_dict() == (WorldObject.new(generated_type, object.pos).to_dict())
+	):
+		_edits.drop_object_edit(object.pos)
+
+
 ## The objects the player changed and that are still there, in loaded chunks or not (see
 ## `NightUpkeep`).
 func edited_objects() -> Array[WorldObject]:

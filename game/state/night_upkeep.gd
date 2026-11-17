@@ -56,6 +56,8 @@ func pass_night() -> void:
 				_world.take_off(object)
 			else:
 				_world.replace_object(object, sapling)
+		else:
+			_world.drop_edit_if_generated(object)
 	if not _is_skipping:
 		_world.settle_fallow_soil()
 
