@@ -5,14 +5,30 @@ extends RefCounted
 ## campfire, a nest, a sales cart, a process station's run) has its check below, found by the key
 ## of the state.
 
-## The state keys that are no plain number and have a check of their own in `_state_checks`. Every
-## other entry (growth, days_growing, damage, days_until_bears...) is a number.
-const OWN_SHAPE_STATE_KEYS: Array[String] = ["tree", ProcessStation.RUN, Campfire.LIT, "prices"]
+## The state keys whose value is a number, which need no more check than that.
+const NUMBER_STATE_KEYS: Array[String] = [
+	"damage",
+	"growth",
+	"crop_damage",
+	"days_growing",
+	"days_grown",
+	"days_ripe",
+	"eaten",
+	"ripe_at_dawn",
+	"hours_under_water",
+	"placed_day",
+	"days_until_bears",
+	ReedLife.REGROWTH,
+]
 
 var _ctx: SaveContext
-## The check of each key of an object's state, in the order they report, called for the keys the
-## state has as `check(state, type_data, path, drop_object)`.
+## The one registration of each key an object's state may hold besides the numbers: its check,
+## which holds the key's shape too (a dictionary, a flag...). Called as
+## `check(state, type_data, path, drop_object)` for every object that has the key. A key with no
+## registration at all is refused.
 var _state_checks: Dictionary[String, Callable] = {
+	DykeProfile.HEIGHT_KEY: _check_dyke_measure.bind(DykeProfile.HEIGHT_KEY),
+	DykeProfile.STRENGTH_KEY: _check_dyke_measure.bind(DykeProfile.STRENGTH_KEY),
 	"stock": _check_stock,
 	Campfire.LOG_LEFT: _check_log_left,
 	Campfire.LIT: _check_lit,
@@ -26,6 +42,8 @@ var _state_checks: Dictionary[String, Callable] = {
 
 func _init(context: SaveContext) -> void:
 	_ctx = context
+	for key in NUMBER_STATE_KEYS:
+		_state_checks[key] = _check_number.bind(key)
 
 
 ## The piles on the ground of a map (the world, or an interior), at `path`.
@@ -51,8 +69,6 @@ func check_object(object: Variant, path: String, drop: Callable) -> void:
 		return
 	if state != null:
 		_check_object_state(state, WorldObjectTypes.TYPES[StringName(type)], path, drop)
-		if StringName(type) == WorldObjectTypes.DYKE:
-			_check_dyke_state(state, path)
 	var slot_count := WorldObject.storage_slot_count(StringName(type))
 	if slot_count > 0:
 		check_stacks(object, "storage", slot_count, path)
@@ -119,15 +135,19 @@ func _check_item_state(owner: Dictionary, item: StringName, count: Variant, path
 func _check_object_state(
 	state: Dictionary, type_data: Dictionary, path: String, drop_object: Callable
 ) -> void:
-	for key: Variant in state:
-		if (
-			not key in OWN_SHAPE_STATE_KEYS
-			and not _ctx.is_kind(state[key], SaveContext.Kind.NUMBER)
-		):
-			_ctx.report(path + " state", "%s should be a number" % key)
-	for key in _state_checks:
-		if state.has(key):
+	for key: String in state.keys():
+		if _state_checks.has(key):
 			_state_checks[key].call(state, type_data, path, drop_object)
+		else:
+			_ctx.report(path + " state", "%s is not a state an object has" % key)
+
+
+## A key whose value is a number.
+func _check_number(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, key: String
+) -> void:
+	if not _ctx.is_kind(state[key], SaveContext.Kind.NUMBER):
+		_ctx.report(path + " state", "%s should be a number" % key)
 
 
 ## What a trough or a hay rack holds: a whole number up to what it holds.
@@ -179,16 +199,15 @@ func _check_till(state: Dictionary, _type: Dictionary, path: String, _drop: Call
 		_ctx.report(path + " state", "till should be a whole number, at least 0")
 
 
-## The height (in centimetres) and strength (in percent) of a dyke the game changed.
-func _check_dyke_state(state: Dictionary, path: String) -> void:
-	for key: String in [DykeProfile.HEIGHT_KEY, DykeProfile.STRENGTH_KEY]:
-		if not state.has(key):
-			continue
-		if not _ctx.is_kind(state[key], SaveContext.Kind.WHOLE):
-			_ctx.report(path + " state", "%s should be a whole number" % key)
-			continue
-		var most := DykeProfile.MAX_HEIGHT_CM if key == DykeProfile.HEIGHT_KEY else 100
-		_ctx.check_between(state[key], 0, most, path + " state", key)
+## The height (in centimetres) or strength (in percent) of a dyke the game changed.
+func _check_dyke_measure(
+	state: Dictionary, _type: Dictionary, path: String, _drop: Callable, key: String
+) -> void:
+	if not _ctx.is_kind(state[key], SaveContext.Kind.WHOLE):
+		_ctx.report(path + " state", "%s should be a whole number" % key)
+		return
+	var most := DykeProfile.MAX_HEIGHT_CM if key == DykeProfile.HEIGHT_KEY else 100
+	_ctx.check_between(state[key], 0, most, path + " state", key)
 
 
 ## The prices of a sales cart (see SalesCart), by slot: the item each price is for and the price in
