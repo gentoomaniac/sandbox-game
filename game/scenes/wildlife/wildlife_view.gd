@@ -585,34 +585,7 @@ func _roof_heights_of(picture: String) -> PackedInt32Array:
 
 
 func _spawn(kind: StringName, point: Vector2, is_pinned: bool) -> void:
-	var animal: Animal
-	match kind:
-		WildlifeRules.BIRD:
-			animal = Bird.new()
-		WildlifeRules.RABBIT:
-			animal = Rabbit.new()
-		WildlifeRules.SQUIRREL:
-			animal = Squirrel.new()
-		WildlifeRules.DEER:
-			animal = Deer.new()
-		WildlifeRules.BEE:
-			animal = Bee.new()
-		WildlifeRules.BUTTERFLY:
-			animal = Butterfly.new()
-		WildlifeRules.FIREFLY:
-			animal = Firefly.new()
-		WildlifeRules.STORK:
-			animal = Stork.new(WildlifeRules.STORK)
-		WildlifeRules.GEESE, WildlifeRules.CROWS, WildlifeRules.OYSTERCATCHER, WildlifeRules.DUNLIN:
-			animal = GroundFlock.new(kind)
-		WildlifeRules.MOUSE:
-			animal = Mouse.new()
-		WildlifeRules.FROG:
-			animal = Frog.new()
-		WildlifeRules.GULL:
-			animal = Gull.new()
-		WildlifeRules.TERN:
-			animal = Tern.new()
+	var animal := WildAnimals.create(kind)
 	animal.position = point
 	_add(animal, is_pinned)
 
