@@ -234,8 +234,9 @@ itself to a call that needs the terrain.
   whether it is getting anywhere, and `wander_off`, where a skip leaves it), `AnimalNeeds`
   (how hunger and thirst rise, the search for what meets one and the walk there, and what a skip
   makes of them), `ChickenRoosting` (a hen's walk to a coop at bedtime and out in the morning,
-  and where a skip puts her, with the eggs it counts); the searches they make and the roosts a
-  skip has used up are kept in `AnimalSearches`. The numbers are
+  and where a skip puts her, with the eggs it counts) and `AnimalFollowing` (a follower keeping
+  near the player, and put beside them by a skip); the searches they make and the roosts a skip
+  has used up are kept in `AnimalSearches`. The numbers are
   `data/livestock.cfg` (`LivestockRules`). The WildlifeView draws them through
   `FarmAnimalViews`: one `FarmAnimalView` (an `Animal` like the wild ones, but its state comes
   from the FarmAnimal) for each animal near the view. A horse is saddled by `ToolUse` (`SADDLE`,
