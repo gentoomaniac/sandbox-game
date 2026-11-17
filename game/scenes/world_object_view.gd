@@ -11,6 +11,11 @@ extends Node2D
 ## player. A cell of the layer can't fade, so while the tree occludes (and while it fades back) its
 ## cell is erased and a SeeThroughSprite at the same place in the y-sorted node draws it instead.
 ## A shaking object and a falling tree are such sprites too.
+##
+## A sprite sorts after the cells of its row, while a cell sorts after the cells to its left. So
+## a sprite would draw over a cell to its right that its picture overlaps: the neighbours to the
+## right are swapped for sprites as well, as long as the sprite before them is, and the sprites
+## of a row are kept in the order of their tiles.
 
 ## An object state (see `_states`) for a plant that is dormant and not drawn.
 const DORMANT := -1
@@ -171,6 +176,7 @@ func shake(object: WorldObject) -> void:
 	if not _sprites.has(object.pos):
 		_swap_cell_for_sprite(object)
 	_sprites[object.pos].shake()
+	_swap_overlapped_neighbours()
 
 
 ## Fades what hides the player and puts back what no longer does.
@@ -181,10 +187,11 @@ func update_see_through(delta: float, player_feet: Vector2, player_size: Vector2
 		if not _sprites.has(object.pos):
 			_swap_cell_for_sprite(object)
 		_sprites[object.pos].is_occluding = true
-	for pos in _sprites.keys():
-		var sprite := _sprites[pos]
+	for sprite in _sprites.values():
 		sprite.update(delta, player_feet)
-		if sprite.is_plain():
+	var needed := _swap_overlapped_neighbours()
+	for pos in _sprites.keys():
+		if _sprites[pos].is_plain() and not needed.has(pos):
 			_drop_sprite(pos)
 			_set_cell(_world.object_at(pos))
 
@@ -279,6 +286,64 @@ func _swap_cell_for_sprite(object: WorldObject) -> void:
 	_entities.add_child(sprite)
 	_sprites[object.pos] = sprite
 	cells.erase_cell(object.pos)
+	var first_to_the_right := sprite.get_index()
+	for other in _sprites.values():
+		if other.position.y == sprite.position.y and other.position.x > sprite.position.x:
+			first_to_the_right = mini(first_to_the_right, other.get_index())
+	_entities.move_child(sprite, first_to_the_right)
+
+
+## Swaps for sprites the objects to the right of every sprite that is not plain (and so on to
+## the right) whose pictures the sprite before them overlaps. Returns their tiles and those of
+## the sprites that pulled them in, which have to stay sprites.
+func _swap_overlapped_neighbours() -> Dictionary[Vector2i, bool]:
+	var needed: Dictionary[Vector2i, bool] = {}
+	var pending: Array[Vector2i] = []
+	for pos in _sprites:
+		if not _sprites[pos].is_plain():
+			pending.append(pos)
+	while not pending.is_empty():
+		var pos: Vector2i = pending.pop_back()
+		if needed.has(pos):
+			continue
+		needed[pos] = true
+		var object := _world.object_at(pos)
+		if object == null:
+			continue
+		var right_edge := _picture_span(object).y
+		var reach := int(_picture_size(object).x / TerrainTileset.TILE_SIZE) + 1
+		for dx in range(1, reach + 1):
+			var neighbour := _world.object_at(pos + Vector2i(dx, 0))
+			if (
+				neighbour == null
+				or _hidden_tiles.has(neighbour.pos)
+				or _world.is_dormant(neighbour)
+				or not _is_in_same_sort_row(neighbour, object)
+				or _picture_span(neighbour).x >= right_edge
+			):
+				continue
+			if not _sprites.has(neighbour.pos):
+				_swap_cell_for_sprite(neighbour)
+			pending.append(neighbour.pos)
+	return needed
+
+
+func _is_in_same_sort_row(object: WorldObject, other: WorldObject) -> bool:
+	var footprint: Vector2i = object.type_data()["footprint"]
+	var other_footprint: Vector2i = other.type_data()["footprint"]
+	return object.pos.y + footprint.y == other.pos.y + other_footprint.y
+
+
+## The x pixels, from and to, that an object's picture covers.
+func _picture_span(object: WorldObject) -> Vector2:
+	var footprint: Vector2i = object.type_data()["footprint"]
+	var width := _picture_size(object).x
+	var left := (
+		TerrainTileset.tile_centre(object.pos).x
+		- width / 2.0
+		+ ObjectTileset.cell_origin(footprint).x
+	)
+	return Vector2(left, left + width)
 
 
 ## Frees the stand-in sprite of an object, if it has one. The caller sets the cell.

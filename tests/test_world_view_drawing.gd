@@ -197,3 +197,59 @@ func _empty() -> Array[Vector2i]:
 	cells.resize(TerrainTileset.LAYER_COUNT)
 	cells.fill(Vector2i(-1, -1))
 	return cells
+
+
+## Puts oaks on the tiles `xs` (offsets from a free stretch of a row of the chunk), the player
+## behind the first one only, and lets the see-through run once. Returns the oaks.
+func _oaks_with_the_player_behind_the_first(xs: Array[int]) -> Array[WorldObject]:
+	_residency.load_chunk(RIGHT)
+	_view.finish_drawing()
+	var row_start := _free_stretch(RIGHT, 8)
+	var oaks: Array[WorldObject] = []
+	for x in xs:
+		var oak := WorldObject.new(WorldObjectTypes.OAK, row_start + Vector2i(x, 0))
+		_view.world.add_object(oak)
+		_view._object_view.draw(oak.pos)
+		oaks.append(oak)
+	_view.player_feet = (Vector2(oaks[0].pos) + Vector2(-0.4, 0.1)) * TerrainTileset.TILE_SIZE
+	_view._update_see_through(0.0)
+	return oaks
+
+
+## The first tile of `length` free tiles in a row of the chunk.
+func _free_stretch(coords: Vector2i, length: int) -> Vector2i:
+	for y in range(Chunk.CHUNK_SIZE - 1, 0, -1):
+		for x in Chunk.CHUNK_SIZE - length:
+			var start := Chunk.to_world(coords, Vector2i(x, y))
+			var is_free := true
+			for dx in length:
+				is_free = is_free and _view.world.object_at(start + Vector2i(dx, 0)) == null
+			if is_free:
+				return start
+	return Vector2i.ZERO
+
+
+func test_the_neighbour_a_swapped_tree_overlaps_is_swapped_with_it() -> void:
+	var oaks := _oaks_with_the_player_behind_the_first([1, 2, 3, 6])
+	var sprites := _view._object_view._sprites
+	assert_true(sprites.has(oaks[0].pos), "the tree behind which the player stands")
+	assert_true(sprites.has(oaks[1].pos), "its neighbour, which the picture overlaps")
+	assert_true(sprites.has(oaks[2].pos), "the neighbour's neighbour")
+	assert_false(sprites.has(oaks[3].pos), "a tree out of reach stays a cell")
+
+
+func test_the_sprites_of_a_row_are_in_the_order_of_their_tiles() -> void:
+	var oaks := _oaks_with_the_player_behind_the_first([1, 2, 3])
+	var sprites := _view._object_view._sprites
+	assert_lt(sprites[oaks[0].pos].get_index(), sprites[oaks[1].pos].get_index())
+	assert_lt(sprites[oaks[1].pos].get_index(), sprites[oaks[2].pos].get_index())
+
+
+func test_all_sprites_of_a_row_go_back_to_cells_when_the_player_leaves() -> void:
+	var oaks := _oaks_with_the_player_behind_the_first([1, 2, 3])
+	_view.player_feet = Vector2(oaks[0].pos) * TerrainTileset.TILE_SIZE + Vector2(0, 900)
+	_view._update_see_through(1.0)
+	_view._update_see_through(1.0)
+	assert_eq(_view._object_view._sprites.size(), 0)
+	for oak in oaks:
+		assert_ne(_view._object_view.cells.get_cell_source_id(oak.pos), -1)
