@@ -45,12 +45,17 @@ GREY_OAK = ("bare_light", "bare", "mud")
 OUTLINE = "soil_dark"
 # The window high in the back wall: its left, top and size; its middle is the window light.
 WINDOW = (43, 78, 10)
+# The door's columns, between its frame. The ladder, the tail pole and the post are lined up
+# on them, down the middle of the picture.
+DOOR_LEFT, DOOR_RIGHT = 40, 55
 
 # The sails at 32 px (see sails.py), and where their hub goes in the body's picture: the middle of
 # each frame of the strip goes there.
 SAILS = sail_drawing.Sails(radius=110, inner=28, width=24, lead=4, bar_step=8, uplongs=1, stock=3, roll=4, hub=7)
 SAILS_HUB = (48, 10)
-# The frames of the turning strip, a quarter turn; the still sails stand turned by this.
+# The frames of the turning strip, a quarter turn; the still sails stand turned by this. The
+# classic art draws as many (classic/windmill.py), and the game steps through them (SailTurn.FRAMES
+# in game/scenes/sail_turn.gd); test_sails.py checks that the three agree.
 SAIL_FRAMES = 8
 STILL_DEGREES = 45
 
@@ -133,7 +138,7 @@ def _window(picture, is_lit):
 def _door(picture):
     """The door at the top of the ladder: green planks lit on the left, a brace across, two iron
     strap hinges and a latch, in an oak frame."""
-    left, top, right = 40, FLOOR - 42, 55
+    left, top, right = DOOR_LEFT, FLOOR - 42, DOOR_RIGHT
     rect(picture, left - 2, top - 2, right + 2, FLOOR - 1, OAK[0])
     rect(picture, right + 1, top - 2, right + 2, FLOOR - 1, OAK[2])
     rect(picture, left - 2, top - 2, right + 2, top - 2, OAK[1])
@@ -178,13 +183,13 @@ def _trestle(picture, rng):
     crosstree up to it, the crosstree on its fieldstone piers."""
     for cx in (12, WIDTH - 13):
         _pier(picture, rng, cx)
-    _beam(picture, (12, GROUND - 13), (39, FLOOR + 6), 6, OAK)
-    _beam(picture, (WIDTH - 18, GROUND - 13), (WIDTH - 45, FLOOR + 6), 6, (OAK[1], OAK[2], OAK[3]))
-    rect(picture, 41, FLOOR + 5, 54, GROUND - 12, OAK[1])
-    rect(picture, 41, FLOOR + 5, 42, GROUND - 12, OAK[0])
-    rect(picture, 52, FLOOR + 5, 54, GROUND - 12, OAK[2])
+    _beam(picture, (12, GROUND - 13), (DOOR_LEFT - 1, FLOOR + 6), 6, OAK)
+    _beam(picture, (WIDTH - 18, GROUND - 13), (DOOR_RIGHT - 4, FLOOR + 6), 6, (OAK[1], OAK[2], OAK[3]))
+    rect(picture, DOOR_LEFT + 1, FLOOR + 5, DOOR_RIGHT - 1, GROUND - 12, OAK[1])
+    rect(picture, DOOR_LEFT + 1, FLOOR + 5, DOOR_LEFT + 2, GROUND - 12, OAK[0])
+    rect(picture, DOOR_RIGHT - 3, FLOOR + 5, DOOR_RIGHT - 1, GROUND - 12, OAK[2])
     # The shadow of the body on the top of the post.
-    rect(picture, 41, FLOOR + 5, 54, FLOOR + 9, OAK[3])
+    rect(picture, DOOR_LEFT + 1, FLOOR + 5, DOOR_RIGHT - 1, FLOOR + 9, OAK[3])
     rect(picture, 5, GROUND - 15, WIDTH - 6, GROUND - 10, OAK[1])
     rect(picture, 5, GROUND - 15, WIDTH - 6, GROUND - 15, OAK[0])
     rect(picture, 5, GROUND - 10, WIDTH - 6, GROUND - 10, OAK[2])
@@ -212,7 +217,8 @@ def _hood(picture, snowy):
     rect(picture, left + 1, eaves + 2, right - 1, eaves + 2, OAK[3])
     # The hatch's door of upright planks under it, and the shadow the hood casts on it.
     for x in range(41, 55):
-        rect(picture, x, eaves + 3, x, eaves + 13, GREY_OAK[0] if (x - 41) % 4 == 0 else GREY_OAK[2] if (x - 41) % 4 == 3 else GREY_OAK[1])
+        plank = (x - 41) % 4
+        rect(picture, x, eaves + 3, x, eaves + 13, GREY_OAK[0] if plank == 0 else GREY_OAK[2] if plank == 3 else GREY_OAK[1])
     rect(picture, 41, eaves + 3, 54, eaves + 4, GREY_OAK[2])
     rect(picture, 41, eaves + 14, 54, eaves + 14, OAK[2])
     rect(picture, 41, eaves + 9, 54, eaves + 9, OAK[2])
@@ -261,13 +267,14 @@ def _ladder(picture):
     two grey oak stringers, rungs lit along their top, its foot just behind the wheel, and its
     handrails up beside the door."""
     foot = HEIGHT - 27
-    rect(picture, 44, FLOOR + 5, 51, HEIGHT - 14, TARRED[1])
-    rect(picture, 44, FLOOR + 5, 45, HEIGHT - 14, TARRED[0])
-    rect(picture, 50, FLOOR + 5, 51, HEIGHT - 14, TARRED[2])
+    pole_left, pole_right = DOOR_LEFT + 4, DOOR_RIGHT - 4
+    rect(picture, pole_left, FLOOR + 5, pole_right, HEIGHT - 14, TARRED[1])
+    rect(picture, pole_left, FLOOR + 5, pole_left + 1, HEIGHT - 14, TARRED[0])
+    rect(picture, pole_right - 1, FLOOR + 5, pole_right, HEIGHT - 14, TARRED[2])
     for y in range(FLOOR + 9, foot - 2, 7):
-        rect(picture, 40, y, 55, y, GREY_OAK[0])
-        rect(picture, 40, y + 1, 55, y + 1, GREY_OAK[2])
-    for x in (37, 56):
+        rect(picture, DOOR_LEFT, y, DOOR_RIGHT, y, GREY_OAK[0])
+        rect(picture, DOOR_LEFT, y + 1, DOOR_RIGHT, y + 1, GREY_OAK[2])
+    for x in (DOOR_LEFT - 3, DOOR_RIGHT + 1):
         rect(picture, x, FLOOR - 22, x + 2, foot, GREY_OAK[1])
         rect(picture, x, FLOOR - 22, x, foot, GREY_OAK[0])
         rect(picture, x + 2, FLOOR - 22, x + 2, foot, GREY_OAK[2])

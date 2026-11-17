@@ -61,6 +61,17 @@ def _on_line(distance, normal, thickness=1):
     return abs(distance) < thickness * max(abs(normal[0]), abs(normal[1])) / 2
 
 
+# What lies over what: the stock over the lattice, the lattice over the cloth.
+_RANKS = {
+    CLOTH[0]: 1, ROLL[2]: 2, ROLL[1]: 2, ROLL[0]: 2, BAR: 3, HEMLATH: 4,
+    **{colour: 5 + i for i, colour in enumerate(STOCK)},
+}
+
+
+def _rank(kind):
+    return _RANKS.get(kind, 0)
+
+
 def frame(sails, degrees, spread):
     """The sails turned `degrees` clockwise from upright and level (a cross like +), with the
     cloth spread or furled."""
@@ -87,8 +98,13 @@ def frame(sails, degrees, spread):
     for (x, y), kind in kinds.items():
         picture[y][x] = kind
     # The cloth in the shadow of the wood above and left of it.
+    wood = (*STOCK, BAR, HEMLATH)
+
+    def casts_shadow(x, y):
+        return any(kinds.get((x - dx, y - dy)) in wood for dx, dy in ((1, 0), (0, 1), (1, 1)))
+
     for (x, y), kind in kinds.items():
-        if spread and kind == CLOTH[0] and any(kinds.get((x - dx, y - dy)) in (*STOCK, BAR, HEMLATH) for dx, dy in ((1, 0), (0, 1), (1, 1))):
+        if spread and kind == CLOTH[0] and casts_shadow(x, y):
             picture[y][x] = CLOTH[1]
     # The hub, a square block lit on its top left.
     half = sails.hub // 2
@@ -99,20 +115,13 @@ def frame(sails, degrees, spread):
     return picture
 
 
-# What lies over what: the stock over the lattice, the lattice over the cloth.
-_RANKS = {CLOTH[0]: 1, ROLL[2]: 2, ROLL[1]: 2, ROLL[0]: 2, BAR: 3, HEMLATH: 4, **{colour: 5 + i for i, colour in enumerate(STOCK)}}
-
-
-def _rank(kind):
-    return _RANKS.get(kind, 0)
-
-
 def _part(sails, u, v, along, across, spread, lit_side):
     """The colour of the point `u` out along an arm and `v` across it (positive to the trailing
     side), or None where the arm has nothing."""
     if u < -0.5 or u > sails.radius + 0.5:
         return None
-    # The stock, lit on the side towards the light, dark on the other.
+    # The stock, lit on the side towards the light, dark on the other. It stops at the tip itself;
+    # the bar across the tip (below) reaches half a pixel past it, so the first check lets that by.
     if _on_line(v, across, sails.stock) and u <= sails.radius:
         band = v * lit_side / max(abs(across[0]), abs(across[1]))
         if band > sails.stock / 2 - 1:

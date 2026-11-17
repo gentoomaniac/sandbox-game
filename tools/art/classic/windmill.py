@@ -27,6 +27,7 @@ OUTLINE = "soil_dark"
 # classic art is scaled up to the game's tile, as in the new art).
 SAILS = sail_drawing.Sails(radius=55, inner=14, width=12, lead=2, bar_step=5, uplongs=0, stock=2, roll=2, hub=3)
 SAILS_HUB = (24, 5)
+# As many as the new art's (windmill.py), which the game steps through; see test_sails.py.
 SAIL_FRAMES = 8
 STILL_DEGREES = 45
 
@@ -69,7 +70,9 @@ def _window(picture, is_lit):
     """The small window high in the back wall: four panes in a white frame."""
     rect(picture, 21, 37, 26, 42, "lime")
     for x, y in ((22, 38), (24, 38), (22, 40), (24, 40)):
-        rect(picture, x, y, x + 1, y + 1, ("cream" if (x, y) == (22, 38) else "gold") if is_lit else ("foam" if (x, y) == (22, 38) else "water"))
+        glint = (x, y) == (22, 38)
+        lit_colour = "cream" if glint else "gold"
+        rect(picture, x, y, x + 1, y + 1, lit_colour if is_lit else "foam" if glint else "water")
 
 
 def _hood(picture, snowy):
