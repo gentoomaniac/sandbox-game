@@ -148,6 +148,13 @@ bench save: 65 flowers, 54 ms a check with snow lying before #91 (it searched th
 round every flower's tile) and 0.3 ms after, as without snow. Run it with the arguments of
 `make bench` plus `--snow=0.4`.
 
+`tools/bench/footprints.gd` (#155; part of `make bench`) forces the snow cover to 1 on the bench save and
+times 120 frames of the player standing, first on clean ground and then with a full ring of
+footprints on every loaded chunk (a walker crosses each, as in the game): the mean and longest
+frame of both, the prints made and how long making them took. Before #155 the frame went from 9 to
+133 ms and making 7,840 prints took 86 s (each check of snow searched the crowns and lees round the
+tile); after, 6.9 and 6.8 ms and 1.8 s.
+
 `make bench-music` times the prototype music renderer of task 169 (`music.gd`): renders of the test
 piece on their own (8 bars and a minute, 22.05 and 44.1 kHz, mono and stereo, with the memory of
 each), then Main on a copy of the same save standing, while renders run on a worker, and while

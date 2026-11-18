@@ -298,6 +298,8 @@ bench: assets
 	$(MAKE) $(BENCH_DIR)/fixture.save
 	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
 	$(BENCH_GODOT) -s tools/bench/frames.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
+	cp $(BENCH_DIR)/fixture.save $(BENCH_DIR)/run.save
+	$(BENCH_GODOT) -s tools/bench/footprints.gd -- --save-path=$(BENCH_DIR)/run.save --settings-path=$(BENCH_DIR)/settings.cfg --mute --max-fps=0
 	$(BENCH_GODOT) -s tools/bench/pickup.gd -- $(BENCH_DIR)/fixture.save
 	$(BENCH_GODOT) -s tools/bench/save.gd -- $(BENCH_DIR)/fixture.save
 
