@@ -151,7 +151,7 @@ func show_world(residency: ChunkResidency) -> void:
 	world.object_hit.connect(_on_object_hit)
 	world.clay_spot_changed.connect(_on_clay_spot_changed)
 	_soil_wetness.show_world(world)
-	_footprint_view.show_world(world, _terrain.cover_map.ground_cover.is_snowed)
+	_footprint_view.show_world(world, _terrain.cover_map.is_snowed)
 	_flood_overlay.show_world(world, residency)
 	world.building_placed.connect(_buildings.add)
 	world.building_placed.connect(_on_building_changed)

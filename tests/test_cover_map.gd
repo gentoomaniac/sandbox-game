@@ -160,3 +160,24 @@ func test_the_snow_and_frost_atlases_of_the_objects_have_the_layout_of_the_objec
 		for path in [CoverMap.OBJECTS_SNOW_PATH, CoverMap.OBJECTS_FROST_PATH]:
 			var atlas: Texture2D = load(ArtSet.path_in(path, is_classic))
 			assert_eq(atlas.get_size(), objects.get_size(), path)
+
+
+func test_a_tile_is_snowed_as_the_ground_cover_says() -> void:
+	_load(Vector2i.ZERO)
+	_world.add_object(WorldObject.new(WorldObjectTypes.SPRUCE, Vector2i(8, 8)))
+	_map.draw_chunk(Vector2i.ZERO)
+	_map.set_weather(0.0, 0.6, 0.0, 0.0)
+	var snowed := 0
+	for y in Chunk.CHUNK_SIZE:
+		for x in Chunk.CHUNK_SIZE:
+			var tile := Vector2i(x, y)
+			assert_eq(_map.is_snowed(tile), _map.ground_cover.is_snowed(tile), "%s" % tile)
+			snowed += 1 if _map.is_snowed(tile) else 0
+	assert_gt(snowed, 0, "snow lies somewhere")
+	assert_lt(snowed, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE, "and not under the spruce")
+
+
+func test_a_tile_of_a_chunk_that_is_not_drawn_is_asked_of_the_ground_cover() -> void:
+	_load(Vector2i.ZERO)
+	_map.set_weather(0.0, 0.6, 0.0, 0.0)
+	assert_eq(_map.is_snowed(Vector2i(3, 3)), _map.ground_cover.is_snowed(Vector2i(3, 3)))

@@ -189,6 +189,17 @@ func channels_at(tile: Vector2i) -> Color:
 	return _image.get_pixelv(_texel_of(tile))
 
 
+## Whether snow lies on most of a tile now, as `GroundCover.is_snowed` says, but read from the
+## drawn channels: the ground cover searches the crowns and lees round the tile (most of a
+## millisecond), so what asks of many tiles a frame (the footprints) asks here. A tile of a chunk
+## that is not drawn is asked of the ground cover.
+func is_snowed(tile: Vector2i) -> bool:
+	if not _drawn.has(Chunk.world_to_chunk(tile)):
+		return ground_cover.is_snowed(tile)
+	var texel := channels_at(tile)
+	return ground_cover.is_snowed_by(texel.g, texel.b)
+
+
 ## Where snow lies on most of the tiles of a drawn chunk now: 1 for a tile with snow, row by row,
 ## as `GroundCover.is_snowed` says for each, but read from the drawn channels in one pass. Empty
 ## where no snow lies at all, and for a chunk that is not drawn (out of range of the focus).
