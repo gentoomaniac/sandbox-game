@@ -13,6 +13,7 @@
 - [No pgrep wait loops](no-pgrep-wait-loops.md) — sandbox-game: briefs forbid ANY pgrep/sleep wait loop (they match themselves; the editor godot never exits); run tests in the foreground
 - [No leftover processes](no-leftover-processes.md) — sandbox-game: after every task check ps for leftover godot/run_tests/make/wait loops; kill is blocked, so hand the user a kill command
 - [Memory caps](memory-caps.md) — sandbox-game: test runs guarded by make itself since #142; Godot only via make or memguard; fresh worktrees copy .godot; after the 2026-11-17 OOM crashes
+- [Big files in build/](big-files-in-build.md) — sandbox-game: screenshots, maps, crops go in the worktree's build/ (NVMe), never /tmp or the scratchpad (tmpfs = RAM); in every brief
 - [Opencode second opinion](opencode-second-opinion.md) — sandbox-game: reviews with a different opinion via `opencode run -m 'openai/gpt-6.1-sol#high'`
 - [Test window title](test-window-title.md) — sandbox-game: all agent/test game windows use --with-working-window-title ("Sandbox Game (test)"); make run never sets it by default
 - [Worktree lock pid](worktree-lock-pid.md) — sandbox-game: the pid in a worktree lock is Claude Code itself; never ask the user to kill it, unlock + remove instead
