@@ -12,8 +12,8 @@ The state of the work for the next coordinating agent, as of 2026-11-20. The rul
   sound and music go to the specialist agents. Tell the user which model each runs on.
 - Every task gets a review until it's approved. You run the full `make test` on the branch tip,
   fast-forward merge it to main as atomic commits, and push after every merge.
-- At most two tasks run at a time. On 2026-11-18 the user narrowed this: **only run #155** until
-  they say otherwise.
+- At most two tasks run at a time. On 2026-11-18 the user narrowed this to **only #155**. #155 was merged on
+  2026-11-20 (To test); ask the user before starting the next task.
 - After a merge, move the card to To test, add a hand-test checklist to the issue, and add the
   same lines to the untracked `TO-TEST.md` in the main checkout.
 - Board ids (for `gh project item-edit`):
@@ -25,27 +25,6 @@ The state of the work for the next coordinating agent, as of 2026-11-20. The rul
     the item id.
 
 ## In flight
-
-### #155 Frame rate drops to about 11 fps in winter with footprints (In review)
-
-- **Branch:** `worktree-agent-af2b84f36d8ccaec0`, worktree
-  `.claude/worktrees/agent-af2b84f36d8ccaec0`, two commits on main `5c071bf6`:
-  - `4a36bfda` a bench, `tools/bench/footprints.gd`;
-  - `8509624d` the fix.
-- **Cause:** the footprints used `GroundCover.is_snowed`, a slow search of up to 1 ms per call, on
-  every step and every ring slot. They now use `CoverMap.is_snowed`, which reads the ground that's
-  already drawn.
-- **Bench:** 133 ms down to 6.8 ms a frame with 7,840 prints, the same as without prints.
-- **Review:** APPROVED, no blockers.
-- **Not yet done:** the full `make test`. The footprint and cover tests and `make lint` pass.
-- **Next:**
-  1. Rebase it on main (docs commits only since).
-  2. Run the full suite.
-  3. Merge, push, and move it to To test.
-- **Hand test:**
-  - a winter day with snow and several villagers walking: about 60 fps, footprints look as before;
-  - prints vanish when the snow melts;
-  - prints appear on a chunk you just walked onto.
 
 ### #22 Where crafting lives (paused in the Queue)
 
@@ -80,7 +59,7 @@ The state of the work for the next coordinating agent, as of 2026-11-20. The rul
 ## The Queue
 
 The Queue runs in board order. The newest at the end: #154 (at the top, LLM request count, budget,
-back-off and bundled judging at most every half game day), then #46, #23, #143, #145–#153, #155,
+back-off and bundled judging at most every half game day), then #46, #23, #143, #145–#153,
 #156, #157. #144 (watermill) is in the Backlog.
 
 Open questions written on the issues, with the defaults the worker should use if no answer comes:
