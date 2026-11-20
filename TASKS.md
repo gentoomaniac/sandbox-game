@@ -1,5 +1,8 @@
 # Tasks
 
+A new coordinating agent starts with [docs/handover/README.md](docs/handover/README.md) (the state of
+the work) and [docs/handover/memory/MEMORY.md](docs/handover/memory/MEMORY.md) (the standing rules).
+
 Since 2026-11-14 the tasks are GitHub issues (the user): the
 [project board](https://github.com/users/gentoomaniac/projects/2) holds the order and the state, the
 [issues](https://github.com/gentoomaniac/sandbox-game/issues) hold the specs. The user gave the go for the queue
