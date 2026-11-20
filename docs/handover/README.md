@@ -24,13 +24,14 @@ The state of the work for the next coordinating agent, as of 2026-11-20. The rul
   - New issues usually auto-add to the board. If they haven't yet, `gh project item-add` returns
     the item id.
 
-## Blocker: memory for the test runs
+## Memory for the test runs
 
-The full suite can't run right now. memguard stops runs when `MemAvailable` drops below 3000 MB,
-and the ZFS cache (ARC) holds 11–15 GB that `MemAvailable` doesn't count. On 2026-11-18 a run got
-1 of 8 shards and was stopped after 7 minutes. I asked the user to cap the ARC (the command is in
-[docs/development.md](../development.md), under the memguard section); there's no answer yet. Check the free memory
-before a run. Don't lower the floor or teach memguard about the ARC without the user's yes.
+memguard stops runs when the free memory drops below 3000 MB. On this machine the ZFS cache (the
+ARC) holds 11–15 GB, which `MemAvailable` doesn't count, so on 2026-11-18 full runs were stopped
+with only a few GB in real use. The user said "Ignore the zfs" (2026-11-20): the ARC stays
+uncapped, and since 905dfc0f memguard counts half the ARC above its minimum as free (see
+[docs/development.md](../development.md), the memory guard section). Don't ask about capping it
+again.
 
 ## In flight
 
@@ -45,8 +46,7 @@ before a run. Don't lower the floor or teach memguard about the ARC without the 
   already drawn.
 - **Bench:** 133 ms down to 6.8 ms a frame with 7,840 prints, the same as without prints.
 - **Review:** APPROVED, no blockers.
-- **Not yet done:** the full `make test` (blocked by memory). The footprint and cover tests and
-  `make lint` pass.
+- **Not yet done:** the full `make test`. The footprint and cover tests and `make lint` pass.
 - **Next:**
   1. Rebase it on main (docs commits only since).
   2. Run the full suite.
