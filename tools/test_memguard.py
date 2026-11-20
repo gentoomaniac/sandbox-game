@@ -101,5 +101,41 @@ class TestRunLockTest(unittest.TestCase):
         self.assertEqual(events, ["first in", "first out", "second in"])
 
 
+class AvailableMemoryTest(unittest.TestCase):
+    MEMINFO = "MemTotal:       32559104 kB\nMemAvailable:    3145728 kB\n"
+
+    @staticmethod
+    def arcstats(size_mb, c_min_mb):
+        return "".join(
+            [
+                "13 1 0x01 123 33456 1 2\n",
+                "name                            type data\n",
+                f"c_min                           4    {c_min_mb * 2**20}\n",
+                f"size                            4    {size_mb * 2**20}\n",
+            ]
+        )
+
+    def available_mb(self, arcstats):
+        with tempfile.TemporaryDirectory() as folder:
+            meminfo = Path(folder) / "meminfo"
+            meminfo.write_text(self.MEMINFO)
+            stats = Path(folder) / "arcstats"
+            if arcstats is not None:
+                stats.write_text(arcstats)
+            return memguard.mem_available_mb(meminfo, stats)
+
+    def test_half_the_zfs_cache_above_its_minimum_counts_as_available(self):
+        self.assertEqual(self.available_mb(self.arcstats(12 * 1024, 1024)), 3072 + 11 * 512)
+
+    def test_without_zfs_it_is_mem_available(self):
+        self.assertEqual(self.available_mb(None), 3072)
+
+    def test_a_cache_at_its_minimum_adds_nothing(self):
+        self.assertEqual(self.available_mb(self.arcstats(512, 1024)), 3072)
+
+    def test_arcstats_without_size_or_c_min_adds_nothing(self):
+        self.assertEqual(self.available_mb("name type data\nhits 4 12\n"), 3072)
+
+
 if __name__ == "__main__":
     unittest.main()

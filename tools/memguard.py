@@ -4,7 +4,8 @@
 Usage: memguard.py [--proc-mem-mb N] [--floor-mb N] [--lock] -- COMMAND...
 
 Runs COMMAND and, every 0.5 s, looks at it and all its child processes. It kills them all when the
-machine's MemAvailable drops below the floor or one process's RSS goes above the limit, and then
+machine's available memory (MemAvailable plus half the ZFS cache that gives way, see
+arc_reclaimable_mb) drops below the floor or one process's RSS goes above the limit, and then
 exits with status 1 and one line that says what it killed and why. Otherwise it exits with the
 status of COMMAND. `make` runs the Godot import and the screenshot through it, and tools/run_tests.py
 uses the same Guarded class for its shards (see docs/development.md, "Memory guard").
@@ -37,6 +38,9 @@ SLICE = "sandbox-tests.slice"
 # far from the 12-17 GB runaways that were measured.
 DEFAULT_PROC_MEM_MB = 5000
 DEFAULT_FLOOR_MB = 3000
+ARCSTATS = Path("/proc/spl/kstat/zfs/arcstats")
+# The share of the ZFS cache above its minimum that counts as free (see arc_reclaimable_mb).
+ARC_SHARE = 0.5
 
 
 def default_floor_mb():
@@ -47,11 +51,34 @@ def default_proc_mem_mb():
     return int(os.environ.get("TEST_PROC_MEM_MB", DEFAULT_PROC_MEM_MB))
 
 
-def mem_available_mb():
-    for line in Path("/proc/meminfo").read_text().splitlines():
+def mem_available_mb(meminfo=Path("/proc/meminfo"), arcstats=ARCSTATS):
+    """MemAvailable plus the ZFS cache the kernel can take back (see `arc_reclaimable_mb`)."""
+    for line in meminfo.read_text().splitlines():
         if line.startswith("MemAvailable:"):
-            return int(line.split()[1]) / 1024
+            return int(line.split()[1]) / 1024 + arc_reclaimable_mb(arcstats)
     raise RuntimeError("no MemAvailable in /proc/meminfo")
+
+
+def arc_reclaimable_mb(arcstats=ARCSTATS):
+    """How much of the ZFS cache (the ARC) counts as free: half its size above its minimum.
+
+    MemAvailable does not count the ARC, which can hold 11-15 GB on this machine and shrinks to
+    `c_min` when programs need the memory, so without this the floor stops runs on a machine that
+    has room. Only half counts: the ARC gives memory back lazily, and part of it is pinned, so a
+    burst of shards starting at once could outrun it. 0 without ZFS.
+    """
+    try:
+        lines = arcstats.read_text().splitlines()
+    except OSError:
+        return 0
+    values = {}
+    for line in lines:
+        fields = line.split()
+        if len(fields) == 3 and fields[0] in ("size", "c_min"):
+            values[fields[0]] = int(fields[2])
+    if len(values) < 2:
+        return 0
+    return ARC_SHARE * max(values["size"] - values["c_min"], 0) / 2**20
 
 
 def process_table():

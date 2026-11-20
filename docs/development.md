@@ -189,12 +189,11 @@ it through [tools/memguard.py](../tools/memguard.py), and nobody has to wrap the
   `TEST_JOBS` shards. A machine already below the floor fails the run at once. When memory runs
   below the floor, every shard of the run is stopped.
 
-On this machine the ZFS cache (the ARC) can hold 11–15 GB. `MemAvailable` does not count it, and
-it gives memory back slowly, so a run can fail at the floor with little else running (2026-11-18:
-about 3 GB free with an ARC of 11.4 GB). Check it with
-`grep -E '^size ' /proc/spl/kstat/zfs/arcstats`. Capping it needs root and is the user's call:
-`echo $((8*2**30)) | sudo tee /sys/module/zfs/parameters/zfs_arc_max` until the next reboot, or
-`options zfs zfs_arc_max=8589934592` in `/etc/modprobe.d/zfs.conf` for good.
+The free memory memguard reads is `MemAvailable` plus half the ZFS cache (the ARC) above its minimum
+(`(size - c_min) / 2` in `/proc/spl/kstat/zfs/arcstats`). `MemAvailable` does not count the ARC, which
+can hold 11–15 GB on this machine and gives way to programs, so without it the floor stopped runs on
+a machine that had room (2026-11-18). Without ZFS it is `MemAvailable` alone. The user said to
+leave ZFS as it is (2026-11-20): don't cap the ARC.
 
 ## Make targets and tools
 
