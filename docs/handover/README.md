@@ -24,15 +24,6 @@ The state of the work for the next coordinating agent, as of 2026-11-20. The rul
   - New issues usually auto-add to the board. If they haven't yet, `gh project item-add` returns
     the item id.
 
-## Memory for the test runs
-
-memguard stops runs when the free memory drops below 3000 MB. On this machine the ZFS cache (the
-ARC) holds 11–15 GB, which `MemAvailable` doesn't count, so on 2026-11-18 full runs were stopped
-with only a few GB in real use. The user said "Ignore the zfs" (2026-11-20): the ARC stays
-uncapped, and since 905dfc0f memguard counts half the ARC above its minimum as free (see
-[docs/development.md](../development.md), the memory guard section). Don't ask about capping it
-again.
-
 ## In flight
 
 ### #155 Frame rate drops to about 11 fps in winter with footprints (In review)

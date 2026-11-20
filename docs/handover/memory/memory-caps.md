@@ -28,6 +28,4 @@ The details are in docs/development.md.
 - Optional extra guard: `systemctl --user set-property --runtime sandbox-tests.slice MemoryMax=20G` caps all runs together. It is runtime only, so a reboot drops it.
 - `my-developer` workers are always worktree-isolated, so they can't work in an old worktree. To take over a dead worker's work, commit its leftovers as WIP on its branch and have the new worker `git reset --hard <branch>` in its own worktree.
 
-On 2026-11-18 memguard blocked every full run at the 3000 MB floor although the processes used only a few GB: the ZFS ARC held 11–15 GB, which `MemAvailable` does not count. The user, 2026-11-20: "Ignore the zfs". So memguard counts half the ARC above `c_min` as available, since it gives memory back lazily (see docs/development.md), and the ARC is left uncapped; don't ask about capping it again.
-
 Related: [[no-leftover-processes]], [[quiet-test-runs]], [[merge-check]].
